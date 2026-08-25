@@ -12,7 +12,6 @@ import {
   ChevronRight,
   CircleHelp,
   Copy,
-  FileJson,
   Image as ImageIcon,
   LayoutTemplate,
   MoreVertical,
@@ -20,7 +19,6 @@ import {
   Search,
   Smartphone,
   Sparkles,
-  Table2,
   Upload,
   WandSparkles,
   X,
@@ -69,36 +67,6 @@ const missingItems = [
     feature: "SDK 与真实交易",
     known: "产品首笔交易后被锁定；Test on Device 会提供二维码与 mobile-app.adapty.io/paywall-preview 链接。",
     unknown: "设备测试、购买、恢复、权益、事件归因与非零报表未实测。",
-  },
-  {
-    id: "M-06",
-    feature: "Web Paywall 发布",
-    known: "Adapty Web Paywall 页有 FunnelFox 创建入口、web link 输入框、Builder Web Purchase / SDK method 触发说明，以及仅面向美国用户的 Segments 提示。Start blank 会生成 New Screen 1，解锁 Localize / Save；Publish 经检查或跳过检查后要求 slug，成功后显示已发布 URL、Copy URL 与二维码分享。",
-    unknown: "本次输入已发布 URL 后的重载读回未取得稳定证据；跳转支付与权益同步未实测。",
-  },
-  {
-    id: "R-01",
-    feature: "Remote config Import / Export",
-    known: "Import/Export 菜单有 Import 与 Export；Import 展开可多选文件的拖放上传区与禁用 Submit。Export 点击没有可观察到页面反馈。",
-    unknown: "文件格式、导入校验、覆盖、提交结果与实际下载文件未实测。",
-  },
-  {
-    id: "R-02",
-    feature: "Remote config JSON",
-    known: "Table 中保存的配置可转换为格式化 JSON。直接编辑 JSON 后点击 Save 会在当前页显示新值，但重载后恢复旧值，未持久化。",
-    unknown: "JSON 格式错误、未持久化的服务端原因与 Discard 规则未实测。",
-  },
-  {
-    id: "R-03",
-    feature: "Remote config Locales",
-    known: "Locales 可搜索并添加 French；保存并重载后，默认语言与 French 配置编辑器均存在。Remove French 在当前页会移除面板，但外层 Save 后重载又恢复。AI Translate 仍禁用。",
-    unknown: "语言移除未持久化的原因、批量操作、AI Translate 启用条件与翻译结果未实测。",
-  },
-  {
-    id: "R-04",
-    feature: "Remote config value types",
-    known: "String、Number、Boolean、List、Object 都可分别输入，并经 Save、确认、重载后保留；List / Object 使用 JSON 片段编辑。",
-    unknown: "非法值校验、类型转换与已有值兼容规则未实测。",
   },
   {
     id: "G-01",
@@ -693,25 +661,6 @@ const appCategories = [
   "Magazines & newspapers", "Photo & Video",
 ];
 
-const localizationOptions = [
-  "French", "Italian", "Spanish", "German", "Portuguese", "Turkish", "Japanese",
-  "Simplified Chinese", "Korean", "Polish", "Russian", "Amharic", "Arabic",
-  "Assamese", "Azerbaijani", "Bangla", "Belarusian", "Bulgarian", "Burmese",
-  "Cantonese", "Catalan", "Chinese (Hong Kong)", "Chinese (Simplified)",
-  "Chinese (Traditional)", "Croatian", "Czech", "Danish", "Dutch", "Estonian",
-  "Filipino", "Finnish", "French (Canada)", "Greek", "Gujarati", "Hausa",
-  "Hebrew", "Hindi", "Hungarian", "Igbo", "Indonesian", "Javanese", "Kannada",
-  "Kazakh", "Khmer", "Kyrgyz", "Latvian", "Lithuanian", "Malagasy", "Malay",
-  "Malayalam", "Marathi", "Nepali", "Norwegian", "Nyanja", "Odia", "Oromo",
-  "Pashto", "Persian", "Portuguese (Brazil)", "Punjabi", "Romanian",
-  "Serbo-Croatian", "Sindhi", "Slovak", "Slovenian", "Somali",
-  "Spanish (Latin America)", "Spanish (Mexico)", "Sundanese", "Swahili",
-  "Swedish", "Tagalog", "Tamil", "Telugu", "Thai", "Ukrainian", "Urdu",
-  "Uzbek", "Vietnamese", "Yoruba",
-];
-
-const remoteConfigPlaceholder = 'Enter your config in JSON format here: { "header_text": "Christmas sale — get 50% discount!", "header_image": "https://uploads-ssl.webflow.com/5e14589806a361410903c387/5e790f475b85603b342dce56_adapty.svg", "button_color": "red" }';
-
 const zhCopy = {
   "Paywalls": "付费墙", "Test": "测试", "Help": "帮助", "App settings": "应用设置", "Account": "账户",
   "Add a new app": "新建应用", "Evidence & gaps": "已验证与缺口", "Only observed behavior is reproduced. These routes are deliberately not invented.": "仅复刻已观察到的行为；未验证的结果不会被编造。",
@@ -722,7 +671,7 @@ const zhCopy = {
   "Start with the visual Builder.": "从可视化构建器开始。", "Observed template library and filters.": "查看已观察到的模板库与筛选项。",
   "Entry is known; generation output is not.": "入口已验证，生成结果尚未验证。", "Visual Builder configuration only.": "仅复制可视化构建器配置。",
   "Metrics": "指标", "View in analytics": "在分析中查看", "Duplicate": "复制", "Test on Device": "在设备上测试", "Archive": "归档",
-  "Web Paywall": "网页付费墙", "Remote config": "远程配置", "State": "状态", "Started at": "创建时间", "Open Builder": "打开构建器",
+  "State": "状态", "Started at": "创建时间", "Open Builder": "打开构建器",
   "Discard": "放弃更改", "Save": "保存", "Save & publish": "保存并发布", "Add product": "添加产品",
   "Template": "模板", "Change template": "更换模板", "Layout settings": "布局设置", "Elements": "元素", "Show on device": "在设备上展示",
   "Source visual": "源端画面", "Editable structure": "可编辑结构", "Source reference": "源端参考画面",
@@ -799,7 +748,7 @@ const zhCopy = {
   "Terms of Service": "服务条款", "Privacy Policy": "隐私政策",
   "Read the docs": "查看文档", "All placements": "全部展示位置", "States (3)": "状态（3）", "Live": "已发布", "Draft": "草稿", "Inactive": "未启用",
   "Search by paywall name": "按付费墙名称搜索", "Proceeds": "实收款项", "Net proceeds": "净实收款项", "1 - 2 of 2": "第 1 - 2 项，共 2 项",
-  "Create a draft and configure it with products, a no-code builder, and remote config.": "创建草稿，并在产品套餐、无代码构建器和远程配置中完成设置。",
+  "Create a draft and configure it with products and a no-code builder.": "创建草稿，并在产品套餐与无代码构建器中完成设置。",
   "Actions for test": "test 的操作", "Actions for test 2": "test 2 的操作", "Edit": "编辑",
   "No switch (all products are visible)": "不切换（展示所有产品）", "Selected product": "选中的产品", "Products grouping": "产品分组",
   "Custom media ID": "自定义媒体 ID", "Background image": "背景图片", "Fill": "填充", "Border": "边框", "Corner radius": "圆角",
@@ -855,8 +804,6 @@ function App() {
   const [draft, setDraft] = useState({
     name: "RESEARCH - Rebuild Draft",
     products: ["月度会员 / Monthly", "Japanese Ai - 1 Year / Annual"],
-    remoteConfig: { en: {} },
-    activeLocale: "en",
   });
   const [compliance, setCompliance] = useState(false);
   const [rememberCompliance, setRememberCompliance] = useState(false);
@@ -1056,8 +1003,6 @@ function App() {
               notify={notify}
             />
           )}
-          {view === "remote" && <RemoteConfig draft={draft} setDraft={setDraft} setView={setView} markUnknown={markUnknown} notify={notify} />}
-          {view === "web" && <WebPaywall setView={setView} markUnknown={markUnknown} />}
           {view === "metrics" && <Metrics setView={setView} markUnknown={markUnknown} />}
         </div>
       </main>
@@ -1220,7 +1165,7 @@ function CreatePaywall({ draft, setDraft, setView, setModal, createDraft, markUn
   return (
     <section className="create">
       <button className="back" onClick={() => setView("list")}><ArrowLeft size={18} /> Paywalls</button>
-      <div className="create-header"><div><h1>Create paywall</h1><p>Create a draft and configure it with products, a no-code builder, and remote config.</p></div><button className="primary" onClick={() => setModal({ kind: "compliance" })}>Create as draft</button></div>
+      <div className="create-header"><div><h1>Create paywall</h1><p>Create a draft and configure it with products and a no-code builder.</p></div><button className="primary" onClick={() => setModal({ kind: "compliance" })}>Create as draft</button></div>
       <div className="create-grid">
         <div className="form-card">
           <h2>General</h2>
@@ -1289,7 +1234,7 @@ function PaywallWorkspace({ selected, draft, setDraft, view, setView, duplicate,
     return (
       <section className="builder-page">
         <WorkspaceHeader selected={selected} setView={setView} duplicate={duplicate} setModal={setModal} markUnknown={markUnknown} />
-        <div className="detail-tabs"><button onClick={() => setView("general")}>General</button><button className="active">Builder & Generator</button><button onClick={() => setView("web")}>Web Paywall</button><button onClick={() => setView("remote")}>Remote config</button></div>
+        <div className="detail-tabs"><button onClick={() => setView("general")}>General</button><button className="active">Builder & Generator</button></div>
         {appliedTemplate !== null && <div className={`template-context ${sourceTreeObserved.has(templates[appliedTemplate].id) ? "observed-tree" : "preview-only"}`}><span>Template</span><strong>{templates[appliedTemplate].title}</strong><small>{sourceTreeObserved.has(templates[appliedTemplate].id) ? "源端已观察核心结构；本地可编辑复现" : "源端已采集预览内容；精确节点树待采集"}</small><button className="secondary" onClick={() => setModal({ kind: "templates" })}><LayoutTemplate size={15} /> Change template</button></div>}
         <div className="builder">
           <aside className="node-panel">
@@ -1310,7 +1255,7 @@ function PaywallWorkspace({ selected, draft, setDraft, view, setView, duplicate,
   return (
     <section>
       <WorkspaceHeader selected={selected} setView={setView} duplicate={duplicate} setModal={setModal} markUnknown={markUnknown} />
-      <div className="detail-tabs"><button className="active">General</button><button onClick={() => setView("builder")}>Builder & Generator</button><button onClick={() => setView("web")}>Web Paywall</button><button onClick={() => setView("remote")}>Remote config</button></div>
+      <div className="detail-tabs"><button className="active">General</button><button onClick={() => setView("builder")}>Builder & Generator</button></div>
       <div className="detail-layout">
         <div className="form-card detail-form"><h2>General</h2><Field label="Paywall name"><input defaultValue={selected.name} /></Field><Field label="Products">{observedProductRows.slice(0, selected.products).map((row, index) => <ProductRow key={row.product} product={`${row.product} / ${row.period}`} offer={row.offer} index={index} markUnknown={markUnknown} readOnly />)}{transientProducts.map((row) => <ProductRow key={row.product} product={`${row.product} / ${row.period}`} offer={row.offer} markUnknown={markUnknown} readOnly />)}{selected.state === "Draft" && <div className="product-add-wrap"><button className="secondary" onClick={() => setProductPickerOpen((open) => !open)}><Plus size={16} /> Add product</button>{productPickerOpen && <div className="product-add-menu"><button onClick={() => { setTransientProducts((items) => [...items, { product: "月度会员", period: "Monthly", offer: "springsale" }]); setProductPickerOpen(false); }}>月度会员</button><button onClick={() => { setTransientProducts((items) => [...items, { product: "Japanese ai", period: "3 months", offer: "No offers for this product" }]); setProductPickerOpen(false); }}>Japanese ai</button></div>}</div>}{selected.state === "Live" && <><button className="secondary" disabled><Plus size={16} /> Add product</button><p className="locked">Products are locked after the first transaction. Duplicate to change products.</p></>}</Field><Field label="Paywall screenshot"><button className="upload unknown-action" onClick={() => markUnknown({ id: "U-01", feature: "Screenshot upload", known: "PNG / WEBP / JPG, maximum 10 MB and recommended 320x568 were observed.", unknown: "This reconstruction intentionally does not simulate file validation or the exact backend upload response." })}><Upload size={18} /> Upload screenshot</button></Field></div>
         <aside className="detail-aside"><div><span className="eyebrow">State</span><StateBadge state={selected.state} /></div><div><span className="eyebrow">Products</span><strong>{selected.products}</strong></div><div><span className="eyebrow">Started at</span><strong>{selected.startedAt}</strong></div><button className="secondary full" onClick={() => setView("builder")}><Blocks size={16} /> Open Builder</button></aside>
@@ -1561,157 +1506,6 @@ function ProductRow({ product, offer, onProductChange, onRemove, markUnknown, re
   );
 }
 
-function RemoteConfig({ draft, setDraft, setView, markUnknown, notify }) {
-  const [tab, setTab] = useState("table");
-  const [typeMenuOpen, setTypeMenuOpen] = useState(false);
-  const [importExportOpen, setImportExportOpen] = useState(false);
-  const [remoteModal, setRemoteModal] = useState(null);
-  const [jsonText, setJsonText] = useState("");
-  const locale = draft.activeLocale;
-  const config = draft.remoteConfig[locale];
-  const localeNames = { en: "English", fr: "French", zh: "Simplified Chinese", ja: "Japanese" };
-  const setConfig = (nextConfig) => setDraft((current) => ({ ...current, remoteConfig: { ...current.remoteConfig, [locale]: nextConfig } }));
-  const setValue = (key, value) => setConfig({ ...config, [key]: value });
-  const renameKey = (key, nextKey) => {
-    if (!nextKey || nextKey === key) return;
-    const { [key]: value, ...rest } = config;
-    setConfig({ ...rest, [nextKey]: value });
-  };
-  const remoteBoundary = (id) => ({
-    "R-01": missingItems.find((item) => item.id === "R-01"),
-    "R-02": missingItems.find((item) => item.id === "R-02"),
-    "R-03": missingItems.find((item) => item.id === "R-03"),
-    "R-04": missingItems.find((item) => item.id === "R-04"),
-  })[id];
-  const addRow = (type) => {
-    const defaults = { String: "", Number: 0, Boolean: true, List: [], Object: {} };
-    const base = `new_${type.toLowerCase()}`;
-    let key = base;
-    let suffix = 2;
-    while (Object.hasOwn(config, key)) { key = `${base}_${suffix}`; suffix += 1; }
-    setTypeMenuOpen(false);
-    setValue(key, defaults[type]);
-  };
-  const updateStructuredValue = (key, raw, fallback) => {
-    try { setValue(key, JSON.parse(raw)); } catch { setValue(key, fallback); }
-  };
-  const addLocale = (label) => {
-    const key = label === "French" ? "fr" : label === "Simplified Chinese" ? "zh" : label === "Japanese" ? "ja" : label.toLowerCase().replace(/[^a-z]+/g, "-");
-    setDraft((current) => ({ ...current, activeLocale: key, remoteConfig: { ...current.remoteConfig, [key]: current.remoteConfig[key] ?? { ...config } } }));
-    setRemoteModal(null);
-    notify(`Added ${label} locally.`);
-  };
-  return (
-    <section>
-      <button className="back" onClick={() => setView("general")}><ArrowLeft size={18} /> Paywall</button>
-      <div className="workspace-heading"><div><span className="eyebrow">Paywall</span><h1>Remote config</h1></div></div>
-      <div className="detail-tabs remote-tabs">
-        <button className={tab === "table" ? "active" : ""} onClick={() => setTab("table")}><Table2 size={16} /> Table</button>
-        <button className={tab === "json" ? "active" : ""} onClick={() => { setJsonText(JSON.stringify(config, null, 2)); setTab("json"); }}><FileJson size={16} /> JSON</button>
-        <div className="remote-menu-wrap"><button onClick={() => setImportExportOpen((open) => !open)}>Import/Export <ChevronDown size={15} /></button>{importExportOpen && <div className="remote-menu"><button onClick={() => { setImportExportOpen(false); setRemoteModal("import"); }}>Import</button><button className="unknown-action" onClick={() => markUnknown(remoteBoundary("R-01"))}>Export</button></div>}</div>
-        <button onClick={() => setRemoteModal("locales")}>Locales</button>
-        <button disabled>AI Translate</button>
-      </div>
-      {tab === "table" ? (
-        <div className="remote-layout"><div className="remote-card"><article className="remote-hint">Create your remote config by adding rows with keys and values of various types. Such elements as a link to the background picture, button color, header text, and others may describe your paywall. If you are new to JSON it may be better to ask your developer for help.</article><table><thead><tr><th>Key</th><th>Value</th><th /></tr></thead><tbody><tr><th><div className="add-row-wrap"><button className="add-row" onClick={() => setTypeMenuOpen((open) => !open)}><Plus size={16} /> Add row</button>{typeMenuOpen && <div className="type-menu">{["String", "Number", "Boolean", "List", "Object"].map((type) => <button onClick={() => addRow(type)} key={type}>{type}</button>)}</div>}</div></th><th>{localeNames[locale] ?? locale} <small>{locale === "en" ? "(default) en" : locale}</small></th><th /></tr>{Object.entries(config).map(([key, value]) => <tr key={key}><td><input value={key} onChange={(event) => renameKey(key, event.target.value)} /></td><td>{typeof value === "boolean" ? <label className="switch-row"><input type="checkbox" checked={value} onChange={(event) => setValue(key, event.target.checked)} /><span>{value ? "On" : "Off"}</span></label> : Array.isArray(value) || (value && typeof value === "object") ? <textarea className="inline-json" value={JSON.stringify(value)} onChange={(event) => updateStructuredValue(key, event.target.value, value)} /> : <input type={typeof value === "number" ? "number" : "text"} value={value} onChange={(event) => setValue(key, typeof value === "number" ? Number(event.target.value) : event.target.value)} />}</td><td><button className="icon" onClick={() => { const { [key]: _, ...rest } = config; setConfig(rest); }}><X size={16} /></button></td></tr>)}</tbody></table></div><aside className="locale-card"><h3>Locales</h3>{Object.keys(draft.remoteConfig).map((item) => <button className={item === locale ? "active" : ""} onClick={() => setDraft((current) => ({ ...current, activeLocale: item }))} key={item}>{localeNames[item] ?? item} <small>{item === "en" ? "(default) en" : item}</small></button>)}{locale === "fr" && <button className="secondary unknown-action" onClick={() => markUnknown(remoteBoundary("R-03"))}>Remove French</button>}</aside></div>
-      ) : (
-        <div className="json-card"><div className="json-editor"><span>1</span><textarea value={jsonText} onChange={(event) => setJsonText(event.target.value)} placeholder={remoteConfigPlaceholder} /></div><p className="unknown-rule"><CircleHelp size={16} /> Direct JSON editing is real, but this account reverted the saved value after reload. Its Save remains a gray boundary.</p></div>
-      )}
-      <div className="remote-footer"><button className="secondary unknown-action" onClick={() => markUnknown(remoteBoundary(tab === "json" ? "R-02" : "R-04"))}>Discard</button><button className={tab === "json" ? "primary unknown-action" : "primary"} onClick={() => tab === "json" ? markUnknown(remoteBoundary("R-02")) : notify("Table values saved locally.")}>Save</button></div>
-      {remoteModal === "import" && <ImportLocalizationsModal onClose={() => setRemoteModal(null)} markUnknown={markUnknown} />}
-      {remoteModal === "locales" && <LocalesModal onClose={() => setRemoteModal(null)} onSave={addLocale} markUnknown={markUnknown} />}
-    </section>
-  );
-}
-
-function WebPaywall({ setView, markUnknown }) {
-  const [funnelStage, setFunnelStage] = useState("intro");
-  const [webPaywallLink, setWebPaywallLink] = useState("");
-  const webBoundary = {
-    id: "M-06",
-    feature: "Web Paywall 发布",
-    known: "Create a web paywall 已实测跳转至 FunnelFox 的 Paywalls – Test 工作区；New paywall 进入 Untitled funnel 初始编辑器。Adapty 侧提供链接输入框、Builder Web Purchase 或 SDK method 触发说明，且要求仅对美国用户展示。",
-    unknown: "已发布 URL 回填后的保存与重载读回、跳转支付与权益同步未实测。",
-  };
-  const templateBoundary = {
-    ...webBoundary,
-    feature: "FunnelFox template application",
-    known: "模板库含 AI Learning Acquisition 等候选；应用后为 Copy of AI Learning，包含多屏问卷、套餐结账、支付失败与下载应用页。",
-    unknown: "模板筛选与编辑后的跨页面联动未实测。",
-  };
-  if (funnelStage === "workspace") {
-    return <FunnelFoxWorkspace onBack={() => setFunnelStage("intro")} onOpenEditor={() => setFunnelStage("editor")} />;
-  }
-  if (funnelStage === "editor") {
-    return <FunnelFoxEditor onBack={() => setFunnelStage("workspace")} markUnknown={markUnknown} boundary={webBoundary} templateBoundary={templateBoundary} />;
-  }
-  return (
-    <section>
-      <button className="back" onClick={() => setView("general")}><ArrowLeft size={18} /> Paywall</button>
-      <div className="workspace-heading"><div><span className="eyebrow">Paywall</span><h1>Web Paywall</h1></div></div>
-      <div className="web-card">
-        <div className="web-icon">W</div>
-        <h2>Web Paywall</h2>
-        <p>iOS and Android apps in the U.S. can now link to external payment options. Create your web paywall, trigger it in your app and we will handle analytics and unlocking paid access within the app.</p>
-        <p className="web-sdk-copy">This feature requires Adapty SDK version 3.6.0 or later for iOS, and 3.15.0 or later for Android.</p>
-        <div className="web-intro-actions">
-          <button className="primary" onClick={() => setFunnelStage("workspace")}>Create a web paywall</button>
-          <button className="text-action unknown-action" onClick={() => markUnknown(webBoundary)}>Learn more</button>
-        </div>
-        <div className="web-steps">
-          <article>
-            <span>1</span>
-            <div><h3>Create a web paywall</h3><button className="secondary" onClick={() => setFunnelStage("workspace")}>Create web paywall</button></div>
-          </article>
-          <article>
-            <span>2</span>
-            <div><h3>Paste the web paywall link</h3><input value={webPaywallLink} onChange={(event) => setWebPaywallLink(event.target.value)} placeholder="https://adapty.fnlfx.com/web-paywall" /><button className="text-action unknown-action" onClick={() => markUnknown(webBoundary)}>Save link</button></div>
-          </article>
-          <article>
-            <span>3</span>
-            <div><h3>Choose how to trigger the web purchase flow</h3><p>Use a special Web Purchase button in Builder or call the SDK method yourself to open a web checkout from a paywall. Make sure you have updated to the latest SDK version.</p><button className="text-action unknown-action" onClick={() => markUnknown(webBoundary)}>Read docs</button></div>
-          </article>
-          <article>
-            <span>4</span>
-            <div><h3>You’re ready to launch!</h3><p>Show this paywall to U.S. users only. Use segments to target the right audience.</p><button className="text-action unknown-action" onClick={() => markUnknown(webBoundary)}>Read docs</button></div>
-          </article>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function FunnelFoxWorkspace({ onBack, onOpenEditor }) {
-  return <section className="funnel-page">
-    <button className="back" onClick={onBack}><ArrowLeft size={18} /> Web Paywall</button>
-    <div className="funnel-topline"><div><span className="eyebrow">FunnelFox workspace</span><h1>Paywalls - Test</h1></div><button className="primary" onClick={onOpenEditor}>New paywall</button></div>
-    <div className="funnel-tabs"><button className="active">Acquisition</button><button>Cancellation</button></div>
-    <div className="funnel-empty"><Blocks size={28} /><h2>Create your first Paywall</h2><p>The linked FunnelFox workspace was empty when observed.</p><button className="primary" onClick={onOpenEditor}>Create your first Paywall</button></div>
-  </section>;
-}
-
-function FunnelFoxEditor({ onBack, markUnknown, boundary, templateBoundary }) {
-  const [started, setStarted] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [publishStep, setPublishStep] = useState("idle");
-  const [slug, setSlug] = useState("");
-  const [templateOpen, setTemplateOpen] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState("");
-  const [templateApplied, setTemplateApplied] = useState(false);
-  const publishedUrl = `paywalls-4044295d-a03a-4c32-9b41-d057fe635445.fnlfx.com/${slug || "research-paywall-flow-gap"}`;
-  const startBlank = () => { setStarted(true); setSaved(false); };
-  const applyTemplate = () => { setTemplateOpen(false); setTemplateApplied(true); setStarted(true); setSaved(true); };
-  return <section className="funnel-page funnel-editor">
-    <div className="funnel-editor-bar"><button className="back" onClick={onBack}><ArrowLeft size={18} /> Paywalls</button><strong>T {templateApplied ? "Copy of AI Learning" : "Untitled funnel"}</strong><button disabled={saved} onClick={() => setSaved(true)}>{saved ? "Saved" : "Save"}</button><span /><button>Preview</button><button className="primary" disabled={!started || publishStep === "published"} onClick={() => setPublishStep("choice")}>Publish</button></div>
-    <div className="funnel-editor-body"><aside><div className="funnel-tabs"><button className="active">Screens {started ? (templateApplied ? "16" : "1") : ""}</button><button>Elements {started ? (templateApplied ? "many" : "2") : ""}</button></div><button className="secondary full" onClick={startBlank}><Plus size={16} /> Add screen</button>{started && <div className="funnel-screen-item">{templateApplied ? "Intro discount" : "New Screen 1"}<br /><small>{templateApplied ? "AI Learning Acquisition" : "Continue 1"}</small></div>}</aside><main><div className="editor-switch"><button className="active">Canvas</button><button>Screen</button></div>{templateApplied ? <div className="template-applied"><span className="eyebrow">Template applied</span><h2>Copy of AI Learning</h2>{["Intro discount reserved for: 09:55", "Select your gender", "What is your age?", "What is your work status?", "Complete Your Checkout - 1-week trial", "Payment Didn't Go Through", "Just one more step! Time to download the app"].map((item) => <div key={item}>{item}</div>)}</div> : started ? <div className="funnel-starter active"><h2>New Screen 1</h2><p>Blank screen created by Start blank. Localize is now available.</p><button className="primary" onClick={() => setSaved(true)}>{saved ? "Saved" : "Save"}</button></div> : <div className="funnel-starter"><h2>Start a funnel</h2><p>Initial unsaved state observed before any screen is added.</p><div><button className="secondary" onClick={startBlank}>Start blank</button><button className="secondary" onClick={() => setTemplateOpen(true)}>Use a template</button></div></div>}{templateOpen && <div className="funnel-template-picker"><div>{["AI Photo/Video Acquisition", "Parenting Acquisition", "Relationship/Dating Acquisition", "AI Learning Acquisition", "Self-Growth Acquisition", "Mental Well-Being Acquisition", "Nutrition: Meal Plan Acquisition", "Astrology Acquisition", "Full cancellation flow", "Paywall"].map((item) => <button className={selectedTemplate === item ? "selected" : ""} onClick={() => setSelectedTemplate(item)} key={item}>{item}</button>)}</div><button disabled={!selectedTemplate} onClick={applyTemplate}>Use this template →</button><button className="text-action" onClick={() => setTemplateOpen(false)}>Close</button></div>}</main><aside className="funnel-ai"><strong>New chat</strong><button className="text-action">Create a new funnel</button><button className="text-action">Recreate this screen from a screenshot</button><button className="text-action">Add questions about preferences</button><textarea placeholder="Describe changes..." /><button disabled className="primary">Send</button></aside></div>
-    {!started && <div className="funnel-boundary">Localize is disabled until a screen is added.</div>}
-    {publishStep === "choice" && <div className="funnel-publish"><strong>Publish</strong><button onClick={() => setPublishStep("scan")}>Check for errors <small>Scan navigation, checkout, plans & references first</small></button><button onClick={() => setPublishStep("slug")}>Publish now <small>Skip the check and go live</small></button></div>}
-    {publishStep === "scan" && <div className="funnel-publish"><strong>Publish checks</strong><button onClick={() => setSaved(true)}>Save & Re-scan</button><button onClick={() => setPublishStep("slug")}>Publish</button></div>}
-    {publishStep === "slug" && <div className="funnel-publish"><strong>Choose a slug</strong><input placeholder="my-funnel" value={slug} onChange={(event) => setSlug(event.target.value)} /><button className="primary" disabled={!slug} onClick={() => setPublishStep("published")}>Publish</button></div>}
-    {publishStep === "published" && <div className="funnel-publish success"><strong>Published</strong><button>{publishedUrl}</button><button>Copy URL</button><button aria-label="QR code linking to published funnel">▦</button></div>}
-  </section>;
-}
-
 function Metrics({ setView, markUnknown }) {
   const [filterMenu, setFilterMenu] = useState(false);
   const [stateFilter, setStateFilter] = useState(false);
@@ -1816,38 +1610,6 @@ function AddAppModal({ onClose, markUnknown }) {
       <Field label="Category"><select value={category} onChange={(event) => setCategory(event.target.value)}><option value="">Select a category</option>{appCategories.map((item) => <option key={item}>{item}</option>)}</select></Field>
       <Field label="App icon"><button className="upload unknown-action" onClick={() => markUnknown(appBoundary)}><Upload size={18} /> Choose File <small>PNG, JPG, max size 2MB.</small></button></Field>
       <div className="modal-actions"><button className="secondary" onClick={onClose}>Cancel</button><button className="primary unknown-action" disabled={!name || !category} onClick={() => markUnknown(appBoundary)}>Add a new app</button></div>
-    </Modal>
-  );
-}
-
-function ImportLocalizationsModal({ onClose, markUnknown }) {
-  const importBoundary = {
-    id: "R-01",
-    feature: "Remote config Import / Export",
-    known: "Import localizations 面板文案为 Upload a localization file to import translations for your content；含拖放区、Choose File 与禁用 Submit。",
-    unknown: "文件格式、校验、上传、提交、覆盖、错误与 Export 下载规则未实测。",
-  };
-  return (
-    <Modal title="Import localizations" onClose={onClose}>
-      <p className="modal-copy">Upload a localization file to import translations for your content</p>
-      <button className="upload unknown-action" onClick={() => markUnknown(importBoundary)}><Upload size={18} /> Click here or drag the file to this area to upload <small>Choose File</small></button>
-      <div className="modal-actions"><button className="secondary" onClick={onClose}>Cancel</button><button className="primary unknown-action" disabled onClick={() => markUnknown(importBoundary)}>Submit</button></div>
-    </Modal>
-  );
-}
-
-function LocalesModal({ onClose, onSave, markUnknown }) {
-  const [selected, setSelected] = useState("");
-  const localesBoundary = {
-    id: "R-03",
-    feature: "Remote config Locales",
-    known: "Locales 可搜索后选择 French；保存并重载后默认语言与 French 配置编辑器均存在。当前页 Remove French 后重载会恢复。",
-    unknown: "语言移除未持久化的原因、批量操作、AI Translate 启用条件与翻译结果未实测。",
-  };
-  return (
-    <Modal title="Locales" onClose={onClose}>
-      <Field label="Localization"><select value={selected} onChange={(event) => setSelected(event.target.value)}><option value="">Localization name</option>{localizationOptions.map((item) => <option key={item}>{item}</option>)}</select></Field>
-      <div className="modal-actions"><button className="secondary" onClick={onClose}>Cancel</button><button className="primary" disabled={!selected} onClick={() => onSave(selected)}>Save</button></div>
     </Modal>
   );
 }
