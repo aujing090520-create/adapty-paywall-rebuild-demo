@@ -24,6 +24,7 @@ import {
   X,
   Download,
   Eye,
+  GripVertical,
   RotateCw,
 } from "lucide-react";
 import "./styles.css";
@@ -139,6 +140,43 @@ const sourceVerifiedTemplateComponents = Object.freeze({
 });
 
 const node = (id, type, content = "", depth = 0, extra = {}) => ({ id, type, label: "", content, depth, ...extra });
+
+function nodeParentId(nodes, index) {
+  const current = nodes[index];
+  if (current?.parentId) return current.parentId;
+  const depth = current?.depth ?? 0;
+  if (!depth) return null;
+  for (let cursor = index - 1; cursor >= 0; cursor -= 1) {
+    if ((nodes[cursor].depth ?? 0) === depth - 1) return nodes[cursor].id;
+  }
+  return null;
+}
+
+function nodeSubtreeEnd(nodes, start) {
+  const depth = nodes[start]?.depth ?? 0;
+  let end = start + 1;
+  while (end < nodes.length && (nodes[end].depth ?? 0) > depth) end += 1;
+  return end;
+}
+
+function canMoveBuilderNode(nodes, sourceId, targetId) {
+  const sourceIndex = nodes.findIndex((node) => node.id === sourceId);
+  const targetIndex = nodes.findIndex((node) => node.id === targetId);
+  if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) return false;
+  if (targetIndex >= sourceIndex && targetIndex < nodeSubtreeEnd(nodes, sourceIndex)) return false;
+  return nodeParentId(nodes, sourceIndex) === nodeParentId(nodes, targetIndex);
+}
+
+function moveBuilderNode(nodes, sourceId, targetId, position) {
+  if (!canMoveBuilderNode(nodes, sourceId, targetId)) return nodes;
+  const sourceIndex = nodes.findIndex((node) => node.id === sourceId);
+  const sourceEnd = nodeSubtreeEnd(nodes, sourceIndex);
+  const moving = nodes.slice(sourceIndex, sourceEnd);
+  const remaining = [...nodes.slice(0, sourceIndex), ...nodes.slice(sourceEnd)];
+  const targetIndex = remaining.findIndex((node) => node.id === targetId);
+  const insertAt = position === "before" ? targetIndex : nodeSubtreeEnd(remaining, targetIndex);
+  return [...remaining.slice(0, insertAt), ...moving, ...remaining.slice(insertAt)];
+}
 
 function createBuilderNodes(templateId = "knowledge") {
   const template = templates.find((item) => item.id === templateId) ?? templates[0];
@@ -1203,6 +1241,7 @@ function PaywallWorkspace({ selected, draft, setDraft, view, setView, duplicate,
   const [productPickerOpen, setProductPickerOpen] = useState(false);
   const [transientProducts, setTransientProducts] = useState([]);
   const [previewMode, setPreviewMode] = useState("source");
+  const [dragState, setDragState] = useState(null);
   useEffect(() => setPreviewMode("source"), [appliedTemplate]);
   if (view === "builder") {
     const active = builderNodes.find((node) => node.id === activeNode);
@@ -1231,6 +1270,38 @@ function PaywallWorkspace({ selected, draft, setDraft, view, setView, duplicate,
       const parent = builderNodes.find((node) => node.id === parentId);
       notify(`${type} 已作为 ${parent?.type ?? "容器"} 子元素添加。`);
     };
+    const getNodeDropTarget = (clientX, clientY, sourceId) => {
+      const target = document.elementFromPoint(clientX, clientY)?.closest("[data-node-id]");
+      const targetId = target?.dataset.nodeId;
+      if (!targetId || !canMoveBuilderNode(builderNodes, sourceId, targetId)) return null;
+      const { top, height } = target.getBoundingClientRect();
+      return { targetId, position: clientY < top + height / 2 ? "before" : "after" };
+    };
+    const beginNodeDrag = (event, id) => {
+      if (event.button !== 0) return;
+      event.currentTarget.setPointerCapture(event.pointerId);
+      setDragState({ id, targetId: null, position: null });
+      setActiveNode(id);
+      setBuilderTab("tree");
+      if (appliedTemplate !== null && sourceTreeObserved.has(templates[appliedTemplate].id)) setPreviewMode("editable");
+    };
+    const updateNodeDropTarget = (event) => {
+      const sourceId = dragState?.id;
+      if (!sourceId) return;
+      const nextTarget = getNodeDropTarget(event.clientX, event.clientY, sourceId);
+      if (!nextTarget) return;
+      event.preventDefault();
+      setDragState({ id: sourceId, ...nextTarget });
+    };
+    const dropNode = (event) => {
+      const sourceId = dragState?.id;
+      const nextTarget = sourceId ? getNodeDropTarget(event.clientX, event.clientY, sourceId) : null;
+      if (sourceId && nextTarget) {
+        setBuilderNodes((current) => moveBuilderNode(current, sourceId, nextTarget.targetId, nextTarget.position));
+        setActiveNode(sourceId);
+      }
+      setDragState(null);
+    };
     return (
       <section className="builder-page">
         <WorkspaceHeader selected={selected} setView={setView} duplicate={duplicate} setModal={setModal} markUnknown={markUnknown} />
@@ -1241,7 +1312,11 @@ function PaywallWorkspace({ selected, draft, setDraft, view, setView, duplicate,
             <label className="device-toggle"><input type="checkbox" defaultChecked /> <span>On</span> Show on device</label>
             <div className="panel-tabs"><button className={builderTab === "settings" ? "active" : ""} onClick={() => setBuilderTab("settings")}>Layout settings</button><button className={builderTab === "tree" ? "active" : ""} onClick={() => setBuilderTab("tree")}>Elements</button></div>
             <div className="add-element-wrap"><button className="add-element" onClick={() => setAddElementOpen((open) => !open)}><Plus size={17} /> Add element</button>{addElementOpen && <div className="add-element-menu">{componentCatalog.map((item) => <button key={item} onClick={() => addElement(item)}>{item}</button>)}</div>}</div>
-            <div className="node-list">{builderNodes.map((node) => <button style={{ paddingLeft: `${7 + (node.depth ?? 0) * 15}px` }} className={`node ${activeNode === node.id ? "selected" : ""}`} onClick={() => { setBuilderTab("tree"); setActiveNode(node.id); }} key={node.id}><span>⠿</span><i>{node.type[0]}</i><strong>{node.type}</strong><small>{node.label}</small></button>)}</div>
+            <div className="node-list">{builderNodes.map((node) => {
+              const isDragging = dragState?.id === node.id;
+              const dropClass = dragState?.targetId === node.id ? `drop-${dragState.position}` : "";
+              return <button type="button" data-node-id={node.id} style={{ paddingLeft: `${7 + (node.depth ?? 0) * 15}px` }} className={`node ${activeNode === node.id ? "selected" : ""} ${isDragging ? "dragging" : ""} ${dropClass}`} onPointerDown={(event) => beginNodeDrag(event, node.id)} onPointerMove={updateNodeDropTarget} onPointerUp={dropNode} onPointerCancel={() => setDragState(null)} onClick={() => { setBuilderTab("tree"); setActiveNode(node.id); }} key={node.id} aria-grabbed={isDragging}><span className="drag-handle" aria-hidden="true"><GripVertical size={14} /></span><i>{node.type[0]}</i><strong>{node.type}</strong><small>{node.label}</small></button>;
+            })}</div>
             <div className="builder-locales"><div><strong>Localization</strong><button className="icon tiny unknown-action" onClick={() => markUnknown(builderBoundary)}><Plus size={15} /></button></div><button className="locale-row">English <i /></button><button className="locale-row selected">French <i /></button><button className="locale-row">Simplified Chinese <i /></button><button className="add-locale unknown-action" onClick={() => markUnknown(builderBoundary)}>Add locale</button></div>
           </aside>
           <div className="canvas-area"><div className="device-controls"><button><Smartphone size={16} /> iPhone 15 Pro <ChevronDown size={14} /></button>{appliedTemplate !== null && <div className="preview-mode" aria-label="Preview mode"><button className={previewMode === "source" ? "active" : ""} onClick={() => setPreviewMode("source")}>Source visual</button><button className={previewMode === "editable" ? "active" : ""} disabled={!sourceTreeObserved.has(templates[appliedTemplate].id)} onClick={() => setPreviewMode("editable")}>Editable structure</button></div>}<button className="icon" title="Preview orientation"><RotateCw size={15} /></button><button className="icon" title="Preview visibility"><Eye size={15} /></button></div><PaywallPreview nodes={builderNodes} template={appliedTemplate !== null ? templates[appliedTemplate] : null} mode={previewMode} activeNode={activeNode} onSelect={(id) => { setActiveNode(id); setBuilderTab("tree"); }} />{appliedTemplate !== null && previewMode === "source" && <p className="source-preview-note">源端模板画面，与模板库卡片一一对应。</p>}{appliedTemplate !== null && previewMode === "editable" && <p className="source-preview-note">源端已观察核心结构的本地可编辑复现。</p>}<p className="preview-disclaimer">All prices, titles, and offers displayed are placeholders. The actual data from App Store and Google Play will be shown in the app.</p></div>
