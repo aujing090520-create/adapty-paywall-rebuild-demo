@@ -1762,21 +1762,49 @@ function StateBadge({ state }) { return <span className={`state ${state.toLowerC
 function Sort() { return <span className="sort">↕</span>; }
 function Help() { return <CircleHelp size={15} className="help" />; }
 function SourceTemplateMedia({ template }) {
-  if (template.documentTemplate) return <PaywallDocumentArtwork variant={template.documentTemplate} />;
+  if (template.documentTemplate) return <HelloTalkPaywall variant={template.documentTemplate} />;
   const assets = template.assetParts ?? [template.asset];
   if (assets.length === 1) return <img src={assets[0]} alt={`Adapty template: ${template.title}`} />;
   return <div className="source-template-stack">{assets.map((asset) => <img src={asset} alt="" key={asset} />)}</div>;
 }
-function PaywallDocumentArtwork({ variant }) {
-  const data = {
-    "blue-privilege": { badge: "VIP · 70% OFF", title: "VIP 7折大促", caption: "HelloTalk 世界杯限定", plans: ["1个月 ¥78", "12个月 ¥488", "终身 ¥698"], action: "立即领取优惠" },
-    "membership-plans": { badge: "MOST POPULAR", title: "选择你的会员方案", caption: "年度会员立省更多", plans: ["1个月 ¥78", "12个月 ¥488", "终身 ¥698"], action: "继续" },
-    "payment-recovery": { badge: "30% OFF", title: "错过就要恢复原价了", caption: "限时找回 VIP 优惠", plans: ["1年 ¥488", "1个月 ¥78"], action: "立即领取优惠" },
-    "sku-sheet": { badge: "LIMITED OFFER", title: "Golden Week", caption: "年度与终身 VIP 立减 30%", plans: ["1个月 ¥78", "12个月 ¥488", "终身 ¥698"], action: "领取限时优惠" },
-  }[variant];
-  return <div className={`document-template-artwork artwork-${variant}`}><div className="artwork-hero"><span>{data.badge}</span><b>VIP</b></div><div className="artwork-copy"><strong>{data.title}</strong><small>{data.caption}</small></div>{variant !== "membership-plans" && <div className="artwork-timer">71 : 49 : 28</div>}<div className="artwork-plans">{data.plans.map((plan, index) => <div className={index === 1 ? "selected" : ""} key={plan}>{plan}{index === 1 && <em>推荐</em>}</div>)}</div><button>{data.action}</button></div>;
+
+const helloTalkTemplateDefaults = {
+  "blue-privilege": { title: "VIP 7折大促", caption: "HelloTalk 世界杯", timer: "18 : 32 : 25", action: "立即领取优惠", legal: "如果当前缴费期前 24 小时没有取消续订，系统会自动续订。", plans: [["1个月", "¥78", "¥78/月"], ["12个月", "¥488", "¥40.67/月"], ["终身", "¥698", "永久会员权益"]] },
+  "membership-plans": { title: "解锁谁看了我", caption: "找到志同道合的学习语伴！", timer: "", action: "继续", legal: "如果当前缴费期前 24 小时没有取消续订，系统会自动续订。", plans: [["1个月", "$12.99", "$12.99/月"], ["12个月", "$79.99", "$6.67/月"], ["终身", "$139.99", "永久会员权益"]] },
+  "payment-recovery": { title: "错过就要恢复原价了", caption: "现在购买，立享 VIP 专属特权，助力你语言学习", timer: "71:49:28", action: "立即领取优惠", legal: "首年 ¥338，次年系统会以 ¥488 自动续订，可随时取消。", plans: [["1年", "¥28.17/月", "新用户立省 64%"], ["1个月", "¥78/月", ""]] },
+  "sku-sheet": { title: "Golden Week Special Offer", caption: "Get 30% Off Annual & Lifetime VIP", timer: "00 : 47 : 04", action: "sku折扣 EN", legal: "订阅会在当前周期结束前 24 小时自动续订，可随时在账户设置中取消。", plans: [["1个月", "¥39", "¥78"], ["12个月", "¥338", "¥488"], ["终身", "¥698", "¥1198"]] },
+};
+
+function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, interactive = false }) {
+  const defaults = helloTalkTemplateDefaults[variant];
+  const [selectedPlan, setSelectedPlan] = useState(variant === "payment-recovery" ? 0 : 1);
+  const value = (id, fallback) => nodes.find((item) => item.id === id)?.content || fallback;
+  const title = value("headline", defaults.title);
+  const caption = value("caption", defaults.caption);
+  const timer = value("timer", defaults.timer);
+  const action = value("purchase", defaults.action);
+  const legal = value("links", defaults.legal);
+  const productNode = value("products", "");
+  const plans = productNode ? productNode.split("\n").filter(Boolean).map((row, index) => {
+    const [name = defaults.plans[index]?.[0] ?? "套餐", price = defaults.plans[index]?.[1] ?? "", detail = defaults.plans[index]?.[2] ?? ""] = row.split("|");
+    return [name, price, detail];
+  }) : defaults.plans;
+  const select = (id) => (event) => { event?.stopPropagation(); onSelect?.(id); };
+  const nodeClass = (id, name = "") => `ht-node ${activeNode === id ? "selected" : ""} ${name}`;
+  const Plan = ({ plan, index }) => <div className={`${nodeClass("products", "ht-plan")} ${index === selectedPlan ? "chosen" : ""}`} role={interactive ? "button" : undefined} tabIndex={interactive ? 0 : undefined} onClick={(event) => { if (!interactive) return; event.stopPropagation(); setSelectedPlan(index); onSelect?.("products"); }} key={`${plan[0]}-${index}`}><span>{index === 1 && variant !== "payment-recovery" && <b>{variant === "sku-sheet" ? "sku 折扣 EN" : "最受欢迎"}</b>}<strong>{plan[0]}</strong>{variant === "payment-recovery" && index === 0 && <small>30% OFF</small>}</span><em>{plan[1]}</em><i>{plan[2]}</i></div>;
+  const Status = () => <div className="ht-status"><b>{variant === "sku-sheet" ? "4:52" : "16:48"}</b><span>••• ◔ ▰</span></div>;
+  const Timer = () => timer ? <div className={nodeClass("timer", "ht-timer")} onClick={select("timer")}><strong>倒计时</strong><span>{timer}</span></div> : null;
+  const Action = () => <button className={nodeClass("purchase", "ht-action")} onClick={select("purchase")}>{action}</button>;
+  const Legal = () => <p className={nodeClass("links", "ht-legal")} onClick={select("links")}>{legal}</p>;
+  const SoccerBall = () => <span className="ht-soccer-ball"><i /><i /><i /></span>;
+
+  if (variant === "blue-privilege") return <div className="ht-paywall ht-blue-paywall"><Status /><section className={nodeClass("hero-image", "ht-blue-hero")} onClick={select("hero-image")}><span className="ht-back">‹</span><div className="ht-stadium-lines" /><div className="ht-blue-copy"><small>VIP</small><h1><b>VIP</b>7折大促</h1><p>HelloTalk 世界杯</p></div><div className="ht-trophy">1<sup>st</sup></div><SoccerBall /><b className="ht-vip-card">VIP</b></section><section className={nodeClass("benefits", "ht-privilege-table")} onClick={select("benefits")}><header><strong>特权名称</strong><strong>非会员</strong><b>VIP</b></header>{[["无限 AI 翻译&字幕", "10次/天", "无限"], ["解锁谁看了我", "♙", "✓"], ["搜索附近的人", "♙", "✓"], ["9倍曝光助推", "♙", "高达 9 倍"], ["匹配不同母语语伴", "各 1 门", "各 3 门"]].map((row) => <div key={row[0]}><span>{row[0]}⌄</span><em>{row[1]}</em><b>{row[2]}</b></div>)}</section><section className="ht-plan-shell">{plans.map((plan, index) => <Plan plan={plan} index={index} />)}</section><Timer /><Action /><Legal /></div>;
+  if (variant === "membership-plans") return <div className="ht-paywall ht-membership-paywall"><Status /><section className={nodeClass("hero-image", "ht-member-hero")} onClick={select("hero-image")}><span className="ht-back">‹</span><div className="ht-phone-illustration"><b>Visit Info</b><span>Visitors　Visited　Liked</span><i /><i /><i /></div></section><section className={nodeClass("headline", "ht-member-copy")} onClick={select("headline")}><h1>{title}</h1><p onClick={select("caption")}>{caption}</p><div>●　○　○　○　○　○　○</div></section><header className="ht-plan-heading"><b>选择套餐</b><span>特权对比 ›</span></header><section className="ht-plan-shell">{plans.map((plan, index) => <Plan plan={plan} index={index} />)}</section><Action /><p className="ht-cancel">可随时取消</p><Legal /></div>;
+  if (variant === "payment-recovery") return <div className="ht-paywall ht-recovery-paywall"><div className="ht-recovery-backdrop"><Status /><b>‹</b><strong>我的访问</strong></div><section className="ht-recovery-sheet"><span className="ht-sheet-close">×</span><h1 className={nodeClass("headline")} onClick={select("headline")}>{title}</h1><div className={nodeClass("hero-image", "ht-offer-bundle")} onClick={select("hero-image")}><span>30%<br />OFF</span><SoccerBall /></div><p className={nodeClass("caption", "ht-recovery-caption")} onClick={select("caption")}>{caption}</p><section className="ht-recovery-plans">{plans.map((plan, index) => <Plan plan={plan} index={index} />)}</section><Timer /><Action /><Legal /></section></div>;
+  return <div className="ht-paywall ht-sku-paywall"><div className="ht-chat-scene"><Status /><b>‹</b><strong>huangzefeng</strong><span>Hi</span></div><section className="ht-sku-sheet"><span className="ht-sheet-close">×</span><div className={nodeClass("hero-image", "ht-hi-figure")} onClick={select("hero-image")}>Hi</div><p className={nodeClass("caption", "ht-sku-overline")} onClick={select("caption")}>{caption}</p><h1 className={nodeClass("headline")} onClick={select("headline")}>{title}</h1><Timer /><section className="ht-sku-plans">{plans.map((plan, index) => <Plan plan={plan} index={index} />)}</section><Action /><Legal /></section></div>;
 }
 function PaywallPreview({ nodes, template, mode, activeNode, onSelect }) {
+  if (template?.documentTemplate) return <div className="phone source-template-phone"><HelloTalkPaywall variant={template.documentTemplate} nodes={nodes} activeNode={activeNode} onSelect={onSelect} interactive={mode === "editable"} /><button className="close-phone" aria-label="Close preview">×</button></div>;
   if (template && mode === "source") return <div className="phone source-template-phone"><SourceTemplateMedia template={template} /><button className="close-phone" aria-label="Close preview">×</button></div>;
   const hero = nodes.find((node) => node.type === "Hero Image");
   const children = new Map();
