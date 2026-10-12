@@ -1762,7 +1762,7 @@ function StateBadge({ state }) { return <span className={`state ${state.toLowerC
 function Sort() { return <span className="sort">↕</span>; }
 function Help() { return <CircleHelp size={15} className="help" />; }
 function SourceTemplateMedia({ template }) {
-  if (template.documentTemplate) return <HelloTalkPaywall variant={template.documentTemplate} />;
+  if (template.documentTemplate) return <HelloTalkPaywall variant={template.documentTemplate} interactive={false} />;
   const assets = template.assetParts ?? [template.asset];
   if (assets.length === 1) return <img src={assets[0]} alt={`Adapty template: ${template.title}`} />;
   return <div className="source-template-stack">{assets.map((asset) => <img src={asset} alt="" key={asset} />)}</div>;
@@ -1789,12 +1789,16 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, interacti
     const [name = defaults.plans[index]?.[0] ?? "套餐", price = defaults.plans[index]?.[1] ?? "", detail = defaults.plans[index]?.[2] ?? ""] = row.split("|");
     return [name, price, detail];
   }) : defaults.plans;
-  const select = (id) => (event) => { event?.stopPropagation(); onSelect?.(id); };
+  const select = (id) => (event) => {
+    if (!interactive) return;
+    event?.stopPropagation();
+    onSelect?.(id);
+  };
   const nodeClass = (id, name = "") => `ht-node ${activeNode === id ? "selected" : ""} ${name}`;
   const Plan = ({ plan, index }) => <div className={`${nodeClass("products", "ht-plan")} ${index === selectedPlan ? "chosen" : ""}`} role={interactive ? "button" : undefined} tabIndex={interactive ? 0 : undefined} onClick={(event) => { if (!interactive) return; event.stopPropagation(); setSelectedPlan(index); onSelect?.("products"); }} key={`${plan[0]}-${index}`}><span>{index === 1 && variant !== "payment-recovery" && <b>{variant === "sku-sheet" ? "sku 折扣 EN" : "最受欢迎"}</b>}<strong>{plan[0]}</strong>{variant === "payment-recovery" && index === 0 && <small>30% OFF</small>}</span><em>{plan[1]}</em><i>{plan[2]}</i></div>;
   const Status = () => <div className="ht-status"><b>{variant === "sku-sheet" ? "4:52" : "16:48"}</b><span>••• ◔ ▰</span></div>;
   const Timer = () => timer ? <div className={nodeClass("timer", "ht-timer")} onClick={select("timer")}><strong>倒计时</strong><span>{timer}</span></div> : null;
-  const Action = () => <button className={nodeClass("purchase", "ht-action")} onClick={select("purchase")}>{action}</button>;
+  const Action = () => interactive ? <button className={nodeClass("purchase", "ht-action")} onClick={select("purchase")}>{action}</button> : <div className="ht-action">{action}</div>;
   const Legal = () => <p className={nodeClass("links", "ht-legal")} onClick={select("links")}>{legal}</p>;
   const SoccerBall = () => <span className="ht-soccer-ball"><i /><i /><i /></span>;
 
