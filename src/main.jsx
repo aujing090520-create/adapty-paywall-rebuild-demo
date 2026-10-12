@@ -121,11 +121,18 @@ const templates = [
   { id: "item-placeholder", title: "Item One", subtitle: "This is a brief description for the first placeholder item.", tags: ["1 product"], productCount: 1, media: "none", components: [], category: "All", theme: "clean", visual: "item-placeholder", asset: "/real-adapty-templates/item-placeholder.png" },
   { id: "item-placeholder-dark", title: "Item One", subtitle: "This is a brief description for the first placeholder item.", tags: ["1 product"], productCount: 1, media: "none", components: [], category: "All", theme: "black", visual: "item-placeholder-dark", asset: "/real-adapty-templates/item-placeholder-dark.png" },
   { id: "fantasy-access", title: "Transparent template #3", subtitle: "Advantageous offer", tags: ["1 product"], productCount: 1, media: "image", components: [], category: "All", theme: "midnight", visual: "fantasy-access", asset: "/real-adapty-templates/fantasy-access.png" },
+  { id: "ht-blue-privilege", title: "HelloTalk VIP 7折大促", subtitle: "蓝色特权页 · 特权对比与商品", tags: ["3 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-blue", visual: "ht-blue", documentTemplate: "blue-privilege" },
+  { id: "ht-membership-plans", title: "HelloTalk 会员套餐页", subtitle: "会员订阅方案与限时优惠", tags: ["3 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-plans", visual: "ht-plans", documentTemplate: "membership-plans" },
+  { id: "ht-payment-recovery", title: "HelloTalk 支付未完成页", subtitle: "支付恢复与倒计时优惠", tags: ["2 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-recovery", visual: "ht-recovery", documentTemplate: "payment-recovery" },
+  { id: "ht-sku-sheet", title: "HelloTalk SKU 半窗", subtitle: "横版促销视觉与套餐选择", tags: ["3 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-sku", visual: "ht-sku", documentTemplate: "sku-sheet" },
 ];
 
 const componentCatalog = ["Text", "Image", "Card", "Web Paywall Button", "Button", "List", "Links", "Timer", "Carousel", "Products"];
 
 const sourceTreeObserved = new Set(["knowledge", "trial", "connection", "family", "premium-access", "document", "yoga", "black-friday", "black-friday-timer", "christmas", "halloween", "new-year", "report", "avatar", "mindfulness", "trial-white", "trial-blue", "fitness-trial", "access", "weather", "workout", "audiobooks", "herbs", "video-access", "design-life", "full-app", "item-placeholder", "item-placeholder-dark", "fantasy-access", "editing-plan", "training"]);
+const documentStyleTemplateIds = new Set(["ht-blue-privilege", "ht-membership-plans", "ht-payment-recovery", "ht-sku-sheet"]);
+const isEditableTemplate = (template) => sourceTreeObserved.has(template.id) || documentStyleTemplateIds.has(template.id);
+const templateEditableStatus = (template) => documentStyleTemplateIds.has(template.id) ? "飞书交付文档已定义样式与字段；本地可编辑复现" : "源端已观察核心结构；本地可编辑复现";
 
 // Template-card filters must only rely on Builder trees observed in Adapty.
 const sourceVerifiedTemplateComponents = Object.freeze({
@@ -137,6 +144,10 @@ const sourceVerifiedTemplateComponents = Object.freeze({
   "premium-access": ["Trial timeline"],
   halloween: ["Reviews"],
   mindfulness: ["Free trial toggle"],
+  "ht-blue-privilege": ["Timer"],
+  "ht-membership-plans": ["Timer"],
+  "ht-payment-recovery": ["Timer"],
+  "ht-sku-sheet": ["Timer"],
 });
 
 const node = (id, type, content = "", depth = 0, extra = {}) => ({ id, type, label: "", content, depth, ...extra });
@@ -659,6 +670,55 @@ function createBuilderNodes(templateId = "knowledge") {
     ];
   }
 
+  if (template.id === "ht-blue-privilege") {
+    return [
+      hero(),
+      node("headline", "Headline", "VIP 7折大促", 0, { variant: "headline" }),
+      node("caption", "Text", "HelloTalk 世界杯限定优惠", 0, { variant: "body" }),
+      node("benefits", "List", "无限 AI 翻译与字幕|解锁每日学习限制\n查看谁看过我|专属访客权益\n9 倍曝光助推|更多匹配机会", 0),
+      node("timer", "Timer", "71:49:28", 0),
+      node("products", "Products", "1个月会员|¥78\n12个月会员|¥488  ·  节省 48%\n终身会员|¥698", 0),
+      node("purchase", "Button", "立即领取优惠", 0),
+      node("links", "Links", "订阅即表示同意服务条款与隐私政策", 0),
+    ];
+  }
+
+  if (template.id === "ht-membership-plans") {
+    return [
+      hero(),
+      node("headline", "Headline", "选择适合你的会员方案", 0, { variant: "headline" }),
+      node("caption", "Text", "年度会员最受欢迎，解锁完整 VIP 权益", 0, { variant: "body" }),
+      node("timer", "Timer", "71:49:28", 0),
+      node("products", "Products", "1个月会员|¥78/月\n12个月会员|¥488/年  ·  最受欢迎\n终身会员|¥698  ·  物有所值", 0),
+      node("purchase", "Button", "继续", 0),
+      node("links", "Links", "可随时取消 · 服务条款 · 隐私政策", 0),
+    ];
+  }
+
+  if (template.id === "ht-payment-recovery") {
+    return [
+      hero(),
+      node("headline", "Headline", "错过就要恢复原价了", 0, { variant: "headline" }),
+      node("caption", "Text", "现在领取优惠，继续解锁 VIP 专属权益", 0, { variant: "body" }),
+      node("products", "Products", "1年会员|¥488  ·  新用户立省 64%\n1个月会员|¥78", 0),
+      node("timer", "Timer", "71:49:28", 0),
+      node("purchase", "Button", "立即领取优惠", 0),
+      node("links", "Links", "首年优惠价，次年按标准价格续订，可随时取消", 0),
+    ];
+  }
+
+  if (template.id === "ht-sku-sheet") {
+    return [
+      hero(),
+      node("headline", "Headline", "Golden Week Special Offer", 0, { variant: "headline" }),
+      node("caption", "Text", "年度与终身 VIP 限时立减 30%", 0, { variant: "body" }),
+      node("timer", "Timer", "00:47:04", 0),
+      node("products", "Products", "1个月会员|¥78\n12个月会员|¥488  ·  30% OFF\n终身会员|¥698", 0),
+      node("purchase", "Button", "领取限时优惠", 0),
+      node("links", "Links", "完成购买即表示同意订阅条款", 0),
+    ];
+  }
+
   // Source screenshots confirm the visible copy for these cards, but their Builder trees have not been captured yet.
   return [
     hero(),
@@ -1100,7 +1160,7 @@ function App() {
           setSelected={setTemplateSelected}
           onClose={() => setModal(null)}
           onOpenAi={() => setModal({ kind: "ai" })}
-          onOpenBuilder={(templateIndex) => { const template = templates[templateIndex]; applyTemplate(templateIndex); setModal(null); setView("builder"); notify(sourceTreeObserved.has(template.id) ? "已应用基于源端核心结构的可编辑复现。" : "已应用源端预览内容；精确节点树仍在采集。"); }}
+          onOpenBuilder={(templateIndex) => { const template = templates[templateIndex]; applyTemplate(templateIndex); setModal(null); setView("builder"); notify(isEditableTemplate(template) ? (documentStyleTemplateIds.has(template.id) ? "已应用基于飞书 Paywall 规范的可编辑模板。" : "已应用基于源端核心结构的可编辑复现。") : "已应用源端预览内容；精确节点树仍在采集。"); }}
           markUnknown={markUnknown}
         />
       )}
@@ -1283,7 +1343,7 @@ function PaywallWorkspace({ selected, draft, setDraft, view, setView, duplicate,
       setDragState({ id, targetId: null, position: null });
       setActiveNode(id);
       setBuilderTab("tree");
-      if (appliedTemplate !== null && sourceTreeObserved.has(templates[appliedTemplate].id)) setPreviewMode("editable");
+      if (appliedTemplate !== null && isEditableTemplate(templates[appliedTemplate])) setPreviewMode("editable");
     };
     const updateNodeDropTarget = (event) => {
       const sourceId = dragState?.id;
@@ -1306,7 +1366,7 @@ function PaywallWorkspace({ selected, draft, setDraft, view, setView, duplicate,
       <section className="builder-page">
         <WorkspaceHeader selected={selected} setView={setView} duplicate={duplicate} setModal={setModal} markUnknown={markUnknown} />
         <div className="detail-tabs"><button onClick={() => setView("general")}>General</button><button className="active">Builder & Generator</button></div>
-        {appliedTemplate !== null && <div className={`template-context ${sourceTreeObserved.has(templates[appliedTemplate].id) ? "observed-tree" : "preview-only"}`}><span>Template</span><strong>{templates[appliedTemplate].title}</strong><small>{sourceTreeObserved.has(templates[appliedTemplate].id) ? "源端已观察核心结构；本地可编辑复现" : "源端已采集预览内容；精确节点树待采集"}</small><button className="secondary" onClick={() => setModal({ kind: "templates" })}><LayoutTemplate size={15} /> Change template</button></div>}
+        {appliedTemplate !== null && <div className={`template-context ${isEditableTemplate(templates[appliedTemplate]) ? "observed-tree" : "preview-only"}`}><span>Template</span><strong>{templates[appliedTemplate].title}</strong><small>{isEditableTemplate(templates[appliedTemplate]) ? templateEditableStatus(templates[appliedTemplate]) : "源端已采集预览内容；精确节点树待采集"}</small><button className="secondary" onClick={() => setModal({ kind: "templates" })}><LayoutTemplate size={15} /> Change template</button></div>}
         <div className="builder">
           <aside className="node-panel">
             <label className="device-toggle"><input type="checkbox" defaultChecked /> <span>On</span> Show on device</label>
@@ -1319,7 +1379,7 @@ function PaywallWorkspace({ selected, draft, setDraft, view, setView, duplicate,
             })}</div>
             <div className="builder-locales"><div><strong>Localization</strong><button className="icon tiny unknown-action" onClick={() => markUnknown(builderBoundary)}><Plus size={15} /></button></div><button className="locale-row">English <i /></button><button className="locale-row selected">French <i /></button><button className="locale-row">Simplified Chinese <i /></button><button className="add-locale unknown-action" onClick={() => markUnknown(builderBoundary)}>Add locale</button></div>
           </aside>
-          <div className="canvas-area"><div className="device-controls"><button><Smartphone size={16} /> iPhone 15 Pro <ChevronDown size={14} /></button>{appliedTemplate !== null && <div className="preview-mode" aria-label="Preview mode"><button className={previewMode === "source" ? "active" : ""} onClick={() => setPreviewMode("source")}>Source visual</button><button className={previewMode === "editable" ? "active" : ""} disabled={!sourceTreeObserved.has(templates[appliedTemplate].id)} onClick={() => setPreviewMode("editable")}>Editable structure</button></div>}<button className="icon" title="Preview orientation"><RotateCw size={15} /></button><button className="icon" title="Preview visibility"><Eye size={15} /></button></div><PaywallPreview nodes={builderNodes} template={appliedTemplate !== null ? templates[appliedTemplate] : null} mode={previewMode} activeNode={activeNode} onSelect={(id) => { setActiveNode(id); setBuilderTab("tree"); }} />{appliedTemplate !== null && previewMode === "source" && <p className="source-preview-note">源端模板画面，与模板库卡片一一对应。</p>}{appliedTemplate !== null && previewMode === "editable" && <p className="source-preview-note">源端已观察核心结构的本地可编辑复现。</p>}<p className="preview-disclaimer">All prices, titles, and offers displayed are placeholders. The actual data from App Store and Google Play will be shown in the app.</p></div>
+          <div className="canvas-area"><div className="device-controls"><button><Smartphone size={16} /> iPhone 15 Pro <ChevronDown size={14} /></button>{appliedTemplate !== null && <div className="preview-mode" aria-label="Preview mode"><button className={previewMode === "source" ? "active" : ""} onClick={() => setPreviewMode("source")}>{templates[appliedTemplate].documentTemplate ? "文档样式" : "Source visual"}</button><button className={previewMode === "editable" ? "active" : ""} disabled={!isEditableTemplate(templates[appliedTemplate])} onClick={() => setPreviewMode("editable")}>Editable structure</button></div>}<button className="icon" title="Preview orientation"><RotateCw size={15} /></button><button className="icon" title="Preview visibility"><Eye size={15} /></button></div><PaywallPreview nodes={builderNodes} template={appliedTemplate !== null ? templates[appliedTemplate] : null} mode={previewMode} activeNode={activeNode} onSelect={(id) => { setActiveNode(id); setBuilderTab("tree"); }} />{appliedTemplate !== null && previewMode === "source" && <p className="source-preview-note">{templates[appliedTemplate].documentTemplate ? "飞书文档中的 Paywall 样式参考，与模板库卡片一一对应。" : "源端模板画面，与模板库卡片一一对应。"}</p>}{appliedTemplate !== null && previewMode === "editable" && <p className="source-preview-note">{isEditableTemplate(templates[appliedTemplate]) ? "已采集样式与核心字段的本地可编辑复现。" : "精确节点树仍在采集。"}</p>}<p className="preview-disclaimer">All prices, titles, and offers displayed are placeholders. The actual data from App Store and Google Play will be shown in the app.</p></div>
           <aside className="property-panel">{builderTab === "settings" ? <LayoutSettings markUnknown={markUnknown} boundary={builderBoundary} setModal={setModal} appliedTemplate={appliedTemplate} /> : <BuilderProperties active={active} setBuilderTab={setBuilderTab} markUnknown={markUnknown} boundary={builderBoundary} templateLinks={templateLinks} setTemplateLinks={setTemplateLinks} updateNode={updateBuilderNode} removeNode={removeBuilderNode} addNestedNode={addNestedElement} />}</aside>
         </div>
         <div className="builder-footer"><button className="secondary unknown-action" onClick={() => markUnknown(builderBoundary)}>Discard</button><button className="primary" onClick={() => setModal({ kind: appliedTemplate !== null ? "template-requirements" : "builder-save" })}>Save</button></div>
@@ -1640,7 +1700,7 @@ function TemplatesModal({ selected, setSelected, onClose, onOpenAi, onOpenBuilde
     return <label className="filter-option"><input type={list ? "checkbox" : "radio"} name={list ? undefined : group} checked={checked} onChange={() => list ? toggleListFilter(group, value) : setSingleFilter(group, value)} /> {children}</label>;
   };
   const pendingTemplate = pendingSelected === null ? null : templates[pendingSelected];
-  const displayTags = (template) => sourceTreeObserved.has(template.id) ? template.tags : ["Source preview", "Structure pending"];
+  const displayTags = (template) => isEditableTemplate(template) ? template.tags : ["Source preview", "Structure pending"];
   const filteredTemplates = templates.filter((template) => {
     const productMatch = !filters.products.length || filters.products.some((item) => template.productCount === (item === "1 product" ? 1 : 2));
     const mediaMatch = filters.media === "All" || (filters.media === "With Image or Video" ? ["image", "video"].includes(template.media) : template.media === "none");
@@ -1699,9 +1759,19 @@ function StateBadge({ state }) { return <span className={`state ${state.toLowerC
 function Sort() { return <span className="sort">↕</span>; }
 function Help() { return <CircleHelp size={15} className="help" />; }
 function SourceTemplateMedia({ template }) {
+  if (template.documentTemplate) return <PaywallDocumentArtwork variant={template.documentTemplate} />;
   const assets = template.assetParts ?? [template.asset];
   if (assets.length === 1) return <img src={assets[0]} alt={`Adapty template: ${template.title}`} />;
   return <div className="source-template-stack">{assets.map((asset) => <img src={asset} alt="" key={asset} />)}</div>;
+}
+function PaywallDocumentArtwork({ variant }) {
+  const data = {
+    "blue-privilege": { badge: "VIP · 70% OFF", title: "VIP 7折大促", caption: "HelloTalk 世界杯限定", plans: ["1个月 ¥78", "12个月 ¥488", "终身 ¥698"], action: "立即领取优惠" },
+    "membership-plans": { badge: "MOST POPULAR", title: "选择你的会员方案", caption: "年度会员立省更多", plans: ["1个月 ¥78", "12个月 ¥488", "终身 ¥698"], action: "继续" },
+    "payment-recovery": { badge: "30% OFF", title: "错过就要恢复原价了", caption: "限时找回 VIP 优惠", plans: ["1年 ¥488", "1个月 ¥78"], action: "立即领取优惠" },
+    "sku-sheet": { badge: "LIMITED OFFER", title: "Golden Week", caption: "年度与终身 VIP 立减 30%", plans: ["1个月 ¥78", "12个月 ¥488", "终身 ¥698"], action: "领取限时优惠" },
+  }[variant];
+  return <div className={`document-template-artwork artwork-${variant}`}><div className="artwork-hero"><span>{data.badge}</span><b>VIP</b></div><div className="artwork-copy"><strong>{data.title}</strong><small>{data.caption}</small></div>{variant !== "membership-plans" && <div className="artwork-timer">71 : 49 : 28</div>}<div className="artwork-plans">{data.plans.map((plan, index) => <div className={index === 1 ? "selected" : ""} key={plan}>{plan}{index === 1 && <em>推荐</em>}</div>)}</div><button>{data.action}</button></div>;
 }
 function PaywallPreview({ nodes, template, mode, activeNode, onSelect }) {
   if (template && mode === "source") return <div className="phone source-template-phone"><SourceTemplateMedia template={template} /><button className="close-phone" aria-label="Close preview">×</button></div>;
@@ -1730,7 +1800,7 @@ function PreviewElement({ node, active, activeNode, onSelect, children = [] }) {
   const isListItemLayer = node.type === "List item" || node.type === "Today" || /^Item \d+$/.test(node.type) || /^Day \d+$/.test(node.type);
   const isImageLayer = ["Image", "Black Friday Image"].includes(node.type) || /^Image \d+$/.test(node.type);
   if (node.sourcePending) return wrap(<p className="preview-boundary">Source layer confirmed; field content pending</p>, "preview-copy");
-  if (["Hero Image", "Hero Video"].includes(node.type)) return wrap(<div className="preview-media"><span>{node.type === "Hero Video" || node.config?.mediaType === "Video" ? "VIDEO" : node.content === "knowledge" ? "✦" : ""}</span></div>, "preview-hero");
+  if (["Hero Image", "Hero Video"].includes(node.type)) return wrap(<div className={`preview-media visual-${node.content}`}><span>{node.type === "Hero Video" || node.config?.mediaType === "Video" ? "VIDEO" : node.content === "knowledge" ? "✦" : ""}</span></div>, "preview-hero");
   if (node.type === "Stars") return wrap(<div className="preview-stars">{node.content || "★★★★★"}</div>);
   if (node.type === "Discount") return wrap(<h2>{node.content || "Discount"}</h2>, "preview-headline");
   if (isTextLayer) return wrap(node.variant === "headline" ? <h2>{node.content || "Heading"}</h2> : node.variant === "section" ? <h3>{node.content}</h3> : <p className={node.variant === "boundary" ? "preview-boundary" : ""}>{node.content || "Supporting text"}</p>, node.variant === "headline" ? "preview-headline" : "preview-copy");
