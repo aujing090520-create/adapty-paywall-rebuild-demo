@@ -6,6 +6,7 @@ import {
   BarChart3,
   Bell,
   Blocks,
+  Clock3,
   Check,
   ChevronDown,
   ChevronLeft,
@@ -25,7 +26,14 @@ import {
   Download,
   Eye,
   GripVertical,
+  GalleryHorizontal,
+  Link2,
+  List,
+  MousePointerClick,
+  Package,
+  RectangleHorizontal,
   RotateCw,
+  Type,
 } from "lucide-react";
 import "./styles.css";
 
@@ -122,7 +130,7 @@ const templates = [
   { id: "item-placeholder-dark", title: "Item One", subtitle: "This is a brief description for the first placeholder item.", tags: ["1 product"], productCount: 1, media: "none", components: [], category: "All", theme: "black", visual: "item-placeholder-dark", asset: "/real-adapty-templates/item-placeholder-dark.png" },
   { id: "fantasy-access", title: "Transparent template #3", subtitle: "Advantageous offer", tags: ["1 product"], productCount: 1, media: "image", components: [], category: "All", theme: "midnight", visual: "fantasy-access", asset: "/real-adapty-templates/fantasy-access.png" },
   { id: "ht-blue-privilege", title: "HelloTalk VIP 7折大促", subtitle: "蓝色特权页 · 特权对比与商品", tags: ["3 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-blue", visual: "ht-blue", documentTemplate: "blue-privilege", prdScreenshot: "/ht-prd-screenshots/blue-privilege.png" },
-  { id: "ht-membership-plans", title: "HelloTalk 会员套餐页", subtitle: "会员订阅方案与限时优惠", tags: ["3 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-plans", visual: "ht-plans", documentTemplate: "membership-plans", prdScreenshot: "/ht-prd-screenshots/membership-plans.jpg" },
+  { id: "ht-membership-plans", title: "HelloTalk 会员套餐页", subtitle: "会员订阅方案与访客示例轮播", tags: ["3 products", "Carousel"], productCount: 2, media: "image", components: ["Carousel"], category: "Popular", theme: "ht-plans", visual: "ht-plans", documentTemplate: "membership-plans", prdScreenshot: "/ht-prd-screenshots/membership-plans.jpg" },
   { id: "ht-payment-recovery", title: "HelloTalk 支付未完成页", subtitle: "支付恢复与倒计时优惠", tags: ["2 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-recovery", visual: "ht-recovery", documentTemplate: "payment-recovery", prdScreenshot: "/ht-prd-screenshots/payment-recovery.png" },
   { id: "ht-sku-sheet", title: "HelloTalk SKU 半窗", subtitle: "横版促销视觉与套餐选择", tags: ["3 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-sku", visual: "ht-sku", documentTemplate: "sku-sheet", prdScreenshot: "/ht-prd-screenshots/sku-sheet.jpg" },
 ];
@@ -145,7 +153,7 @@ const sourceVerifiedTemplateComponents = Object.freeze({
   halloween: ["Reviews"],
   mindfulness: ["Free trial toggle"],
   "ht-blue-privilege": ["Timer"],
-  "ht-membership-plans": ["Timer"],
+  "ht-membership-plans": ["Carousel"],
   "ht-payment-recovery": ["Timer"],
   "ht-sku-sheet": ["Timer"],
 });
@@ -191,7 +199,7 @@ function moveBuilderNode(nodes, sourceId, targetId, position) {
 
 function createBuilderNodes(templateId = "knowledge") {
   const template = templates.find((item) => item.id === templateId) ?? templates[0];
-  const hero = () => node("hero-image", "Hero Image", template.visual, 0, { theme: template.theme });
+  const hero = (depth = 0) => node("hero-image", "Hero Image", template.visual, depth, { theme: template.theme });
   const pending = (id, type, depth = 0) => node(id, type, "", depth, { sourcePending: true });
 
   if (template.id === "knowledge") {
@@ -675,47 +683,53 @@ function createBuilderNodes(templateId = "knowledge") {
       hero(),
       node("headline", "Headline", "VIP 7折大促", 0, { variant: "headline" }),
       node("caption", "Text", "HelloTalk 世界杯限定优惠", 0, { variant: "body" }),
-      node("benefits", "List", "无限 AI 翻译与字幕|解锁每日学习限制\n查看谁看过我|专属访客权益\n9 倍曝光助推|更多匹配机会", 0),
-      node("timer", "Timer", "71:49:28", 0),
-      node("products", "Products", "1个月会员|¥78\n12个月会员|¥488  ·  节省 48%\n终身会员|¥698", 0),
-      node("purchase", "Button", "立即领取优惠", 0),
-      node("links", "Links", "订阅即表示同意服务条款与隐私政策", 0),
+      node("benefits", "List", "无限 AI 翻译与字幕|10次/天|无限\n解锁谁看了我|受限|✓\n搜索附近的人|受限|✓\n9倍曝光助推|受限|高达 9 倍\n匹配不同母语语伴|各 1 门|各 3 门", 0, { label: "特权对比" }),
+      node("timer", "Timer", "18:32:25", 0, { config: { enabled: true, format: "hh:mm:ss", separator: ":", prefix: "倒计时", suffix: "", resetMode: "Reset timer on every paywall view" } }),
+      node("products", "Products", "1个月会员|¥78|¥78/月\n12个月会员|¥488|¥40.67/月\n终身会员|¥698|永久会员权益", 0, { config: { defaultSelected: 1, showOfferBadge: true } }),
+      node("purchase", "Button", "立即领取优惠", 0, { config: { action: "Purchase" } }),
+      node("legal", "Text", "如果当前缴费期前 24 小时没有取消续订，系统会自动续订。", 0, { label: "续订说明", variant: "legal" }),
+      node("links", "Links", "服务条款 · 隐私政策", 0),
     ];
   }
 
   if (template.id === "ht-membership-plans") {
     return [
-      hero(),
-      node("headline", "Headline", "选择适合你的会员方案", 0, { variant: "headline" }),
-      node("caption", "Text", "年度会员最受欢迎，解锁完整 VIP 权益", 0, { variant: "body" }),
-      node("timer", "Timer", "71:49:28", 0),
-      node("products", "Products", "1个月会员|¥78/月\n12个月会员|¥488/年  ·  最受欢迎\n终身会员|¥698  ·  物有所值", 0),
-      node("purchase", "Button", "继续", 0),
-      node("links", "Links", "可随时取消 · 服务条款 · 隐私政策", 0),
+      node("carousel", "Carousel", "7", 0, { label: "访客示例轮播", config: { itemCount: 7, initialSlide: 0 } }),
+      node("hero-image", "Hero Image", template.visual, 1, { theme: template.theme }),
+      node("headline", "Headline", "解锁谁看了我", 0, { variant: "headline" }),
+      node("caption", "Text", "找到志同道合的学习语伴！", 0, { variant: "body" }),
+      node("products", "Products", "1个月会员|¥78/月|$12.99/月\n12个月会员|¥488/年|$6.67/月\n终身会员|¥698|物有所值", 0, { config: { defaultSelected: 1, showOfferBadge: true } }),
+      node("purchase", "Button", "继续", 0, { config: { action: "Purchase" } }),
+      node("legal", "Text", "可随时取消", 0, { label: "订阅说明", variant: "legal" }),
+      node("links", "Links", "服务条款 · 隐私政策", 0),
     ];
   }
 
   if (template.id === "ht-payment-recovery") {
     return [
-      hero(),
-      node("headline", "Headline", "错过就要恢复原价了", 0, { variant: "headline" }),
-      node("caption", "Text", "现在领取优惠，继续解锁 VIP 专属权益", 0, { variant: "body" }),
-      node("products", "Products", "1年会员|¥488  ·  新用户立省 64%\n1个月会员|¥78", 0),
-      node("timer", "Timer", "71:49:28", 0),
-      node("purchase", "Button", "立即领取优惠", 0),
-      node("links", "Links", "首年优惠价，次年按标准价格续订，可随时取消", 0),
+      node("offer-card", "Card", "", 0, { label: "支付恢复弹窗" }),
+      hero(1),
+      node("headline", "Headline", "错过就要恢复原价了", 1, { variant: "headline" }),
+      node("caption", "Text", "现在领取优惠，继续解锁 VIP 专属权益", 1, { variant: "body" }),
+      node("products", "Products", "1年会员|¥28.17/月|新用户立省 64%\n1个月会员|¥78/月|", 1, { config: { defaultSelected: 0, showOfferBadge: true } }),
+      node("timer", "Timer", "71:49:28", 1, { config: { enabled: true, format: "hh:mm:ss", separator: ":", prefix: "倒计时", suffix: "", resetMode: "Reset timer on every paywall view" } }),
+      node("purchase", "Button", "立即领取优惠", 1, { config: { action: "Purchase" } }),
+      node("legal", "Text", "首年优惠价，次年按标准价格续订，可随时取消。", 1, { label: "续订说明", variant: "legal" }),
+      node("links", "Links", "服务条款 · 隐私政策", 1),
     ];
   }
 
   if (template.id === "ht-sku-sheet") {
     return [
-      hero(),
-      node("headline", "Headline", "Golden Week Special Offer", 0, { variant: "headline" }),
-      node("caption", "Text", "年度与终身 VIP 限时立减 30%", 0, { variant: "body" }),
-      node("timer", "Timer", "00:47:04", 0),
-      node("products", "Products", "1个月会员|¥78\n12个月会员|¥488  ·  30% OFF\n终身会员|¥698", 0),
-      node("purchase", "Button", "领取限时优惠", 0),
-      node("links", "Links", "完成购买即表示同意订阅条款", 0),
+      node("sku-card", "Card", "", 0, { label: "SKU 半窗" }),
+      hero(1),
+      node("headline", "Headline", "Golden Week Special Offer", 1, { variant: "headline" }),
+      node("caption", "Text", "年度与终身 VIP 限时立减 30%", 1, { variant: "body" }),
+      node("timer", "Timer", "00:47:04", 1, { config: { enabled: true, format: "hh:mm:ss", separator: ":", prefix: "倒计时", suffix: "", resetMode: "Reset timer on every paywall view" } }),
+      node("products", "Products", "1个月会员|¥39|¥78\n12个月会员|¥338|¥488\n终身会员|¥698|¥1198", 1, { config: { defaultSelected: 1, showOfferBadge: true } }),
+      node("purchase", "Button", "领取限时优惠", 1, { config: { action: "Purchase" } }),
+      node("legal", "Text", "订阅会在当前周期结束前 24 小时自动续订，可随时在账户设置中取消。", 1, { label: "续订说明", variant: "legal" }),
+      node("links", "Links", "服务条款 · 隐私政策", 1),
     ];
   }
 
@@ -730,7 +744,26 @@ function createComponentNode(type, index) {
   const contentByType = {
     Text: "text", Image: "", Card: "", "Web Paywall Button": "Pay on web", Button: "button text", List: "", "List item": "title|caption", Links: "Terms · Privacy · Restore · Login", Timer: "04:59:59", Carousel: "", Products: "",
   };
-  return { id: `added-${type.toLowerCase().replace(/[^a-z]+/g, "-")}-${index}`, type, label: "", depth: 0, content: contentByType[type] ?? "" };
+  const configByType = {
+    Timer: { enabled: true, format: "hh:mm:ss", separator: ":", prefix: "", suffix: "", resetMode: "Reset timer on every paywall view" },
+    Products: { defaultSelected: 0, showOfferBadge: true },
+    Button: { action: "Purchase" },
+  };
+  return { id: `added-${type.toLowerCase().replace(/[^a-z]+/g, "-")}-${index}`, type, label: "", depth: 0, content: contentByType[type] ?? "", config: configByType[type] };
+}
+
+function BuilderNodeIcon({ type }) {
+  const Icon = type === "Timer" ? Clock3
+    : type === "Products" ? Package
+      : type === "Links" ? Link2
+        : type === "Carousel" ? GalleryHorizontal
+          : type === "Card" ? RectangleHorizontal
+            : ["Button", "Purchase Button", "Web Paywall Button"].includes(type) ? MousePointerClick
+              : ["Hero Image", "Image"].includes(type) ? ImageIcon
+                : type === "List" ? List
+                  : ["Text", "Headline", "Header", "Caption", "Legal"].includes(type) ? Type
+                    : Blocks;
+  return <Icon size={13} strokeWidth={2.15} />;
 }
 
 const productOptions = [
@@ -1302,7 +1335,7 @@ function PaywallWorkspace({ selected, draft, setDraft, view, setView, duplicate,
   const [transientProducts, setTransientProducts] = useState([]);
   const [previewMode, setPreviewMode] = useState("source");
   const [dragState, setDragState] = useState(null);
-  useEffect(() => setPreviewMode("source"), [appliedTemplate]);
+  useEffect(() => setPreviewMode(appliedTemplate !== null && templates[appliedTemplate]?.documentTemplate ? "editable" : "source"), [appliedTemplate]);
   if (view === "builder") {
     const active = builderNodes.find((node) => node.id === activeNode);
     const builderBoundary = missingItems.find((item) => item.id === "B-01");
@@ -1375,7 +1408,7 @@ function PaywallWorkspace({ selected, draft, setDraft, view, setView, duplicate,
             <div className="node-list">{builderNodes.map((node) => {
               const isDragging = dragState?.id === node.id;
               const dropClass = dragState?.targetId === node.id ? `drop-${dragState.position}` : "";
-              return <button type="button" data-node-id={node.id} style={{ paddingLeft: `${7 + (node.depth ?? 0) * 15}px` }} className={`node ${activeNode === node.id ? "selected" : ""} ${isDragging ? "dragging" : ""} ${dropClass}`} onPointerDown={(event) => beginNodeDrag(event, node.id)} onPointerMove={updateNodeDropTarget} onPointerUp={dropNode} onPointerCancel={() => setDragState(null)} onClick={() => { setBuilderTab("tree"); setActiveNode(node.id); }} key={node.id} aria-grabbed={isDragging}><span className="drag-handle" aria-hidden="true"><GripVertical size={14} /></span><i>{node.type[0]}</i><strong>{node.type}</strong><small>{node.label}</small></button>;
+              return <button type="button" data-node-id={node.id} style={{ paddingLeft: `${7 + (node.depth ?? 0) * 15}px` }} className={`node ${activeNode === node.id ? "selected" : ""} ${isDragging ? "dragging" : ""} ${dropClass}`} onPointerDown={(event) => beginNodeDrag(event, node.id)} onPointerMove={updateNodeDropTarget} onPointerUp={dropNode} onPointerCancel={() => setDragState(null)} onClick={() => { setBuilderTab("tree"); setActiveNode(node.id); }} key={node.id} aria-grabbed={isDragging}><span className="drag-handle" aria-hidden="true"><GripVertical size={14} /></span><i><BuilderNodeIcon type={node.type} /></i><strong>{node.type}</strong><small>{node.label}</small></button>;
             })}</div>
             <div className="builder-locales"><div><strong>Localization</strong><button className="icon tiny unknown-action" onClick={() => markUnknown(builderBoundary)}><Plus size={15} /></button></div><button className="locale-row">English <i /></button><button className="locale-row selected">French <i /></button><button className="locale-row">Simplified Chinese <i /></button><button className="add-locale unknown-action" onClick={() => markUnknown(builderBoundary)}>Add locale</button></div>
           </aside>
@@ -1414,7 +1447,7 @@ function BuilderProperties({ active, setBuilderTab, markUnknown, boundary, templ
   const nodeEditor = <EditableNodeControls active={active} updateNode={updateNode} removeNode={removeNode} />;
 
   if (type === "Links") {
-    return <div className="property-scroll"><h3>Links</h3>{nodeEditor}{tabBar}{tab === "content" ? <><LinkOption title="Terms of service" checked fields={[["Link text", "Terms"], ["Link URL", templateLinks.terms, (value) => setTemplateLinks((current) => ({ ...current, terms: value }))]]} /><LinkOption title="Privacy policy" checked fields={[["Link text", "Privacy"], ["Link URL", templateLinks.privacy, (value) => setTemplateLinks((current) => ({ ...current, privacy: value }))]]} /><LinkOption title="Restore button" checked fields={[["Button text", "Restore"], ["Action ID", "Restore"]]} /><LinkOption title="Login button" fields={[]} /></> : <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} />}</div>;
+    return <div className="property-scroll"><h3>Links</h3>{tabBar}{tab === "content" ? <LinksContent active={active} updateNode={updateNode} templateLinks={templateLinks} setTemplateLinks={setTemplateLinks} /> : <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} />}</div>;
   }
 
   if (active?.id === "hero-image") {
@@ -1446,19 +1479,19 @@ function BuilderProperties({ active, setBuilderTab, markUnknown, boundary, templ
   }
 
   if (type === "Carousel") {
-    return <div className="property-scroll"><h3>Carousel</h3>{nodeEditor}{tabBar}{tab === "content" && <CarouselContent active={active} addNestedNode={addNestedNode} />}{tab === "style" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} />}{tab === "layout" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} />}</div>;
+    return <div className="property-scroll"><h3>Carousel</h3>{tabBar}{tab === "content" && <CarouselContent active={active} updateNode={updateNode} addNestedNode={addNestedNode} />}{tab === "style" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} />}{tab === "layout" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} />}</div>;
   }
 
   if (type === "Card") {
-    return <div className="property-scroll"><h3>Card</h3>{nodeEditor}{tabBar}{tab === "content" && <CardContent active={active} addNestedNode={addNestedNode} />}{tab === "style" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="Card has a Style tab, but its exact field labels were not retained in the inspection notes." />}{tab === "layout" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="Card has a Layout tab, but its exact field labels were not retained in the inspection notes." />}</div>;
+    return <div className="property-scroll"><h3>Card</h3>{tabBar}{tab === "content" && <CardContent active={active} addNestedNode={addNestedNode} />}{tab === "style" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="Card has a Style tab, but its exact field labels were not retained in the inspection notes." />}{tab === "layout" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="Card has a Layout tab, but its exact field labels were not retained in the inspection notes." />}</div>;
   }
 
   if (type === "Timer") {
-    return <div className="property-scroll"><h3>Timer</h3>{nodeEditor}{tabBar}{tab === "content" && <TimerContent active={active} updateNode={updateNode} />}{tab === "style" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} />}{tab === "layout" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} />}</div>;
+    return <div className="property-scroll"><h3>Timer</h3>{tabBar}{tab === "content" && <TimerContent active={active} updateNode={updateNode} />}{tab === "style" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="倒计时的颜色、字重与圆角入口尚未逐项采集；本 Demo 只展示已验证的显示与格式规则。" />}{tab === "layout" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="倒计时组件的精确布局字段尚未逐项采集。" />}</div>;
   }
 
   if (type === "Products") {
-    return <div className="property-scroll"><h3>Products</h3>{nodeEditor}{tabBar}{tab === "content" && <ProductsContent active={active} boundary={componentBoundary} markUnknown={markUnknown} />}{tab === "style" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} />}{tab === "layout" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} />}</div>;
+    return <div className="property-scroll"><h3>Products</h3>{tabBar}{tab === "content" && <ProductsContent active={active} updateNode={updateNode} />}{tab === "style" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="套餐组件的配色与选中态字段已在 PRD 中出现，但原后台的字段级默认值尚未完整采集。" />}{tab === "layout" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="套餐组件的布局字段尚未逐项采集。" />}</div>;
   }
 
   if (type === "Toggle") {
@@ -1525,7 +1558,9 @@ function CardContent({ active, addNestedNode }) {
 }
 
 function TimerContent({ active, updateNode }) {
-  return <><h4>Time format</h4><div className="split-fields"><Field label="Format"><div className="select-like">hh:mm:ss <ChevronDown size={14} /></div></Field><Field label="Time separator"><div className="select-like">Colon <ChevronDown size={14} /></div></Field></div><h4>Timer text</h4><Field label="Start value"><input value={active.content ?? "04:59:59"} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><div className="split-fields"><Field label="Text before"><ConfigInput active={active} updateNode={updateNode} name="textBefore" fallback="" placeholder="Enter text here" /></Field><Field label="Text after"><ConfigInput active={active} updateNode={updateNode} name="textAfter" fallback="" placeholder="Enter text here" /></Field></div><h4>Timer mode</h4><Field label=""><div className="select-like">Reset timer on every paywall view <ChevronDown size={14} /></div></Field></>;
+  const config = active.config ?? {};
+  const updateConfig = (patch) => updateNode(active.id, { config: { ...config, ...patch } });
+  return <><label className="switch-row"><input type="checkbox" checked={config.enabled !== false} onChange={(event) => updateConfig({ enabled: event.target.checked })} /><span>{config.enabled !== false ? "On" : "Off"}</span><strong>Show timer</strong></label><h4>Time format</h4><div className="split-fields"><Field label="Format"><select value={config.format ?? "hh:mm:ss"} onChange={(event) => updateConfig({ format: event.target.value })}><option value="hh:mm:ss">hh:mm:ss</option><option value="mm:ss">mm:ss</option></select></Field><Field label="Time separator"><select value={config.separator ?? ":"} onChange={(event) => updateConfig({ separator: event.target.value })}><option value=":">Colon</option><option value="·">Dot</option><option value=" ">Space</option></select></Field></div><h4>Timer text</h4><Field label="Start value"><input value={active.content ?? "04:59:59"} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><div className="split-fields"><Field label="Text before"><ConfigInput active={active} updateNode={updateNode} name="prefix" fallback="" placeholder="Enter text here" /></Field><Field label="Text after"><ConfigInput active={active} updateNode={updateNode} name="suffix" fallback="" placeholder="Enter text here" /></Field></div><h4>Timer mode</h4><Field label=""><select value={config.resetMode ?? "Reset timer on every paywall view"} onChange={(event) => updateConfig({ resetMode: event.target.value })}><option>Reset timer on every paywall view</option></select></Field></>;
 }
 
 function ToggleContent({ node, updateNode, boundary, markUnknown }) {
@@ -1550,12 +1585,17 @@ function TextLayout() {
 }
 
 function ButtonContent({ type, active, updateNode }) {
-  const purchase = type === "Purchase Button";
-  return <><Field label="Button action"><div className="select-like">{purchase ? "Purchase" : "Custom"} <ChevronDown size={14} /></div></Field><Field label="Button action ID"><ConfigInput active={active} updateNode={updateNode} name="actionId" fallback={purchase ? "purchase" : ""} /></Field><Field label="Text"><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field></>;
+  const purchase = type === "Purchase Button" || active.config?.action === "Purchase";
+  const updateConfig = (patch) => updateNode(active.id, { config: { ...active.config, ...patch } });
+  return <><Field label="Button action"><select value={active.config?.action ?? (purchase ? "Purchase" : "Custom")} onChange={(event) => updateConfig({ action: event.target.value })}><option>Purchase</option><option>Close</option><option>Custom</option></select></Field><Field label="Button action ID"><ConfigInput active={active} updateNode={updateNode} name="actionId" fallback={purchase ? "purchase" : ""} /></Field><Field label="Text"><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field></>;
 }
 
 function WebButtonContent({ active, updateNode }) {
   return <><Field label="Open paywall in"><div className="select-like">External browser <ChevronDown size={14} /></div></Field><Field label="Offer"><div className="select-like">Default <ChevronDown size={14} /></div></Field><Field label="Button text"><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><Field label="Secondary text"><ConfigInput active={active} updateNode={updateNode} name="secondaryText" fallback="" placeholder="Enter text here" /></Field></>;
+}
+
+function LinksContent({ active, updateNode, templateLinks, setTemplateLinks }) {
+  return <><Field label="Visible link labels"><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><LinkOption title="Terms of service" checked fields={[["Link URL", templateLinks.terms, (value) => setTemplateLinks((current) => ({ ...current, terms: value }))]]} /><LinkOption title="Privacy policy" checked fields={[["Link URL", templateLinks.privacy, (value) => setTemplateLinks((current) => ({ ...current, privacy: value }))]]} /><LinkOption title="Restore button" checked fields={[["Button text", "Restore"], ["Action ID", "Restore"]]} /></>;
 }
 
 function ListContent({ active, addNestedNode }) {
@@ -1580,12 +1620,17 @@ function ListStyle() {
   return <><Field label="Default icon"><div className="select-like">Default icon <ChevronDown size={14} /></div></Field><Field label="Icon placement"><div className="select-like">Left <ChevronDown size={14} /></div></Field><Field label="Icon color"><ColorOpacity color="#000000" opacity="100" /></Field><h4>Connector</h4><Field label="Thickness"><input defaultValue="0" /></Field><Field label="Color"><ColorOpacity color="#000000" opacity="100" /></Field><Field label="Icon size"><input placeholder="Not captured" /></Field><h4>Title</h4><Field label="Font"><div className="select-like">Nunito Extrabold <ChevronDown size={14} /></div></Field><Field label="Size"><input defaultValue="17" /></Field><h4>Caption</h4><Field label="Font"><div className="select-like">Nunito Medium <ChevronDown size={14} /></div></Field><Field label="Size"><input defaultValue="15" /></Field></>;
 }
 
-function CarouselContent({ active, addNestedNode }) {
-  return <><h4>Carousel items</h4><button className="text-action" onClick={() => addNestedNode(active.id, "Card")}><Plus size={15} /> Add element</button></>;
+function CarouselContent({ active, updateNode, addNestedNode }) {
+  const config = active.config ?? {};
+  const updateConfig = (patch) => updateNode(active.id, { config: { ...config, ...patch } });
+  return <><h4>Carousel behavior</h4><div className="split-fields"><Field label="Number of slides"><input type="number" min="1" max="10" value={config.itemCount ?? active.content ?? 1} onChange={(event) => updateConfig({ itemCount: Math.max(1, Math.min(10, Number(event.target.value) || 1)) })} /></Field><Field label="Initial slide"><input type="number" min="0" max={Math.max(0, (config.itemCount ?? active.content ?? 1) - 1)} value={config.initialSlide ?? 0} onChange={(event) => updateConfig({ initialSlide: Math.max(0, Number(event.target.value) || 0) })} /></Field></div><h4>Carousel items</h4><button className="text-action" onClick={() => addNestedNode(active.id, "Card")}><Plus size={15} /> Add element</button></>;
 }
 
-function ProductsContent({ active, boundary, markUnknown }) {
-  return <><Field label="Products grouping"><div className="select-like muted-select">No switch (all products are visible) <ChevronDown size={14} /></div></Field><Field label="Selected product"><div className="select-like">Japanese Ai - 1 Year <ChevronDown size={14} /></div></Field><h4>Products</h4>{active.content ? <p className="property-copy">This template's product content is represented by its Builder layer.</p> : <p className="property-copy">No products added.</p>}<button className="secondary full unknown-action" onClick={() => markUnknown(boundary)}>Add product</button></>;
+function ProductsContent({ active, updateNode }) {
+  const config = active.config ?? {};
+  const products = (active.content ?? "").split("\n").filter(Boolean);
+  const updateConfig = (patch) => updateNode(active.id, { config: { ...config, ...patch } });
+  return <><Field label="Products grouping"><div className="select-like muted-select">No switch (all products are visible) <ChevronDown size={14} /></div></Field><Field label="Default selected product"><select value={String(config.defaultSelected ?? 0)} onChange={(event) => updateConfig({ defaultSelected: Number(event.target.value) })}>{products.map((row, index) => <option key={row} value={index}>{row.split("|")[0]}</option>)}</select></Field><label className="switch-row"><input type="checkbox" checked={config.showOfferBadge !== false} onChange={(event) => updateConfig({ showOfferBadge: event.target.checked })} /><span>{config.showOfferBadge !== false ? "On" : "Off"}</span><strong>Show offer badge</strong></label><h4>Products</h4><Field label="Plans"><textarea value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><p className="property-copy">One plan per line. Use “name|price|supporting copy” to map each visible plan.</p></>;
 }
 
 function ConfigInput({ active, updateNode, name, fallback, ...props }) {
@@ -1776,37 +1821,78 @@ const helloTalkTemplateDefaults = {
   "sku-sheet": { title: "Golden Week Special Offer", caption: "Get 30% Off Annual & Lifetime VIP", timer: "00 : 47 : 04", action: "sku折扣 EN", legal: "订阅会在当前周期结束前 24 小时自动续订，可随时在账户设置中取消。", plans: [["1个月", "¥39", "¥78"], ["12个月", "¥338", "¥488"], ["终身", "¥698", "¥1198"]] },
 };
 
+function timerSeconds(value) {
+  const parts = String(value ?? "").match(/\d+/g) ?? [];
+  const [hours = "0", minutes = "0", seconds = "0"] = parts;
+  return Math.max(0, Number(hours) * 3600 + Number(minutes) * 60 + Number(seconds));
+}
+
+function formatTimer(seconds, format = "hh:mm:ss", separator = ":") {
+  const safeSeconds = Math.max(0, seconds);
+  const hours = Math.floor(safeSeconds / 3600);
+  const minutes = Math.floor((safeSeconds % 3600) / 60);
+  const remainingSeconds = safeSeconds % 60;
+  if (format === "mm:ss") return `${String(hours * 60 + minutes).padStart(2, "0")}${separator}${String(remainingSeconds).padStart(2, "0")}`;
+  return `${String(hours).padStart(2, "0")}${separator}${String(minutes).padStart(2, "0")}${separator}${String(remainingSeconds).padStart(2, "0")}`;
+}
+
 function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, interactive = false }) {
   const defaults = helloTalkTemplateDefaults[variant];
-  const [selectedPlan, setSelectedPlan] = useState(variant === "payment-recovery" ? 0 : 1);
-  const value = (id, fallback) => nodes.find((item) => item.id === id)?.content || fallback;
+  const nodeById = (id) => nodes.find((item) => item.id === id);
+  const value = (id, fallback) => nodeById(id)?.content || fallback;
+  const productConfig = nodeById("products")?.config ?? {};
+  const defaultSelectedPlan = Number.isInteger(productConfig.defaultSelected) ? productConfig.defaultSelected : (variant === "payment-recovery" ? 0 : 1);
+  const [selectedPlan, setSelectedPlan] = useState(defaultSelectedPlan);
+  useEffect(() => setSelectedPlan(defaultSelectedPlan), [defaultSelectedPlan, variant]);
   const title = value("headline", defaults.title);
   const caption = value("caption", defaults.caption);
-  const timer = value("timer", defaults.timer);
+  const timerNode = nodeById("timer");
+  const timer = timerNode?.content || defaults.timer;
+  const timerConfig = timerNode?.config ?? {};
   const action = value("purchase", defaults.action);
-  const legal = value("links", defaults.legal);
+  const legal = value("legal", defaults.legal);
+  const links = value("links", "服务条款 · 隐私政策");
   const productNode = value("products", "");
   const plans = productNode ? productNode.split("\n").filter(Boolean).map((row, index) => {
     const [name = defaults.plans[index]?.[0] ?? "套餐", price = defaults.plans[index]?.[1] ?? "", detail = defaults.plans[index]?.[2] ?? ""] = row.split("|");
     return [name, price, detail];
   }) : defaults.plans;
+  const benefits = value("benefits", "").split("\n").filter(Boolean).map((row) => row.split("|"));
+  const defaultBenefits = [["无限 AI 翻译&字幕", "10次/天", "无限"], ["解锁谁看了我", "受限", "✓"], ["搜索附近的人", "受限", "✓"], ["9倍曝光助推", "受限", "高达 9 倍"], ["匹配不同母语语伴", "各 1 门", "各 3 门"]];
+  const carouselConfig = nodeById("carousel")?.config ?? {};
+  const carouselCount = Math.max(1, Math.min(10, Number(carouselConfig.itemCount ?? 7) || 7));
+  const carouselActive = Math.min(carouselCount - 1, Math.max(0, Number(carouselConfig.initialSlide ?? 0) || 0));
   const select = (id) => (event) => {
     if (!interactive) return;
     event?.stopPropagation();
     onSelect?.(id);
   };
   const nodeClass = (id, name = "") => `ht-node ${activeNode === id ? "selected" : ""} ${name}`;
-  const Plan = ({ plan, index }) => <div className={`${nodeClass("products", "ht-plan")} ${index === selectedPlan ? "chosen" : ""}`} role={interactive ? "button" : undefined} tabIndex={interactive ? 0 : undefined} onClick={(event) => { if (!interactive) return; event.stopPropagation(); setSelectedPlan(index); onSelect?.("products"); }} key={`${plan[0]}-${index}`}><span>{index === 1 && variant !== "payment-recovery" && <b>{variant === "sku-sheet" ? "sku 折扣 EN" : "最受欢迎"}</b>}<strong>{plan[0]}</strong>{variant === "payment-recovery" && index === 0 && <small>30% OFF</small>}</span><em>{plan[1]}</em><i>{plan[2]}</i></div>;
+  const showOfferBadge = productConfig.showOfferBadge !== false;
+  const Plan = ({ plan, index }) => <div className={`${nodeClass("products", "ht-plan")} ${index === selectedPlan ? "chosen" : ""}`} role={interactive ? "button" : undefined} tabIndex={interactive ? 0 : undefined} onClick={(event) => { if (!interactive) return; event.stopPropagation(); setSelectedPlan(index); onSelect?.("products"); }} key={`${plan[0]}-${index}`}><span>{showOfferBadge && index === 1 && variant !== "payment-recovery" && <b>{variant === "sku-sheet" ? "sku 折扣 EN" : "最受欢迎"}</b>}<strong>{plan[0]}</strong>{showOfferBadge && variant === "payment-recovery" && index === 0 && <small>30% OFF</small>}</span><em>{plan[1]}</em><i>{plan[2]}</i></div>;
   const Status = () => <div className="ht-status"><b>{variant === "sku-sheet" ? "4:52" : "16:48"}</b><span>••• ◔ ▰</span></div>;
-  const Timer = () => timer ? <div className={nodeClass("timer", "ht-timer")} onClick={select("timer")}><strong>倒计时</strong><span>{timer}</span></div> : null;
+  const Timer = () => {
+    const startValue = timerSeconds(timer);
+    const [remaining, setRemaining] = useState(startValue);
+    useEffect(() => {
+      setRemaining(startValue);
+      if (!startValue) return undefined;
+      const interval = window.setInterval(() => setRemaining((value) => Math.max(0, value - 1)), 1000);
+      return () => window.clearInterval(interval);
+    }, [startValue, timerConfig.resetMode]);
+    if (!timerNode || timerConfig.enabled === false) return null;
+    const prefix = timerConfig.prefix ?? "";
+    const suffix = timerConfig.suffix ?? "";
+    return <div className={nodeClass("timer", "ht-timer")} onClick={select("timer")}>{prefix && <strong>{prefix}</strong>}<span>{formatTimer(remaining, timerConfig.format ?? "hh:mm:ss", timerConfig.separator ?? ":")}</span>{suffix && <small>{suffix}</small>}</div>;
+  };
   const Action = () => interactive ? <button className={nodeClass("purchase", "ht-action")} onClick={select("purchase")}>{action}</button> : <div className="ht-action">{action}</div>;
-  const Legal = () => <p className={nodeClass("links", "ht-legal")} onClick={select("links")}>{legal}</p>;
+  const Legal = () => <p className="ht-legal"><span className={nodeClass("legal")} onClick={select("legal")}>{legal}</span>{" "}<span className={nodeClass("links")} onClick={select("links")}>{links}</span></p>;
   const SoccerBall = () => <span className="ht-soccer-ball"><i /><i /><i /></span>;
 
-  if (variant === "blue-privilege") return <div className="ht-paywall ht-blue-paywall"><Status /><section className={nodeClass("hero-image", "ht-blue-hero")} onClick={select("hero-image")}><span className="ht-back">‹</span><div className="ht-stadium-lines" /><div className="ht-blue-copy"><small>VIP</small><h1><b>VIP</b>7折大促</h1><p>HelloTalk 世界杯</p></div><div className="ht-trophy">1<sup>st</sup></div><SoccerBall /><b className="ht-vip-card">VIP</b></section><section className={nodeClass("benefits", "ht-privilege-table")} onClick={select("benefits")}><header><strong>特权名称</strong><strong>非会员</strong><b>VIP</b></header>{[["无限 AI 翻译&字幕", "10次/天", "无限"], ["解锁谁看了我", "♙", "✓"], ["搜索附近的人", "♙", "✓"], ["9倍曝光助推", "♙", "高达 9 倍"], ["匹配不同母语语伴", "各 1 门", "各 3 门"]].map((row) => <div key={row[0]}><span>{row[0]}⌄</span><em>{row[1]}</em><b>{row[2]}</b></div>)}</section><section className="ht-plan-shell">{plans.map((plan, index) => <Plan plan={plan} index={index} />)}</section><Timer /><Action /><Legal /></div>;
-  if (variant === "membership-plans") return <div className="ht-paywall ht-membership-paywall"><Status /><section className={nodeClass("hero-image", "ht-member-hero")} onClick={select("hero-image")}><span className="ht-back">‹</span><div className="ht-phone-illustration"><b>Visit Info</b><span>Visitors　Visited　Liked</span><i /><i /><i /></div></section><section className={nodeClass("headline", "ht-member-copy")} onClick={select("headline")}><h1>{title}</h1><p onClick={select("caption")}>{caption}</p><div>●　○　○　○　○　○　○</div></section><header className="ht-plan-heading"><b>选择套餐</b><span>特权对比 ›</span></header><section className="ht-plan-shell">{plans.map((plan, index) => <Plan plan={plan} index={index} />)}</section><Action /><p className="ht-cancel">可随时取消</p><Legal /></div>;
-  if (variant === "payment-recovery") return <div className="ht-paywall ht-recovery-paywall"><div className="ht-recovery-backdrop"><Status /><b>‹</b><strong>我的访问</strong></div><section className="ht-recovery-sheet"><span className="ht-sheet-close">×</span><h1 className={nodeClass("headline")} onClick={select("headline")}>{title}</h1><div className={nodeClass("hero-image", "ht-offer-bundle")} onClick={select("hero-image")}><span>30%<br />OFF</span><SoccerBall /></div><p className={nodeClass("caption", "ht-recovery-caption")} onClick={select("caption")}>{caption}</p><section className="ht-recovery-plans">{plans.map((plan, index) => <Plan plan={plan} index={index} />)}</section><Timer /><Action /><Legal /></section></div>;
-  return <div className="ht-paywall ht-sku-paywall"><div className="ht-chat-scene"><Status /><b>‹</b><strong>huangzefeng</strong><span>Hi</span></div><section className="ht-sku-sheet"><span className="ht-sheet-close">×</span><div className={nodeClass("hero-image", "ht-hi-figure")} onClick={select("hero-image")}>Hi</div><p className={nodeClass("caption", "ht-sku-overline")} onClick={select("caption")}>{caption}</p><h1 className={nodeClass("headline")} onClick={select("headline")}>{title}</h1><Timer /><section className="ht-sku-plans">{plans.map((plan, index) => <Plan plan={plan} index={index} />)}</section><Action /><Legal /></section></div>;
+  if (variant === "blue-privilege") return <div className="ht-paywall ht-blue-paywall"><Status /><section className={nodeClass("hero-image", "ht-blue-hero")} onClick={select("hero-image")}><span className="ht-back">‹</span><div className="ht-stadium-lines" /><div className="ht-blue-copy"><small>VIP</small><h1><b>VIP</b>{title.replace(/^VIP\s*/, "")}</h1><p>{caption}</p></div><div className="ht-trophy">1<sup>st</sup></div><SoccerBall /><b className="ht-vip-card">VIP</b></section><section className={nodeClass("benefits", "ht-privilege-table")} onClick={select("benefits")}><header><strong>特权名称</strong><strong>非会员</strong><b>VIP</b></header>{(benefits.length ? benefits : defaultBenefits).map((row) => <div key={row[0]}><span>{row[0]}⌄</span><em>{row[1]}</em><b>{row[2]}</b></div>)}</section><section className="ht-plan-shell">{plans.map((plan, index) => <Plan plan={plan} index={index} />)}</section><Timer /><Action /><Legal /></div>;
+  if (variant === "membership-plans") return <div className="ht-paywall ht-membership-paywall"><Status /><section className={nodeClass("hero-image", "ht-member-hero")} onClick={select("hero-image")}><span className="ht-back">‹</span><div className="ht-phone-illustration"><b>Visit Info</b><span>Visitors　Visited　Liked</span><i /><i /><i /></div></section><section className={nodeClass("headline", "ht-member-copy")} onClick={select("headline")}><h1>{title}</h1><p className={nodeClass("caption")} onClick={select("caption")}>{caption}</p><div className={nodeClass("carousel")} onClick={select("carousel")}>{Array.from({ length: carouselCount }, (_, index) => <i key={index}>{index === carouselActive ? "●" : "○"}</i>)}</div></section><header className="ht-plan-heading"><b>选择套餐</b><span>特权对比 ›</span></header><section className="ht-plan-shell">{plans.map((plan, index) => <Plan plan={plan} index={index} />)}</section><Action /><Legal /></div>;
+  if (variant === "payment-recovery") return <div className="ht-paywall ht-recovery-paywall"><div className="ht-recovery-backdrop"><Status /><b>‹</b><strong>我的访问</strong></div><section className={nodeClass("offer-card", "ht-recovery-sheet")} onClick={select("offer-card")}><span className="ht-sheet-close">×</span><h1 className={nodeClass("headline")} onClick={select("headline")}>{title}</h1><div className={nodeClass("hero-image", "ht-offer-bundle")} onClick={select("hero-image")}><span>30%<br />OFF</span><SoccerBall /></div><p className={nodeClass("caption", "ht-recovery-caption")} onClick={select("caption")}>{caption}</p><section className="ht-recovery-plans">{plans.map((plan, index) => <Plan plan={plan} index={index} />)}</section><Timer /><Action /><Legal /></section></div>;
+  return <div className="ht-paywall ht-sku-paywall"><div className="ht-chat-scene"><Status /><b>‹</b><strong>huangzefeng</strong><span>Hi</span></div><section className={nodeClass("sku-card", "ht-sku-sheet")} onClick={select("sku-card")}><span className="ht-sheet-close">×</span><div className={nodeClass("hero-image", "ht-hi-figure")} onClick={select("hero-image")}>Hi</div><p className={nodeClass("caption", "ht-sku-overline")} onClick={select("caption")}>{caption}</p><h1 className={nodeClass("headline")} onClick={select("headline")}>{title}</h1><Timer /><section className="ht-sku-plans">{plans.map((plan, index) => <Plan plan={plan} index={index} />)}</section><Action /><Legal /></section></div>;
 }
 function PaywallPreview({ nodes, template, mode, activeNode, onSelect }) {
   if (template?.documentTemplate) return <div className="phone source-template-phone"><HelloTalkPaywall variant={template.documentTemplate} nodes={nodes} activeNode={activeNode} onSelect={onSelect} interactive={mode === "editable"} /><button className="close-phone" aria-label="Close preview">×</button></div>;
@@ -1850,15 +1936,15 @@ function PreviewElement({ node, active, activeNode, onSelect, children = [] }) {
   if (["Product", "Japanese Ai - 1 Year"].includes(node.type)) { const [name, price] = (node.content || "").split("|"); return wrap(<div className="preview-product"><strong>{name || "Product"}</strong>{price && <small>{price}</small>}</div>, "preview-product-anchor-wrap"); }
   if (node.type === "App Icon") return wrap(<div className="preview-app-icon">✦</div>, "preview-app-icon-wrap");
   if (isImageLayer) return wrap(<div className="preview-image">{node.type === "Black Friday Image" ? "BLACK FRIDAY" : node.content}</div>, "preview-image-wrap");
-  if (node.type === "Carousel") return children.length ? wrap(<div className="preview-carousel">{children.map((child) => <PreviewElement key={child.id} node={child} active={child.id === activeNode} activeNode={activeNode} onSelect={onSelect} />)}</div>, "preview-carousel-wrap") : !node.content ? wrap(<div className="preview-card-anchor" />, "preview-card-anchor-wrap") : wrap(<PreviewCarousel content={node.content} />, "preview-carousel-wrap");
-  if (node.type === "Timer") return wrap(<div className="preview-timer">{node.content || "04:59:59"}</div>);
+  if (node.type === "Carousel") return children.length ? wrap(<div className="preview-carousel">{children.map((child) => <PreviewElement key={child.id} node={child} active={child.id === activeNode} activeNode={activeNode} onSelect={onSelect} />)}</div>, "preview-carousel-wrap") : !node.content ? wrap(<div className="preview-card-anchor" />, "preview-card-anchor-wrap") : wrap(<PreviewCarousel content={node.content} config={node.config} />, "preview-carousel-wrap");
+  if (node.type === "Timer") return node.config?.enabled === false ? null : wrap(<PreviewTimer content={node.content} config={node.config} />);
   if (node.type === "Products") {
     if (node.variant === "purchase") {
       const [label = "Continue", , price = ""] = node.content.split("|");
       return wrap(<button className="preview-cta"><span>{label}</span>{price && <small>{price}</small>}</button>, "preview-button");
     }
     if (children.length) return wrap(<div className="preview-products">{children.map((child) => <PreviewElement key={child.id} node={child} active={child.id === activeNode} activeNode={activeNode} onSelect={onSelect} />)}</div>, "preview-products-wrap");
-    return wrap(<PreviewProducts content={node.content} />, "preview-products-wrap");
+    return wrap(<PreviewProducts content={node.content} config={node.config} />, "preview-products-wrap");
   }
   if (node.type === "Toggle") return wrap(<PreviewToggle key={`${node.id}-${node.defaultState ?? "Off"}`} content={node.content} defaultState={node.defaultState} />, "preview-toggle-wrap");
   if (["Toggle On", "Toggle Off"].includes(node.type)) return wrap(<div className="preview-toggle-anchor" />, "preview-toggle-anchor-wrap");
@@ -1870,17 +1956,32 @@ function PreviewElement({ node, active, activeNode, onSelect, children = [] }) {
   return wrap(<p>{node.content || node.type}</p>);
 }
 
-function PreviewCarousel({ content }) {
+function PreviewTimer({ content, config = {} }) {
+  const startValue = timerSeconds(content || "04:59:59");
+  const [remaining, setRemaining] = useState(startValue);
+  useEffect(() => {
+    setRemaining(startValue);
+    if (!startValue) return undefined;
+    const interval = window.setInterval(() => setRemaining((value) => Math.max(0, value - 1)), 1000);
+    return () => window.clearInterval(interval);
+  }, [startValue, config.resetMode]);
+  return <div className="preview-timer">{config.prefix && <strong>{config.prefix} </strong>}{formatTimer(remaining, config.format ?? "hh:mm:ss", config.separator ?? ":")}{config.suffix && <small> {config.suffix}</small>}</div>;
+}
+
+function PreviewCarousel({ content, config = {} }) {
   const slides = (content || "Customer story").split("\n---\n").filter(Boolean);
-  const [current, setCurrent] = useState(0);
+  const [current, setCurrent] = useState(Math.min(slides.length - 1, Math.max(0, Number(config.initialSlide) || 0)));
+  useEffect(() => setCurrent(Math.min(slides.length - 1, Math.max(0, Number(config.initialSlide) || 0))), [config.initialSlide, slides.length]);
   const slide = slides[current] ?? slides[0];
   const [title, copy] = slide.split("|");
   return <div className="preview-carousel"><span>★★★★★</span><p>{copy ? <><strong>{title}</strong><small>{copy}</small></> : slide}</p><div><button aria-label="Previous review" onClick={(event) => { event.stopPropagation(); setCurrent((index) => (index - 1 + slides.length) % slides.length); }}>‹</button><i>{slides.map((_, index) => <b className={index === current ? "active" : ""} key={index}>•</b>)}</i><button aria-label="Next review" onClick={(event) => { event.stopPropagation(); setCurrent((index) => (index + 1) % slides.length); }}>›</button></div></div>;
 }
 
-function PreviewProducts({ content }) {
+function PreviewProducts({ content, config = {} }) {
   const rows = (content || "").split("\n").filter(Boolean).map((row) => { const [name, caption, price] = row.split("|"); return { name, caption, price: price ?? caption }; });
-  const [chosen, setChosen] = useState(0);
+  const defaultChoice = Math.min(Math.max(0, Number(config.defaultSelected) || 0), Math.max(0, rows.length - 1));
+  const [chosen, setChosen] = useState(defaultChoice);
+  useEffect(() => setChosen(defaultChoice), [defaultChoice]);
   return <div className="preview-products">{rows.map((row, index) => <button className={index === chosen ? "chosen" : ""} onClick={(event) => { event.stopPropagation(); setChosen(index); }} key={`${row.name}-${index}`}><span><strong>{row.name}</strong>{row.caption && row.price !== row.caption && <small>{row.caption}</small>}</span><em>{row.price}</em></button>)}</div>;
 }
 
