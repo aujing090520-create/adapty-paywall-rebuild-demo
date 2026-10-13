@@ -329,3 +329,27 @@ textarea { min-height: 80px; resize: vertical; }
 .product-config-row input { min-width: 0; min-height: 32px; padding: 5px 6px; font-size: 10px; }
 .page-settings { margin-top: 17px; padding-top: 3px; border-top: 1px solid #e8e5ef; }
 .page-settings h4 { margin-bottom: 10px; }
+
+/* Blue privilege page: source-calibrated vertical rhythm from the 1080 x 2337 PRD screen. */
+.ht-blue-paywall { display: grid; grid-template-rows: 27% 33.5% 18.8% 6.2% 7.2% 7.3%; }
+.ht-blue-paywall .ht-blue-hero { height: auto; min-height: 0; }
+.ht-blue-paywall .ht-privilege-table { height: auto; min-height: 0; }
+.ht-blue-paywall .ht-plan-shell { min-height: 0; height: 100%; margin: 0 4.5cqw; padding: 3.9cqw 1.4cqw 1.6cqw; align-self: stretch; border-radius: 7cqw 7cqw 0 0; }
+.ht-blue-paywall .ht-plan { min-height: 0; padding: 2.25cqw 1cqw 1.8cqw; }
+.ht-blue-paywall .ht-timer { min-height: 0; height: 100%; margin: 0; align-self: stretch; }
+.ht-blue-paywall .ht-timer > strong { font-size: 4.6cqw; }
+.ht-blue-paywall .ht-timer > span.ht-timer-digits { display: inline-flex; align-items: center; gap: .7cqw; padding: 0; background: transparent; }
+.ht-blue-paywall .ht-timer-digits b { min-width: 7.7cqw; padding: .55cqw .9cqw; border-radius: 1.1cqw; background: #ffd16b; color: #1aad3e; font: inherit; line-height: 1; text-align: center; }
+.ht-blue-paywall .ht-timer-digits i { color: #1aad3e; font-style: normal; line-height: 1; }
+.ht-blue-paywall .ht-action { min-height: 0; height: 100%; margin: 0 4.5cqw; align-self: stretch; border-radius: 8cqw; }
+.ht-blue-paywall .ht-legal { min-height: 0; margin: 0 4.5cqw; align-self: center; font-size: 2.75cqw; line-height: 1.32; }
+.ht-blue-paywall .ht-privilege-table > div em.is-locked { display: grid; place-items: center; font-size: 4.7cqw; }
+.ht-blue-paywall .ht-privilege-table > div em.is-locked svg { display: block; }
+
+/* Keep the blue source composition readable while a Builder node is selected. */
+.ht-blue-paywall .ht-plan.ht-node.selected { outline: 0; }
+.ht-blue-paywall .ht-blue-copy { z-index: 3; left: 12%; bottom: 15%; }
+.ht-blue-paywall .ht-blue-copy h1 { font-size: 9cqw; letter-spacing: -.35cqw; }
+.ht-blue-paywall .ht-blue-copy p { font-size: 4.65cqw; }
+.ht-blue-paywall .ht-trophy { right: 18%; bottom: 12%; width: 15cqw; height: 19cqw; font-size: 8.8cqw; }
+.ht-blue-paywall .ht-vip-card { right: 18%; bottom: 3%; font-size: 4.5cqw; }
