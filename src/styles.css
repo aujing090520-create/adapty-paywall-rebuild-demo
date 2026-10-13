@@ -480,6 +480,45 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-blue-paywall .ht-blue-plan > span b { top: -9cqw; left: 0; right: 0; }
 .ht-blue-paywall .ht-privilege-table > div b { display: grid; place-items: center; padding-top: 0; }
 .ht-vip-check { display: grid; place-items: center; width: 6.5cqw; height: 6.5cqw; border-radius: 50%; background: #ffb40d; color: #fff; font-size: 4cqw; }
+.ht-blue-paywall .ht-privilege-table > div em { height: 100%; display: grid; place-items: center; padding: 0; }
+.ht-blue-paywall .ht-privilege-table > div em .ht-vip-check { margin: 0; }
+.privilege-editor-heading h4, .privilege-row-wrap .privilege-row input { color: #17171b; font-weight: 700; }
+.ht-admin-overlay { display: grid; place-items: center; padding: 24px; }
+.ht-admin-dialog { position: relative; inset: auto; width: min(1080px, 100%); height: min(850px, calc(100dvh - 48px)); max-height: calc(100dvh - 48px); grid-template-rows: 58px minmax(0, 1fr) 62px; overflow: hidden; border: 1px solid #d9dee5; border-radius: 8px; box-shadow: 0 20px 70px #0005; font-size: 15px; }
+.ht-admin-header { padding: 0 24px; }
+.ht-admin-header h2 { font-size: 18px; }
+.ht-admin-form { width: 100%; padding: 28px 34px 42px 24px; }
+.ht-admin-line { grid-template-columns: 140px minmax(0, 1fr); gap: 12px; margin-bottom: 20px; }
+.ht-admin-label { padding-top: 8px; }
+.ht-admin-line input:not([type="checkbox"]):not([type="color"]):not([type="file"]), .ht-admin-line select { height: 40px; padding: 0 12px; border-radius: 6px; }
+.ht-admin-positions { min-height: 40px; column-gap: 15px; }
+.ht-admin-positions input { width: 18px; height: 18px; }
+.ht-admin-input-clear button { top: 7px; right: 7px; }
+.ht-admin-hint, .ht-admin-size-note { font-size: 12px; }
+.ht-admin-upload-button { min-width: 95px; height: 40px; gap: 6px; }
+.ht-admin-icon-preview, .ht-admin-image-preview { width: 112px; height: 112px; }
+.ht-admin-image-controls select { flex-basis: 145px; }
+.ht-admin-image-preview { margin-left: 150px; }
+.ht-admin-image-delete { height: 40px; }
+.ht-admin-add { min-width: 98px; height: 36px; }
+.ht-admin-add-more { width: 40px; height: 36px; }
+.ht-admin-line.icon-line { margin-top: 26px; margin-bottom: 24px; }
+.ht-admin-line.image-line { margin-bottom: 26px; }
+.ht-admin-line.color-line-admin { margin-bottom: 20px; }
+.ht-admin-color input:not([type="color"]) { width: min(240px, 75%); }
+.ht-admin-color input[type="color"] { width: 64px; height: 40px; padding: 5px; }
+.ht-admin-key button { height: 40px; }
+.ht-admin-footer button { min-width: 74px; height: 38px; border-radius: 6px; }
+@media (max-width: 700px) {
+  .ht-admin-overlay { padding: 12px; }
+  .ht-admin-dialog { height: min(850px, calc(100dvh - 24px)); max-height: calc(100dvh - 24px); grid-template-rows: 52px minmax(0, 1fr) 58px; font-size: 14px; }
+  .ht-admin-form { padding: 20px 16px 32px; }
+  .ht-admin-line { grid-template-columns: 1fr; gap: 4px; }
+  .ht-admin-label { padding-top: 0; text-align: left; }
+  .ht-admin-positions label { white-space: normal; }
+  .ht-admin-image-controls select { flex-basis: 105px; }
+  .ht-admin-image-preview { margin-left: 110px; }
+}
 .ht-blue-paywall .ht-action-wrap { position: relative; height: 16cqw; }
 .ht-blue-paywall .ht-action-wrap .ht-action { width: calc(100% - 9cqw); }
 .ht-blue-paywall .ht-timer { background: transparent; }

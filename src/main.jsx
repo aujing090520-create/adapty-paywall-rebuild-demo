@@ -16,7 +16,6 @@ import {
   Image as ImageIcon,
   LayoutTemplate,
   MoreVertical,
-  Maximize2,
   Plus,
   Search,
   Smartphone,
@@ -1744,7 +1743,6 @@ function PrivilegeComparisonEditor({ active, updateNode }) {
   const rows = privilegeRowsFor(active);
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState(null);
-  const [windowed, setWindowed] = useState(false);
   const [imageMenuOpen, setImageMenuOpen] = useState(false);
   const draggedId = useRef(null);
   const commit = (nextRows) => updateNodeConfig(active, updateNode, { privilegeRows: nextRows });
@@ -1758,7 +1756,7 @@ function PrivilegeComparisonEditor({ active, updateNode }) {
     commit(next);
   };
   const openEditor = (row) => { setEditingId(row.id); setDraft(JSON.parse(JSON.stringify(row.detail))); };
-  const closeEditor = () => { setEditingId(null); setDraft(null); setWindowed(false); };
+  const closeEditor = () => { setEditingId(null); setDraft(null); };
   const patchDraft = (patch) => setDraft((current) => ({ ...current, ...patch }));
   const upload = (file, callback) => { if (!file) return; const reader = new FileReader(); reader.onload = () => callback(String(reader.result)); reader.readAsDataURL(file); };
   const setImage = (index, patch) => patchDraft({ images: draft.images.map((image, position) => position === index ? { ...image, ...patch } : image) });
@@ -1775,8 +1773,8 @@ function PrivilegeComparisonEditor({ active, updateNode }) {
       <div className="privilege-values">{valueEditor(row, "standard", "非会员")}{valueEditor(row, "vip", "VIP")}</div>
       <div className="privilege-row-management"><label>特权页管理<select aria-label={"特权页管理 " + row.name} value={row.pageId ?? ""} onChange={(event) => patchRow(row.id, { pageId: event.target.value })}><option value="">未绑定</option><option value="detail">当前特权详情页</option></select></label><button type="button" aria-label={"编辑特权 " + row.name} title="编辑特权" onClick={() => openEditor(row)}><Pencil size={15} /></button></div>
     </div>)}
-    {editingId && draft && <div className="ht-admin-overlay" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) closeEditor(); }}><div className={"ht-admin-dialog" + (windowed ? " is-windowed" : "")} role="dialog" aria-modal="true" aria-label="编辑特权配置" data-no-translate>
-      <header className="ht-admin-header"><h2>编辑</h2><div><button type="button" aria-label={windowed ? "放大弹窗" : "缩小弹窗"} title={windowed ? "放大弹窗" : "缩小弹窗"} onClick={() => setWindowed(!windowed)}><Maximize2 size={20} /></button><button type="button" aria-label="关闭" onClick={closeEditor}><X size={24} /></button></div></header>
+    {editingId && draft && <div className="ht-admin-overlay" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) closeEditor(); }}><div className="ht-admin-dialog" role="dialog" aria-modal="true" aria-label="编辑特权配置" data-no-translate>
+      <header className="ht-admin-header"><h2>编辑</h2><button type="button" aria-label="关闭" onClick={closeEditor}><X size={22} /></button></header>
       <div className="ht-admin-scroll"><div className="ht-admin-form">
         <div className="ht-admin-line"><label className="ht-admin-label required">paywall位置</label><div className="ht-admin-positions">{["会员套餐页", "蓝色特权页", "VIP分级页面-VIP", "VIP分级页面-VIPPlus"].map((position) => <label key={position}><input type="checkbox" checked={(draft.positions ?? []).includes(position)} onChange={(event) => patchDraft({ positions: event.target.checked ? [...(draft.positions ?? []), position] : (draft.positions ?? []).filter((item) => item !== position) })} />{position}</label>)}</div></div>
         <div className="ht-admin-line title-line"><label className="ht-admin-label required" htmlFor="privilege-config-title">特权配置标题</label><div><div className="ht-admin-input-clear"><input id="privilege-config-title" value={draft.title ?? ""} onChange={(event) => patchDraft({ title: event.target.value })} /><button type="button" aria-label="清空特权配置标题" onClick={() => patchDraft({ title: "" })}><X size={14} /></button></div><p className="ht-admin-hint">*用于展示会员套餐页模板添加特权&顺序选择项</p></div></div>
