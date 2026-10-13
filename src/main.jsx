@@ -1609,10 +1609,10 @@ function ConfigNumberField({ label, active, updateNode, name, fallback, min = 0,
 
 function ConfigInsets({ active, updateNode, prefix = "margin" }) {
   const config = active.config ?? {};
-  const keys = [["Top", "top"], ["Right", "right"], ["Bottom", "bottom"], ["Left", "left"]];
+  const keys = [["Top", "上"], ["Right", "右"], ["Bottom", "下"], ["Left", "左"]];
   return <div className="four-inputs">{keys.map(([label, key]) => {
     const name = `${prefix}${label}`;
-    return <input key={name} type="number" min="-80" max="120" aria-label={`${label} ${prefix}`} value={config[name] ?? 0} onChange={(event) => updateNodeConfig(active, updateNode, { [name]: Number(event.target.value) || 0 })} />;
+    return <label key={name} className="inset-input"><span>{key}</span><input type="number" min={prefix === "padding" ? 0 : -80} aria-label={`${key}${prefix === "padding" ? "图片边距" : "外边距"}`} value={config[name] ?? 0} onChange={(event) => updateNodeConfig(active, updateNode, { [name]: event.target.value })} /></label>;
   })}</div>;
 }
 
@@ -1632,7 +1632,7 @@ function ElementLayoutEditor({ active, updateNode, showHeight = false }) {
 
 function HeroLayoutEditor({ active, updateNode }) {
   const config = active.config ?? {};
-  return <><h4>Visual media</h4><ConfigNumberField label="Image height" active={active} updateNode={updateNode} name="mediaHeight" fallback={100} min={1} max={200} suffix="%" /><label className="switch-row"><input type="checkbox" checked={config.rounded === true} onChange={(event) => updateNodeConfig(active, updateNode, { rounded: event.target.checked })} /><span>{config.rounded ? "On" : "Off"}</span><strong>Rounded rectangle</strong></label>{config.rounded && <ConfigNumberField label="Corner radius" active={active} updateNode={updateNode} name="radius" fallback={0} min={0} max={64} suffix="px" />}<Field label="Padding"><ConfigInsets active={active} updateNode={updateNode} prefix="padding" /></Field><ConfigNumberField label="Vertical offset" active={active} updateNode={updateNode} name="offsetY" fallback={0} min={-120} max={120} suffix="px" />{(config.copyPrefix !== undefined || config.copySuffix !== undefined || config.copyTitle !== undefined) && <section className="embedded-copy-editor"><h4>Embedded copy layout</h4><div className="split-fields"><ConfigNumberField label="Left offset" active={active} updateNode={updateNode} name="copyLeft" fallback={12} min={-20} max={100} suffix="%" /><ConfigNumberField label="Bottom offset" active={active} updateNode={updateNode} name="copyBottom" fallback={15} min={-20} max={100} suffix="%" /></div><Field label="Align"><select value={config.copyAlign ?? "left"} onChange={(event) => updateNodeConfig(active, updateNode, { copyAlign: event.target.value })}><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></Field></section>}</>;
+  return <><h4>Visual media</h4><ConfigNumberField label="Image height" active={active} updateNode={updateNode} name="mediaHeight" fallback={100} min={1} max={200} suffix="%" /><label className="switch-row"><input type="checkbox" checked={config.rounded === true} onChange={(event) => updateNodeConfig(active, updateNode, { rounded: event.target.checked })} /><span>{config.rounded ? "On" : "Off"}</span><strong>Rounded rectangle</strong></label>{config.rounded && <ConfigNumberField label="Corner radius" active={active} updateNode={updateNode} name="radius" fallback={0} min={0} max={64} suffix="px" />}<Field label="图片四侧留白 (px)"><ConfigInsets active={active} updateNode={updateNode} prefix="padding" /></Field><ConfigNumberField label="Vertical offset" active={active} updateNode={updateNode} name="offsetY" fallback={0} min={-120} max={120} suffix="px" />{(config.copyPrefix !== undefined || config.copySuffix !== undefined || config.copyTitle !== undefined) && <section className="embedded-copy-editor"><h4>Embedded copy layout</h4><div className="split-fields"><ConfigNumberField label="Left offset" active={active} updateNode={updateNode} name="copyLeft" fallback={12} min={-20} max={100} suffix="%" /><ConfigNumberField label="Bottom offset" active={active} updateNode={updateNode} name="copyBottom" fallback={15} min={-20} max={100} suffix="%" /></div><Field label="Align"><select value={config.copyAlign ?? "left"} onChange={(event) => updateNodeConfig(active, updateNode, { copyAlign: event.target.value })}><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></Field></section>}</>;
 }
 
 function ButtonStyleEditor({ active, updateNode }) {
@@ -1992,8 +1992,9 @@ function formatTimer(seconds, format = "hh:mm:ss", separator = ":") {
 }
 
 function HeroMediaLayer({ config = {} }) {
-  if (config.mediaState !== "custom" || !config.mediaSrc || config.mediaType !== "Video") return null;
-  return <video className="ht-hero-media" src={config.mediaSrc} autoPlay loop muted playsInline />;
+  if (config.mediaState !== "custom" || !config.mediaSrc) return null;
+  if (config.mediaType === "Video") return <video className="ht-hero-media" src={config.mediaSrc} autoPlay loop muted playsInline style={{ objectFit: config.mediaFit ?? "cover" }} />;
+  return <img className="ht-hero-media" src={config.mediaSrc} alt="" style={{ objectFit: config.mediaFit ?? "cover" }} />;
 }
 
 function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, interactive = false }) {
@@ -2024,16 +2025,15 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, interacti
   };
   const heroStyleFor = (id) => {
     const config = configFor(id);
-    const padding = ["Top", "Right", "Bottom", "Left"].map((edge) => `${config[`padding${edge}`] ?? 0}px`).join(" ");
     const numeric = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
     const heightScale = config.mediaHeight === "" ? 1 : numeric(config.mediaHeight, 100) / 100;
     return {
       ...styleFor(id),
-      ...(config.mediaState === "custom" && config.mediaType !== "Video" && config.mediaSrc ? { backgroundImage: `url(${config.mediaSrc})`, backgroundSize: config.mediaFit ?? "cover", backgroundPosition: config.mediaPosition ?? "center" } : {}),
+      ...(config.mediaState === "custom" && config.mediaSrc ? { backgroundImage: "none" } : {}),
       backgroundColor: config.mediaBackgroundColor ?? "#ffffff",
       ...(config.mediaState === "removed" ? { backgroundImage: "none" } : {}),
       ...(config.rounded ? { borderRadius: `${config.radius ?? 0}px` } : {}),
-      ...(padding !== "0px 0px 0px 0px" ? { padding } : {}),
+      ...Object.fromEntries(["Top", "Right", "Bottom", "Left"].map((edge) => [`--media-inset-${edge.toLowerCase()}`, `${Math.max(0, numeric(config[`padding${edge}`], 0))}px`])),
       "--hero-height-scale": `${heightScale}`,
       "--hero-copy-left": `${numeric(config.copyLeft, 12)}%`,
       "--hero-copy-bottom": `${numeric(config.copyBottom, 15)}%`,
