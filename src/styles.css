@@ -383,6 +383,55 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-blue-paywall .ht-action { height: 16cqw; min-height: 0; }
 .ht-blue-paywall .ht-legal { min-height: 15cqw; padding: 2.5cqw 0; }
 
+/* Blue privilege page: module-owned geometry calibrated to the supplied HT screen. */
+.ht-blue-paywall .ht-blue-hero { height: 58cqw; background: #07316b url('/ht-blue-stadium.png') left center / 115% 100% no-repeat; }
+.ht-blue-paywall .ht-blue-hero::after { display: none; }
+.ht-blue-paywall .ht-blue-hero.media-custom { background-image: none; }
+.ht-blue-paywall .ht-blue-hero.media-removed { background-image: none; }
+.ht-blue-paywall .ht-blue-copy { left: var(--hero-copy-left, 12%); bottom: var(--hero-copy-bottom, 15%); z-index: 4; }
+.ht-blue-paywall .ht-blue-copy h1 { font-size: var(--hero-title-size, 30px); color: var(--hero-title-color, #ffc524); letter-spacing: 0; }
+.ht-blue-paywall .ht-blue-copy h1 b { color: var(--hero-title-prefix-color, #fff); }
+.ht-blue-paywall .ht-blue-copy p { font-size: var(--hero-caption-size, 16px); color: var(--hero-caption-color, #fff); letter-spacing: 0; }
+.ht-blue-paywall .ht-back { z-index: 5; top: 5%; left: 4%; padding: 0; border: 0; background: none; line-height: 1; }
+.ht-blue-paywall .ht-plan-shell { position: relative; z-index: 2; margin-top: 0; background: #f5f5f5; border: 2cqw solid #fff; border-radius: 7cqw; }
+.ht-blue-paywall .ht-plan { padding-top: 5cqw; }
+.ht-blue-paywall .ht-plan span b { top: -4cqw; white-space: nowrap; }
+.ht-blue-paywall .ht-plan:not(.chosen) em { color: #999; }
+.ht-blue-paywall .ht-plan.chosen em { color: #111; }
+.ht-blue-paywall .ht-blue-plan { display: block; position: relative; padding: 0 1cqw; }
+.ht-blue-paywall .ht-blue-plan > span { display: block; position: absolute; top: 6cqw; left: 0; right: 0; }
+.ht-blue-paywall .ht-blue-plan > span strong { display: block; font-size: 4.6cqw; white-space: nowrap; }
+.ht-blue-paywall .ht-blue-plan > em { position: absolute; top: 14cqw; left: 0; right: 0; font-size: 6cqw; }
+.ht-blue-paywall .ht-blue-plan > i { position: absolute; top: 26cqw; bottom: auto; left: 0; right: 0; font-size: 3.7cqw; }
+.ht-blue-paywall .ht-blue-plan > .ht-plan-saving { position: absolute; top: 21cqw; left: 0; right: 0; color: #ff8207; font-size: 3.8cqw; white-space: nowrap; }
+.ht-blue-paywall .ht-blue-plan.has-original > span { top: 8cqw; }
+.ht-blue-paywall .ht-blue-plan.has-original > span del { display: block; margin-top: 1.5cqw; color: #aaa; font-size: 4.3cqw; }
+.ht-blue-paywall .ht-blue-plan.has-original .ht-plan-top-saving { position: absolute; top: -7cqw; left: 0; right: 0; color: #999; font-size: 3.5cqw; font-weight: 700; white-space: nowrap; }
+.ht-blue-paywall .ht-blue-plan.has-original > em { top: 25.5cqw; color: #999; font-size: 5.2cqw; }
+.ht-blue-paywall .ht-blue-plan.has-original > i { top: 20cqw; }
+.ht-blue-paywall .ht-blue-plan > span b { top: -9cqw; left: 0; right: 0; }
+.ht-blue-paywall .ht-privilege-table > div b { display: grid; place-items: center; padding-top: 0; }
+.ht-vip-check { display: grid; place-items: center; width: 6.5cqw; height: 6.5cqw; border-radius: 50%; background: #ffb40d; color: #fff; font-size: 4cqw; }
+.ht-blue-paywall .ht-action-wrap { position: relative; height: 16cqw; }
+.ht-blue-paywall .ht-action-wrap .ht-action { width: calc(100% - 9cqw); }
+.ht-blue-paywall .ht-timer { background: transparent; }
+.ht-blue-paywall .ht-timer-digits b { background: var(--timer-digit-background, #ffd16b); }
+.ht-action-badge { position: absolute; top: -2cqw; right: 4cqw; padding: .7cqw 1.5cqw; border-radius: 2cqw; background: #11bd3d; color: #fff; font-size: 3.5cqw; font-weight: 800; }
+.ht-blue-paywall .ht-legal { font-size: 2.9cqw; line-height: 1.3; }
+.ht-retention-overlay { position: absolute; z-index: 20; inset: 0; display: grid; place-items: center; background: #0007; }
+.ht-retention-card { width: 80cqw; height: 110cqw; padding: 4cqw 4cqw 2cqw; display: grid; grid-template-rows: 16% 38% 16% 18% 12%; justify-items: center; align-items: center; border-radius: 7cqw; background-size: cover; background-position: center; text-align: center; overflow: hidden; }
+.ht-retention-card h2 { width: 100%; margin: 0; font-size: 5.1cqw; line-height: 1.2; white-space: nowrap; }
+.ht-retention-card .ht-retention-image { width: 43cqw; height: 100%; object-fit: contain; }
+.ht-retention-timer { display: grid; gap: 1cqw; justify-items: center; font-size: 4cqw; }
+.ht-retention-timer strong { font-weight: 500; }
+.ht-retention-timer div { display: flex; align-items: center; gap: .8cqw; }
+.ht-retention-timer span { min-width: 5.5cqw; padding: .4cqw; border-radius: 1.3cqw; background: var(--retention-timer-color, #11bf42); color: #fff; font-variant-numeric: tabular-nums; }
+.ht-retention-timer i { font-style: normal; }
+.ht-retention-primary { width: 100%; height: 12.5cqw; border: 0; border-radius: 8cqw; font-size: 5cqw; font-weight: 800; }
+.ht-retention-cancel { border: 0; background: none; color: #999; font-size: 4cqw; }
+.retention-image-field { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.retention-image-field img { width: 100%; max-height: 100px; object-fit: contain; background: #eee; }
+
 
 /* Every reconstructed paywall uses module-owned dimensions, never remaining-page fill. */
 .ht-membership-paywall .ht-member-backdrop { height: 37cqw; }
