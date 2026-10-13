@@ -835,7 +835,7 @@ const zhCopy = {
   "Personal wellness plan": "个人健康计划", "Explore your profile": "探索你的个人档案", "Try it free for seven days": "免费体验七天",
   "Premium wallpaper collection": "高级壁纸合集", "Unlock premium forecasting": "解锁高级天气预报", "Experience guided meditations": "体验引导式冥想",
   "A plan built for today": "为今天定制的计划", "Halloween offer now on": "万圣节优惠正在进行", "Limited holiday discount": "限时节日优惠",
-  "Element content": "元素内容", "Layer label": "图层标签", "Delete element": "删除元素", "Preview orientation": "预览方向", "Preview visibility": "预览可见性",
+  "Element content": "元素内容", "Delete element": "删除元素", "Preview orientation": "预览方向", "Preview visibility": "预览可见性",
   "No locally reconstructed templates match this filter combination.": "没有本地还原模板符合当前筛选组合。", "All paywalls": "全部付费墙", "Popular": "热门", "Seasonal": "季节活动",
   "No locally captured Adapty templates match this filter combination.": "没有已采集的 Adapty 真实模板符合当前筛选组合。",
   "Don't have a design? Our AI will create a unique paywall for you from scratch.": "还没有设计？AI 会从零为你生成一张独特的付费墙。",
@@ -1506,12 +1506,12 @@ function BuilderProperties({ active, setBuilderTab, markUnknown, boundary, templ
     return <div className="property-scroll"><h3>Source reference</h3><p className="property-copy">This template has a captured source visual, but its exact Builder layer tree has not been verified. Editing is intentionally unavailable until the source structure is collected.</p><InspectorBoundary boundary={boundary} markUnknown={markUnknown} message="The matching source visual is shown in the device preview. No generic editable nodes are substituted for this template." /></div>;
   }
 
-  return <div className="property-scroll"><h3>{type}</h3>{nodeEditor}{tabBar}<InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="This source-observed template layer can be edited as content and a layer label. Its dedicated inspector fields were not captured, so the demo does not substitute a generic configuration panel." /></div>;
+  return <div className="property-scroll"><h3>{type}</h3>{nodeEditor}{tabBar}<InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="This source-observed template layer can be edited as content. Its dedicated inspector fields were not captured, so the demo does not substitute a generic configuration panel." /></div>;
 }
 
 function EditableNodeControls({ active, updateNode, removeNode }) {
   if (!active) return null;
-  return <section className="node-editor"><Field label="Element content"><textarea value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><Field label="Layer label"><input value={active.label ?? ""} onChange={(event) => updateNode(active.id, { label: event.target.value })} /></Field><button className="danger" onClick={() => removeNode(active.id)}>Delete element</button></section>;
+  return <section className="node-editor"><Field label="Element content"><textarea value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><button className="danger" onClick={() => removeNode(active.id)}>Delete element</button></section>;
 }
 
 function InspectorBoundary({ boundary, markUnknown, message = "The visible entry is retained, but the next detailed behavior has not been verified." }) {
