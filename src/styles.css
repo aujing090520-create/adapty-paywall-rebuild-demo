@@ -353,3 +353,34 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-blue-paywall .ht-blue-copy p { font-size: 4.65cqw; }
 .ht-blue-paywall .ht-trophy { right: 18%; bottom: 12%; width: 15cqw; height: 19cqw; font-size: 8.8cqw; }
 .ht-blue-paywall .ht-vip-card { right: 18%; bottom: 3%; font-size: 4.5cqw; }
+
+/* Blue privilege modules keep their own measured height. Hidden modules leave space instead of stretching siblings. */
+.ht-blue-paywall { display: block; }
+.ht-blue-paywall .ht-blue-hero { height: 58cqw; }
+.ht-blue-paywall .ht-privilege-table { height: 72cqw; }
+.ht-blue-paywall .ht-plan-shell { height: 41cqw; min-height: 0; }
+.ht-blue-paywall .ht-timer { height: 13.5cqw; min-height: 0; }
+.ht-blue-paywall .ht-action { height: 16cqw; min-height: 0; }
+.ht-blue-paywall .ht-legal { min-height: 15cqw; padding: 2.5cqw 0; }
+
+/* Every reconstructed paywall uses module-owned dimensions, never remaining-page fill. */
+.ht-membership-paywall .ht-member-backdrop { height: 37cqw; }
+.ht-membership-paywall .ht-member-sheet { height: 183cqw; min-height: 0; }
+.ht-membership-paywall .ht-member-hero { height: 71cqw; }
+.ht-membership-paywall .ht-plan-shell { height: 46cqw; min-height: 0; }
+.ht-membership-paywall .ht-action { height: 20cqw; min-height: 0; }
+.ht-membership-paywall .ht-legal { min-height: 14cqw; }
+
+.ht-recovery-paywall .ht-recovery-backdrop { height: 39cqw; }
+.ht-recovery-paywall .ht-recovery-sheet { height: 178.5cqw; min-height: 0; overflow: hidden; }
+.ht-recovery-paywall .ht-recovery-plans .ht-plan { height: 16cqw; min-height: 0; }
+.ht-recovery-paywall .ht-action { height: 24cqw; min-height: 0; }
+.ht-recovery-paywall .ht-legal { min-height: 13cqw; }
+
+.ht-sku-paywall .ht-chat-scene { height: 71cqw; }
+.ht-sku-paywall .ht-sku-sheet { height: 148.3cqw; min-height: 0; }
+.ht-sku-paywall .ht-sku-promo { height: 45cqw; }
+.ht-sku-paywall .ht-sku-plans { height: 22cqw; min-height: 0; }
+.ht-sku-paywall .ht-sku-plans .ht-plan { height: 22cqw; min-height: 0; }
+.ht-sku-paywall .ht-action { height: 20cqw; min-height: 0; }
+.ht-sku-paywall .ht-legal { min-height: 12cqw; }
