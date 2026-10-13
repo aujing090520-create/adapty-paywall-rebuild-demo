@@ -692,7 +692,7 @@ function createBuilderNodes(templateId = "knowledge") {
       node("hero-image", "Hero Image", template.visual, 0, { theme: template.theme, config: { copyPrefix: "VIP", copySuffix: "7折大促", copyCaption: "HelloTalk 世界杯", bannerEnabled: true, deepLink: "" } }),
       node("benefits", "List", "", 0, { label: "特权对比", config: { bluePrivilege: true, privilegeRows: initialPrivilegeRows, maxVisibleRows: 5, headerBackground: "#f1f1f1", vipColumnBackground: "#ffffff", backgroundColor: "#f5f5f5", secondaryColor: "#bdbdbd", accentColor: "#ffb40d" } }),
       node("timer", "Timer", "18:32:25", 0, { config: { bluePrivilege: true, enabled: true, format: "hh:mm:ss", separator: ":", prefix: "倒计时", suffix: "", resetMode: "Reset timer on every paywall view", locale: "English", backgroundColor: "#ffd16b", color: "#19ad34" } }),
-      node("products", "Products", "1个月|¥78|¥78/月\n12个月|¥488|¥40.67/月\n终身|¥698|永久会员权益", 0, { config: { bluePrivilege: true, defaultSelected: 1, showOfferBadge: true, offerBadgeLabel: "🔥 30% OFF", badgeProductIndex: 1, badgePosition: "top", badgeBackground: "#ff9a00", badgeTextColor: "#ffffff", planSavings: ["", "节省 48%", "立减¥1000"], planOriginalPrices: ["", "", "¥1698"], visibleProductCount: 3, selectedBackground: "#ffffff", accentColor: "#ff860a", productBackground: "#f5f5f5" } }),
+      node("products", "Products", "1个月|¥78|¥78/月\n12个月|¥488|¥40.67/月\n终身|¥698|永久会员权益", 0, { config: { bluePrivilege: true, defaultSelected: 1, showOfferBadge: true, offerBadgeLabel: "🔥 30% OFF", badgeProductIndex: 1, badgePosition: "top", badgeGradient: ["#ff860a", "#ffb000", "#ffd10b"], selectedBorderGradient: ["#ff860a", "#ff860a", "#ff860a"], selectedBackground: "#ffffff", saveTextColor: "#ff8207", purchaseTextGradient: ["#ffffff", "#ffffff", "#ffffff"], purchaseBackgroundGradient: ["#ff8707", "#ffb000", "#ffd10b"], planSavings: ["", "节省 48%", "立减¥1000"], planOriginalPrices: ["", "", "¥1698"], visibleProductCount: 3, productBackground: "#f5f5f5" } }),
       node("retention", "Card", "", 0, { label: "挽留弹窗", config: { retention: true, enabled: false, title: "错过这次，就要多花 30%😱", timerLabel: "倒计时", timerStart: "71:22:22", buttonText: "立享优惠", cancelText: "忍痛取消", backgroundColor: "#f7f7f7", buttonStartColor: "#ff8600", buttonEndColor: "#ffcd00", buttonTextColor: "#ffffff", titleColor: "#111111", timerColor: "#11bf42", imageSrc: "/ht-retention-gift.png", backgroundImage: "" } }),
       node("purchase", "Button", "立即领取优惠", 0, { config: { action: "Purchase" } }),
       node("legal", "Text", "如果当前缴费期前 24 小时没有取消续订，系统会自动续订，费用将从你的 iTunes 账户收取，你可随时前往 iTunes 商店的设置界面管理自己的订阅设定。有关详细信息，请访问我们的", 0, { label: "续订说明", variant: "legal" }),
@@ -1529,6 +1529,7 @@ function BuilderProperties({ active, setBuilderTab, markUnknown, boundary, templ
   }
 
   if (type === "Products") {
+    if (active.config?.bluePrivilege) return <div className="property-scroll"><h3>商品套餐</h3><ProductsStyleEditor active={active} updateNode={updateNode} /></div>;
     return <div className="property-scroll"><h3>Products</h3>{tabBar}{tab === "content" && <ProductsContent active={active} updateNode={updateNode} />}{tab === "style" && <ProductsStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
   }
 
@@ -1607,6 +1608,21 @@ function ConfigColorField({ label, active, updateNode, name, fallback }) {
   return <Field label={label}><div className="color-picker"><input type="color" value={value} onChange={(event) => updateNodeConfig(active, updateNode, { [name]: event.target.value })} /><input value={value} onChange={(event) => updateNodeConfig(active, updateNode, { [name]: event.target.value })} /></div></Field>;
 }
 
+const validHexColor = (value) => /^#[\da-fA-F]{6}$/.test(value);
+const productGradient = (colors, fallback) => `linear-gradient(90deg, ${(Array.isArray(colors) && colors.length === 3 ? colors : fallback).map((color, index) => validHexColor(color) ? color : fallback[index]).join(", ")})`;
+
+function ProductColorInput({ value, onChange, label }) {
+  const [draft, setDraft] = useState(value);
+  useEffect(() => setDraft(value), [value]);
+  return <span className="product-color-input"><input type="color" aria-label={`${label}色块`} value={validHexColor(value) ? value : "#000000"} onChange={(event) => { setDraft(event.target.value); onChange(event.target.value); }} /><input aria-label={label} value={draft} onChange={(event) => setDraft(event.target.value)} onBlur={() => { if (validHexColor(draft)) onChange(draft); else setDraft(value); }} onKeyDown={(event) => { if (event.key === "Enter") event.currentTarget.blur(); }} /></span>;
+}
+
+function ProductColorField({ label, active, updateNode, name, fallback, gradient = false }) {
+  const value = active.config?.[name] ?? fallback;
+  const colors = gradient ? (Array.isArray(value) && value.length === 3 ? value : fallback) : [value];
+  return <div className="product-color-field"><strong>{label}</strong><div className={gradient ? "product-color-stops" : "product-color-single"}>{colors.map((color, index) => <ProductColorInput key={`${name}-${index}`} label={gradient ? `${label} 第${index + 1}段` : label} value={color} onChange={(next) => updateNodeConfig(active, updateNode, { [name]: gradient ? colors.map((item, position) => position === index ? next : item) : next })} />)}</div></div>;
+}
+
 function ConfigNumberField({ label, active, updateNode, name, fallback, min = 0, max = 100, step = 1, suffix = "" }) {
   const value = active.config?.[name] ?? fallback;
   const commit = (valueToCommit) => {
@@ -1671,7 +1687,14 @@ function CarouselStyleEditor({ active, updateNode }) {
 }
 
 function ProductsStyleEditor({ active, updateNode }) {
-  if (active.config?.bluePrivilege) return <><div className="split-fields"><ConfigColorField label="Product area background" active={active} updateNode={updateNode} name="productBackground" fallback="#f5f5f5" /><ConfigColorField label="Selected background" active={active} updateNode={updateNode} name="selectedBackground" fallback="#ffffff" /></div><div className="split-fields"><ConfigColorField label="Selected border" active={active} updateNode={updateNode} name="accentColor" fallback="#ff860a" /><ConfigColorField label="Badge background" active={active} updateNode={updateNode} name="badgeBackground" fallback="#ffb000" /></div><ConfigColorField label="Badge text" active={active} updateNode={updateNode} name="badgeTextColor" fallback="#ffffff" /><ConfigNumberField label="Corner radius" active={active} updateNode={updateNode} name="radius" fallback={18} min={0} max={32} suffix="px" /></>;
+  if (active.config?.bluePrivilege) return <div className="product-color-settings">
+    <ProductColorField label="商品标签颜色" active={active} updateNode={updateNode} name="badgeGradient" fallback={["#ff860a", "#ffb000", "#ffd10b"]} gradient />
+    <ProductColorField label="商品选中框颜色" active={active} updateNode={updateNode} name="selectedBorderGradient" fallback={["#ff860a", "#ff860a", "#ff860a"]} gradient />
+    <ProductColorField label="商品选中背景颜色" active={active} updateNode={updateNode} name="selectedBackground" fallback="#ffffff" />
+    <ProductColorField label="商品SAVE文字颜色" active={active} updateNode={updateNode} name="saveTextColor" fallback="#ff8207" />
+    <ProductColorField label="购买按钮文字颜色" active={active} updateNode={updateNode} name="purchaseTextGradient" fallback={["#ffffff", "#ffffff", "#ffffff"]} gradient />
+    <ProductColorField label="购买按钮背景颜色" active={active} updateNode={updateNode} name="purchaseBackgroundGradient" fallback={["#ff8707", "#ffb000", "#ffd10b"]} gradient />
+  </div>;
   return <><div className="split-fields"><ConfigColorField label="Selection color" active={active} updateNode={updateNode} name="accentColor" fallback="#ff860a" /><ConfigColorField label="Selected background" active={active} updateNode={updateNode} name="selectedBackground" fallback="#ffffff" /></div><ConfigNumberField label="Corner radius" active={active} updateNode={updateNode} name="radius" fallback={18} min={0} max={32} suffix="px" /></>;
 }
 
@@ -1819,31 +1842,7 @@ function ProductsContent({ active, updateNode }) {
   const config = active.config ?? {};
   const products = (active.content ?? "").split("\n").filter(Boolean);
   const updateConfig = (patch) => updateNode(active.id, { config: { ...config, ...patch } });
-  if (config.bluePrivilege) return <><BluePrivilegeProductsEditor active={active} updateNode={updateNode} /><BluePrivilegePlanDetails active={active} updateNode={updateNode} /></>;
   return <><Field label="Products grouping"><div className="select-like muted-select">No switch (all products are visible) <ChevronDown size={14} /></div></Field><Field label="Default selected product"><select value={String(config.defaultSelected ?? 0)} onChange={(event) => updateConfig({ defaultSelected: Number(event.target.value) })}>{products.map((row, index) => <option key={row} value={index}>{row.split("|")[0]}</option>)}</select></Field><label className="switch-row"><input type="checkbox" checked={config.showOfferBadge !== false} onChange={(event) => updateConfig({ showOfferBadge: event.target.checked })} /><span>{config.showOfferBadge !== false ? "On" : "Off"}</span><strong>Show offer badge</strong></label><h4>Products</h4><Field label="Plans"><textarea value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><p className="property-copy">One plan per line. Use “name|price|supporting copy” to map each visible plan.</p></>;
-}
-
-function BluePrivilegeProductsEditor({ active, updateNode }) {
-  const config = active.config ?? {};
-  const rows = (active.content ?? "").split("\n").filter(Boolean).map((row) => {
-    const [name = "", price = "", detail = ""] = row.split("|");
-    return [name, price, detail];
-  });
-  const commit = (nextRows) => updateNode(active.id, { content: nextRows.map((row) => row.map((value) => value.replace(/[|\n]/g, " ")).join("|")).join("\n") });
-  const updateCell = (rowIndex, cellIndex, value) => commit(rows.map((row, index) => index === rowIndex ? row.map((cell, column) => column === cellIndex ? value : cell) : row));
-  const updateConfig = (patch) => updateNode(active.id, { config: { ...config, ...patch } });
-  return <section className="privilege-editor"><h4>商品套餐</h4><div className="split-fields"><Field label="显示套餐数"><input type="number" min="1" max={Math.max(1, rows.length)} value={config.visibleProductCount ?? rows.length} onChange={(event) => updateConfig({ visibleProductCount: Math.max(1, Math.min(rows.length, Number(event.target.value) || 1)) })} /></Field><Field label="默认选中"><select value={String(config.defaultSelected ?? 0)} onChange={(event) => updateConfig({ defaultSelected: Number(event.target.value) })}>{rows.map((row, index) => <option key={`${row[0]}-${index}`} value={index}>{row[0] || `套餐 ${index + 1}`}</option>)}</select></Field></div><label className="switch-row"><input type="checkbox" checked={config.showOfferBadge !== false} onChange={(event) => updateConfig({ showOfferBadge: event.target.checked })} /><span>{config.showOfferBadge !== false ? "开启" : "关闭"}</span><strong>展示套餐角标</strong></label>{config.showOfferBadge !== false && <><Field label="角标所属套餐"><select value={String(config.badgeProductIndex ?? 1)} onChange={(event) => updateConfig({ badgeProductIndex: Number(event.target.value) })}>{rows.map((row, index) => <option value={index} key={index}>{row[0] || `套餐 ${index + 1}`}</option>)}</select></Field><Field label="角标位置"><select value={config.badgePosition ?? "top"} onChange={(event) => updateConfig({ badgePosition: event.target.value })}><option value="top">套餐顶部</option><option value="button">购买按钮右上角</option></select></Field><Field label="角标文案"><input value={config.offerBadgeLabel ?? "🔥 30% OFF"} onChange={(event) => updateConfig({ offerBadgeLabel: event.target.value })} /></Field></>}<div className="product-column-labels"><span>套餐</span><span>价格</span><span>辅助文案</span></div>{rows.map((row, rowIndex) => <div className="product-config-row" key={`${rowIndex}-${row.join("-")}`}><input aria-label={`Package ${rowIndex + 1}`} value={row[0]} onChange={(event) => updateCell(rowIndex, 0, event.target.value)} /><input aria-label={`Price ${rowIndex + 1}`} value={row[1]} onChange={(event) => updateCell(rowIndex, 1, event.target.value)} /><input aria-label={`Supporting copy ${rowIndex + 1}`} value={row[2]} onChange={(event) => updateCell(rowIndex, 2, event.target.value)} /><button type="button" className="row-remove" aria-label={`Remove package ${rowIndex + 1}`} onClick={() => commit(rows.filter((_, index) => index !== rowIndex))}><X size={14} /></button></div>)}<button type="button" className="text-action" onClick={() => commit([...rows, ["新套餐", "¥0", ""]])}><Plus size={15} /> 添加套餐</button></section>;
-}
-
-function BluePrivilegePlanDetails({ active, updateNode }) {
-  const config = active.config ?? {};
-  const names = (active.content ?? "").split("\n").filter(Boolean).map((row) => row.split("|")[0]);
-  const updateItem = (key, index, value) => {
-    const values = [...(config[key] ?? [])];
-    values[index] = value;
-    updateNodeConfig(active, updateNode, { [key]: values });
-  };
-  return <section className="privilege-editor"><h4>套餐补充信息</h4>{names.map((name, index) => <div key={`${name}-${index}`}><strong>{name}</strong><div className="split-fields"><Field label="优惠说明"><input value={(config.planSavings ?? ["", "节省 48%", "立减¥1000"])[index] ?? ""} onChange={(event) => updateItem("planSavings", index, event.target.value)} /></Field><Field label="划线原价"><input value={(config.planOriginalPrices ?? ["", "", "¥1698"])[index] ?? ""} onChange={(event) => updateItem("planOriginalPrices", index, event.target.value)} /></Field></div></div>)}</section>;
 }
 
 function RetentionImageField({ active, updateNode, name, label, fallback }) {
@@ -2185,12 +2184,12 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, interacti
   const showOfferBadge = productConfig.showOfferBadge !== false;
   const Plan = ({ plan, index }) => {
     const config = configFor("products");
-    const selectedStyle = index === selectedPlan && config.selectedBackground ? { background: config.selectedBackground } : {};
-    const productStyle = config.bluePrivilege ? { ...(config.productBackground ? { "--product-background": config.productBackground } : {}), ...(config.badgeBackground ? { "--badge-background": config.badgeBackground } : {}), ...(config.badgeTextColor ? { "--badge-color": config.badgeTextColor } : {}) } : {};
+    const selectedStyle = index === selectedPlan ? config.bluePrivilege ? { borderColor: "transparent", background: `${productGradient([config.selectedBackground ?? "#ffffff", config.selectedBackground ?? "#ffffff", config.selectedBackground ?? "#ffffff"], ["#ffffff", "#ffffff", "#ffffff"])} padding-box, ${productGradient(config.selectedBorderGradient, ["#ff860a", "#ff860a", "#ff860a"])} border-box` } : config.selectedBackground ? { background: config.selectedBackground } : {} : {};
+    const productStyle = config.bluePrivilege ? { "--badge-background": productGradient(config.badgeGradient, ["#ff860a", "#ffb000", "#ffd10b"]), "--save-text-color": config.saveTextColor ?? "#ff8207" } : {};
     const hasBadge = showOfferBadge && index === (config.bluePrivilege ? (config.badgeProductIndex ?? 1) : 1) && variant !== "payment-recovery" && (!config.bluePrivilege || (config.badgePosition ?? "top") === "top");
     const saving = config.bluePrivilege ? (config.planSavings?.[index] ?? ["", "节省 48%", "立减¥1000"][index]) : "";
     const original = config.bluePrivilege ? (config.planOriginalPrices?.[index] ?? ["", "", "¥1698"][index]) : "";
-    return <div className={`${nodeClass("products", "ht-plan")} ${index === selectedPlan ? "chosen" : ""} ${config.bluePrivilege ? "ht-blue-plan" : ""} ${original ? "has-original" : ""}`} style={{ ...styleFor("products"), ...productStyle, ...selectedStyle, ...(config.accentColor && index === selectedPlan ? { borderColor: config.accentColor } : {}) }} role={interactive ? "button" : undefined} tabIndex={interactive ? 0 : undefined} onClick={(event) => { if (!interactive) return; event.stopPropagation(); setSelectedPlan(index); onSelect?.("products"); }} key={`${plan[0]}-${index}`}><span>{hasBadge && <b>{variant === "sku-sheet" ? "sku 折扣 EN" : (config.offerBadgeLabel ?? "最受欢迎")}</b>}{original && saving && <small className="ht-plan-top-saving">{saving}</small>}<strong>{plan[0]}</strong>{original && <del>{original}</del>}{showOfferBadge && variant === "payment-recovery" && index === 0 && <small style={config.accentColor ? { background: config.accentColor } : undefined}>30% OFF</small>}</span><em>{plan[1]}</em>{saving && !original && <small className="ht-plan-saving">{saving}</small>}<i>{plan[2]}</i></div>;
+    return <div className={`${nodeClass("products", "ht-plan")} ${index === selectedPlan ? "chosen" : ""} ${config.bluePrivilege ? "ht-blue-plan" : ""} ${original ? "has-original" : ""}`} style={{ ...styleFor("products"), ...productStyle, ...selectedStyle, ...(!config.bluePrivilege && config.accentColor && index === selectedPlan ? { borderColor: config.accentColor } : {}) }} role={interactive ? "button" : undefined} tabIndex={interactive ? 0 : undefined} onClick={(event) => { if (!interactive) return; event.stopPropagation(); setSelectedPlan(index); onSelect?.("products"); }} key={`${plan[0]}-${index}`}><span>{hasBadge && <b>{variant === "sku-sheet" ? "sku 折扣 EN" : (config.offerBadgeLabel ?? "最受欢迎")}</b>}{original && saving && <small className="ht-plan-top-saving">{saving}</small>}<strong>{plan[0]}</strong>{original && <del>{original}</del>}{showOfferBadge && variant === "payment-recovery" && index === 0 && <small style={config.accentColor ? { background: config.accentColor } : undefined}>30% OFF</small>}</span><em>{plan[1]}</em>{saving && !original && <small className="ht-plan-saving">{saving}</small>}<i className={config.bluePrivilege && index === plans.length - 1 ? "ht-plan-save-copy" : ""}>{plan[2]}</i></div>;
   };
   const Status = () => <div className="ht-status"><b>{variant === "sku-sheet" ? "4:52" : variant === "blue-privilege" ? "15:48" : "16:48"}</b><span>••• ◔ ▰</span></div>;
   const Timer = () => {
@@ -2210,7 +2209,9 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, interacti
     const timerStyle = variant === "blue-privilege" ? { ...styleFor("timer"), background: "transparent", "--timer-digit-background": timerConfig.backgroundColor ?? "#ffd16b" } : styleFor("timer");
     return <div className={nodeClass("timer", "ht-timer")} style={timerStyle} onClick={select("timer")}>{prefix && <strong>{prefix}</strong>}<span className={segmentedTimer ? "ht-timer-digits" : ""}>{segmentedTimer ? formatted.split(":").map((part, index, parts) => <React.Fragment key={`${part}-${index}`}><b>{part}</b>{index < parts.length - 1 && <i>:</i>}</React.Fragment>) : formatted}</span>{suffix && <small>{suffix}</small>}</div>;
   };
-  const Action = () => interactive ? <button className={nodeClass("purchase", "ht-action")} style={styleFor("purchase")} onClick={select("purchase")}>{action}</button> : <div className="ht-action" style={styleFor("purchase")}>{action}</div>;
+  const actionStyle = variant === "blue-privilege" ? { ...styleFor("purchase"), background: productGradient(productConfig.purchaseBackgroundGradient, ["#ff8707", "#ffb000", "#ffd10b"]) } : styleFor("purchase");
+  const actionCopy = variant === "blue-privilege" ? <span className="ht-action-gradient-text" style={{ backgroundImage: productGradient(productConfig.purchaseTextGradient, ["#ffffff", "#ffffff", "#ffffff"]) }}>{action}</span> : action;
+  const Action = () => interactive ? <button className={nodeClass("purchase", "ht-action")} style={actionStyle} onClick={select("purchase")}>{actionCopy}</button> : <div className="ht-action" style={actionStyle}>{actionCopy}</div>;
   const Legal = () => <p className="ht-legal"><span className={nodeClass("legal")} style={styleFor("legal")} onClick={select("legal")}>{legal}</span>{" "}<span className={nodeClass("links")} style={styleFor("links")} onClick={select("links")}>{links}</span></p>;
   const SoccerBall = () => <span className="ht-soccer-ball"><i /><i /><i /></span>;
 

@@ -472,6 +472,9 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-blue-paywall .ht-blue-plan > em { position: absolute; top: 14cqw; left: 0; right: 0; font-size: 6cqw; }
 .ht-blue-paywall .ht-blue-plan > i { position: absolute; top: 26cqw; bottom: auto; left: 0; right: 0; font-size: 3.7cqw; }
 .ht-blue-paywall .ht-blue-plan > .ht-plan-saving { position: absolute; top: 21cqw; left: 0; right: 0; color: #ff8207; font-size: 3.8cqw; white-space: nowrap; }
+.ht-blue-paywall .ht-blue-plan > .ht-plan-saving,
+.ht-blue-paywall .ht-blue-plan .ht-plan-save-copy,
+.ht-blue-paywall .ht-blue-plan .ht-plan-top-saving { color: var(--save-text-color, #ff8207); }
 .ht-blue-paywall .ht-blue-plan.has-original > span { top: 8cqw; }
 .ht-blue-paywall .ht-blue-plan.has-original > span del { display: block; margin-top: 1.5cqw; color: #aaa; font-size: 4.3cqw; }
 .ht-blue-paywall .ht-blue-plan.has-original .ht-plan-top-saving { position: absolute; top: -7cqw; left: 0; right: 0; color: #999; font-size: 3.5cqw; font-weight: 700; white-space: nowrap; }
@@ -480,6 +483,15 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-blue-paywall .ht-blue-plan > span b { top: -9cqw; left: 0; right: 0; }
 .ht-blue-paywall .ht-privilege-table > div b { display: grid; place-items: center; padding-top: 0; }
 .ht-vip-check { display: grid; place-items: center; width: 6.5cqw; height: 6.5cqw; border-radius: 50%; background: #ffb40d; color: #fff; font-size: 4cqw; }
+.ht-action-gradient-text { background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: none; }
+.product-color-settings { display: grid; gap: 18px; padding: 16px 14px 24px; }
+.product-color-field { display: grid; gap: 8px; }
+.product-color-field > strong { color: #25242b; font-size: 12px; }
+.product-color-stops { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.product-color-single { min-width: 0; }
+.product-color-input { display: grid; gap: 5px; min-width: 0; }
+.product-color-input input[type="color"] { width: 100%; height: 30px; padding: 2px; border: 1px solid #d5d4db; border-radius: 4px; background: #fff; cursor: pointer; }
+.product-color-input input:not([type="color"]) { width: 100%; min-width: 0; height: 31px; padding: 4px 5px; border: 1px solid #d5d4db; border-radius: 4px; background: #fff; color: #25242b; font-size: 10px; }
 .ht-blue-paywall .ht-privilege-table > div em { height: 100%; display: grid; place-items: center; padding: 0; }
 .ht-blue-paywall .ht-privilege-table > div em .ht-vip-check { margin: 0; }
 .privilege-editor-heading h4, .privilege-row-wrap .privilege-row input { color: #17171b; font-weight: 700; }
