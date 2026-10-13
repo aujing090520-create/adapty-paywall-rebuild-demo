@@ -230,7 +230,7 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-paywall .ht-node.selected { outline-width: 1.4cqw; box-shadow: inset 0 0 0 1px #fff8; }
 .ht-blue-hero { height: 27%; background: radial-gradient(ellipse at 51% -5%, #f8f7ff 0 3%, transparent 14%), radial-gradient(ellipse at 19% 4%, #50a3ef 0 2%, transparent 13%), radial-gradient(ellipse at 86% 14%, #7c73e7 0 3%, transparent 17%), linear-gradient(160deg, #090f4c 0%, #062a77 25%, #095ab0 48%, #1496d4 59%, #4e982f 60%, #347226 81%, #1f4d25 100%); }
 .ht-blue-hero::after { position: absolute; inset: 0; background: repeating-radial-gradient(ellipse at 52% 21%, transparent 0 8%, #d6f3ff12 8.3% 9.2%, transparent 9.5% 14%); content: ""; opacity: .78; }
-.ht-blue-copy { left: 11%; bottom: 14%; }
+.ht-blue-copy { z-index: 4; left: 11%; bottom: 14%; }
 .ht-blue-copy small { padding: 1.1cqw 2.9cqw; border-radius: 2.3cqw; background: linear-gradient(135deg, #ff8500, #ffc400); font-size: 4.7cqw; letter-spacing: -.25cqw; }
 .ht-blue-copy h1 { margin: 2.4cqw 0 .6cqw; font-size: 10.8cqw; font-weight: 900; letter-spacing: -.75cqw; }
 .ht-blue-copy p { font-size: 5.5cqw; letter-spacing: -.2cqw; }
@@ -297,6 +297,16 @@ textarea { min-height: 80px; resize: vertical; }
 .color-picker input[type="color"] { width: 34px; min-height: 34px; padding: 2px; border: 1px solid #d7d7dc; border-radius: 6px; background: #fff; }
 .number-unit { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 7px; }
 .number-unit span { color: #8a8a94; font-size: 10px; }
+.embedded-copy-editor { margin-top: 18px; padding-top: 2px; border-top: 1px solid #e8e5ef; }
+.embedded-copy-editor h4 { margin: 0 0 10px; }
+.privilege-editor { display: grid; gap: 8px; }
+.privilege-editor-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.privilege-editor-heading h4 { margin: 0; }
+.privilege-editor-heading .text-action { min-height: 28px; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.privilege-column-labels, .privilege-row { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, .95fr) minmax(0, .75fr) 28px; gap: 5px; align-items: center; }
+.privilege-column-labels { padding: 0 4px; color: #777680; font-size: 9px; font-weight: 700; }
+.privilege-row input { min-width: 0; min-height: 32px; padding: 5px 6px; font-size: 10px; }
+.row-remove { width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid #edc5ca; border-radius: 5px; background: #fff; color: #c4444c; }
 
 .ht-paywall .ht-hero-media { position: absolute; z-index: 0; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 .ht-blue-hero > :not(.ht-hero-media), .ht-member-hero > :not(.ht-hero-media), .ht-offer-bundle > :not(.ht-hero-media), .ht-sku-promo > :not(.ht-hero-media) { z-index: 1; }
@@ -307,3 +317,15 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-sku-promo.media-custom::before, .ht-sku-promo.media-custom::after, .ht-sku-promo.media-custom > i, .ht-sku-promo.media-custom > b, .ht-sku-promo.media-removed::before, .ht-sku-promo.media-removed::after, .ht-sku-promo.media-removed > i, .ht-sku-promo.media-removed > b { display: none; }
 .toast { top: 14px; bottom: auto; }
 .ht-sku-promo > b { right: 11%; bottom: 10%; }
+
+/* Blue privilege configuration mappings. */
+.ht-privilege-table { background: var(--privilege-list-background, #f5f5f5); }
+.ht-privilege-table header { background: var(--privilege-header-background, #f1f1f1); }
+.ht-privilege-table header b, .ht-privilege-table > div b { background: var(--privilege-vip-background, #fff); }
+.ht-blue-paywall .ht-plan-shell { background: var(--product-background, #f5f5f5); }
+.ht-blue-paywall .ht-plan span b { background: var(--badge-background, linear-gradient(90deg, #ff8409, #ffc906)); color: var(--badge-color, #fff); }
+.product-column-labels, .product-config-row { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .85fr) minmax(0, 1fr) 28px; gap: 5px; align-items: center; }
+.product-column-labels { padding: 0 4px; color: #777680; font-size: 9px; font-weight: 700; }
+.product-config-row input { min-width: 0; min-height: 32px; padding: 5px 6px; font-size: 10px; }
+.page-settings { margin-top: 17px; padding-top: 3px; border-top: 1px solid #e8e5ef; }
+.page-settings h4 { margin-bottom: 10px; }
