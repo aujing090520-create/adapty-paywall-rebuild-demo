@@ -393,3 +393,18 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-membership-paywall .ht-member-hero { height: calc(71cqw * var(--hero-height-scale, 1)); }
 .ht-recovery-paywall .ht-offer-bundle { height: calc(48cqw * var(--hero-height-scale, 1)); aspect-ratio: auto; }
 .ht-sku-paywall .ht-sku-promo { height: calc(45cqw * var(--hero-height-scale, 1)); }
+
+/* A Hero Image may include source-observed copy. Its media and embedded copy use separate Builder controls. */
+.ht-blue-paywall .ht-blue-copy {
+  left: var(--hero-copy-left, 12%);
+  bottom: var(--hero-copy-bottom, 15%);
+  text-align: var(--hero-copy-align, left);
+}
+.ht-blue-paywall .ht-blue-copy h1 {
+  color: var(--hero-title-color, #ffc524);
+  font-size: var(--hero-title-size, 30px);
+}
+.ht-blue-paywall .ht-blue-copy p {
+  color: var(--hero-caption-color, #ffffff);
+  font-size: var(--hero-caption-size, 16px);
+}

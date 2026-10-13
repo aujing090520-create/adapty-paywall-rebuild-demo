@@ -841,6 +841,7 @@ const zhCopy = {
   "Reuse a design you've built with Paywall Builder in another app.": "复用你在其他应用中通过付费墙构建器创建的设计。", "Get Free Access": "免费开始使用",
   "1 product · Trial timeline · Reviews": "1 个产品 · 试用时间线 · 评价", "1 product · Image": "1 个产品 · 图片", "1 product · Free trial toggle": "1 个产品 · 免费试用开关",
   "Text Required": "文本内容", "Max lines": "最大行数", "Overflow": "溢出处理", "Scale text": "缩放文字", "Close preview": "关闭预览",
+  "Visual media": "视觉媒体", "Embedded headline": "内嵌主标题", "Embedded supporting copy": "内嵌辅助文案", "Embedded copy layout": "内嵌文案布局", "Left offset": "左侧偏移", "Bottom offset": "底部偏移",
   "PREMIUM ACCESS": "高级访问", "Smart summaries and audio insights designed for lifelong learners": "为持续学习者准备的智能摘要与音频洞察",
   "Premium content and tools": "高级内容与工具", "A plan that fits your routine": "适合你日常节奏的方案", "Cancel anytime from settings": "可随时在设置中取消",
   "Today": "今天", "Full access starts now": "完整访问从现在开始", "Day 6": "第 6 天", "We will remind you": "我们会提醒你", "Day 7": "第 7 天", "Your plan renews": "你的方案将续订",
@@ -1586,7 +1587,12 @@ function ConfigColorField({ label, active, updateNode, name, fallback }) {
 
 function ConfigNumberField({ label, active, updateNode, name, fallback, min = 0, max = 100, step = 1, suffix = "" }) {
   const value = active.config?.[name] ?? fallback;
-  return <Field label={label}><div className="number-unit"><input type="number" min={min} max={max} step={step} value={value} onChange={(event) => updateNodeConfig(active, updateNode, { [name]: Math.max(min, Math.min(max, Number(event.target.value) || min)) })} /><span>{suffix}</span></div></Field>;
+  const commit = (valueToCommit) => {
+    if (valueToCommit === "") return updateNodeConfig(active, updateNode, { [name]: fallback });
+    const parsed = Number(valueToCommit);
+    updateNodeConfig(active, updateNode, { [name]: Number.isFinite(parsed) ? parsed : fallback });
+  };
+  return <Field label={label}><div className="number-unit"><input type="number" min={min} max={max} step={step} value={value} onChange={(event) => updateNodeConfig(active, updateNode, { [name]: event.target.value })} onBlur={(event) => commit(event.target.value)} /><span>{suffix}</span></div></Field>;
 }
 
 function ConfigInsets({ active, updateNode, prefix = "margin" }) {
@@ -1605,7 +1611,7 @@ function TextStyleEditor({ active, updateNode }) {
 
 function HeroStyleEditor({ active, updateNode }) {
   const config = active.config ?? {};
-  return <><Field label="Display"><div className="segmented">{["Overlay", "Transparent", "Flat"].map((mode) => <button key={mode} className={(config.displayMode ?? "Overlay") === mode ? "active" : ""} onClick={() => updateNodeConfig(active, updateNode, { displayMode: mode })}>{mode}</button>)}</div></Field><ConfigColorField label="Tint" active={active} updateNode={updateNode} name="tintColor" fallback="#212121" /><ConfigNumberField label="Tint opacity" active={active} updateNode={updateNode} name="tintOpacity" fallback={0} min={0} max={100} suffix="%" /></>;
+  return <><h4>Visual media</h4><Field label="Display"><div className="segmented">{["Overlay", "Transparent", "Flat"].map((mode) => <button key={mode} className={(config.displayMode ?? "Overlay") === mode ? "active" : ""} onClick={() => updateNodeConfig(active, updateNode, { displayMode: mode })}>{mode}</button>)}</div></Field><ConfigColorField label="Tint" active={active} updateNode={updateNode} name="tintColor" fallback="#212121" /><ConfigNumberField label="Tint opacity" active={active} updateNode={updateNode} name="tintOpacity" fallback={0} min={0} max={100} suffix="%" />{config.copyTitle !== undefined && <section className="embedded-copy-editor"><h4>Embedded headline</h4><div className="split-fields"><ConfigNumberField label="Font size" active={active} updateNode={updateNode} name="copyTitleSize" fallback={30} min={8} max={96} suffix="px" /><ConfigColorField label="Text color" active={active} updateNode={updateNode} name="copyTitleColor" fallback="#ffc524" /></div><h4>Embedded supporting copy</h4><div className="split-fields"><ConfigNumberField label="Font size" active={active} updateNode={updateNode} name="copyCaptionSize" fallback={16} min={8} max={64} suffix="px" /><ConfigColorField label="Text color" active={active} updateNode={updateNode} name="copyCaptionColor" fallback="#ffffff" /></div></section>}</>;
 }
 
 function ElementLayoutEditor({ active, updateNode, showHeight = false }) {
@@ -1614,7 +1620,7 @@ function ElementLayoutEditor({ active, updateNode, showHeight = false }) {
 
 function HeroLayoutEditor({ active, updateNode }) {
   const config = active.config ?? {};
-  return <><ConfigNumberField label="Image height" active={active} updateNode={updateNode} name="mediaHeight" fallback={100} min={35} max={160} suffix="%" /><label className="switch-row"><input type="checkbox" checked={config.rounded === true} onChange={(event) => updateNodeConfig(active, updateNode, { rounded: event.target.checked })} /><span>{config.rounded ? "On" : "Off"}</span><strong>Rounded rectangle</strong></label>{config.rounded && <ConfigNumberField label="Corner radius" active={active} updateNode={updateNode} name="radius" fallback={0} min={0} max={64} suffix="px" />}<Field label="Padding"><ConfigInsets active={active} updateNode={updateNode} prefix="padding" /></Field><ConfigNumberField label="Vertical offset" active={active} updateNode={updateNode} name="offsetY" fallback={0} min={-120} max={120} suffix="px" /></>;
+  return <><h4>Visual media</h4><ConfigNumberField label="Image height" active={active} updateNode={updateNode} name="mediaHeight" fallback={100} min={1} max={200} suffix="%" /><label className="switch-row"><input type="checkbox" checked={config.rounded === true} onChange={(event) => updateNodeConfig(active, updateNode, { rounded: event.target.checked })} /><span>{config.rounded ? "On" : "Off"}</span><strong>Rounded rectangle</strong></label>{config.rounded && <ConfigNumberField label="Corner radius" active={active} updateNode={updateNode} name="radius" fallback={0} min={0} max={64} suffix="px" />}<Field label="Padding"><ConfigInsets active={active} updateNode={updateNode} prefix="padding" /></Field><ConfigNumberField label="Vertical offset" active={active} updateNode={updateNode} name="offsetY" fallback={0} min={-120} max={120} suffix="px" />{config.copyTitle !== undefined && <section className="embedded-copy-editor"><h4>Embedded copy layout</h4><div className="split-fields"><ConfigNumberField label="Left offset" active={active} updateNode={updateNode} name="copyLeft" fallback={12} min={-20} max={100} suffix="%" /><ConfigNumberField label="Bottom offset" active={active} updateNode={updateNode} name="copyBottom" fallback={15} min={-20} max={100} suffix="%" /></div><Field label="Align"><select value={config.copyAlign ?? "left"} onChange={(event) => updateNodeConfig(active, updateNode, { copyAlign: event.target.value })}><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></Field></section>}</>;
 }
 
 function ButtonStyleEditor({ active, updateNode }) {
@@ -2009,15 +2015,24 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, interacti
     const padding = ["Top", "Right", "Bottom", "Left"].map((edge) => `${config[`padding${edge}`] ?? 0}px`).join(" ");
     const displayMode = config.displayMode ?? "Overlay";
     const tintOpacity = Math.max(0, Math.min(100, Number(config.tintOpacity ?? 0))) / 100;
+    const numeric = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
+    const heightScale = config.mediaHeight === "" ? 1 : numeric(config.mediaHeight, 100) / 100;
     return {
       ...styleFor(id),
       ...(config.mediaState === "custom" && config.mediaType !== "Video" && config.mediaSrc ? { backgroundImage: `url(${config.mediaSrc})`, backgroundSize: config.mediaFit ?? "cover", backgroundPosition: config.mediaPosition ?? "center" } : {}),
       ...(config.mediaState === "removed" ? { background: "#eef0f4", backgroundImage: "none" } : {}),
       ...(config.rounded ? { borderRadius: `${config.radius ?? 0}px` } : {}),
       ...(padding !== "0px 0px 0px 0px" ? { padding } : {}),
-      "--hero-height-scale": `${Math.max(0.35, Math.min(1.6, Number(config.mediaHeight ?? 100) / 100))}`,
+      "--hero-height-scale": `${heightScale}`,
       "--hero-tint": config.tintColor ?? "#212121",
       "--hero-tint-opacity": `${displayMode === "Overlay" ? tintOpacity : displayMode === "Transparent" ? tintOpacity * 0.35 : 0}`,
+      "--hero-copy-left": `${numeric(config.copyLeft, 12)}%`,
+      "--hero-copy-bottom": `${numeric(config.copyBottom, 15)}%`,
+      "--hero-copy-align": config.copyAlign ?? "left",
+      "--hero-title-color": config.copyTitleColor ?? "#ffc524",
+      "--hero-title-size": `${numeric(config.copyTitleSize, 30)}px`,
+      "--hero-caption-color": config.copyCaptionColor ?? "#ffffff",
+      "--hero-caption-size": `${numeric(config.copyCaptionSize, 16)}px`,
     };
   };
   const mediaClass = (id) => {
