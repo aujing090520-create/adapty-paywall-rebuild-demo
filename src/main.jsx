@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   Archive,
@@ -1456,11 +1456,11 @@ function BuilderProperties({ active, setBuilderTab, markUnknown, boundary, templ
   const nodeEditor = <EditableNodeControls active={active} updateNode={updateNode} removeNode={removeNode} canRemove={!isDocumentTemplate} />;
 
   if (type === "Links") {
-    return <div className="property-scroll"><h3>Links</h3>{tabBar}{tab === "content" ? <LinksContent active={active} updateNode={updateNode} templateLinks={templateLinks} setTemplateLinks={setTemplateLinks} /> : <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} />}</div>;
+    return <div className="property-scroll"><h3>Links</h3>{tabBar}{tab === "content" && <LinksContent active={active} updateNode={updateNode} templateLinks={templateLinks} setTemplateLinks={setTemplateLinks} />}{tab === "style" && <LinkStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
   }
 
   if (active?.id === "hero-image") {
-    return <div className="property-scroll"><h3>Hero Image</h3>{isDocumentTemplate ? <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="当前模板的主视觉为已采集的固定结构。素材替换、裁切与样式字段尚未形成可回写的预览规则，因此不会显示无反馈的输入项。" /> : <>{nodeEditor}{tabBar}{tab === "content" && <HeroMediaContent active={active} updateNode={updateNode} />}{tab !== "content" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} />}</>}</div>;
+    return <div className="property-scroll"><h3>Hero Image</h3>{!isDocumentTemplate && nodeEditor}{tabBar}{tab === "content" && <HeroMediaContent active={active} updateNode={updateNode} />}{tab === "style" && <HeroStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} showHeight />}</div>;
   }
 
   if (type === "List item" || type === "Today" || /^Item \d+$/.test(type) || /^Day \d+$/.test(type)) {
@@ -1468,39 +1468,39 @@ function BuilderProperties({ active, setBuilderTab, markUnknown, boundary, templ
   }
 
   if (["Text", "Header", "Headline", "Subhead", "Caption", "Legal", "Top Text"].includes(type) || /^(HEADER|Header|Caption|Title|Repeats|Subheader) \d+$/.test(type)) {
-    return <div className="property-scroll"><h3>Text</h3>{!isDocumentTemplate && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}{tab === "content" && <TextContent active={active} updateNode={updateNode} />}{tab !== "content" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="字体、颜色与间距的源端字段已见，但尚未建立可同步到当前模板预览的字段规则。" />}</div>;
+    return <div className="property-scroll"><h3>Text</h3>{!isDocumentTemplate && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}{tab === "content" && <TextContent active={active} updateNode={updateNode} />}{tab === "style" && <TextStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
   }
 
   if (["Image", "Black Friday Image"].includes(type) || /^Image \d+$/.test(type)) {
-    return <div className="property-scroll"><h3>Image</h3>{nodeEditor}{tabBar}<InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="上传、自定义媒体 ID 与图片尺寸尚未接入当前预览，已不再显示为可编辑字段。" /></div>;
+    return <div className="property-scroll"><h3>Image</h3>{nodeEditor}{tabBar}{tab === "content" && <ImageContent active={active} updateNode={updateNode} />}{tab === "style" && <HeroStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} showHeight />}</div>;
   }
 
   if (["Button", "Purchase Button"].includes(type)) {
-    return <div className="property-scroll"><h3>Button</h3>{!isDocumentTemplate && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}{tab === "content" && <ButtonContent active={active} updateNode={updateNode} />}{tab !== "content" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} />}</div>;
+    return <div className="property-scroll"><h3>Button</h3>{!isDocumentTemplate && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}{tab === "content" && <ButtonContent active={active} updateNode={updateNode} />}{tab === "style" && <ButtonStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
   }
 
   if (type === "Web Paywall Button") {
-    return <div className="property-scroll"><h3>Web Paywall Button</h3>{!isDocumentTemplate && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}{tab === "content" && <WebButtonContent active={active} updateNode={updateNode} />}{tab !== "content" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} />}</div>;
+    return <div className="property-scroll"><h3>Web Paywall Button</h3>{!isDocumentTemplate && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}{tab === "content" && <WebButtonContent active={active} updateNode={updateNode} />}{tab === "style" && <ButtonStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
   }
 
   if (type === "List" || /^List \d+$/.test(type) || ["Feature list", "Features"].includes(type)) {
-    return <div className="property-scroll"><h3>List</h3>{!isDocumentTemplate && nodeEditor}{tabBar}{tab === "content" && <ListContent active={active} updateNode={updateNode} addNestedNode={addNestedNode} allowAdd={!isDocumentTemplate} />}{tab !== "content" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="图标、连接线与布局字段尚未建立可同步到当前模板预览的字段规则。" />}</div>;
+    return <div className="property-scroll"><h3>List</h3>{!isDocumentTemplate && nodeEditor}{tabBar}{tab === "content" && <ListContent active={active} updateNode={updateNode} addNestedNode={addNestedNode} allowAdd={!isDocumentTemplate} />}{tab === "style" && <ListStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
   }
 
   if (type === "Carousel") {
-    return <div className="property-scroll"><h3>Carousel</h3>{tabBar}{tab === "content" && <CarouselContent active={active} updateNode={updateNode} addNestedNode={addNestedNode} allowAdd={!isDocumentTemplate} />}{tab !== "content" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} />}</div>;
+    return <div className="property-scroll"><h3>Carousel</h3>{tabBar}{tab === "content" && <CarouselContent active={active} updateNode={updateNode} addNestedNode={addNestedNode} allowAdd={!isDocumentTemplate} />}{tab === "style" && <CarouselStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
   }
 
   if (type === "Card") {
-    return <div className="property-scroll"><h3>Card</h3>{tabBar}{tab === "content" && <CardContent active={active} addNestedNode={addNestedNode} allowAdd={!isDocumentTemplate} />}{tab === "style" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="Card has a Style tab, but its exact field labels were not retained in the inspection notes." />}{tab === "layout" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="Card has a Layout tab, but its exact field labels were not retained in the inspection notes." />}</div>;
+    return <div className="property-scroll"><h3>Card</h3>{tabBar}{tab === "content" && <CardContent active={active} addNestedNode={addNestedNode} allowAdd={!isDocumentTemplate} />}{tab === "style" && <CardStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
   }
 
   if (type === "Timer") {
-    return <div className="property-scroll"><h3>Timer</h3>{tabBar}{tab === "content" && <TimerContent active={active} updateNode={updateNode} />}{tab === "style" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="倒计时的颜色、字重与圆角入口尚未逐项采集；本 Demo 只展示已验证的显示与格式规则。" />}{tab === "layout" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="倒计时组件的精确布局字段尚未逐项采集。" />}</div>;
+    return <div className="property-scroll"><h3>Timer</h3>{tabBar}{tab === "content" && <TimerContent active={active} updateNode={updateNode} />}{tab === "style" && <TimerStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
   }
 
   if (type === "Products") {
-    return <div className="property-scroll"><h3>Products</h3>{tabBar}{tab === "content" && <ProductsContent active={active} updateNode={updateNode} />}{tab === "style" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="套餐组件的配色与选中态字段已在 PRD 中出现，但原后台的字段级默认值尚未完整采集。" />}{tab === "layout" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="套餐组件的布局字段尚未逐项采集。" />}</div>;
+    return <div className="property-scroll"><h3>Products</h3>{tabBar}{tab === "content" && <ProductsContent active={active} updateNode={updateNode} />}{tab === "style" && <ProductsStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
   }
 
   if (type === "Toggle") {
@@ -1531,10 +1531,26 @@ function InspectorBoundary({ boundary, markUnknown, message = "The visible entry
   return <div className="unknown-rule"><CircleHelp size={17} /><span>{message}<button className="text-action unknown-action" onClick={() => markUnknown(boundary)}>View evidence</button></span></div>;
 }
 
+function updateNodeConfig(active, updateNode, patch) {
+  updateNode(active.id, { config: { ...active.config, ...patch } });
+}
+
+function MediaUploadFields({ active, updateNode, label = "Media file" }) {
+  const inputRef = useRef(null);
+  const config = active.config ?? {};
+  const handleFile = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => updateNodeConfig(active, updateNode, { mediaState: "custom", mediaSrc: reader.result, mediaName: file.name, mediaType: file.type.startsWith("video/") ? "Video" : "Image" });
+    reader.readAsDataURL(file);
+  };
+  return <><Field label={label}><input ref={inputRef} className="visually-hidden" type="file" accept="image/*,video/*" onChange={handleFile} /><button className="upload" type="button" onClick={() => inputRef.current?.click()}><Upload size={18} /> {config.mediaName ? `Replace ${config.mediaName}` : "Upload image or video"}<small>PNG, JPG, WebP, MP4, max size 10MB.</small></button></Field>{config.mediaState !== "removed" && <div className="media-actions"><span>{config.mediaName || "Source media"}</span><button type="button" className="secondary" onClick={() => updateNodeConfig(active, updateNode, { mediaState: "removed", mediaSrc: "", mediaName: "" })}>Remove media</button>{config.mediaState === "custom" && <button type="button" className="text-action" onClick={() => updateNodeConfig(active, updateNode, { mediaState: "source", mediaSrc: "", mediaName: "" })}>Restore source</button>}</div>}{config.mediaState === "removed" && <div className="media-actions"><span>No media</span><button type="button" className="text-action" onClick={() => updateNodeConfig(active, updateNode, { mediaState: "source", mediaSrc: "", mediaName: "" })}>Restore source</button></div>}</>;
+}
+
 function HeroMediaContent({ active, updateNode }) {
   const kind = active.config?.mediaType ?? "Image";
-  const updateConfig = (patch) => updateNode(active.id, { config: { ...active.config, ...patch } });
-  return <><Field label="Media"><div className="segmented"><button className={kind === "Image" ? "active" : ""} onClick={() => updateConfig({ mediaType: "Image" })}>Image</button><button className={kind === "Video" ? "active" : ""} onClick={() => updateConfig({ mediaType: "Video" })}>Video</button></div></Field><p className="property-copy">素材上传与自定义媒体 ID 尚未接入预览，因此不显示为可编辑字段。</p></>;
+  return <><Field label="Media"><div className="segmented"><button className={kind === "Image" ? "active" : ""} onClick={() => updateNodeConfig(active, updateNode, { mediaType: "Image" })}>Image</button><button className={kind === "Video" ? "active" : ""} onClick={() => updateNodeConfig(active, updateNode, { mediaType: "Video" })}>Video</button></div></Field><MediaUploadFields active={active} updateNode={updateNode} label="Hero media" /></>;
 }
 
 function TextContent({ active, updateNode }) {
@@ -1542,9 +1558,59 @@ function TextContent({ active, updateNode }) {
 }
 
 function ImageContent({ active, updateNode }) {
-  const useCustomMediaId = Boolean(active.config?.useCustomMediaId);
-  const updateConfig = (patch) => updateNode(active.id, { config: { ...active.config, ...patch } });
-  return <><Field label="Image file"><button className="upload"><Upload size={18} /> Click here or drag the file to this area to upload<small>PNG, JPG, max size 10MB.</small></button></Field><label className="switch-row"><input type="checkbox" checked={useCustomMediaId} onChange={(event) => updateConfig({ useCustomMediaId: event.target.checked })} /><span>{useCustomMediaId ? "On" : "Off"}</span><strong>Use custom media ID</strong></label>{useCustomMediaId && <Field label="Custom media ID"><input value={active.config?.customMediaId ?? ""} placeholder="Enter custom media ID" onChange={(event) => updateConfig({ customMediaId: event.target.value })} /></Field>}</>;
+  return <MediaUploadFields active={active} updateNode={updateNode} label="Image file" />;
+}
+
+function ConfigColorField({ label, active, updateNode, name, fallback }) {
+  const value = active.config?.[name] ?? fallback;
+  return <Field label={label}><div className="color-picker"><input type="color" value={value} onChange={(event) => updateNodeConfig(active, updateNode, { [name]: event.target.value })} /><input value={value} onChange={(event) => updateNodeConfig(active, updateNode, { [name]: event.target.value })} /></div></Field>;
+}
+
+function ConfigNumberField({ label, active, updateNode, name, fallback, min = 0, max = 100, step = 1, suffix = "" }) {
+  const value = active.config?.[name] ?? fallback;
+  return <Field label={label}><div className="number-unit"><input type="number" min={min} max={max} step={step} value={value} onChange={(event) => updateNodeConfig(active, updateNode, { [name]: Math.max(min, Math.min(max, Number(event.target.value) || min)) })} /><span>{suffix}</span></div></Field>;
+}
+
+function TextStyleEditor({ active, updateNode }) {
+  const config = active.config ?? {};
+  return <><div className="split-fields"><ConfigNumberField label="Font size" active={active} updateNode={updateNode} name="fontSize" fallback={28} min={10} max={56} suffix="px" /><Field label="Align"><select value={config.textAlign ?? "center"} onChange={(event) => updateNodeConfig(active, updateNode, { textAlign: event.target.value })}><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></Field></div><div className="split-fields"><Field label="Weight"><select value={config.fontWeight ?? "700"} onChange={(event) => updateNodeConfig(active, updateNode, { fontWeight: event.target.value })}><option value="400">Regular</option><option value="500">Medium</option><option value="700">Bold</option><option value="900">Heavy</option></select></Field><Field label="Font"><select value={config.fontFamily ?? "system"} onChange={(event) => updateNodeConfig(active, updateNode, { fontFamily: event.target.value })}><option value="system">System</option><option value="serif">Serif</option><option value="mono">Monospace</option></select></Field></div><ConfigColorField label="Text color" active={active} updateNode={updateNode} name="color" fallback="#171717" /></>;
+}
+
+function HeroStyleEditor({ active, updateNode }) {
+  const config = active.config ?? {};
+  return <><Field label="Crop focus"><select value={config.mediaPosition ?? "center"} onChange={(event) => updateNodeConfig(active, updateNode, { mediaPosition: event.target.value })}><option value="left center">Left</option><option value="center">Center</option><option value="right center">Right</option><option value="center top">Top</option><option value="center bottom">Bottom</option></select></Field><Field label="Fit"><select value={config.mediaFit ?? "cover"} onChange={(event) => updateNodeConfig(active, updateNode, { mediaFit: event.target.value })}><option value="cover">Cover</option><option value="contain">Contain</option></select></Field><ConfigNumberField label="Overlay" active={active} updateNode={updateNode} name="mediaOverlay" fallback={0} min={0} max={80} suffix="%" /></>;
+}
+
+function ElementLayoutEditor({ active, updateNode, showHeight = false }) {
+  return <><div className="split-fields"><ConfigNumberField label="Vertical offset" active={active} updateNode={updateNode} name="offsetY" fallback={0} min={-120} max={120} suffix="px" /><ConfigNumberField label="Opacity" active={active} updateNode={updateNode} name="opacity" fallback={100} min={0} max={100} suffix="%" /></div>{showHeight && <ConfigNumberField label="Media height" active={active} updateNode={updateNode} name="mediaHeight" fallback={100} min={35} max={160} suffix="%" />}</>;
+}
+
+function ButtonStyleEditor({ active, updateNode }) {
+  return <><div className="split-fields"><ConfigColorField label="Fill color" active={active} updateNode={updateNode} name="backgroundColor" fallback="#6b2df3" /><ConfigColorField label="Text color" active={active} updateNode={updateNode} name="color" fallback="#ffffff" /></div><ConfigNumberField label="Corner radius" active={active} updateNode={updateNode} name="radius" fallback={24} min={0} max={48} suffix="px" /></>;
+}
+
+function LinkStyleEditor({ active, updateNode }) {
+  return <><div className="split-fields"><ConfigColorField label="Link color" active={active} updateNode={updateNode} name="color" fallback="#8b8b8b" /><ConfigNumberField label="Font size" active={active} updateNode={updateNode} name="fontSize" fallback={11} min={8} max={20} suffix="px" /></div><Field label="Align"><select value={active.config?.textAlign ?? "left"} onChange={(event) => updateNodeConfig(active, updateNode, { textAlign: event.target.value })}><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></Field></>;
+}
+
+function ListStyleEditor({ active, updateNode }) {
+  return <><ConfigColorField label="Background" active={active} updateNode={updateNode} name="backgroundColor" fallback="#f5f5f5" /><div className="split-fields"><ConfigColorField label="Standard color" active={active} updateNode={updateNode} name="secondaryColor" fallback="#bdbdbd" /><ConfigColorField label="VIP color" active={active} updateNode={updateNode} name="accentColor" fallback="#ffb40d" /></div></>;
+}
+
+function CardStyleEditor({ active, updateNode }) {
+  return <><ConfigColorField label="Background" active={active} updateNode={updateNode} name="backgroundColor" fallback="#ffffff" /><div className="split-fields"><ConfigNumberField label="Corner radius" active={active} updateNode={updateNode} name="radius" fallback={22} min={0} max={48} suffix="px" /><ConfigNumberField label="Shadow" active={active} updateNode={updateNode} name="shadow" fallback={16} min={0} max={40} suffix="px" /></div></>;
+}
+
+function TimerStyleEditor({ active, updateNode }) {
+  return <><div className="split-fields"><ConfigColorField label="Timer color" active={active} updateNode={updateNode} name="color" fallback="#19ad34" /><ConfigColorField label="Background" active={active} updateNode={updateNode} name="backgroundColor" fallback="#ffd16b" /></div><ConfigNumberField label="Corner radius" active={active} updateNode={updateNode} name="radius" fallback={6} min={0} max={24} suffix="px" /></>;
+}
+
+function CarouselStyleEditor({ active, updateNode }) {
+  return <><div className="split-fields"><ConfigColorField label="Active dot" active={active} updateNode={updateNode} name="accentColor" fallback="#111111" /><ConfigColorField label="Inactive dot" active={active} updateNode={updateNode} name="secondaryColor" fallback="#dedede" /></div><ConfigNumberField label="Dot gap" active={active} updateNode={updateNode} name="gap" fallback={8} min={2} max={24} suffix="px" /></>;
+}
+
+function ProductsStyleEditor({ active, updateNode }) {
+  return <><div className="split-fields"><ConfigColorField label="Selection color" active={active} updateNode={updateNode} name="accentColor" fallback="#ff860a" /><ConfigColorField label="Selected background" active={active} updateNode={updateNode} name="selectedBackground" fallback="#ffffff" /></div><ConfigNumberField label="Corner radius" active={active} updateNode={updateNode} name="radius" fallback={18} min={0} max={32} suffix="px" /></>;
 }
 
 function ImageStyle() {
@@ -1844,10 +1910,46 @@ function formatTimer(seconds, format = "hh:mm:ss", separator = ":") {
   return `${String(hours).padStart(2, "0")}${separator}${String(minutes).padStart(2, "0")}${separator}${String(remainingSeconds).padStart(2, "0")}`;
 }
 
+function HeroMediaLayer({ config = {} }) {
+  if (config.mediaState !== "custom" || !config.mediaSrc || config.mediaType !== "Video") return null;
+  return <video className="ht-hero-media" src={config.mediaSrc} autoPlay loop muted playsInline />;
+}
+
 function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, interactive = false }) {
   const defaults = helloTalkTemplateDefaults[variant];
   const nodeById = (id) => nodes.find((item) => item.id === id);
   const value = (id, fallback) => nodeById(id)?.content || fallback;
+  const configFor = (id) => nodeById(id)?.config ?? {};
+  const styleFor = (id) => {
+    const config = configFor(id);
+    const fontFamily = config.fontFamily === "serif" ? "Georgia, serif" : config.fontFamily === "mono" ? "ui-monospace, SFMono-Regular, monospace" : undefined;
+    return {
+      ...(config.color ? { color: config.color } : {}),
+      ...(config.backgroundColor ? { background: config.backgroundColor } : {}),
+      ...(config.fontSize ? { fontSize: `${config.fontSize}px` } : {}),
+      ...(config.fontWeight ? { fontWeight: config.fontWeight } : {}),
+      ...(config.textAlign ? { textAlign: config.textAlign } : {}),
+      ...(fontFamily ? { fontFamily } : {}),
+      ...(config.radius !== undefined ? { borderRadius: `${config.radius}px` } : {}),
+      ...(config.shadow ? { boxShadow: `0 ${Math.max(2, Math.round(config.shadow / 2))}px ${config.shadow}px #17172833` } : {}),
+      ...(config.opacity !== undefined ? { opacity: config.opacity / 100 } : {}),
+      ...(config.offsetY ? { transform: `translateY(${config.offsetY}px)` } : {}),
+    };
+  };
+  const heroStyleFor = (id) => {
+    const config = configFor(id);
+    return {
+      ...styleFor(id),
+      ...(config.mediaState === "custom" && config.mediaType !== "Video" && config.mediaSrc ? { backgroundImage: `url(${config.mediaSrc})`, backgroundSize: config.mediaFit ?? "cover", backgroundPosition: config.mediaPosition ?? "center" } : {}),
+      ...(config.mediaState === "removed" ? { background: "#eef0f4", backgroundImage: "none" } : {}),
+      ...(config.mediaHeight && config.mediaHeight !== 100 ? { height: `${config.mediaHeight}%` } : {}),
+      "--media-overlay": `${(config.mediaOverlay ?? 0) / 100}`,
+    };
+  };
+  const mediaClass = (id) => {
+    const state = configFor(id).mediaState;
+    return state === "custom" ? "media-custom" : state === "removed" ? "media-removed" : "";
+  };
   const productConfig = nodeById("products")?.config ?? {};
   const defaultSelectedPlan = Number.isInteger(productConfig.defaultSelected) ? productConfig.defaultSelected : (variant === "payment-recovery" ? 0 : 1);
   const [selectedPlan, setSelectedPlan] = useState(defaultSelectedPlan);
@@ -1877,7 +1979,7 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, interacti
   };
   const nodeClass = (id, name = "") => `ht-node ${activeNode === id ? "selected" : ""} ${name}`;
   const showOfferBadge = productConfig.showOfferBadge !== false;
-  const Plan = ({ plan, index }) => <div className={`${nodeClass("products", "ht-plan")} ${index === selectedPlan ? "chosen" : ""}`} role={interactive ? "button" : undefined} tabIndex={interactive ? 0 : undefined} onClick={(event) => { if (!interactive) return; event.stopPropagation(); setSelectedPlan(index); onSelect?.("products"); }} key={`${plan[0]}-${index}`}><span>{showOfferBadge && index === 1 && variant !== "payment-recovery" && <b>{variant === "sku-sheet" ? "sku 折扣 EN" : "最受欢迎"}</b>}<strong>{plan[0]}</strong>{showOfferBadge && variant === "payment-recovery" && index === 0 && <small>30% OFF</small>}</span><em>{plan[1]}</em><i>{plan[2]}</i></div>;
+  const Plan = ({ plan, index }) => { const config = configFor("products"); const selectedStyle = index === selectedPlan && config.selectedBackground ? { background: config.selectedBackground } : {}; return <div className={`${nodeClass("products", "ht-plan")} ${index === selectedPlan ? "chosen" : ""}`} style={{ ...styleFor("products"), ...selectedStyle, ...(config.accentColor && index === selectedPlan ? { borderColor: config.accentColor } : {}) }} role={interactive ? "button" : undefined} tabIndex={interactive ? 0 : undefined} onClick={(event) => { if (!interactive) return; event.stopPropagation(); setSelectedPlan(index); onSelect?.("products"); }} key={`${plan[0]}-${index}`}><span>{showOfferBadge && index === 1 && variant !== "payment-recovery" && <b style={config.accentColor ? { background: config.accentColor } : undefined}>{variant === "sku-sheet" ? "sku 折扣 EN" : "最受欢迎"}</b>}<strong>{plan[0]}</strong>{showOfferBadge && variant === "payment-recovery" && index === 0 && <small style={config.accentColor ? { background: config.accentColor } : undefined}>30% OFF</small>}</span><em>{plan[1]}</em><i>{plan[2]}</i></div>; };
   const Status = () => <div className="ht-status"><b>{variant === "sku-sheet" ? "4:52" : "16:48"}</b><span>••• ◔ ▰</span></div>;
   const Timer = () => {
     const startValue = timerSeconds(timer);
@@ -1891,16 +1993,16 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, interacti
     if (!timerNode || timerConfig.enabled === false) return null;
     const prefix = timerConfig.prefix ?? "";
     const suffix = timerConfig.suffix ?? "";
-    return <div className={nodeClass("timer", "ht-timer")} onClick={select("timer")}>{prefix && <strong>{prefix}</strong>}<span>{formatTimer(remaining, timerConfig.format ?? "hh:mm:ss", timerConfig.separator ?? ":")}</span>{suffix && <small>{suffix}</small>}</div>;
+    return <div className={nodeClass("timer", "ht-timer")} style={styleFor("timer")} onClick={select("timer")}>{prefix && <strong>{prefix}</strong>}<span>{formatTimer(remaining, timerConfig.format ?? "hh:mm:ss", timerConfig.separator ?? ":")}</span>{suffix && <small>{suffix}</small>}</div>;
   };
-  const Action = () => interactive ? <button className={nodeClass("purchase", "ht-action")} onClick={select("purchase")}>{action}</button> : <div className="ht-action">{action}</div>;
-  const Legal = () => <p className="ht-legal"><span className={nodeClass("legal")} onClick={select("legal")}>{legal}</span>{" "}<span className={nodeClass("links")} onClick={select("links")}>{links}</span></p>;
+  const Action = () => interactive ? <button className={nodeClass("purchase", "ht-action")} style={styleFor("purchase")} onClick={select("purchase")}>{action}</button> : <div className="ht-action" style={styleFor("purchase")}>{action}</div>;
+  const Legal = () => <p className="ht-legal"><span className={nodeClass("legal")} style={styleFor("legal")} onClick={select("legal")}>{legal}</span>{" "}<span className={nodeClass("links")} style={styleFor("links")} onClick={select("links")}>{links}</span></p>;
   const SoccerBall = () => <span className="ht-soccer-ball"><i /><i /><i /></span>;
 
-  if (variant === "blue-privilege") return <div className="ht-paywall ht-blue-paywall"><Status /><section className={nodeClass("hero-image", "ht-blue-hero")} onClick={select("hero-image")}><span className="ht-back">‹</span><div className="ht-stadium-lines" /><div className="ht-blue-copy"><small>VIP</small><h1><b>VIP</b>{title.replace(/^VIP\s*/, "")}</h1><p>{caption}</p></div><div className="ht-trophy">1<sup>st</sup></div><SoccerBall /><b className="ht-vip-card">VIP</b></section><section className={nodeClass("benefits", "ht-privilege-table")} onClick={select("benefits")}><header><strong>特权名称</strong><strong>非会员</strong><b>VIP</b></header>{(benefits.length ? benefits : defaultBenefits).map((row) => <div key={row[0]}><span>{row[0]}⌄</span><em>{row[1]}</em><b>{row[2]}</b></div>)}</section><section className="ht-plan-shell">{plans.map((plan, index) => <Plan plan={plan} index={index} />)}</section><Timer /><Action /><Legal /></div>;
-  if (variant === "membership-plans") return <div className="ht-paywall ht-membership-paywall"><div className="ht-member-backdrop"><Status /><span className="ht-back">‹</span><strong>我的访问</strong><b>ϟ</b><div><span>访客</span><span>谁看了我</span><span>喜欢我的人</span></div></div><section className="ht-member-sheet"><span className="ht-sheet-close">×</span><section className={nodeClass("hero-image", "ht-member-hero")} onClick={select("hero-image")}><div className="ht-eye-particles"><i /><i /><i /><i /></div><div className="ht-phone-illustration"><b>Visit Info</b><span>Visitors　Visited　Liked</span><div className="ht-phone-rows">{["Peggie", "Nilson", "Cookie", "Hampton"].map((name) => <p key={name}><i /><strong>{name}</strong><small>is <b>1km</b> away from you</small><em>Say Hi</em></p>)}</div></div></section><section className={nodeClass("headline", "ht-member-copy")} onClick={select("headline")}><h1>{title}</h1><p className={nodeClass("caption")} onClick={select("caption")}>{caption}</p><div className={nodeClass("carousel")} onClick={select("carousel")}>{Array.from({ length: carouselCount }, (_, index) => <i key={index}>{index === carouselActive ? "●" : "○"}</i>)}</div></section><header className="ht-plan-heading"><b>选择套餐</b><span>特权对比 ›</span></header><section className="ht-plan-shell">{plans.map((plan, index) => <Plan plan={plan} index={index} />)}</section><Action /><Legal /></section></div>;
-  if (variant === "payment-recovery") return <div className="ht-paywall ht-recovery-paywall"><div className="ht-recovery-backdrop"><Status /><b>‹</b><strong>我的访问</strong></div><section className={nodeClass("offer-card", "ht-recovery-sheet")} onClick={select("offer-card")}><span className="ht-sheet-close">×</span><h1 className={nodeClass("headline")} onClick={select("headline")}>{title}</h1><div className={nodeClass("hero-image", "ht-offer-bundle")} onClick={select("hero-image")}><span>30%<br />OFF</span><SoccerBall /></div><p className={nodeClass("caption", "ht-recovery-caption")} onClick={select("caption")}>{caption}</p><section className="ht-recovery-plans">{plans.map((plan, index) => <Plan plan={plan} index={index} />)}</section><Timer /><Action /><Legal /></section></div>;
-  return <div className="ht-paywall ht-sku-paywall"><div className="ht-chat-scene"><Status /><b>‹</b><strong>huangzefeng</strong><small>上午4:52</small><span>Hi</span></div><section className={nodeClass("sku-card", "ht-sku-sheet")} onClick={select("sku-card")}><span className="ht-sheet-close">×</span><section className={nodeClass("hero-image", "ht-sku-promo")} onClick={select("hero-image")}><small className={nodeClass("headline")} onClick={select("headline")}>{title}</small><strong className={nodeClass("caption")} onClick={select("caption")}>Get <em>30% Off</em><br />Annual &amp; Lifetime VIP</strong><i>セール</i><b>VIP</b></section><Timer /><section className="ht-sku-plans">{plans.map((plan, index) => <Plan plan={plan} index={index} />)}</section><Action /><Legal /></section></div>;
+  if (variant === "blue-privilege") { const benefitConfig = configFor("benefits"); return <div className="ht-paywall ht-blue-paywall"><Status /><section className={`${nodeClass("hero-image", "ht-blue-hero")} ${mediaClass("hero-image")}`} style={heroStyleFor("hero-image")} onClick={select("hero-image")}><HeroMediaLayer config={configFor("hero-image")} /><span className="ht-back">‹</span><div className="ht-stadium-lines" /><div className="ht-blue-copy"><small>VIP</small><h1 style={styleFor("headline")}><b>VIP</b>{title.replace(/^VIP\s*/, "")}</h1><p style={styleFor("caption")}>{caption}</p></div><div className="ht-trophy">1<sup>st</sup></div><SoccerBall /><b className="ht-vip-card">VIP</b></section><section className={nodeClass("benefits", "ht-privilege-table")} style={styleFor("benefits")} onClick={select("benefits")}><header><strong>特权名称</strong><strong>非会员</strong><b style={benefitConfig.accentColor ? { color: benefitConfig.accentColor } : undefined}>VIP</b></header>{(benefits.length ? benefits : defaultBenefits).map((row) => <div key={row[0]}><span>{row[0]}⌄</span><em style={benefitConfig.secondaryColor ? { color: benefitConfig.secondaryColor } : undefined}>{row[1]}</em><b style={benefitConfig.accentColor ? { color: benefitConfig.accentColor } : undefined}>{row[2]}</b></div>)}</section><section className="ht-plan-shell">{plans.map((plan, index) => <Plan plan={plan} index={index} />)}</section><Timer /><Action /><Legal /></div>; }
+  if (variant === "membership-plans") { const carouselStyle = styleFor("carousel"); const carouselConfigStyle = configFor("carousel"); return <div className="ht-paywall ht-membership-paywall"><div className="ht-member-backdrop"><Status /><span className="ht-back">‹</span><strong>我的访问</strong><b>ϟ</b><div><span>访客</span><span>谁看了我</span><span>喜欢我的人</span></div></div><section className="ht-member-sheet"><span className="ht-sheet-close">×</span><section className={`${nodeClass("hero-image", "ht-member-hero")} ${mediaClass("hero-image")}`} style={heroStyleFor("hero-image")} onClick={select("hero-image")}><HeroMediaLayer config={configFor("hero-image")} /><div className="ht-eye-particles"><i /><i /><i /><i /></div><div className="ht-phone-illustration"><b>Visit Info</b><span>Visitors　Visited　Liked</span><div className="ht-phone-rows">{["Peggie", "Nilson", "Cookie", "Hampton"].map((name) => <p key={name}><i /><strong>{name}</strong><small>is <b>1km</b> away from you</small><em>Say Hi</em></p>)}</div></div></section><section className={nodeClass("headline", "ht-member-copy")} style={styleFor("headline")} onClick={select("headline")}><h1>{title}</h1><p className={nodeClass("caption")} style={styleFor("caption")} onClick={select("caption")}>{caption}</p><div className={nodeClass("carousel")} style={{ ...carouselStyle, gap: `${carouselConfigStyle.gap ?? 8}px` }} onClick={select("carousel")}>{Array.from({ length: carouselCount }, (_, index) => <i style={{ color: index === carouselActive ? (carouselConfigStyle.accentColor ?? undefined) : (carouselConfigStyle.secondaryColor ?? undefined) }} key={index}>{index === carouselActive ? "●" : "○"}</i>)}</div></section><header className="ht-plan-heading"><b>选择套餐</b><span>特权对比 ›</span></header><section className="ht-plan-shell">{plans.map((plan, index) => <Plan plan={plan} index={index} />)}</section><Action /><Legal /></section></div>; }
+  if (variant === "payment-recovery") return <div className="ht-paywall ht-recovery-paywall"><div className="ht-recovery-backdrop"><Status /><b>‹</b><strong>我的访问</strong></div><section className={nodeClass("offer-card", "ht-recovery-sheet")} style={styleFor("offer-card")} onClick={select("offer-card")}><span className="ht-sheet-close">×</span><h1 className={nodeClass("headline")} style={styleFor("headline")} onClick={select("headline")}>{title}</h1><div className={`${nodeClass("hero-image", "ht-offer-bundle")} ${mediaClass("hero-image")}`} style={heroStyleFor("hero-image")} onClick={select("hero-image")}><HeroMediaLayer config={configFor("hero-image")} /><span>30%<br />OFF</span><SoccerBall /></div><p className={nodeClass("caption", "ht-recovery-caption")} style={styleFor("caption")} onClick={select("caption")}>{caption}</p><section className="ht-recovery-plans">{plans.map((plan, index) => <Plan plan={plan} index={index} />)}</section><Timer /><Action /><Legal /></section></div>;
+  return <div className="ht-paywall ht-sku-paywall"><div className="ht-chat-scene"><Status /><b>‹</b><strong>huangzefeng</strong><small>上午4:52</small><span>Hi</span></div><section className={nodeClass("sku-card", "ht-sku-sheet")} style={styleFor("sku-card")} onClick={select("sku-card")}><span className="ht-sheet-close">×</span><section className={`${nodeClass("hero-image", "ht-sku-promo")} ${mediaClass("hero-image")}`} style={heroStyleFor("hero-image")} onClick={select("hero-image")}><HeroMediaLayer config={configFor("hero-image")} /><small className={nodeClass("headline")} style={styleFor("headline")} onClick={select("headline")}>{title}</small><strong className={nodeClass("caption")} style={styleFor("caption")} onClick={select("caption")}>Get <em>30% Off</em><br />Annual &amp; Lifetime VIP</strong><i>セール</i><b>VIP</b></section><Timer /><section className="ht-sku-plans">{plans.map((plan, index) => <Plan plan={plan} index={index} />)}</section><Action /><Legal /></section></div>;
 }
 function PaywallPreview({ nodes, template, mode, activeNode, onSelect }) {
   if (template?.documentTemplate) return <div className="phone source-template-phone"><HelloTalkPaywall variant={template.documentTemplate} nodes={nodes} activeNode={activeNode} onSelect={onSelect} interactive={mode === "editable"} /><button className="close-phone" aria-label="Close preview">×</button></div>;
