@@ -1339,7 +1339,12 @@ function PaywallWorkspace({ selected, draft, setDraft, view, setView, duplicate,
   if (view === "builder") {
     const active = builderNodes.find((node) => node.id === activeNode);
     const builderBoundary = missingItems.find((item) => item.id === "B-01");
+    const isDocumentTemplate = appliedTemplate !== null && Boolean(templates[appliedTemplate]?.documentTemplate);
     const addElement = (type) => {
+      if (isDocumentTemplate) {
+        markUnknown(builderBoundary);
+        return;
+      }
       const next = createComponentNode(type, builderNodes.filter((node) => node.id.startsWith("added-")).length + 1);
       setBuilderNodes((current) => [...current, next]);
       setActiveNode(next.id);
@@ -1348,6 +1353,10 @@ function PaywallWorkspace({ selected, draft, setDraft, view, setView, duplicate,
       notify(`${type} 已添加到构建器，并可在右侧继续编辑。`);
     };
     const addNestedElement = (parentId, type) => {
+      if (isDocumentTemplate) {
+        markUnknown(builderBoundary);
+        return;
+      }
       const nextId = `added-${type.toLowerCase().replace(/[^a-z]+/g, "-")}-${builderNodes.filter((node) => node.id.startsWith("added-")).length + 1}`;
       setBuilderNodes((current) => {
         const parentIndex = current.findIndex((node) => node.id === parentId);
@@ -1402,9 +1411,9 @@ function PaywallWorkspace({ selected, draft, setDraft, view, setView, duplicate,
         {appliedTemplate !== null && <div className={`template-context ${isEditableTemplate(templates[appliedTemplate]) ? "observed-tree" : "preview-only"}`}><span>Template</span><strong>{templates[appliedTemplate].title}</strong><small>{isEditableTemplate(templates[appliedTemplate]) ? templateEditableStatus(templates[appliedTemplate]) : "源端已采集预览内容；精确节点树待采集"}</small><button className="secondary" onClick={() => setModal({ kind: "templates" })}><LayoutTemplate size={15} /> Change template</button></div>}
         <div className="builder">
           <aside className="node-panel">
-            <label className="device-toggle"><input type="checkbox" defaultChecked /> <span>On</span> Show on device</label>
+            <label className="device-toggle unknown-action"><input type="checkbox" defaultChecked onChange={() => markUnknown(builderBoundary)} /> <span>On</span> Show on device</label>
             <div className="panel-tabs"><button className={builderTab === "settings" ? "active" : ""} onClick={() => setBuilderTab("settings")}>Layout settings</button><button className={builderTab === "tree" ? "active" : ""} onClick={() => setBuilderTab("tree")}>Elements</button></div>
-            <div className="add-element-wrap"><button className="add-element" onClick={() => setAddElementOpen((open) => !open)}><Plus size={17} /> Add element</button>{addElementOpen && <div className="add-element-menu">{componentCatalog.map((item) => <button key={item} onClick={() => addElement(item)}>{item}</button>)}</div>}</div>
+            <div className="add-element-wrap"><button className={`add-element ${isDocumentTemplate ? "unknown-action" : ""}`} onClick={() => isDocumentTemplate ? markUnknown(builderBoundary) : setAddElementOpen((open) => !open)}><Plus size={17} /> Add element</button>{addElementOpen && !isDocumentTemplate && <div className="add-element-menu">{componentCatalog.map((item) => <button key={item} onClick={() => addElement(item)}>{item}</button>)}</div>}</div>
             <div className="node-list">{builderNodes.map((node) => {
               const isDragging = dragState?.id === node.id;
               const dropClass = dragState?.targetId === node.id ? `drop-${dragState.position}` : "";
@@ -1412,8 +1421,8 @@ function PaywallWorkspace({ selected, draft, setDraft, view, setView, duplicate,
             })}</div>
             <div className="builder-locales"><div><strong>Localization</strong><button className="icon tiny unknown-action" onClick={() => markUnknown(builderBoundary)}><Plus size={15} /></button></div><button className="locale-row">English <i /></button><button className="locale-row selected">French <i /></button><button className="locale-row">Simplified Chinese <i /></button><button className="add-locale unknown-action" onClick={() => markUnknown(builderBoundary)}>Add locale</button></div>
           </aside>
-          <div className="canvas-area"><div className="device-controls"><button><Smartphone size={16} /> iPhone 15 Pro <ChevronDown size={14} /></button>{appliedTemplate !== null && <div className="preview-mode" aria-label="Preview mode"><button className={previewMode === "source" ? "active" : ""} onClick={() => setPreviewMode("source")}>{templates[appliedTemplate].documentTemplate ? "文档样式" : "Source visual"}</button><button className={previewMode === "editable" ? "active" : ""} disabled={!isEditableTemplate(templates[appliedTemplate])} onClick={() => setPreviewMode("editable")}>Editable structure</button></div>}<button className="icon" title="Preview orientation"><RotateCw size={15} /></button><button className="icon" title="Preview visibility"><Eye size={15} /></button></div><PaywallPreview nodes={builderNodes} template={appliedTemplate !== null ? templates[appliedTemplate] : null} mode={previewMode} activeNode={activeNode} onSelect={(id) => { setActiveNode(id); setBuilderTab("tree"); }} />{appliedTemplate !== null && previewMode === "source" && <p className="source-preview-note">{templates[appliedTemplate].documentTemplate ? "飞书文档中的 Paywall 样式参考，与模板库卡片一一对应。" : "源端模板画面，与模板库卡片一一对应。"}</p>}{appliedTemplate !== null && previewMode === "editable" && <p className="source-preview-note">{isEditableTemplate(templates[appliedTemplate]) ? "已采集样式与核心字段的本地可编辑复现。" : "精确节点树仍在采集。"}</p>}<p className="preview-disclaimer">All prices, titles, and offers displayed are placeholders. The actual data from App Store and Google Play will be shown in the app.</p></div>
-          <aside className="property-panel">{builderTab === "settings" ? <LayoutSettings markUnknown={markUnknown} boundary={builderBoundary} setModal={setModal} appliedTemplate={appliedTemplate} /> : <BuilderProperties active={active} setBuilderTab={setBuilderTab} markUnknown={markUnknown} boundary={builderBoundary} templateLinks={templateLinks} setTemplateLinks={setTemplateLinks} updateNode={updateBuilderNode} removeNode={removeBuilderNode} addNestedNode={addNestedElement} />}</aside>
+          <div className="canvas-area"><div className="device-controls"><button className="unknown-action" onClick={() => markUnknown(builderBoundary)}><Smartphone size={16} /> iPhone 15 Pro <ChevronDown size={14} /></button>{appliedTemplate !== null && <div className="preview-mode" aria-label="Preview mode"><button className={previewMode === "source" ? "active" : ""} onClick={() => setPreviewMode("source")}>{templates[appliedTemplate].documentTemplate ? "文档样式" : "Source visual"}</button><button className={previewMode === "editable" ? "active" : ""} disabled={!isEditableTemplate(templates[appliedTemplate])} onClick={() => setPreviewMode("editable")}>Editable structure</button></div>}<button className="icon unknown-action" title="Preview orientation" onClick={() => markUnknown(builderBoundary)}><RotateCw size={15} /></button><button className="icon unknown-action" title="Preview visibility" onClick={() => markUnknown(builderBoundary)}><Eye size={15} /></button></div><PaywallPreview nodes={builderNodes} template={appliedTemplate !== null ? templates[appliedTemplate] : null} mode={previewMode} activeNode={activeNode} onSelect={(id) => { setActiveNode(id); setBuilderTab("tree"); }} />{appliedTemplate !== null && previewMode === "source" && <p className="source-preview-note">{templates[appliedTemplate].documentTemplate ? "飞书文档中的 Paywall 样式参考，与模板库卡片一一对应。" : "源端模板画面，与模板库卡片一一对应。"}</p>}{appliedTemplate !== null && previewMode === "editable" && <p className="source-preview-note">{isEditableTemplate(templates[appliedTemplate]) ? "已采集样式与核心字段的本地可编辑复现。" : "精确节点树仍在采集。"}</p>}<p className="preview-disclaimer">All prices, titles, and offers displayed are placeholders. The actual data from App Store and Google Play will be shown in the app.</p></div>
+          <aside className="property-panel">{builderTab === "settings" ? <LayoutSettings markUnknown={markUnknown} boundary={builderBoundary} setModal={setModal} appliedTemplate={appliedTemplate} /> : <BuilderProperties active={active} setBuilderTab={setBuilderTab} markUnknown={markUnknown} boundary={builderBoundary} templateLinks={templateLinks} setTemplateLinks={setTemplateLinks} updateNode={updateBuilderNode} removeNode={removeBuilderNode} addNestedNode={addNestedElement} isDocumentTemplate={isDocumentTemplate} />}</aside>
         </div>
         <div className="builder-footer"><button className="secondary unknown-action" onClick={() => markUnknown(builderBoundary)}>Discard</button><button className="primary" onClick={() => setModal({ kind: appliedTemplate !== null ? "template-requirements" : "builder-save" })}>Save</button></div>
       </section>
@@ -1433,7 +1442,7 @@ function PaywallWorkspace({ selected, draft, setDraft, view, setView, duplicate,
   );
 }
 
-function BuilderProperties({ active, setBuilderTab, markUnknown, boundary, templateLinks, setTemplateLinks, updateNode, removeNode, addNestedNode }) {
+function BuilderProperties({ active, setBuilderTab, markUnknown, boundary, templateLinks, setTemplateLinks, updateNode, removeNode, addNestedNode, isDocumentTemplate }) {
   const [tab, setTab] = useState("content");
   const type = active?.type ?? "Elements";
   const componentBoundary = {
@@ -1444,14 +1453,14 @@ function BuilderProperties({ active, setBuilderTab, markUnknown, boundary, templ
   };
 
   const tabBar = <div className="property-tabs"><button className={tab === "content" ? "active" : ""} onClick={() => setTab("content")}>Content</button><button className={tab === "style" ? "active" : ""} onClick={() => setTab("style")}>Style</button><button className={tab === "layout" ? "active" : ""} onClick={() => setTab("layout")}>Layout</button></div>;
-  const nodeEditor = <EditableNodeControls active={active} updateNode={updateNode} removeNode={removeNode} />;
+  const nodeEditor = <EditableNodeControls active={active} updateNode={updateNode} removeNode={removeNode} canRemove={!isDocumentTemplate} />;
 
   if (type === "Links") {
     return <div className="property-scroll"><h3>Links</h3>{tabBar}{tab === "content" ? <LinksContent active={active} updateNode={updateNode} templateLinks={templateLinks} setTemplateLinks={setTemplateLinks} /> : <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} />}</div>;
   }
 
   if (active?.id === "hero-image") {
-    return <div className="property-scroll"><h3>Hero Image</h3>{nodeEditor}{tabBar}{tab === "content" && <HeroMediaContent active={active} updateNode={updateNode} />}{tab === "style" && <HeroMediaStyle />}{tab === "layout" && <HeroMediaLayout />}</div>;
+    return <div className="property-scroll"><h3>Hero Image</h3>{isDocumentTemplate ? <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="当前模板的主视觉为已采集的固定结构。素材替换、裁切与样式字段尚未形成可回写的预览规则，因此不会显示无反馈的输入项。" /> : <>{nodeEditor}{tabBar}{tab === "content" && <HeroMediaContent active={active} updateNode={updateNode} />}{tab !== "content" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} />}</>}</div>;
   }
 
   if (type === "List item" || type === "Today" || /^Item \d+$/.test(type) || /^Day \d+$/.test(type)) {
@@ -1459,31 +1468,31 @@ function BuilderProperties({ active, setBuilderTab, markUnknown, boundary, templ
   }
 
   if (["Text", "Header", "Headline", "Subhead", "Caption", "Legal", "Top Text"].includes(type) || /^(HEADER|Header|Caption|Title|Repeats|Subheader) \d+$/.test(type)) {
-    return <div className="property-scroll"><h3>Text</h3>{nodeEditor}{tabBar}{tab === "content" && <TextContent active={active} updateNode={updateNode} />}{tab === "style" && <TextStyle />}{tab === "layout" && <TextLayout />}</div>;
+    return <div className="property-scroll"><h3>Text</h3>{!isDocumentTemplate && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}{tab === "content" && <TextContent active={active} updateNode={updateNode} />}{tab !== "content" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="字体、颜色与间距的源端字段已见，但尚未建立可同步到当前模板预览的字段规则。" />}</div>;
   }
 
   if (["Image", "Black Friday Image"].includes(type) || /^Image \d+$/.test(type)) {
-    return <div className="property-scroll"><h3>Image</h3>{nodeEditor}{tabBar}{tab === "content" && <ImageContent active={active} updateNode={updateNode} />}{tab === "style" && <ImageStyle />}{tab === "layout" && <ImageLayout />}</div>;
+    return <div className="property-scroll"><h3>Image</h3>{nodeEditor}{tabBar}<InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="上传、自定义媒体 ID 与图片尺寸尚未接入当前预览，已不再显示为可编辑字段。" /></div>;
   }
 
   if (["Button", "Purchase Button"].includes(type)) {
-    return <div className="property-scroll"><h3>Button</h3>{nodeEditor}{tabBar}{tab === "content" && <ButtonContent type={type} active={active} updateNode={updateNode} />}{tab === "style" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} />}{tab === "layout" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} />}</div>;
+    return <div className="property-scroll"><h3>Button</h3>{!isDocumentTemplate && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}{tab === "content" && <ButtonContent active={active} updateNode={updateNode} />}{tab !== "content" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} />}</div>;
   }
 
   if (type === "Web Paywall Button") {
-    return <div className="property-scroll"><h3>Web Paywall Button</h3>{nodeEditor}{tabBar}{tab === "content" && <WebButtonContent active={active} updateNode={updateNode} />}{tab === "style" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} />}{tab === "layout" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} />}</div>;
+    return <div className="property-scroll"><h3>Web Paywall Button</h3>{!isDocumentTemplate && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}{tab === "content" && <WebButtonContent active={active} updateNode={updateNode} />}{tab !== "content" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} />}</div>;
   }
 
   if (type === "List" || /^List \d+$/.test(type) || ["Feature list", "Features"].includes(type)) {
-    return <div className="property-scroll"><h3>List</h3>{nodeEditor}{tabBar}{tab === "content" && <ListContent active={active} addNestedNode={addNestedNode} />}{tab === "style" && <ListStyle />}{tab === "layout" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} />}</div>;
+    return <div className="property-scroll"><h3>List</h3>{!isDocumentTemplate && nodeEditor}{tabBar}{tab === "content" && <ListContent active={active} updateNode={updateNode} addNestedNode={addNestedNode} allowAdd={!isDocumentTemplate} />}{tab !== "content" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="图标、连接线与布局字段尚未建立可同步到当前模板预览的字段规则。" />}</div>;
   }
 
   if (type === "Carousel") {
-    return <div className="property-scroll"><h3>Carousel</h3>{tabBar}{tab === "content" && <CarouselContent active={active} updateNode={updateNode} addNestedNode={addNestedNode} />}{tab === "style" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} />}{tab === "layout" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} />}</div>;
+    return <div className="property-scroll"><h3>Carousel</h3>{tabBar}{tab === "content" && <CarouselContent active={active} updateNode={updateNode} addNestedNode={addNestedNode} allowAdd={!isDocumentTemplate} />}{tab !== "content" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} />}</div>;
   }
 
   if (type === "Card") {
-    return <div className="property-scroll"><h3>Card</h3>{tabBar}{tab === "content" && <CardContent active={active} addNestedNode={addNestedNode} />}{tab === "style" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="Card has a Style tab, but its exact field labels were not retained in the inspection notes." />}{tab === "layout" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="Card has a Layout tab, but its exact field labels were not retained in the inspection notes." />}</div>;
+    return <div className="property-scroll"><h3>Card</h3>{tabBar}{tab === "content" && <CardContent active={active} addNestedNode={addNestedNode} allowAdd={!isDocumentTemplate} />}{tab === "style" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="Card has a Style tab, but its exact field labels were not retained in the inspection notes." />}{tab === "layout" && <InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="Card has a Layout tab, but its exact field labels were not retained in the inspection notes." />}</div>;
   }
 
   if (type === "Timer") {
@@ -1509,9 +1518,13 @@ function BuilderProperties({ active, setBuilderTab, markUnknown, boundary, templ
   return <div className="property-scroll"><h3>{type}</h3>{nodeEditor}{tabBar}<InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="This source-observed template layer can be edited as content. Its dedicated inspector fields were not captured, so the demo does not substitute a generic configuration panel." /></div>;
 }
 
-function EditableNodeControls({ active, updateNode, removeNode }) {
+function EditableNodeControls({ active, updateNode, removeNode, canRemove = true }) {
   if (!active) return null;
-  return <section className="node-editor"><Field label="Element content"><textarea value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><button className="danger" onClick={() => removeNode(active.id)}>Delete element</button></section>;
+  return <section className="node-editor"><Field label="Element content"><textarea value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field>{canRemove && <NodeDeleteControl active={active} removeNode={removeNode} />}</section>;
+}
+
+function NodeDeleteControl({ active, removeNode }) {
+  return <button className="danger" onClick={() => removeNode(active.id)}>Delete element</button>;
 }
 
 function InspectorBoundary({ boundary, markUnknown, message = "The visible entry is retained, but the next detailed behavior has not been verified." }) {
@@ -1521,11 +1534,11 @@ function InspectorBoundary({ boundary, markUnknown, message = "The visible entry
 function HeroMediaContent({ active, updateNode }) {
   const kind = active.config?.mediaType ?? "Image";
   const updateConfig = (patch) => updateNode(active.id, { config: { ...active.config, ...patch } });
-  return <><Field label="Media"><div className="segmented"><button className={kind === "Image" ? "active" : ""} onClick={() => updateConfig({ mediaType: "Image" })}>Image</button><button className={kind === "Video" ? "active" : ""} onClick={() => updateConfig({ mediaType: "Video" })}>Video</button></div></Field><Field label={`${kind} file`}><button className="upload"><Upload size={18} /> Click here or drag the file to this area to upload<small>PNG, JPG, max size 10MB.</small></button></Field><Field label="Custom media ID"><input value={active.config?.customMediaId ?? ""} placeholder="Enter custom media ID" onChange={(event) => updateConfig({ customMediaId: event.target.value })} /></Field></>;
+  return <><Field label="Media"><div className="segmented"><button className={kind === "Image" ? "active" : ""} onClick={() => updateConfig({ mediaType: "Image" })}>Image</button><button className={kind === "Video" ? "active" : ""} onClick={() => updateConfig({ mediaType: "Video" })}>Video</button></div></Field><p className="property-copy">素材上传与自定义媒体 ID 尚未接入预览，因此不显示为可编辑字段。</p></>;
 }
 
 function TextContent({ active, updateNode }) {
-  return <><Field label="Text Required"><textarea value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><Field label="Max lines"><ConfigInput active={active} updateNode={updateNode} name="maxLines" fallback="2" /></Field><Field label="Overflow"><div className="select-like">Scale text <ChevronDown size={14} /></div></Field></>;
+  return <Field label="Text Required"><textarea value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field>;
 }
 
 function ImageContent({ active, updateNode }) {
@@ -1551,10 +1564,10 @@ function ImageLayout() {
   return <Field label="Image height"><input defaultValue="100" /></Field>;
 }
 
-function CardContent({ active, addNestedNode }) {
+function CardContent({ active, addNestedNode, allowAdd = true }) {
   const [open, setOpen] = useState(false);
   const allowed = ["List", "Button", "Image", "Text", "Timer"];
-  return <><h4>Card items</h4><div className="nested-add-wrap"><button className="text-action" onClick={() => setOpen((value) => !value)}><Plus size={15} /> Add element</button>{open && <div className="nested-add-menu">{allowed.map((type) => <button key={type} onClick={() => { addNestedNode(active.id, type); setOpen(false); }}>{type}</button>)}</div>}</div></>;
+  return allowAdd ? <><h4>Card items</h4><div className="nested-add-wrap"><button className="text-action" onClick={() => setOpen((value) => !value)}><Plus size={15} /> Add element</button>{open && <div className="nested-add-menu">{allowed.map((type) => <button key={type} onClick={() => { addNestedNode(active.id, type); setOpen(false); }}>{type}</button>)}</div>}</div></> : <p className="property-copy">当前模板的卡片结构由已采集的固定画面组成；任意新增子元素尚未形成可回写的预览规则。</p>;
 }
 
 function TimerContent({ active, updateNode }) {
@@ -1569,10 +1582,7 @@ function ToggleContent({ node, updateNode, boundary, markUnknown }) {
   const updateCopy = (nextTitle, nextSecondary) => updateNode(node.id, { content: `${nextTitle}|${nextSecondary}` });
   return <>
     <Field label="Default toggle state"><div className="segmented"><button className={defaultState === "Off" ? "active" : ""} onClick={() => updateNode(node.id, { defaultState: "Off" })}>Off</button><button className={defaultState === "On" ? "active" : ""} onClick={() => updateNode(node.id, { defaultState: "On" })}>On</button></div></Field>
-    <h4 className="inspector-heading">Style</h4><Field label="Fill color"><ColorOpacity color="#ffffff" opacity="100" /></Field><Field label="Border color"><ColorOpacity color="#efeef4" opacity="100" /></Field><Field label="Border thickness"><input defaultValue="1" /></Field><Field label="Corner radius"><input defaultValue="19" /></Field>
-    <h4 className="inspector-heading">Toggle color</h4><Field label="Active color"><ColorOpacity color="#c2f01e" opacity="100" /></Field>
-    <h4 className="inspector-heading">Text</h4><div className="toggle-state-tabs"><button className="active">Inactive</button><button className="unknown-action" onClick={() => markUnknown(boundary)}>Active</button></div><Field label="Title text"><textarea value={title} onChange={(event) => updateCopy(event.target.value, secondary)} /></Field><Field label="Secondary text"><textarea value={secondary} onChange={(event) => updateCopy(title, event.target.value)} /></Field>
-    <h4 className="inspector-heading">Layout</h4><Field label="Padding"><PaddingInputs /></Field><Field label="Vertical offset"><input defaultValue="0" /></Field><h4 className="inspector-heading">Content layout</h4><Field label="Padding"><PaddingInputs values={[16, 16, 16, 16]} /></Field><Field label="Text spacing"><input defaultValue="0" /></Field>
+    <Field label="Title text"><textarea value={title} onChange={(event) => updateCopy(event.target.value, secondary)} /></Field><Field label="Secondary text"><textarea value={secondary} onChange={(event) => updateCopy(title, event.target.value)} /></Field><InspectorBoundary boundary={boundary} markUnknown={markUnknown} message="开关的颜色、边框与布局字段尚未接入预览，不显示为可编辑字段。" />
   </>;
 }
 
@@ -1584,28 +1594,26 @@ function TextLayout() {
   return <><Field label="Margin"><PaddingInputs /></Field><Field label="Vertical offset"><input defaultValue="0" /></Field></>;
 }
 
-function ButtonContent({ type, active, updateNode }) {
-  const purchase = type === "Purchase Button" || active.config?.action === "Purchase";
-  const updateConfig = (patch) => updateNode(active.id, { config: { ...active.config, ...patch } });
-  return <><Field label="Button action"><select value={active.config?.action ?? (purchase ? "Purchase" : "Custom")} onChange={(event) => updateConfig({ action: event.target.value })}><option>Purchase</option><option>Close</option><option>Custom</option></select></Field><Field label="Button action ID"><ConfigInput active={active} updateNode={updateNode} name="actionId" fallback={purchase ? "purchase" : ""} /></Field><Field label="Text"><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field></>;
+function ButtonContent({ active, updateNode }) {
+  return <><Field label="Text"><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><p className="property-copy">购买、关闭和自定义动作的执行结果尚未在当前模板预览中采集，因此不显示为可配置字段。</p></>;
 }
 
 function WebButtonContent({ active, updateNode }) {
-  return <><Field label="Open paywall in"><div className="select-like">External browser <ChevronDown size={14} /></div></Field><Field label="Offer"><div className="select-like">Default <ChevronDown size={14} /></div></Field><Field label="Button text"><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><Field label="Secondary text"><ConfigInput active={active} updateNode={updateNode} name="secondaryText" fallback="" placeholder="Enter text here" /></Field></>;
+  return <><Field label="Button text"><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><p className="property-copy">浏览器打开方式、Offer 与辅助文案的预览映射尚未采集，不显示为可编辑字段。</p></>;
 }
 
 function LinksContent({ active, updateNode, templateLinks, setTemplateLinks }) {
-  return <><Field label="Visible link labels"><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><LinkOption title="Terms of service" checked fields={[["Link URL", templateLinks.terms, (value) => setTemplateLinks((current) => ({ ...current, terms: value }))]]} /><LinkOption title="Privacy policy" checked fields={[["Link URL", templateLinks.privacy, (value) => setTemplateLinks((current) => ({ ...current, privacy: value }))]]} /><LinkOption title="Restore button" checked fields={[["Button text", "Restore"], ["Action ID", "Restore"]]} /></>;
+  return <><Field label="Visible link labels"><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><p className="property-copy">服务条款、隐私政策与恢复购买的跳转逻辑未在当前预览中执行；链接 URL 不显示为无反馈输入。</p></>;
 }
 
-function ListContent({ active, addNestedNode }) {
-  return <><h4>List items</h4><button className="text-action" onClick={() => addNestedNode(active.id, "List item")}><Plus size={15} /> Add element</button></>;
+function ListContent({ active, updateNode, addNestedNode, allowAdd = true }) {
+  return allowAdd ? <><h4>List items</h4><button className="text-action" onClick={() => addNestedNode(active.id, "List item")}><Plus size={15} /> Add element</button></> : <><Field label="Benefit rows"><textarea value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><p className="property-copy">每行使用“权益名称|非会员|VIP”映射到当前模板中的一行权益对比；新增行与图标样式尚未建立可回写规则。</p></>;
 }
 
 function ListItemContent({ active, updateNode }) {
   const [title = "", caption = ""] = (active.content ?? "").split("|");
   const updateCopy = (nextTitle, nextCaption) => updateNode(active.id, { content: `${nextTitle}|${nextCaption}` });
-  return <><Field label="Custom icon"><button className="upload"><Upload size={18} /> Click here or drag the file to this area to upload<small>PNG, JPG, max size 0.5MB.</small></button></Field><h4>Connector</h4><Field label="Thickness"><input defaultValue="0" /></Field><Field label="Color"><ColorOpacity color="#000000" opacity="100" /></Field><h4>Text</h4><Field label="Title"><textarea value={title} onChange={(event) => updateCopy(event.target.value, caption)} /></Field><Field label="Caption"><textarea value={caption} onChange={(event) => updateCopy(title, event.target.value)} /></Field></>;
+  return <><Field label="Title"><textarea value={title} onChange={(event) => updateCopy(event.target.value, caption)} /></Field><Field label="Caption"><textarea value={caption} onChange={(event) => updateCopy(title, event.target.value)} /></Field><p className="property-copy">自定义图标与连接线样式尚未接入预览，不显示为可编辑字段。</p></>;
 }
 
 function ListItemStyle() {
@@ -1620,10 +1628,10 @@ function ListStyle() {
   return <><Field label="Default icon"><div className="select-like">Default icon <ChevronDown size={14} /></div></Field><Field label="Icon placement"><div className="select-like">Left <ChevronDown size={14} /></div></Field><Field label="Icon color"><ColorOpacity color="#000000" opacity="100" /></Field><h4>Connector</h4><Field label="Thickness"><input defaultValue="0" /></Field><Field label="Color"><ColorOpacity color="#000000" opacity="100" /></Field><Field label="Icon size"><input placeholder="Not captured" /></Field><h4>Title</h4><Field label="Font"><div className="select-like">Nunito Extrabold <ChevronDown size={14} /></div></Field><Field label="Size"><input defaultValue="17" /></Field><h4>Caption</h4><Field label="Font"><div className="select-like">Nunito Medium <ChevronDown size={14} /></div></Field><Field label="Size"><input defaultValue="15" /></Field></>;
 }
 
-function CarouselContent({ active, updateNode, addNestedNode }) {
+function CarouselContent({ active, updateNode, addNestedNode, allowAdd = true }) {
   const config = active.config ?? {};
   const updateConfig = (patch) => updateNode(active.id, { config: { ...config, ...patch } });
-  return <><h4>Carousel behavior</h4><div className="split-fields"><Field label="Number of slides"><input type="number" min="1" max="10" value={config.itemCount ?? active.content ?? 1} onChange={(event) => updateConfig({ itemCount: Math.max(1, Math.min(10, Number(event.target.value) || 1)) })} /></Field><Field label="Initial slide"><input type="number" min="0" max={Math.max(0, (config.itemCount ?? active.content ?? 1) - 1)} value={config.initialSlide ?? 0} onChange={(event) => updateConfig({ initialSlide: Math.max(0, Number(event.target.value) || 0) })} /></Field></div><h4>Carousel items</h4><button className="text-action" onClick={() => addNestedNode(active.id, "Card")}><Plus size={15} /> Add element</button></>;
+  return <><h4>Carousel behavior</h4><div className="split-fields"><Field label="Number of slides"><input type="number" min="1" max="10" value={config.itemCount ?? active.content ?? 1} onChange={(event) => updateConfig({ itemCount: Math.max(1, Math.min(10, Number(event.target.value) || 1)) })} /></Field><Field label="Initial slide"><input type="number" min="0" max={Math.max(0, (config.itemCount ?? active.content ?? 1) - 1)} value={config.initialSlide ?? 0} onChange={(event) => updateConfig({ initialSlide: Math.max(0, Number(event.target.value) || 0) })} /></Field></div>{allowAdd && <><h4>Carousel items</h4><button className="text-action" onClick={() => addNestedNode(active.id, "Card")}><Plus size={15} /> Add element</button></>}</>;
 }
 
 function ProductsContent({ active, updateNode }) {
@@ -1651,7 +1659,7 @@ function LinkOption({ title, checked = false, fields }) {
 }
 
 function LayoutSettings({ markUnknown, boundary, setModal, appliedTemplate }) {
-  return <div className="property-scroll layout-settings"><h3>Layout settings</h3><Field label="Template"><div className="inline-select"><span>{appliedTemplate !== null ? templates[appliedTemplate].title : "X template #19"}</span><button className="secondary" onClick={() => setModal({ kind: "templates" })}>Change template</button></div></Field><Field label="Purchase flow"><div className="select-like">Products as list + purchase button <ChevronDown size={14} /></div></Field><Field label="Background color"><div className="color-with-opacity"><div className="color-line"><i /> #212121</div><input defaultValue="100" aria-label="Background opacity" /></div></Field><label className="switch-row"><input type="checkbox" /><span>Off</span><strong>Enable Dark mode</strong></label><Field label="Default font"><div className="select-like">System (SF Pro, Roboto) Regular <ChevronDown size={14} /></div></Field><h4>Content layout</h4><Field label="Default child margin"><div className="four-inputs"><input defaultValue="16" /><input defaultValue="16" /><input defaultValue="0" /><input defaultValue="16" /></div></Field><Field label="Spacing"><input defaultValue="0" /></Field><button className="secondary unknown-action" onClick={() => markUnknown(boundary)}>Add max width</button><section className="top-button"><label className="switch-row"><input type="checkbox" defaultChecked /><span>On</span><strong>Top button 1</strong></label><Field label="Action"><div className="select-like">Close <ChevronDown size={14} /></div></Field><Field label="Action ID"><input disabled defaultValue="Close" /></Field><div className="split-fields"><Field label="Style"><div className="select-like">Icon <ChevronDown size={14} /></div></Field><Field label="Align"><div className="select-like">Left <ChevronDown size={14} /></div></Field></div><Field label="Show after delay"><input type="range" min="0" max="3000" defaultValue="0" /><small>0 ms</small></Field><h4>Style</h4><Field label="Fill color"><div className="color-with-opacity"><div className="color-line"><i /> #121212</div><input defaultValue="50" /></div></Field><Field label="Border color"><div className="color-with-opacity"><div className="color-line"><i /> #121212</div><input defaultValue="100" /></div></Field><Field label="Border thickness"><input defaultValue="0" /></Field><h4>Icon</h4><Field label="Icon"><div className="select-like">Close <ChevronDown size={14} /></div></Field><Field label="Icon color"><div className="color-with-opacity"><div className="color-line light"><i /> #fcffe0</div><input defaultValue="80" /></div></Field></section><label className="switch-row"><input type="checkbox" /><span>Off</span><strong>Top button 2</strong></label></div>;
+  return <div className="property-scroll layout-settings"><h3>Layout settings</h3><Field label="Template"><div className="inline-select"><span>{appliedTemplate !== null ? templates[appliedTemplate].title : "X template #19"}</span><button className="secondary" onClick={() => setModal({ kind: "templates" })}>Change template</button></div></Field><InspectorBoundary boundary={boundary} markUnknown={markUnknown} message="全局背景、字体、顶部按钮与间距的字段尚未建立可靠的预览映射，因此不显示为可编辑控件。" /></div>;
 }
 
 function WorkspaceHeader({ selected, setView, duplicate, setModal, markUnknown }) {
