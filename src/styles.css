@@ -363,8 +363,6 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-blue-paywall .ht-action { height: 16cqw; min-height: 0; }
 .ht-blue-paywall .ht-legal { min-height: 15cqw; padding: 2.5cqw 0; }
 
-/* Source-observed Hero Image display and tint controls. The tint sits above the source media and below editable embedded copy. */
-.ht-blue-hero::before { position: absolute; z-index: 2; inset: 0; background: var(--hero-tint, #212121); content: ""; opacity: var(--hero-tint-opacity, 0); pointer-events: none; }
 
 /* Every reconstructed paywall uses module-owned dimensions, never remaining-page fill. */
 .ht-membership-paywall .ht-member-backdrop { height: 37cqw; }
@@ -404,6 +402,7 @@ textarea { min-height: 80px; resize: vertical; }
   color: var(--hero-title-color, #ffc524);
   font-size: var(--hero-title-size, 30px);
 }
+.ht-blue-paywall .ht-blue-copy h1 b { color: var(--hero-title-prefix-color, #ffffff); }
 .ht-blue-paywall .ht-blue-copy p {
   color: var(--hero-caption-color, #ffffff);
   font-size: var(--hero-caption-size, 16px);

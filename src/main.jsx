@@ -842,6 +842,7 @@ const zhCopy = {
   "1 product · Trial timeline · Reviews": "1 个产品 · 试用时间线 · 评价", "1 product · Image": "1 个产品 · 图片", "1 product · Free trial toggle": "1 个产品 · 免费试用开关",
   "Text Required": "文本内容", "Max lines": "最大行数", "Overflow": "溢出处理", "Scale text": "缩放文字", "Close preview": "关闭预览",
   "Visual media": "视觉媒体", "Embedded headline": "内嵌主标题", "Embedded supporting copy": "内嵌辅助文案", "Embedded copy layout": "内嵌文案布局", "Left offset": "左侧偏移", "Bottom offset": "底部偏移",
+  "Image fit": "图片适配", "Contain": "完整显示", "Title prefix color": "标题前缀颜色", "Title suffix color": "标题后缀颜色",
   "PREMIUM ACCESS": "高级访问", "Smart summaries and audio insights designed for lifelong learners": "为持续学习者准备的智能摘要与音频洞察",
   "Premium content and tools": "高级内容与工具", "A plan that fits your routine": "适合你日常节奏的方案", "Cancel anytime from settings": "可随时在设置中取消",
   "Today": "今天", "Full access starts now": "完整访问从现在开始", "Day 6": "第 6 天", "We will remind you": "我们会提醒你", "Day 7": "第 7 天", "Your plan renews": "你的方案将续订",
@@ -884,7 +885,7 @@ const zhCopy = {
   "Actions for test": "test 的操作", "Actions for test 2": "test 2 的操作", "Edit": "编辑",
   "No switch (all products are visible)": "不切换（展示所有产品）", "Selected product": "选中的产品", "Products grouping": "产品分组",
   "Custom media ID": "自定义媒体 ID", "Background image": "背景图片", "Fill": "填充", "Border": "边框", "Corner radius": "圆角",
-  "Height": "高度", "Aspect": "宽高比", "Original": "原始比例", "Cover": "覆盖", "Padding": "内边距", "Vertical offset": "垂直偏移",
+    "Height": "高度", "Aspect": "宽高比", "Original": "原始比例", "Cover": "填满", "Padding": "内边距", "Vertical offset": "垂直偏移",
   "Format": "格式", "Separator": "分隔符", "Starting value": "初始值", "Text before": "前置文案", "Text after": "后置文案", "Reset on every opening": "每次打开时重置",
   "Default icon": "默认图标", "Icon position": "图标位置", "Connector": "连接线", "Autoplay": "自动播放", "Timing": "时长", "Transition": "切换效果", "Pause on user interaction": "用户操作时暂停",
   "Toggle color": "开关颜色", "Active color": "开启颜色", "Title text": "标题文案", "Text spacing": "文字间距",
@@ -1611,7 +1612,7 @@ function TextStyleEditor({ active, updateNode }) {
 
 function HeroStyleEditor({ active, updateNode }) {
   const config = active.config ?? {};
-  return <><h4>Visual media</h4><Field label="Display"><div className="segmented">{["Overlay", "Transparent", "Flat"].map((mode) => <button key={mode} className={(config.displayMode ?? "Overlay") === mode ? "active" : ""} onClick={() => updateNodeConfig(active, updateNode, { displayMode: mode })}>{mode}</button>)}</div></Field><ConfigColorField label="Tint" active={active} updateNode={updateNode} name="tintColor" fallback="#212121" /><ConfigNumberField label="Tint opacity" active={active} updateNode={updateNode} name="tintOpacity" fallback={0} min={0} max={100} suffix="%" />{config.copyTitle !== undefined && <section className="embedded-copy-editor"><h4>Embedded headline</h4><div className="split-fields"><ConfigNumberField label="Font size" active={active} updateNode={updateNode} name="copyTitleSize" fallback={30} min={8} max={96} suffix="px" /><ConfigColorField label="Text color" active={active} updateNode={updateNode} name="copyTitleColor" fallback="#ffc524" /></div><h4>Embedded supporting copy</h4><div className="split-fields"><ConfigNumberField label="Font size" active={active} updateNode={updateNode} name="copyCaptionSize" fallback={16} min={8} max={64} suffix="px" /><ConfigColorField label="Text color" active={active} updateNode={updateNode} name="copyCaptionColor" fallback="#ffffff" /></div></section>}</>;
+  return <><h4>Visual media</h4><Field label="Image fit"><div className="segmented">{[["cover", "Cover"], ["contain", "Contain"]].map(([value, label]) => <button key={value} className={(config.mediaFit ?? "cover") === value ? "active" : ""} onClick={() => updateNodeConfig(active, updateNode, { mediaFit: value })}>{label}</button>)}</div></Field><ConfigColorField label="Background color" active={active} updateNode={updateNode} name="mediaBackgroundColor" fallback="#ffffff" />{config.copyTitle !== undefined && <section className="embedded-copy-editor"><h4>Embedded headline</h4><div className="split-fields"><ConfigNumberField label="Font size" active={active} updateNode={updateNode} name="copyTitleSize" fallback={30} min={8} max={96} suffix="px" /><ConfigColorField label="Title prefix color" active={active} updateNode={updateNode} name="copyPrefixColor" fallback="#ffffff" /><ConfigColorField label="Title suffix color" active={active} updateNode={updateNode} name="copyTitleColor" fallback="#ffc524" /></div><h4>Embedded supporting copy</h4><div className="split-fields"><ConfigNumberField label="Font size" active={active} updateNode={updateNode} name="copyCaptionSize" fallback={16} min={8} max={64} suffix="px" /><ConfigColorField label="Text color" active={active} updateNode={updateNode} name="copyCaptionColor" fallback="#ffffff" /></div></section>}</>;
 }
 
 function ElementLayoutEditor({ active, updateNode, showHeight = false }) {
@@ -2013,23 +2014,21 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, interacti
   const heroStyleFor = (id) => {
     const config = configFor(id);
     const padding = ["Top", "Right", "Bottom", "Left"].map((edge) => `${config[`padding${edge}`] ?? 0}px`).join(" ");
-    const displayMode = config.displayMode ?? "Overlay";
-    const tintOpacity = Math.max(0, Math.min(100, Number(config.tintOpacity ?? 0))) / 100;
     const numeric = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
     const heightScale = config.mediaHeight === "" ? 1 : numeric(config.mediaHeight, 100) / 100;
     return {
       ...styleFor(id),
       ...(config.mediaState === "custom" && config.mediaType !== "Video" && config.mediaSrc ? { backgroundImage: `url(${config.mediaSrc})`, backgroundSize: config.mediaFit ?? "cover", backgroundPosition: config.mediaPosition ?? "center" } : {}),
-      ...(config.mediaState === "removed" ? { background: "#eef0f4", backgroundImage: "none" } : {}),
+      backgroundColor: config.mediaBackgroundColor ?? "#ffffff",
+      ...(config.mediaState === "removed" ? { backgroundImage: "none" } : {}),
       ...(config.rounded ? { borderRadius: `${config.radius ?? 0}px` } : {}),
       ...(padding !== "0px 0px 0px 0px" ? { padding } : {}),
       "--hero-height-scale": `${heightScale}`,
-      "--hero-tint": config.tintColor ?? "#212121",
-      "--hero-tint-opacity": `${displayMode === "Overlay" ? tintOpacity : displayMode === "Transparent" ? tintOpacity * 0.35 : 0}`,
       "--hero-copy-left": `${numeric(config.copyLeft, 12)}%`,
       "--hero-copy-bottom": `${numeric(config.copyBottom, 15)}%`,
       "--hero-copy-align": config.copyAlign ?? "left",
       "--hero-title-color": config.copyTitleColor ?? "#ffc524",
+      "--hero-title-prefix-color": config.copyPrefixColor ?? "#ffffff",
       "--hero-title-size": `${numeric(config.copyTitleSize, 30)}px`,
       "--hero-caption-color": config.copyCaptionColor ?? "#ffffff",
       "--hero-caption-size": `${numeric(config.copyCaptionSize, 16)}px`,
