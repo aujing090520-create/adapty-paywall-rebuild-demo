@@ -363,6 +363,9 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-blue-paywall .ht-action { height: 16cqw; min-height: 0; }
 .ht-blue-paywall .ht-legal { min-height: 15cqw; padding: 2.5cqw 0; }
 
+/* Source-observed Hero Image display and tint controls. The tint sits above the source media and below editable embedded copy. */
+.ht-blue-hero::before { position: absolute; z-index: 2; inset: 0; background: var(--hero-tint, #212121); content: ""; opacity: var(--hero-tint-opacity, 0); pointer-events: none; }
+
 /* Every reconstructed paywall uses module-owned dimensions, never remaining-page fill. */
 .ht-membership-paywall .ht-member-backdrop { height: 37cqw; }
 .ht-membership-paywall .ht-member-sheet { height: 183cqw; min-height: 0; }
@@ -384,3 +387,9 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-sku-paywall .ht-sku-plans .ht-plan { height: 22cqw; min-height: 0; }
 .ht-sku-paywall .ht-action { height: 20cqw; min-height: 0; }
 .ht-sku-paywall .ht-legal { min-height: 12cqw; }
+
+/* Image height is a ratio of each component's own source-calibrated size, never a percentage of the whole device preview. */
+.ht-blue-paywall .ht-blue-hero { height: calc(58cqw * var(--hero-height-scale, 1)); }
+.ht-membership-paywall .ht-member-hero { height: calc(71cqw * var(--hero-height-scale, 1)); }
+.ht-recovery-paywall .ht-offer-bundle { height: calc(48cqw * var(--hero-height-scale, 1)); aspect-ratio: auto; }
+.ht-sku-paywall .ht-sku-promo { height: calc(45cqw * var(--hero-height-scale, 1)); }

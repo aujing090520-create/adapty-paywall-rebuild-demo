@@ -681,7 +681,7 @@ function createBuilderNodes(templateId = "knowledge") {
 
   if (template.id === "ht-blue-privilege") {
     return [
-      node("hero-image", "Hero Image", template.visual, 0, { theme: template.theme, config: { copyTitle: "VIP 7折大促", copyCaption: "HelloTalk 世界杯", bannerEnabled: true, locale: "English", deepLink: "", entryOnly: false, closeConfirm: false } }),
+      node("hero-image", "Hero Image", template.visual, 0, { theme: template.theme, config: { copyTitle: "VIP 7折大促", copyCaption: "HelloTalk 世界杯", bannerEnabled: true, deepLink: "", entryOnly: false, closeConfirm: false } }),
       node("benefits", "List", "无限 AI 翻译&字幕|10次/天|无限\n解锁谁看了我|受限|✓\n搜索附近的人|受限|✓\n9倍曝光助推|受限|高达 9 倍\n匹配不同母语语伴|各 1 门|各 3 门", 0, { label: "特权对比", config: { bluePrivilege: true, maxVisibleRows: 5, headerBackground: "#f1f1f1", vipColumnBackground: "#ffffff", backgroundColor: "#f5f5f5", secondaryColor: "#bdbdbd", accentColor: "#ffb40d" } }),
       node("timer", "Timer", "18:32:25", 0, { config: { bluePrivilege: true, enabled: true, format: "hh:mm:ss", separator: ":", prefix: "倒计时", suffix: "", resetMode: "Reset timer on every paywall view", locale: "English", backgroundColor: "#ffd16b", color: "#19ad34" } }),
       node("products", "Products", "1个月会员|¥78|¥78/月\n12个月会员|¥488|¥40.67/月\n终身会员|¥698|永久会员权益", 0, { config: { bluePrivilege: true, defaultSelected: 1, showOfferBadge: true, offerBadgeLabel: "🔥 30% OFF", visibleProductCount: 3, selectedBackground: "#ffffff", accentColor: "#ff860a", badgeBackground: "#ffb000", badgeTextColor: "#ffffff", productBackground: "#f5f5f5" } }),
@@ -875,6 +875,7 @@ const zhCopy = {
   "Show after delay": "延迟显示", "Fill color": "填充颜色", "Border color": "边框颜色", "Border thickness": "边框粗细", "Icon color": "图标颜色",
   "Upload image": "上传图片", "Upload video": "上传视频", "Choose a file from your computer": "从电脑中选择文件", "Enter custom media ID": "输入自定义媒体 ID",
   "Media": "媒体", "Video": "视频", "Display": "展示方式", "Overlay": "叠加", "Transparent": "透明", "Flat": "平铺", "Tint": "色调",
+  "Tint opacity": "色调透明度", "Image height": "图片高度",
   "Terms of Service": "服务条款", "Privacy Policy": "隐私政策",
   "Read the docs": "查看文档", "All placements": "全部展示位置", "States (3)": "状态（3）", "Live": "已发布", "Draft": "草稿", "Inactive": "未启用",
   "Search by paywall name": "按付费墙名称搜索", "Proceeds": "实收款项", "Net proceeds": "净实收款项", "1 - 2 of 2": "第 1 - 2 项，共 2 项",
@@ -1476,7 +1477,7 @@ function BuilderProperties({ active, setBuilderTab, markUnknown, boundary, templ
   }
 
   if (active?.id === "hero-image") {
-    return <div className="property-scroll"><h3>Hero Image</h3>{!isDocumentTemplate && nodeEditor}{tabBar}{tab === "content" && <HeroMediaContent active={active} updateNode={updateNode} />}{tab === "style" && <HeroStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} showHeight />}</div>;
+    return <div className="property-scroll"><h3>Hero Image</h3>{!isDocumentTemplate && nodeEditor}{tabBar}{tab === "content" && <HeroMediaContent active={active} updateNode={updateNode} />}{tab === "style" && <HeroStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <HeroLayoutEditor active={active} updateNode={updateNode} />}</div>;
   }
 
   if (type === "List item" || type === "Today" || /^Item \d+$/.test(type) || /^Day \d+$/.test(type)) {
@@ -1567,7 +1568,7 @@ function MediaUploadFields({ active, updateNode, label = "Media file" }) {
 function HeroMediaContent({ active, updateNode }) {
   const kind = active.config?.mediaType ?? "Image";
   const config = active.config ?? {};
-  return <><Field label="Media"><div className="segmented"><button className={kind === "Image" ? "active" : ""} onClick={() => updateNodeConfig(active, updateNode, { mediaType: "Image" })}>Image</button><button className={kind === "Video" ? "active" : ""} onClick={() => updateNodeConfig(active, updateNode, { mediaType: "Video" })}>Video</button></div></Field><MediaUploadFields active={active} updateNode={updateNode} label="Hero media" />{config.copyTitle !== undefined && <section className="embedded-copy-editor"><h4>Top banner</h4><label className="switch-row"><input type="checkbox" checked={config.bannerEnabled !== false} onChange={(event) => updateNodeConfig(active, updateNode, { bannerEnabled: event.target.checked })} /><span>{config.bannerEnabled !== false ? "On" : "Off"}</span><strong>Show banner</strong></label><Field label="Language"><select value={config.locale ?? "English"} onChange={(event) => updateNodeConfig(active, updateNode, { locale: event.target.value })}><option>English</option><option>简体中文</option><option>Français</option></select></Field><Field label="Banner deep link"><input value={config.deepLink ?? ""} placeholder="https://" onChange={(event) => updateNodeConfig(active, updateNode, { deepLink: event.target.value })} /></Field><label className="switch-row"><input type="checkbox" checked={config.entryOnly === true} onChange={(event) => updateNodeConfig(active, updateNode, { entryOnly: event.target.checked })} /><span>{config.entryOnly ? "On" : "Off"}</span><strong>Only show at entry</strong></label><h4>Copy embedded in this visual</h4><Field label="Headline"><input value={config.copyTitle} onChange={(event) => updateNodeConfig(active, updateNode, { copyTitle: event.target.value })} /></Field><Field label="Supporting copy"><input value={config.copyCaption ?? ""} onChange={(event) => updateNodeConfig(active, updateNode, { copyCaption: event.target.value })} /></Field><p className="property-copy">The headline and supporting copy are composited in the hero image layer, not independent text components. Show banner directly maps to its visibility in the preview.</p></section>}</>;
+  return <><Field label="Media"><div className="segmented"><button className={kind === "Image" ? "active" : ""} onClick={() => updateNodeConfig(active, updateNode, { mediaType: "Image" })}>Image</button><button className={kind === "Video" ? "active" : ""} onClick={() => updateNodeConfig(active, updateNode, { mediaType: "Video" })}>Video</button></div></Field><MediaUploadFields active={active} updateNode={updateNode} label="Hero media" />{config.copyTitle !== undefined && <section className="embedded-copy-editor"><h4>Top banner</h4><label className="switch-row"><input type="checkbox" checked={config.bannerEnabled !== false} onChange={(event) => updateNodeConfig(active, updateNode, { bannerEnabled: event.target.checked })} /><span>{config.bannerEnabled !== false ? "On" : "Off"}</span><strong>Show banner</strong></label><Field label="Banner deep link"><input value={config.deepLink ?? ""} placeholder="https://" onChange={(event) => updateNodeConfig(active, updateNode, { deepLink: event.target.value })} /></Field><label className="switch-row"><input type="checkbox" checked={config.entryOnly === true} onChange={(event) => updateNodeConfig(active, updateNode, { entryOnly: event.target.checked })} /><span>{config.entryOnly ? "On" : "Off"}</span><strong>Only show at entry</strong></label><h4>Copy embedded in this visual</h4><Field label="Headline"><input value={config.copyTitle} onChange={(event) => updateNodeConfig(active, updateNode, { copyTitle: event.target.value })} /></Field><Field label="Supporting copy"><input value={config.copyCaption ?? ""} onChange={(event) => updateNodeConfig(active, updateNode, { copyCaption: event.target.value })} /></Field><p className="property-copy">The headline and supporting copy are composited in the hero image layer, not independent text components. Show banner directly maps to its visibility in the preview.</p></section>}</>;
 }
 
 function TextContent({ active, updateNode }) {
@@ -1588,18 +1589,32 @@ function ConfigNumberField({ label, active, updateNode, name, fallback, min = 0,
   return <Field label={label}><div className="number-unit"><input type="number" min={min} max={max} step={step} value={value} onChange={(event) => updateNodeConfig(active, updateNode, { [name]: Math.max(min, Math.min(max, Number(event.target.value) || min)) })} /><span>{suffix}</span></div></Field>;
 }
 
+function ConfigInsets({ active, updateNode, prefix = "margin" }) {
+  const config = active.config ?? {};
+  const keys = [["Top", "top"], ["Right", "right"], ["Bottom", "bottom"], ["Left", "left"]];
+  return <div className="four-inputs">{keys.map(([label, key]) => {
+    const name = `${prefix}${label}`;
+    return <input key={name} type="number" min="-80" max="120" aria-label={`${label} ${prefix}`} value={config[name] ?? 0} onChange={(event) => updateNodeConfig(active, updateNode, { [name]: Number(event.target.value) || 0 })} />;
+  })}</div>;
+}
+
 function TextStyleEditor({ active, updateNode }) {
   const config = active.config ?? {};
-  return <><div className="split-fields"><ConfigNumberField label="Font size" active={active} updateNode={updateNode} name="fontSize" fallback={28} min={10} max={56} suffix="px" /><Field label="Align"><select value={config.textAlign ?? "center"} onChange={(event) => updateNodeConfig(active, updateNode, { textAlign: event.target.value })}><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></Field></div><div className="split-fields"><Field label="Weight"><select value={config.fontWeight ?? "700"} onChange={(event) => updateNodeConfig(active, updateNode, { fontWeight: event.target.value })}><option value="400">Regular</option><option value="500">Medium</option><option value="700">Bold</option><option value="900">Heavy</option></select></Field><Field label="Font"><select value={config.fontFamily ?? "system"} onChange={(event) => updateNodeConfig(active, updateNode, { fontFamily: event.target.value })}><option value="system">System</option><option value="serif">Serif</option><option value="mono">Monospace</option></select></Field></div><ConfigColorField label="Text color" active={active} updateNode={updateNode} name="color" fallback="#171717" /></>;
+  return <><div className="split-fields"><ConfigNumberField label="Font size" active={active} updateNode={updateNode} name="fontSize" fallback={28} min={10} max={56} suffix="px" /><Field label="Align"><select value={config.textAlign ?? "center"} onChange={(event) => updateNodeConfig(active, updateNode, { textAlign: event.target.value })}><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></Field></div><div className="split-fields"><Field label="Weight"><select value={config.fontWeight ?? "700"} onChange={(event) => updateNodeConfig(active, updateNode, { fontWeight: event.target.value })}><option value="400">Regular</option><option value="500">Medium</option><option value="700">Bold</option><option value="900">Heavy</option></select></Field><Field label="Font"><select value={config.fontFamily ?? "system"} onChange={(event) => updateNodeConfig(active, updateNode, { fontFamily: event.target.value })}><option value="system">System</option><option value="serif">Serif</option><option value="mono">Monospace</option></select></Field></div><ConfigColorField label="Text color" active={active} updateNode={updateNode} name="color" fallback="#171717" /><div className="split-fields"><ConfigNumberField label="Opacity" active={active} updateNode={updateNode} name="opacity" fallback={100} min={0} max={100} suffix="%" /><ConfigNumberField label="Max lines" active={active} updateNode={updateNode} name="maxLines" fallback={2} min={1} max={8} suffix="" /></div><label className="switch-row compact-switch"><input type="checkbox" checked={config.scaleText === true} onChange={(event) => updateNodeConfig(active, updateNode, { scaleText: event.target.checked })} /><span>{config.scaleText ? "On" : "Off"}</span><strong>Scale text</strong></label></>;
 }
 
 function HeroStyleEditor({ active, updateNode }) {
   const config = active.config ?? {};
-  return <><Field label="Crop focus"><select value={config.mediaPosition ?? "center"} onChange={(event) => updateNodeConfig(active, updateNode, { mediaPosition: event.target.value })}><option value="left center">Left</option><option value="center">Center</option><option value="right center">Right</option><option value="center top">Top</option><option value="center bottom">Bottom</option></select></Field><Field label="Fit"><select value={config.mediaFit ?? "cover"} onChange={(event) => updateNodeConfig(active, updateNode, { mediaFit: event.target.value })}><option value="cover">Cover</option><option value="contain">Contain</option></select></Field><ConfigNumberField label="Overlay" active={active} updateNode={updateNode} name="mediaOverlay" fallback={0} min={0} max={80} suffix="%" /></>;
+  return <><Field label="Display"><div className="segmented">{["Overlay", "Transparent", "Flat"].map((mode) => <button key={mode} className={(config.displayMode ?? "Overlay") === mode ? "active" : ""} onClick={() => updateNodeConfig(active, updateNode, { displayMode: mode })}>{mode}</button>)}</div></Field><ConfigColorField label="Tint" active={active} updateNode={updateNode} name="tintColor" fallback="#212121" /><ConfigNumberField label="Tint opacity" active={active} updateNode={updateNode} name="tintOpacity" fallback={0} min={0} max={100} suffix="%" /></>;
 }
 
 function ElementLayoutEditor({ active, updateNode, showHeight = false }) {
-  return <><div className="split-fields"><ConfigNumberField label="Vertical offset" active={active} updateNode={updateNode} name="offsetY" fallback={0} min={-120} max={120} suffix="px" /><ConfigNumberField label="Opacity" active={active} updateNode={updateNode} name="opacity" fallback={100} min={0} max={100} suffix="%" /></div>{showHeight && <ConfigNumberField label="Media height" active={active} updateNode={updateNode} name="mediaHeight" fallback={100} min={35} max={160} suffix="%" />}</>;
+  return <><Field label="Margin"><ConfigInsets active={active} updateNode={updateNode} /></Field><ConfigNumberField label="Vertical offset" active={active} updateNode={updateNode} name="offsetY" fallback={0} min={-120} max={120} suffix="px" />{showHeight && <ConfigNumberField label="Media height" active={active} updateNode={updateNode} name="mediaHeight" fallback={100} min={35} max={160} suffix="%" />}</>;
+}
+
+function HeroLayoutEditor({ active, updateNode }) {
+  const config = active.config ?? {};
+  return <><ConfigNumberField label="Image height" active={active} updateNode={updateNode} name="mediaHeight" fallback={100} min={35} max={160} suffix="%" /><label className="switch-row"><input type="checkbox" checked={config.rounded === true} onChange={(event) => updateNodeConfig(active, updateNode, { rounded: event.target.checked })} /><span>{config.rounded ? "On" : "Off"}</span><strong>Rounded rectangle</strong></label>{config.rounded && <ConfigNumberField label="Corner radius" active={active} updateNode={updateNode} name="radius" fallback={0} min={0} max={64} suffix="px" />}<Field label="Padding"><ConfigInsets active={active} updateNode={updateNode} prefix="padding" /></Field><ConfigNumberField label="Vertical offset" active={active} updateNode={updateNode} name="offsetY" fallback={0} min={-120} max={120} suffix="px" /></>;
 }
 
 function ButtonStyleEditor({ active, updateNode }) {
@@ -1971,6 +1986,8 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, interacti
   const styleFor = (id) => {
     const config = configFor(id);
     const fontFamily = config.fontFamily === "serif" ? "Georgia, serif" : config.fontFamily === "mono" ? "ui-monospace, SFMono-Regular, monospace" : undefined;
+    const margin = ["Top", "Right", "Bottom", "Left"].map((edge) => `${config[`margin${edge}`] ?? 0}px`).join(" ");
+    const transform = config.offsetY ? `translateY(${config.offsetY}px)` : undefined;
     return {
       ...(config.color ? { color: config.color } : {}),
       ...(config.backgroundColor ? { background: config.backgroundColor } : {}),
@@ -1981,17 +1998,26 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, interacti
       ...(config.radius !== undefined ? { borderRadius: `${config.radius}px` } : {}),
       ...(config.shadow ? { boxShadow: `0 ${Math.max(2, Math.round(config.shadow / 2))}px ${config.shadow}px #17172833` } : {}),
       ...(config.opacity !== undefined ? { opacity: config.opacity / 100 } : {}),
-      ...(config.offsetY ? { transform: `translateY(${config.offsetY}px)` } : {}),
+      ...(margin !== "0px 0px 0px 0px" ? { margin } : {}),
+      ...(transform ? { transform } : {}),
+      ...(config.maxLines ? { display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: config.maxLines, overflow: "hidden" } : {}),
+      ...(config.scaleText ? { overflowWrap: "anywhere" } : {}),
     };
   };
   const heroStyleFor = (id) => {
     const config = configFor(id);
+    const padding = ["Top", "Right", "Bottom", "Left"].map((edge) => `${config[`padding${edge}`] ?? 0}px`).join(" ");
+    const displayMode = config.displayMode ?? "Overlay";
+    const tintOpacity = Math.max(0, Math.min(100, Number(config.tintOpacity ?? 0))) / 100;
     return {
       ...styleFor(id),
       ...(config.mediaState === "custom" && config.mediaType !== "Video" && config.mediaSrc ? { backgroundImage: `url(${config.mediaSrc})`, backgroundSize: config.mediaFit ?? "cover", backgroundPosition: config.mediaPosition ?? "center" } : {}),
       ...(config.mediaState === "removed" ? { background: "#eef0f4", backgroundImage: "none" } : {}),
-      ...(config.mediaHeight && config.mediaHeight !== 100 ? { height: `${config.mediaHeight}%` } : {}),
-      "--media-overlay": `${(config.mediaOverlay ?? 0) / 100}`,
+      ...(config.rounded ? { borderRadius: `${config.radius ?? 0}px` } : {}),
+      ...(padding !== "0px 0px 0px 0px" ? { padding } : {}),
+      "--hero-height-scale": `${Math.max(0.35, Math.min(1.6, Number(config.mediaHeight ?? 100) / 100))}`,
+      "--hero-tint": config.tintColor ?? "#212121",
+      "--hero-tint-opacity": `${displayMode === "Overlay" ? tintOpacity : displayMode === "Transparent" ? tintOpacity * 0.35 : 0}`,
     };
   };
   const mediaClass = (id) => {
