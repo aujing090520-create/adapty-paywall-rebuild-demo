@@ -360,6 +360,24 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-blue-paywall { display: block; }
 .ht-blue-paywall .ht-blue-hero { height: 58cqw; }
 .ht-blue-paywall .ht-privilege-table { height: 72cqw; }
+.ht-blue-paywall .ht-privilege-table {
+  display: block;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+  overscroll-behavior: contain;
+}
+.ht-blue-paywall .ht-privilege-table::-webkit-scrollbar { display: none; }
+.ht-blue-paywall .ht-privilege-table header,
+.ht-blue-paywall .ht-privilege-table > div {
+  height: 12cqw;
+  min-height: 12cqw;
+  grid-template-columns: minmax(0, 1.85fr) minmax(0, .82fr) minmax(0, .76fr);
+}
+.ht-blue-paywall .ht-privilege-table header { position: sticky; top: 0; z-index: 1; }
+.ht-blue-paywall .ht-privilege-table header > *,
+.ht-blue-paywall .ht-privilege-table > div > * { min-width: 0; }
+.ht-blue-paywall .ht-privilege-table > div span { overflow: hidden; text-overflow: ellipsis; }
 .ht-blue-paywall .ht-plan-shell { height: 41cqw; min-height: 0; }
 .ht-blue-paywall .ht-timer { height: 13.5cqw; min-height: 0; }
 .ht-blue-paywall .ht-action { height: 16cqw; min-height: 0; }
