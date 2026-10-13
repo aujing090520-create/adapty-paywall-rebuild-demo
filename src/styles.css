@@ -409,3 +409,35 @@ textarea { min-height: 80px; resize: vertical; }
   color: var(--hero-caption-color, #ffffff);
   font-size: var(--hero-caption-size, 16px);
 }
+
+/* Source artwork and uploaded media share one inset box; copy stays outside it. */
+.ht-blue-hero, .ht-member-hero, .ht-offer-bundle, .ht-sku-promo { background-image: none; }
+.ht-paywall .ht-source-art {
+  position: absolute;
+  z-index: 0;
+  top: var(--media-inset-top, 0px);
+  right: var(--media-inset-right, 0px);
+  bottom: var(--media-inset-bottom, 0px);
+  left: var(--media-inset-left, 0px);
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.ht-paywall .media-custom .ht-source-art, .ht-paywall .media-removed .ht-source-art { display: none; }
+.ht-blue-hero::after, .ht-offer-bundle::before, .ht-sku-promo::before, .ht-sku-promo::after { content: none; }
+.ht-blue-hero .ht-source-art {
+  background: radial-gradient(ellipse at 51% -5%, #f8f7ff 0 3%, transparent 14%), radial-gradient(ellipse at 19% 4%, #50a3ef 0 2%, transparent 13%), radial-gradient(ellipse at 86% 14%, #7c73e7 0 3%, transparent 17%), linear-gradient(160deg, #090f4c 0%, #062a77 25%, #095ab0 48%, #1496d4 59%, #4e982f 60%, #347226 81%, #1f4d25 100%);
+}
+.ht-blue-hero .ht-source-art::after { position: absolute; inset: 0; background: repeating-radial-gradient(ellipse at 52% 21%, transparent 0 8%, #d6f3ff12 8.3% 9.2%, transparent 9.5% 14%); content: ""; opacity: calc(.78 - var(--media-overlay, 0)); }
+.ht-member-hero { padding-top: 0; }
+.ht-member-hero .ht-source-art { display: grid; place-items: center; padding-top: 8%; background: radial-gradient(circle at 7% 35%, #fff9 0 1cqw, transparent 1.2cqw), radial-gradient(circle at 86% 22%, #fff8 0 1cqw, transparent 1.2cqw), linear-gradient(180deg, #ffe07a, #ffdc83 50%, #fff 88%); }
+.ht-offer-bundle .ht-source-art { display: grid; place-items: center; background: radial-gradient(circle at 22% 30%, #c7edff 0 9%, transparent 10%), linear-gradient(145deg, #e5f4ff, #fff 55%, #e3f4ff); }
+.ht-offer-bundle .ht-source-art::before { width: 42%; height: 49%; position: absolute; right: 11%; bottom: 8%; border: 1.3cqw solid #69a7e9; border-radius: 3cqw; background: linear-gradient(135deg, #1155b9, #3479e8); box-shadow: 0 1cqw 2cqw #1c488d55; content: ""; transform: rotate(-12deg); }
+.ht-offer-bundle .ht-source-art > span { z-index: 2; padding: 1.3cqw 1.6cqw; border-radius: 1.3cqw; background: #ff970e; color: #fff; font-size: 7.8cqw; font-weight: 900; line-height: .82; transform: rotate(7deg); }
+.ht-sku-promo .ht-source-art { background: radial-gradient(circle at 20% 68%, #63df72 0 8cqw, transparent 8.2cqw), radial-gradient(circle at 80% 57%, #fa4aa6 0 8cqw, transparent 8.2cqw), linear-gradient(135deg, #f7f7f7 0%, #fff 42%, #fff9fa 100%); }
+.ht-sku-promo .ht-source-art::before { position: absolute; right: 5%; bottom: 5%; width: 25%; height: 34%; border-radius: 6cqw 6cqw 1cqw 1cqw; background: linear-gradient(160deg, #73e2f4, #207dd4); box-shadow: inset 0 0 0 .7cqw #54e7e6; content: ""; transform: rotate(-4deg); }
+.ht-sku-promo .ht-source-art::after { position: absolute; left: 6%; bottom: 5%; width: 19%; height: 20%; border-radius: 50%; background: #f04abb; content: ""; }
+.ht-sku-promo .ht-source-art > i, .ht-sku-promo .ht-source-art > b { position: absolute; z-index: 2; bottom: 10%; color: #fff; font-size: 5.6cqw; font-style: normal; font-weight: 900; text-shadow: 0 1px 1px #fff9; transform: rotate(-8deg); }
+.ht-sku-promo .ht-source-art > i { left: 8%; }
+.ht-sku-promo .ht-source-art > b { right: 11%; font-size: 4.7cqw; }
