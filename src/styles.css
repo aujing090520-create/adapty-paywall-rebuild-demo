@@ -140,6 +140,8 @@ textarea { min-height: 80px; resize: vertical; }
 .rich-text-run-head button, .rich-text-tools button { width: 25px; height: 25px; display: grid; place-items: center; padding: 0; border: 1px solid #d9d9e2; border-radius: 4px; background: #fff; color: #484852; cursor: pointer; }
 .rich-text-run-head button:disabled { opacity: .35; cursor: default; }
 .rich-text-run textarea { width: 100%; min-height: 58px; margin-bottom: 7px; resize: vertical; }
+.rich-text-line-break { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; color: #484852; font-size: 11px; cursor: pointer; }
+.rich-text-line-break input { width: 14px; height: 14px; margin: 0; accent-color: #652bdc; }
 .rich-text-tools { flex-wrap: wrap; margin-bottom: 7px; }
 .rich-text-tools button[aria-pressed="true"] { border-color: #7041df; background: #f0eaff; color: #5f25de; }
 .rich-text-tools input[type="color"] { width: 27px; height: 25px; padding: 2px; border: 1px solid #d9d9e2; border-radius: 4px; background: #fff; cursor: pointer; }
