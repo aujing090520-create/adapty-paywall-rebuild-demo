@@ -443,6 +443,7 @@ textarea { min-height: 80px; resize: vertical; }
   grid-template-columns: minmax(0, 1.85fr) minmax(0, .82fr) minmax(0, .76fr);
 }
 .ht-blue-paywall .ht-privilege-table header { position: sticky; top: 0; z-index: 1; }
+.ht-blue-paywall .ht-privilege-table header b { display: grid; place-items: center; padding-top: 0; }
 .ht-blue-paywall .ht-privilege-table header > *,
 .ht-blue-paywall .ht-privilege-table > div > * { min-width: 0; }
 .ht-blue-paywall .ht-privilege-table > div span { overflow: hidden; text-overflow: ellipsis; }
