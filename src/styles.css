@@ -622,6 +622,12 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-sku-paywall .ht-action { height: 20cqw; min-height: 0; }
 .ht-sku-paywall .ht-legal { min-height: 12cqw; }
 
+.preview-image { overflow: hidden; }
+.preview-image img { width: 100%; height: 100%; min-width: 0; min-height: 0; }
+.preview-benefits li.no-leading { grid-template-columns: 1fr; }
+.preview-benefits li.no-leading > i { display: none; }
+.preview-benefits li > i { font-style: normal; }
+
 /* Additional packages retain the template's original card footprint. */
 .ht-membership-paywall .ht-plan-shell:has(> .ht-plan:nth-child(4)),
 .ht-sku-paywall .ht-sku-plans:has(> .ht-plan:nth-child(4)) {

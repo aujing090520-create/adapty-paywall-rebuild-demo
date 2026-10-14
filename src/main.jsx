@@ -1708,7 +1708,7 @@ function HeroStyleEditor({ active, updateNode }) {
 }
 
 function ElementLayoutEditor({ active, updateNode, showHeight = false }) {
-  return <><Field label="Margin"><ConfigInsets active={active} updateNode={updateNode} /></Field><ConfigNumberField label="Vertical offset" active={active} updateNode={updateNode} name="offsetY" fallback={0} min={-120} max={120} suffix="px" />{showHeight && <ConfigNumberField label="Media height" active={active} updateNode={updateNode} name="mediaHeight" fallback={100} min={35} max={160} suffix="%" />}</>;
+  return <><Field label="Margin"><ConfigInsets active={active} updateNode={updateNode} /></Field><ConfigNumberField label="Vertical offset" active={active} updateNode={updateNode} name="offsetY" fallback={0} min={-120} max={120} suffix="px" />{showHeight && <ConfigNumberField label="Media height" active={active} updateNode={updateNode} name="mediaHeight" fallback={100} min={1} max={200} suffix="%" />}</>;
 }
 
 function HeroLayoutEditor({ active, updateNode }) {
@@ -1734,7 +1734,7 @@ function CardStyleEditor({ active, updateNode }) {
 }
 
 function TimerStyleEditor({ active, updateNode }) {
-  return <><div className="split-fields"><ConfigColorField label="Timer color" active={active} updateNode={updateNode} name="color" fallback="#19ad34" /><ConfigColorField label="Background" active={active} updateNode={updateNode} name="backgroundColor" fallback="#ffd16b" /></div><div className="split-fields"><ConfigNumberField label="文案字号" active={active} updateNode={updateNode} name="prefixFontSize" fallback="" min={8} max={72} suffix="px" /><ConfigNumberField label="数字字号" active={active} updateNode={updateNode} name="fontSize" fallback="" min={8} max={72} suffix="px" /></div><ConfigNumberField label="Corner radius" active={active} updateNode={updateNode} name="radius" fallback={6} min={0} max={24} suffix="px" /></>;
+  return <><div className="split-fields"><ConfigColorField label="Timer color" active={active} updateNode={updateNode} name="color" fallback="#19ad34" /><ConfigColorField label="Background" active={active} updateNode={updateNode} name="backgroundColor" fallback="#ffd16b" /></div><div className="split-fields"><ConfigNumberField label="前缀字号" active={active} updateNode={updateNode} name="prefixFontSize" fallback="" min={8} max={72} suffix="px" /><ConfigNumberField label="数字字号" active={active} updateNode={updateNode} name="fontSize" fallback="" min={8} max={72} suffix="px" /></div><ConfigNumberField label="后缀字号" active={active} updateNode={updateNode} name="suffixFontSize" fallback="" min={8} max={72} suffix="px" /><ConfigNumberField label="Corner radius" active={active} updateNode={updateNode} name="radius" fallback={6} min={0} max={24} suffix="px" /></>;
 }
 
 function CarouselStyleEditor({ active, updateNode }) {
@@ -1816,7 +1816,16 @@ function LinksContent({ active, updateNode, templateLinks, setTemplateLinks }) {
 
 function ListContent({ active, updateNode, addNestedNode, allowAdd = true }) {
   if (!allowAdd && active.id === "benefits") return <PrivilegeComparisonEditor active={active} updateNode={updateNode} />;
-  return allowAdd ? <><h4>List items</h4><button className="text-action" onClick={() => addNestedNode(active.id, "List item")}><Plus size={15} /> Add element</button></> : <p className="property-copy">This fixed list has no captured item schema, so the demo does not replace it with a generic text field.</p>;
+  const rows = listRowsFor(active);
+  const commit = (nextRows) => updateNodeConfig(active, updateNode, { listRows: nextRows });
+  const patchRow = (index, patch) => commit(rows.map((row, position) => position === index ? { ...row, ...patch } : row));
+  const move = (index, direction) => { const next = [...rows]; const other = index + direction; if (other < 0 || other >= next.length) return; [next[index], next[other]] = [next[other], next[index]]; commit(next); };
+  return <><h4>列表行</h4>{rows.map((row, index) => <section className="product-row-editor" key={index}><header><strong>第 {index + 1} 行</strong><div><button type="button" title="上移" disabled={index === 0} onClick={() => move(index, -1)}>↑</button><button type="button" title="下移" disabled={index === rows.length - 1} onClick={() => move(index, 1)}>↓</button><button type="button" title="删除" onClick={() => commit(rows.filter((_, position) => position !== index))}><X size={15} /></button></div></header><Field label="标题"><input value={row.title} onChange={(event) => patchRow(index, { title: event.target.value })} /></Field><label className="switch-row"><input type="checkbox" checked={row.showCaption !== false} onChange={(event) => patchRow(index, { showCaption: event.target.checked })} /><strong>显示描述</strong></label>{row.showCaption !== false && <Field label="描述"><input value={row.caption} onChange={(event) => patchRow(index, { caption: event.target.value })} /></Field>}<Field label="行首内容"><select value={row.leadingMode ?? "icon"} onChange={(event) => patchRow(index, { leadingMode: event.target.value })}><option value="icon">图标</option><option value="text">文字</option><option value="none">不显示</option></select></Field>{row.leadingMode !== "none" && <Field label={row.leadingMode === "text" ? "行首文字" : "图标字符"}><input value={row.leading ?? "✓"} onChange={(event) => patchRow(index, { leading: event.target.value })} /></Field>}</section>)}<button type="button" className="text-action" onClick={() => commit([...rows, { title: "", caption: "", leadingMode: "icon", leading: "✓", showCaption: true }])}><Plus size={15} /> 添加列表行</button>{allowAdd && <button type="button" className="text-action" onClick={() => addNestedNode(active.id, "List item")}><Plus size={15} /> 添加独立子元素</button>}</>;
+}
+
+function listRowsFor(node) {
+  if (Array.isArray(node.config?.listRows)) return node.config.listRows;
+  return (node.content ?? "").split("\n").filter(Boolean).map((line) => { const [title = "", caption = ""] = line.split("|"); return { title, caption, showCaption: true, leadingMode: "icon", leading: "✓" }; });
 }
 
 function PrivilegeComparisonEditor({ active, updateNode }) {
@@ -2314,7 +2323,7 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
     const formatted = formatTimer(remaining, timerConfig.format ?? "hh:mm:ss", timerConfig.separator ?? ":");
     const segmentedTimer = variant === "blue-privilege" && (timerConfig.separator ?? ":") === ":";
     const timerStyle = variant === "blue-privilege" ? { ...styleFor("timer"), background: "transparent", "--timer-digit-background": timerConfig.backgroundColor ?? "#ffd16b" } : styleFor("timer");
-    return <div className={nodeClass("timer", "ht-timer")} style={timerStyle} onClick={select("timer")}>{prefix && <strong style={timerConfig.prefixFontSize ? { fontSize: `${timerConfig.prefixFontSize}px` } : undefined}>{prefix}</strong>}<span className={segmentedTimer ? "ht-timer-digits" : ""} style={{ ...(timerConfig.fontSize ? { fontSize: `${timerConfig.fontSize}px` } : {}), ...(timerConfig.color ? { color: timerConfig.color } : {}) }}>{segmentedTimer ? formatted.split(":").map((part, index, parts) => <React.Fragment key={`${part}-${index}`}><b>{part}</b>{index < parts.length - 1 && <i>:</i>}</React.Fragment>) : formatted}</span>{suffix && <small>{suffix}</small>}</div>;
+    return <div className={nodeClass("timer", "ht-timer")} style={timerStyle} onClick={select("timer")}>{prefix && <strong style={timerConfig.prefixFontSize ? { fontSize: `${timerConfig.prefixFontSize}px` } : undefined}>{prefix}</strong>}<span className={segmentedTimer ? "ht-timer-digits" : ""} style={{ ...(timerConfig.fontSize ? { fontSize: `${timerConfig.fontSize}px` } : {}), ...(timerConfig.color ? { color: timerConfig.color } : {}) }}>{segmentedTimer ? formatted.split(":").map((part, index, parts) => <React.Fragment key={`${part}-${index}`}><b>{part}</b>{index < parts.length - 1 && <i>:</i>}</React.Fragment>) : formatted}</span>{suffix && <small style={timerConfig.suffixFontSize ? { fontSize: `${timerConfig.suffixFontSize}px` } : undefined}>{suffix}</small>}</div>;
   };
   const productColorsEnabled = productConfig.bluePrivilege || productConfig.productColors;
   const actionStyle = productColorsEnabled ? { ...styleFor("purchase"), background: productGradient(productConfig.purchaseBackgroundGradient, ["#ff8707", "#ffb000", "#ffd10b"]) } : styleFor("purchase");
@@ -2375,15 +2384,20 @@ function PreviewElement({ node, active, activeNode, onSelect, children = [] }) {
   if (node.type === "Discount") return wrap(<h2>{node.content || "Discount"}</h2>, "preview-headline");
   if (isTextLayer) return wrap(node.variant === "headline" ? <h2><RichText node={node} fallback="Heading" interactive /></h2> : node.variant === "section" ? <h3><RichText node={node} interactive /></h3> : <p className={node.variant === "boundary" ? "preview-boundary" : ""}><RichText node={node} fallback="Supporting text" interactive /></p>, node.variant === "headline" ? "preview-headline" : "preview-copy");
   if (isListLayer) {
-    if (children.length) return wrap(<div className="preview-benefits">{children.map((child) => <PreviewElement key={child.id} node={child} active={child.id === activeNode} activeNode={activeNode} onSelect={onSelect} />)}</div>, "preview-list");
-    if (!node.content) return wrap(<div className="preview-list-anchor">List</div>, "preview-list-anchor-wrap");
-    return wrap(<ul className="preview-benefits">{(node.content || "").split("\n").filter(Boolean).map((item) => { const [title, caption] = item.split("|"); return <li key={item}>✓ <span><strong>{title}</strong>{caption && <small>{caption}</small>}</span></li>; })}</ul>, "preview-list");
+    const rows = listRowsFor(node);
+    if (!rows.length && !children.length) return wrap(<div className="preview-list-anchor">List</div>, "preview-list-anchor-wrap");
+    return wrap(<div className="preview-benefits" style={{ background: node.config?.backgroundColor }}><ul className="preview-benefits">{rows.map((row, index) => <li key={index} className={row.leadingMode === "none" ? "no-leading" : ""}><i style={{ color: node.config?.accentColor }}>{row.leadingMode !== "none" ? row.leading || "✓" : ""}</i><span><strong>{row.title}</strong>{row.showCaption !== false && row.caption && <small>{row.caption}</small>}</span></li>)}</ul>{children.map((child) => <PreviewElement key={child.id} node={child} active={child.id === activeNode} activeNode={activeNode} onSelect={onSelect} />)}</div>, "preview-list");
   }
   if (isListItemLayer) { const [title, caption] = (node.content || "").split("|"); return wrap(<div className="preview-list-item"><i>●</i><span><strong>{title || "Item"}</strong>{caption && <small>{caption}</small>}</span></div>, "preview-list-item-wrap"); }
   if (node.type === "Card") return children.length ? wrap(<div className="preview-card">{children.map((child) => <PreviewElement key={child.id} node={child} active={child.id === activeNode} activeNode={activeNode} onSelect={onSelect} />)}</div>, "preview-card-wrap") : !node.content ? wrap(<div className="preview-card-anchor" />, "preview-card-anchor-wrap") : wrap(<div className="preview-card">{node.content.split("\n").map((row) => { const [title, copy] = row.split("|"); return <div key={row}><strong>{title}</strong>{copy && <small>{copy}</small>}</div>; })}</div>, "preview-card-wrap");
   if (["Product", "Japanese Ai - 1 Year"].includes(node.type)) { const [name, price] = (node.content || "").split("|"); return wrap(<div className="preview-product"><strong>{name || "Product"}</strong>{price && <small>{price}</small>}</div>, "preview-product-anchor-wrap"); }
   if (node.type === "App Icon") return wrap(<div className="preview-app-icon">✦</div>, "preview-app-icon-wrap");
-  if (isImageLayer) return wrap(<div className="preview-image">{node.config?.mediaSrc ? <img src={node.config.mediaSrc} alt={node.label || ""} /> : node.type === "Black Friday Image" ? "BLACK FRIDAY" : node.content}</div>, "preview-image-wrap");
+  if (isImageLayer) {
+    const config = node.config ?? {};
+    const scale = Number(config.mediaHeight);
+    const height = Number.isFinite(scale) && scale > 0 ? `${92 * scale / 100}px` : undefined;
+    return wrap(<div className="preview-image" style={{ height, background: config.mediaBackgroundColor, borderRadius: config.rounded ? `${config.radius ?? 8}px` : undefined, padding: ["Top", "Right", "Bottom", "Left"].map((edge) => `${Math.max(0, Number(config[`padding${edge}`]) || 0)}px`).join(" "), transform: config.offsetY ? `translateY(${config.offsetY}px)` : undefined }}>{config.mediaState !== "removed" && (config.mediaSrc ? <img src={config.mediaSrc} alt={node.label || ""} style={{ objectFit: config.mediaFit ?? "cover" }} /> : node.type === "Black Friday Image" ? "BLACK FRIDAY" : node.content)}</div>, "preview-image-wrap");
+  }
   if (node.type === "Carousel") return children.length ? wrap(<div className="preview-carousel">{children.map((child) => <PreviewElement key={child.id} node={child} active={child.id === activeNode} activeNode={activeNode} onSelect={onSelect} />)}</div>, "preview-carousel-wrap") : !node.content ? wrap(<div className="preview-card-anchor" />, "preview-card-anchor-wrap") : wrap(<PreviewCarousel content={node.content} config={node.config} />, "preview-carousel-wrap");
   if (node.type === "Timer") return node.config?.enabled === false ? null : wrap(<PreviewTimer content={node.content} config={node.config} />);
   if (node.type === "Products") {
@@ -2413,7 +2427,7 @@ function PreviewTimer({ content, config = {} }) {
     const interval = window.setInterval(() => setRemaining((value) => Math.max(0, value - 1)), 1000);
     return () => window.clearInterval(interval);
   }, [startValue, config.resetMode]);
-  return <div className="preview-timer" style={{ color: config.color, backgroundColor: config.backgroundColor, borderRadius: config.radius === undefined ? undefined : `${config.radius}px` }}>{config.prefix && <strong style={config.prefixFontSize ? { fontSize: `${config.prefixFontSize}px` } : undefined}>{config.prefix} </strong>}<span style={config.fontSize ? { fontSize: `${config.fontSize}px` } : undefined}>{formatTimer(remaining, config.format ?? "hh:mm:ss", config.separator ?? ":")}</span>{config.suffix && <small> {config.suffix}</small>}</div>;
+  return <div className="preview-timer" style={{ color: config.color, backgroundColor: config.backgroundColor, borderRadius: config.radius === undefined ? undefined : `${config.radius}px` }}>{config.prefix && <strong style={config.prefixFontSize ? { fontSize: `${config.prefixFontSize}px` } : undefined}>{config.prefix} </strong>}<span style={config.fontSize ? { fontSize: `${config.fontSize}px` } : undefined}>{formatTimer(remaining, config.format ?? "hh:mm:ss", config.separator ?? ":")}</span>{config.suffix && <small style={config.suffixFontSize ? { fontSize: `${config.suffixFontSize}px` } : undefined}> {config.suffix}</small>}</div>;
 }
 
 function PreviewCarousel({ content, config = {} }) {
