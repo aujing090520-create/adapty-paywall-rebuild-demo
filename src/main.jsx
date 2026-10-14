@@ -970,7 +970,6 @@ function App() {
   const [templateSelected, setTemplateSelected] = useState(null);
   const [appliedTemplate, setAppliedTemplate] = useState(null);
   const [templateLinks, setTemplateLinks] = useState({ terms: "terms-link", privacy: "privacy-link" });
-  const [builderTab, setBuilderTab] = useState("tree");
   const [builderNodes, setBuilderNodes] = useState(() => createBuilderNodes());
   const [activeNode, setActiveNode] = useState("links");
   const [unknownOpen, setUnknownOpen] = useState(false);
@@ -1053,7 +1052,6 @@ function App() {
     setBuilderNodes(nextNodes);
     // Templates do not share a universal node id; select the first real layer.
     setActiveNode(nextNodes[0]?.id ?? "links");
-    setBuilderTab("tree");
   };
 
   return (
@@ -1134,8 +1132,6 @@ function App() {
               removeBuilderNode={removeBuilderNode}
               activeNode={activeNode}
               setActiveNode={setActiveNode}
-              builderTab={builderTab}
-              setBuilderTab={setBuilderTab}
               templateSelected={templateSelected}
               setTemplateSelected={setTemplateSelected}
               appliedTemplate={appliedTemplate}
@@ -1160,8 +1156,6 @@ function App() {
               removeBuilderNode={removeBuilderNode}
               activeNode={activeNode}
               setActiveNode={setActiveNode}
-              builderTab={builderTab}
-              setBuilderTab={setBuilderTab}
               templateSelected={templateSelected}
               setTemplateSelected={setTemplateSelected}
               appliedTemplate={appliedTemplate}
@@ -1365,7 +1359,7 @@ function CreatePaywall({ draft, setDraft, setView, setModal, createDraft, markUn
   );
 }
 
-function PaywallWorkspace({ selected, draft, setDraft, view, setView, duplicate, setModal, markUnknown, builderNodes, setBuilderNodes, updateBuilderNode, removeBuilderNode, activeNode, setActiveNode, builderTab, setBuilderTab, appliedTemplate, templateLinks, setTemplateLinks, notify }) {
+function PaywallWorkspace({ selected, draft, setDraft, view, setView, duplicate, setModal, markUnknown, builderNodes, setBuilderNodes, updateBuilderNode, removeBuilderNode, activeNode, setActiveNode, appliedTemplate, templateLinks, setTemplateLinks, notify }) {
   const [addElementOpen, setAddElementOpen] = useState(false);
   const [productPickerOpen, setProductPickerOpen] = useState(false);
   const [transientProducts, setTransientProducts] = useState([]);
@@ -1387,7 +1381,6 @@ function PaywallWorkspace({ selected, draft, setDraft, view, setView, duplicate,
       const next = createComponentNode(type, builderNodes.filter((node) => node.id.startsWith("added-")).length + 1);
       setBuilderNodes((current) => [...current, next]);
       setActiveNode(next.id);
-      setBuilderTab("tree");
       setAddElementOpen(false);
       notify(`${type} 已添加到构建器，并可在右侧继续编辑。`);
     };
@@ -1407,7 +1400,6 @@ function PaywallWorkspace({ selected, draft, setDraft, view, setView, duplicate,
         return [...current.slice(0, insertAt), next, ...current.slice(insertAt)];
       });
       setActiveNode(nextId);
-      setBuilderTab("tree");
       const parent = builderNodes.find((node) => node.id === parentId);
       notify(`${type} 已作为 ${parent?.type ?? "容器"} 子元素添加。`);
     };
@@ -1423,7 +1415,6 @@ function PaywallWorkspace({ selected, draft, setDraft, view, setView, duplicate,
       event.currentTarget.setPointerCapture(event.pointerId);
       setDragState({ id, targetId: null, position: null });
       setActiveNode(id);
-      setBuilderTab("tree");
       if (appliedTemplate !== null && isEditableTemplate(templates[appliedTemplate])) setPreviewMode("editable");
     };
     const updateNodeDropTarget = (event) => {
@@ -1451,17 +1442,16 @@ function PaywallWorkspace({ selected, draft, setDraft, view, setView, duplicate,
         <div className="builder">
           <aside className="node-panel">
             <label className="device-toggle unknown-action"><input type="checkbox" defaultChecked onChange={() => markUnknown(builderBoundary)} /> <span>On</span> Show on device</label>
-            <div className="panel-tabs"><button className={builderTab === "settings" ? "active" : ""} onClick={() => setBuilderTab("settings")}>Layout settings</button><button className={builderTab === "tree" ? "active" : ""} onClick={() => setBuilderTab("tree")}>Elements</button></div>
             <div className="add-element-wrap"><button className="add-element" onClick={() => setAddElementOpen((open) => !open)}><Plus size={17} /> Add element</button>{addElementOpen && <div className="add-element-menu">{componentCatalog.map((item) => <button key={item} onClick={() => addElement(item)}>{item}</button>)}</div>}</div>
             <div className="node-list">{builderNodes.map((node) => {
               const isDragging = dragState?.id === node.id;
               const dropClass = dragState?.targetId === node.id ? `drop-${dragState.position}` : "";
-              return <button type="button" data-node-id={node.id} style={{ paddingLeft: `${7 + (node.depth ?? 0) * 15}px` }} className={`node ${activeNode === node.id ? "selected" : ""} ${isDragging ? "dragging" : ""} ${dropClass}`} onPointerDown={(event) => beginNodeDrag(event, node.id)} onPointerMove={updateNodeDropTarget} onPointerUp={dropNode} onPointerCancel={() => setDragState(null)} onClick={() => { setBuilderTab("tree"); setActiveNode(node.id); }} key={node.id} aria-grabbed={isDragging}><span className="drag-handle" aria-hidden="true"><GripVertical size={14} /></span><i><BuilderNodeIcon type={node.type} /></i><strong>{node.config?.retention ? "挽留弹窗" : node.type}</strong><small>{node.config?.retention ? "" : node.label}</small></button>;
+              return <button type="button" data-node-id={node.id} style={{ paddingLeft: `${7 + (node.depth ?? 0) * 15}px` }} className={`node ${activeNode === node.id ? "selected" : ""} ${isDragging ? "dragging" : ""} ${dropClass}`} onPointerDown={(event) => beginNodeDrag(event, node.id)} onPointerMove={updateNodeDropTarget} onPointerUp={dropNode} onPointerCancel={() => setDragState(null)} onClick={() => setActiveNode(node.id)} key={node.id} aria-grabbed={isDragging}><span className="drag-handle" aria-hidden="true"><GripVertical size={14} /></span><i><BuilderNodeIcon type={node.type} /></i><strong>{node.config?.retention ? "挽留弹窗" : node.type}</strong><small>{node.config?.retention ? "" : node.label}</small></button>;
             })}</div>
             <div className="builder-locales"><div><strong>Localization</strong><button className="icon tiny unknown-action" onClick={() => markUnknown(builderBoundary)}><Plus size={15} /></button></div><button className="locale-row">English <i /></button><button className="locale-row selected">French <i /></button><button className="locale-row">Simplified Chinese <i /></button><button className="add-locale unknown-action" onClick={() => markUnknown(builderBoundary)}>Add locale</button></div>
           </aside>
-          <div className="canvas-area"><div className="device-controls"><button className="unknown-action" onClick={() => markUnknown(builderBoundary)}><Smartphone size={16} /> iPhone 15 Pro <ChevronDown size={14} /></button>{appliedTemplate !== null && <div className="preview-mode" aria-label="Preview mode"><button className={previewMode === "source" ? "active" : ""} onClick={() => setPreviewMode("source")}>{templates[appliedTemplate].documentTemplate ? "文档样式" : "Source visual"}</button><button className={previewMode === "editable" ? "active" : ""} disabled={!isEditableTemplate(templates[appliedTemplate])} onClick={() => setPreviewMode("editable")}>Editable structure</button></div>}<button className="icon unknown-action" title="Preview orientation" onClick={() => markUnknown(builderBoundary)}><RotateCw size={15} /></button><button className="icon unknown-action" title="Preview visibility" onClick={() => markUnknown(builderBoundary)}><Eye size={15} /></button></div><PaywallPreview nodes={builderNodes} template={appliedTemplate !== null ? templates[appliedTemplate] : null} mode={previewMode} activeNode={activeNode} onSelect={(id) => { setActiveNode(id); setBuilderTab("tree"); }} onUpdateHeroPosition={updateHeroCopyPosition} />{appliedTemplate !== null && previewMode === "source" && <p className="source-preview-note">{templates[appliedTemplate].documentTemplate ? "飞书文档中的 Paywall 样式参考，与模板库卡片一一对应。" : "源端模板画面，与模板库卡片一一对应。"}</p>}{appliedTemplate !== null && previewMode === "editable" && <p className="source-preview-note">{isEditableTemplate(templates[appliedTemplate]) ? "已采集样式与核心字段的本地可编辑复现。" : "精确节点树仍在采集。"}</p>}<p className="preview-disclaimer">All prices, titles, and offers displayed are placeholders. The actual data from App Store and Google Play will be shown in the app.</p></div>
-          <aside className="property-panel">{builderTab === "settings" ? <LayoutSettings markUnknown={markUnknown} boundary={builderBoundary} setModal={setModal} appliedTemplate={appliedTemplate} nodes={builderNodes} updateNode={updateBuilderNode} /> : <BuilderProperties active={active} setBuilderTab={setBuilderTab} markUnknown={markUnknown} boundary={builderBoundary} templateLinks={templateLinks} setTemplateLinks={setTemplateLinks} updateNode={updateBuilderNode} removeNode={removeBuilderNode} addNestedNode={addNestedElement} isDocumentTemplate={isDocumentTemplate} />}</aside>
+          <div className="canvas-area"><div className="device-controls"><button className="unknown-action" onClick={() => markUnknown(builderBoundary)}><Smartphone size={16} /> iPhone 15 Pro <ChevronDown size={14} /></button>{appliedTemplate !== null && <div className="preview-mode" aria-label="Preview mode"><button className={previewMode === "source" ? "active" : ""} onClick={() => setPreviewMode("source")}>{templates[appliedTemplate].documentTemplate ? "文档样式" : "Source visual"}</button><button className={previewMode === "editable" ? "active" : ""} disabled={!isEditableTemplate(templates[appliedTemplate])} onClick={() => setPreviewMode("editable")}>Editable structure</button></div>}<button className="icon unknown-action" title="Preview orientation" onClick={() => markUnknown(builderBoundary)}><RotateCw size={15} /></button><button className="icon unknown-action" title="Preview visibility" onClick={() => markUnknown(builderBoundary)}><Eye size={15} /></button></div><PaywallPreview nodes={builderNodes} template={appliedTemplate !== null ? templates[appliedTemplate] : null} mode={previewMode} activeNode={activeNode} onSelect={setActiveNode} onUpdateHeroPosition={updateHeroCopyPosition} />{appliedTemplate !== null && previewMode === "source" && <p className="source-preview-note">{templates[appliedTemplate].documentTemplate ? "飞书文档中的 Paywall 样式参考，与模板库卡片一一对应。" : "源端模板画面，与模板库卡片一一对应。"}</p>}{appliedTemplate !== null && previewMode === "editable" && <p className="source-preview-note">{isEditableTemplate(templates[appliedTemplate]) ? "已采集样式与核心字段的本地可编辑复现。" : "精确节点树仍在采集。"}</p>}<p className="preview-disclaimer">All prices, titles, and offers displayed are placeholders. The actual data from App Store and Google Play will be shown in the app.</p></div>
+          <aside className="property-panel"><BuilderProperties active={active} markUnknown={markUnknown} boundary={builderBoundary} templateLinks={templateLinks} setTemplateLinks={setTemplateLinks} updateNode={updateBuilderNode} removeNode={removeBuilderNode} addNestedNode={addNestedElement} isDocumentTemplate={isDocumentTemplate} /></aside>
         </div>
         <div className="builder-footer"><button className="secondary unknown-action" onClick={() => markUnknown(builderBoundary)}>Discard</button><button className="primary" onClick={() => setModal({ kind: appliedTemplate !== null ? "template-requirements" : "builder-save" })}>Save</button></div>
       </section>
@@ -1481,7 +1471,7 @@ function PaywallWorkspace({ selected, draft, setDraft, view, setView, duplicate,
   );
 }
 
-function BuilderProperties({ active, setBuilderTab, markUnknown, boundary, templateLinks, setTemplateLinks, updateNode, removeNode, addNestedNode, isDocumentTemplate }) {
+function BuilderProperties({ active, markUnknown, boundary, templateLinks, setTemplateLinks, updateNode, removeNode, addNestedNode, isDocumentTemplate }) {
   const [tab, setTab] = useState("content");
   const type = active?.type ?? "Elements";
   const componentBoundary = {
@@ -1916,11 +1906,6 @@ function PaddingInputs({ values = [0, 0, 0, 0] }) {
 
 function LinkOption({ title, checked = false, fields }) {
   return <section className="link-option"><label className="switch-row"><input type="checkbox" defaultChecked={checked} /><span>{checked ? "On" : "Off"}</span><strong>{title}</strong></label>{checked && fields.map(([label, value, onValueChange]) => <Field label={label} key={label}><input {...(onValueChange ? { value, onChange: (event) => onValueChange(event.target.value) } : { defaultValue: value })} /></Field>)}</section>;
-}
-
-function LayoutSettings({ markUnknown, boundary, setModal, appliedTemplate }) {
-  const isBluePrivilege = appliedTemplate !== null && templates[appliedTemplate]?.documentTemplate === "blue-privilege";
-  return <div className="property-scroll layout-settings"><h3>Layout settings</h3><Field label="Template"><div className="inline-select"><span>{appliedTemplate !== null ? templates[appliedTemplate].title : "X template #19"}</span><button className="secondary" onClick={() => setModal({ kind: "templates" })}>Change template</button></div></Field>{isBluePrivilege ? <section className="page-settings"><h4>页面行为</h4><p className="property-copy">关闭页面时的挽留弹窗在「元素 → 挽留弹窗」中配置。套餐角标在「元素 → 产品套餐」中配置。</p></section> : <InspectorBoundary boundary={boundary} markUnknown={markUnknown} message="全局背景、字体、顶部按钮与间距的字段尚未建立可靠的预览映射，因此不显示为可编辑控件。" />}</div>;
 }
 
 function WorkspaceHeader({ selected, setView, duplicate, setModal, markUnknown }) {
