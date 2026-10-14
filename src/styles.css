@@ -470,16 +470,19 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-blue-paywall .ht-blue-plan > span { display: block; position: absolute; top: 6cqw; left: 0; right: 0; }
 .ht-blue-paywall .ht-blue-plan > span strong { display: block; font-size: 4.6cqw; white-space: nowrap; }
 .ht-blue-paywall .ht-blue-plan > em { position: absolute; top: 14cqw; left: 0; right: 0; font-size: 6cqw; }
+.ht-blue-paywall .ht-blue-plan.chosen > em { top: 12cqw; }
 .ht-blue-paywall .ht-blue-plan > i { position: absolute; top: 26cqw; bottom: auto; left: 0; right: 0; font-size: 3.7cqw; }
-.ht-blue-paywall .ht-blue-plan > .ht-plan-saving { position: absolute; top: 21cqw; left: 0; right: 0; color: #ff8207; font-size: 3.8cqw; white-space: nowrap; }
+.ht-blue-paywall .ht-blue-plan > i:not(.ht-plan-save-copy) { color: #999; font-weight: 500; }
+.ht-blue-paywall .ht-blue-plan.chosen > i:not(.ht-plan-save-copy) { color: #171717; }
+.ht-blue-paywall .ht-blue-plan > .ht-plan-saving { position: absolute; top: 19cqw; left: 0; right: 0; color: #ff8207; font-size: 3.8cqw; white-space: nowrap; }
 .ht-blue-paywall .ht-blue-plan > .ht-plan-saving,
 .ht-blue-paywall .ht-blue-plan .ht-plan-save-copy,
 .ht-blue-paywall .ht-blue-plan .ht-plan-top-saving { color: var(--save-text-color, #ff8207); }
-.ht-blue-paywall .ht-blue-plan.has-original > span { top: 8cqw; }
+.ht-blue-paywall .ht-blue-plan.has-original > span { top: 6cqw; }
 .ht-blue-paywall .ht-blue-plan.has-original > span del { display: block; margin-top: 1.5cqw; color: #aaa; font-size: 4.3cqw; }
 .ht-blue-paywall .ht-blue-plan.has-original .ht-plan-top-saving { position: absolute; top: -7cqw; left: 0; right: 0; color: #999; font-size: 3.5cqw; font-weight: 700; white-space: nowrap; }
 .ht-blue-paywall .ht-blue-plan.has-original > em { top: 25.5cqw; color: #999; font-size: 5.2cqw; }
-.ht-blue-paywall .ht-blue-plan.has-original > i { top: 20cqw; }
+.ht-blue-paywall .ht-blue-plan.has-original > i { top: 19cqw; }
 .ht-blue-paywall .ht-blue-plan > span b { top: -9cqw; left: 0; right: 0; }
 .ht-blue-paywall .ht-privilege-table > div b { display: grid; place-items: center; padding-top: 0; }
 .ht-vip-check { display: grid; place-items: center; width: 6.5cqw; height: 6.5cqw; border-radius: 50%; background: #ffb40d; color: #fff; font-size: 4cqw; }
