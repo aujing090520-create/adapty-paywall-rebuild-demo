@@ -589,6 +589,9 @@ textarea { min-height: 80px; resize: vertical; }
   bottom: var(--hero-copy-bottom, 15%);
   text-align: var(--hero-copy-align, left);
 }
+.ht-blue-paywall .ht-blue-copy.can-drag { cursor: grab; touch-action: none; user-select: none; }
+.ht-blue-paywall .ht-blue-copy.can-drag:active { cursor: grabbing; }
+.ht-blue-paywall .ht-blue-copy.can-drag:hover { outline: 1px dashed #fff; outline-offset: 5px; }
 .ht-blue-paywall .ht-blue-copy h1 {
   color: var(--hero-title-color, #ffc524);
   font-size: var(--hero-title-size, 30px);
