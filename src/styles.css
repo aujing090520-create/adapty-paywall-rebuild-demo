@@ -516,6 +516,7 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-action-gradient-text { background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: none; }
 .ht-plan span b { background: var(--badge-background, linear-gradient(90deg, #ff8409, #ffc906)); }
 .ht-plan .ht-plan-save-copy { color: var(--save-text-color, #ff8912); }
+.ht-plan .ht-plan-custom-save { display: block; color: var(--save-text-color, #ff8912); font-size: 2.8cqw; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ht-recovery-plans .ht-plan small { background: var(--badge-background, #ff9508); }
 .product-color-settings { display: grid; gap: 18px; padding: 16px 14px 24px; }
 .product-color-field { display: grid; gap: 8px; }
@@ -604,6 +605,11 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-sku-paywall .ht-sku-promo { height: 45cqw; }
 .ht-sku-paywall .ht-sku-plans { height: 22cqw; min-height: 0; }
 .ht-sku-paywall .ht-sku-plans .ht-plan { height: 22cqw; min-height: 0; }
+.ht-sku-paywall .ht-sku-plans .ht-plan.has-custom-save { padding-top: 1.2cqw; padding-bottom: .8cqw; gap: .2cqw; }
+.ht-sku-paywall .ht-sku-plans .ht-plan.has-custom-save strong { font-size: 3.5cqw; }
+.ht-sku-paywall .ht-sku-plans .ht-plan.has-custom-save em { font-size: 4.2cqw; }
+.ht-sku-paywall .ht-sku-plans .ht-plan.has-custom-save i { font-size: 2.7cqw; }
+.ht-sku-paywall .ht-sku-plans .ht-plan.has-custom-save .ht-plan-custom-save { font-size: 2.7cqw; }
 .ht-sku-paywall .ht-action { height: 20cqw; min-height: 0; }
 .ht-sku-paywall .ht-legal { min-height: 12cqw; }
 
