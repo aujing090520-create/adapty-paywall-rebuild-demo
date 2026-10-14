@@ -969,13 +969,13 @@ function App() {
   const [builderTab, setBuilderTab] = useState("tree");
   const [builderNodes, setBuilderNodes] = useState(() => createBuilderNodes());
   const [activeNode, setActiveNode] = useState("links");
-  const [unknownOpen, setUnknownOpen] = useState(true);
+  const [unknownOpen, setUnknownOpen] = useState(false);
   const [placementFilter, setPlacementFilter] = useState([]);
   const [placementDraft, setPlacementDraft] = useState([]);
   const [placementMenuOpen, setPlacementMenuOpen] = useState(false);
   const [rowMenuId, setRowMenuId] = useState(null);
   const [appMenuOpen, setAppMenuOpen] = useState(false);
-  const [locale, setLocale] = useState("en");
+  const [locale, setLocale] = useState("zh-CN");
 
   useEffect(() => {
     const root = document.querySelector(".app");
@@ -1049,7 +1049,7 @@ function App() {
   };
 
   return (
-    <div className="app">
+    <div className={`app ${unknownOpen ? "" : "evidence-collapsed"}`}>
       <aside className="sidebar">
         <div className="brand">a</div>
         <nav>
@@ -1167,8 +1167,8 @@ function App() {
       </main>
 
       <aside className={`evidence-panel ${unknownOpen ? "open" : ""}`}>
-        <button className="evidence-head" onClick={() => setUnknownOpen((open) => !open)}>
-          <span><CircleHelp size={17} /> Evidence & gaps</span>
+        <button className="evidence-head" aria-expanded={unknownOpen} title={unknownOpen ? "收起已验证与缺口" : "展开已验证与缺口"} onClick={() => setUnknownOpen((open) => !open)}>
+          <span><CircleHelp size={17} /> <span className="evidence-title">Evidence & gaps</span></span>
           <ChevronRight size={16} />
         </button>
         {unknownOpen && (
