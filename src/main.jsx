@@ -220,6 +220,22 @@ const documentProductColors = {
 function productPackageRows(productNode, variant) {
   const config = productNode?.config ?? {};
   if (Array.isArray(config.packageRows)) return config.packageRows;
+  if (config.bluePrivilege) {
+    const source = helloTalkTemplateDefaults["blue-privilege"];
+    return source.plans.map(([name, price, detail], index) => ({
+      name, price,
+      supportingCopy: index === 2 ? "" : detail,
+      showSupportingCopy: index !== 2,
+      referencePrice: source.planOriginalPrices?.[index] ?? "",
+      showReferencePrice: Boolean(source.planOriginalPrices?.[index]),
+      saveCopy: index === 2 ? detail : "",
+      showSaveCopy: index === 2,
+      savingCopy: source.planSavings?.[index] ?? "",
+      showSavingCopy: Boolean(source.planSavings?.[index]),
+      badgeText: index === source.badgeProductIndex ? source.badgeLabel : "",
+      showBadge: index === source.badgeProductIndex,
+    }));
+  }
   const legacyRows = (productNode?.content ?? "").split("\n").filter(Boolean);
   return legacyRows.map((line, index) => {
     const [name = "", price = "", detail = ""] = line.split("|");
@@ -1612,8 +1628,7 @@ function BuilderProperties({ active, markUnknown, boundary, templateLinks, setTe
   }
 
   if (type === "Products") {
-    if (active.config?.bluePrivilege) return <div className="property-scroll"><h3>商品套餐</h3><ProductsStyleEditor active={active} updateNode={updateNode} /></div>;
-    return <div className="property-scroll"><h3>Products</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}{tab === "content" && <ProductsContent active={active} updateNode={updateNode} />}{tab === "style" && <ProductsStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
+    return <div className="property-scroll"><h3>商品套餐</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}{tab === "content" && <ProductsContent active={active} updateNode={updateNode} />}{tab === "style" && <ProductsStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ProductsLayoutEditor active={active} updateNode={updateNode} />}</div>;
   }
 
   if (type === "Toggle") {
@@ -1822,18 +1837,22 @@ function CarouselLayoutEditor({ active, updateNode }) {
 }
 
 function ProductsStyleEditor({ active, updateNode }) {
-  const variant = active.config?.productTemplate ?? (active.content?.includes("¥1198") ? "sku-sheet" : active.content?.includes("新用户立省") ? "payment-recovery" : "membership-plans");
-  const packageRows = active.config?.productColors ? productPackageRows(active, variant) : [];
   if (active.config?.bluePrivilege || active.config?.productColors) return <div className="product-color-settings">
-    {(active.config?.bluePrivilege || packageRows.some((row) => row.showBadge)) && <ProductColorField label="商品标签颜色" active={active} updateNode={updateNode} name="badgeGradient" fallback={["#ff860a", "#ffb000", "#ffd10b"]} gradient />}
+    <ProductColorField label="商品标签颜色" active={active} updateNode={updateNode} name="badgeGradient" fallback={["#ff860a", "#ffb000", "#ffd10b"]} gradient />
     <ProductColorField label="商品选中框颜色" active={active} updateNode={updateNode} name="selectedBorderGradient" fallback={["#ff860a", "#ff860a", "#ff860a"]} gradient />
     <ProductColorField label="商品选中背景颜色" active={active} updateNode={updateNode} name="selectedBackground" fallback="#ffffff" />
-    {(active.config?.bluePrivilege || packageRows.some((row) => row.showSaveCopy)) && <ProductColorField label="商品SAVE文字颜色" active={active} updateNode={updateNode} name="saveTextColor" fallback="#ff8207" />}
-    {active.config?.productTemplate === "payment-recovery" && <ProductColorField label="商品SAVE背景颜色" active={active} updateNode={updateNode} name="saveBackgroundColor" fallback="#ffffff" />}
+    <ProductColorField label="商品SAVE文字颜色" active={active} updateNode={updateNode} name="saveTextColor" fallback="#ff8207" />
+    <label className="switch-row"><input type="checkbox" checked={Boolean(active.config?.saveBackgroundColor)} onChange={(event) => updateNodeConfig(active, updateNode, { saveBackgroundColor: event.target.checked ? "#ffffff" : "" })} /><span>{active.config?.saveBackgroundColor ? "开启" : "关闭"}</span><strong>SAVE 背景</strong></label>
+    {active.config?.saveBackgroundColor && <ProductColorField label="SAVE 背景颜色" active={active} updateNode={updateNode} name="saveBackgroundColor" fallback="#ffffff" />}
     <ProductColorField label="购买按钮文字颜色" active={active} updateNode={updateNode} name="purchaseTextGradient" fallback={["#ffffff", "#ffffff", "#ffffff"]} gradient />
     <ProductColorField label="购买按钮背景颜色" active={active} updateNode={updateNode} name="purchaseBackgroundGradient" fallback={["#ff8707", "#ffb000", "#ffd10b"]} gradient />
+    <h4>套餐文字</h4><div className="split-fields"><ConfigNumberField label="名称字号" active={active} updateNode={updateNode} name="nameFontSize" fallback="" min={8} max={48} suffix="px" /><ConfigNumberField label="价格字号" active={active} updateNode={updateNode} name="priceFontSize" fallback="" min={8} max={56} suffix="px" /></div><div className="split-fields"><ConfigNumberField label="辅助文案字号" active={active} updateNode={updateNode} name="detailFontSize" fallback="" min={8} max={40} suffix="px" /><ConfigNumberField label="角标字号" active={active} updateNode={updateNode} name="badgeFontSize" fallback="" min={8} max={40} suffix="px" /></div><ConfigNumberField label="套餐圆角" active={active} updateNode={updateNode} name="planRadius" fallback="" min={0} max={48} suffix="px" />
   </div>;
   return <><div className="split-fields"><ConfigColorField label="Selection color" active={active} updateNode={updateNode} name="accentColor" fallback="#ff860a" /><ConfigColorField label="Selected background" active={active} updateNode={updateNode} name="selectedBackground" fallback="#ffffff" /></div><ConfigNumberField label="Corner radius" active={active} updateNode={updateNode} name="radius" fallback={18} min={0} max={32} suffix="px" /></>;
+}
+
+function ProductsLayoutEditor({ active, updateNode }) {
+  return <><h4>套餐布局</h4><ConfigNumberField label="套餐间距" active={active} updateNode={updateNode} name="planGap" fallback="" min={0} max={48} suffix="px" /><ConfigNumberField label="套餐高度" active={active} updateNode={updateNode} name="planHeight" fallback="" min={30} max={300} suffix="px" /><h4>组件位置</h4><ElementLayoutEditor active={active} updateNode={updateNode} /></>;
 }
 
 function ImageStyle() {
@@ -2005,13 +2024,13 @@ function CarouselContent({ active, updateNode, addNestedNode, allowAdd = true })
 
 function ProductsContent({ active, updateNode }) {
   const config = active.config ?? {};
-  if (config.productColors) {
-    const variant = config.productTemplate ?? (active.content?.includes("¥1198") ? "sku-sheet" : active.content?.includes("新用户立省") ? "payment-recovery" : "membership-plans");
+  if (config.productColors || config.bluePrivilege) {
+    const variant = config.productTemplate ?? (config.bluePrivilege ? "blue-privilege" : active.content?.includes("¥1198") ? "sku-sheet" : active.content?.includes("新用户立省") ? "payment-recovery" : "membership-plans");
     const rows = productPackageRows(active, variant);
     const updateRows = (nextRows, patch = {}) => updateNode(active.id, { config: { ...config, productTemplate: variant, packageRows: nextRows, ...patch } });
     const updateRow = (index, patch) => updateRows(rows.map((row, rowIndex) => rowIndex === index ? { ...row, ...patch } : row));
     const optionalField = (row, index, valueKey, visibilityKey, label) => <div className="product-optional-field" key={valueKey}><label className="switch-row"><input type="checkbox" checked={row[visibilityKey] === true} onChange={(event) => updateRow(index, { [visibilityKey]: event.target.checked })} /><span>{row[visibilityKey] ? "开启" : "关闭"}</span><strong>{label}</strong></label>{row[visibilityKey] && <input aria-label={`${row.name || `套餐 ${index + 1}`} ${label}`} value={row[valueKey] ?? ""} onChange={(event) => updateRow(index, { [valueKey]: event.target.value })} />}</div>;
-    return <><Field label="默认选中商品"><select value={String(Math.min(config.defaultSelected ?? 0, Math.max(0, rows.length - 1)))} onChange={(event) => updateRows(rows, { defaultSelected: Number(event.target.value) })}>{rows.map((row, index) => <option key={index} value={index}>{row.name || `套餐 ${index + 1}`}</option>)}</select></Field><div className="product-package-list">{rows.map((row, index) => <section className="product-row-editor" key={index}><header><strong>套餐 {index + 1}</strong><button type="button" className="icon" title="删除套餐" aria-label={`删除套餐 ${index + 1}`} onClick={() => updateRows(rows.filter((_, rowIndex) => rowIndex !== index), { defaultSelected: Math.min(config.defaultSelected ?? 0, Math.max(0, rows.length - 2)) })}><X size={15} /></button></header><div className="split-fields"><Field label="套餐名称"><input value={row.name} onChange={(event) => updateRow(index, { name: event.target.value })} /></Field><Field label="现价"><input value={row.price} onChange={(event) => updateRow(index, { price: event.target.value })} /></Field></div>{optionalField(row, index, "supportingCopy", "showSupportingCopy", "辅助文案")}{optionalField(row, index, "referencePrice", "showReferencePrice", "参考价")}{optionalField(row, index, "saveCopy", "showSaveCopy", "SAVE 文案")}{optionalField(row, index, "badgeText", "showBadge", "商品角标")}</section>)}</div><button type="button" className="text-action" onClick={() => updateRows([...rows, { name: "新套餐", price: "", supportingCopy: "", referencePrice: "", saveCopy: "", badgeText: "", showSupportingCopy: false, showReferencePrice: false, showSaveCopy: false, showBadge: false }])}><Plus size={15} /> 添加套餐</button></>;
+    return <><Field label="默认选中商品"><select value={String(Math.min(config.defaultSelected ?? (config.bluePrivilege ? 1 : 0), Math.max(0, rows.length - 1)))} onChange={(event) => updateRows(rows, { defaultSelected: Number(event.target.value) })}>{rows.map((row, index) => <option key={index} value={index}>{row.name || `套餐 ${index + 1}`}</option>)}</select></Field><div className="product-package-list">{rows.map((row, index) => <section className="product-row-editor" key={index}><header><strong>套餐 {index + 1}</strong><button type="button" className="icon" title="删除套餐" aria-label={`删除套餐 ${index + 1}`} onClick={() => updateRows(rows.filter((_, rowIndex) => rowIndex !== index), { defaultSelected: Math.min(config.defaultSelected ?? (config.bluePrivilege ? 1 : 0), Math.max(0, rows.length - 2)) })}><X size={15} /></button></header><div className="split-fields"><Field label="套餐名称"><input value={row.name} onChange={(event) => updateRow(index, { name: event.target.value })} /></Field><Field label="现价"><input value={row.price} onChange={(event) => updateRow(index, { price: event.target.value })} /></Field></div>{optionalField(row, index, "supportingCopy", "showSupportingCopy", "辅助文案")}{optionalField(row, index, "referencePrice", "showReferencePrice", "参考价")}{optionalField(row, index, "savingCopy", "showSavingCopy", "优惠信息")}{optionalField(row, index, "saveCopy", "showSaveCopy", "SAVE 文案")}{optionalField(row, index, "badgeText", "showBadge", "商品角标")}</section>)}</div><button type="button" className="text-action" onClick={() => updateRows([...rows, { name: "新套餐", price: "", supportingCopy: "", referencePrice: "", savingCopy: "", saveCopy: "", badgeText: "", showSupportingCopy: false, showReferencePrice: false, showSavingCopy: false, showSaveCopy: false, showBadge: false }])}><Plus size={15} /> 添加套餐</button></>;
   }
   const products = (active.content ?? "").split("\n").filter(Boolean);
   const updateConfig = (patch) => updateNode(active.id, { config: { ...config, ...patch } });
@@ -2342,7 +2361,7 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
     return state === "custom" ? "media-custom" : state === "removed" ? "media-removed" : "";
   };
   const productConfig = nodeById("products")?.config ?? {};
-  const defaultSelectedPlan = variant === "blue-privilege" ? defaults.selectedProductIndex : Number.isInteger(productConfig.defaultSelected) ? productConfig.defaultSelected : (["payment-recovery", "sku-sheet"].includes(variant) ? 0 : 1);
+  const defaultSelectedPlan = Number.isInteger(productConfig.defaultSelected) ? productConfig.defaultSelected : variant === "blue-privilege" ? defaults.selectedProductIndex : (["payment-recovery", "sku-sheet"].includes(variant) ? 0 : 1);
   const [selectedPlan, setSelectedPlan] = useState(defaultSelectedPlan);
   const [openPrivilegeId, setOpenPrivilegeId] = useState(null);
   const retentionConfig = configFor("retention");
@@ -2358,7 +2377,7 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
   const action = value("purchase", defaults.action);
   const legal = value("legal", defaults.legal);
   const links = value("links", "服务条款 · 隐私政策");
-  const visiblePlans = productConfig.bluePrivilege ? defaults.plans : productPackageRows(nodeById("products"), variant);
+  const visiblePlans = productPackageRows(nodeById("products"), variant);
   const benefitConfig = configFor("benefits");
   const renderedBenefits = benefitConfig.bluePrivilege ? privilegeRowsFor(nodeById("benefits")) : value("benefits", "").split("\n").filter(Boolean).map((row, index) => { const [name, standard, vip] = row.split("|"); return { id: `generic-${index}`, name, standard, vip }; });
   const visibleBenefits = benefitConfig.bluePrivilege ? renderedBenefits.slice(0, Math.max(1, Math.min(renderedBenefits.length, Number(benefitConfig.maxVisibleRows ?? renderedBenefits.length) || 1))) : renderedBenefits;
@@ -2449,20 +2468,21 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
   const Plan = ({ plan, index }) => {
     const config = configFor("products");
     const hasProductColors = config.bluePrivilege || config.productColors;
-    const name = config.bluePrivilege ? plan[0] : plan.name;
-    const price = config.bluePrivilege ? plan[1] : plan.price;
-    const supportingCopy = !config.bluePrivilege && plan.showSupportingCopy ? plan.supportingCopy : "";
-    const referencePrice = !config.bluePrivilege && plan.showReferencePrice ? plan.referencePrice : "";
-    const saveText = config.bluePrivilege ? plan[2] : plan.showSaveCopy ? plan.saveCopy : "";
-    const primaryDetail = config.bluePrivilege ? plan[2] : supportingCopy || referencePrice || saveText;
+    const name = plan.name;
+    const price = plan.price;
+    const supportingCopy = plan.showSupportingCopy ? plan.supportingCopy : "";
+    const referencePrice = plan.showReferencePrice ? plan.referencePrice : "";
+    const saveText = plan.showSaveCopy ? plan.saveCopy : "";
+    const primaryDetail = config.bluePrivilege ? supportingCopy || saveText : supportingCopy || referencePrice || saveText;
     const extraSave = !config.bluePrivilege && saveText && primaryDetail !== saveText ? saveText : "";
     const selectedStyle = index === selectedPlan ? hasProductColors ? { borderColor: "transparent", background: `${productGradient([config.selectedBackground ?? "#ffffff", config.selectedBackground ?? "#ffffff", config.selectedBackground ?? "#ffffff"], ["#ffffff", "#ffffff", "#ffffff"])} padding-box, ${productGradient(config.selectedBorderGradient, ["#ff860a", "#ff860a", "#ff860a"])} border-box` } : config.selectedBackground ? { background: config.selectedBackground } : {} : {};
     const productStyle = hasProductColors ? { "--badge-background": productGradient(config.badgeGradient, ["#ff860a", "#ffb000", "#ffd10b"]), "--save-text-color": config.saveTextColor ?? "#ff8207", "--save-background-color": config.saveBackgroundColor ?? "transparent" } : {};
-    const saveCopy = config.bluePrivilege ? index === visiblePlans.length - 1 : Boolean(saveText && primaryDetail === saveText);
-    const hasBadge = config.bluePrivilege ? index === defaults.badgeProductIndex : Boolean(plan.showBadge);
-    const saving = config.bluePrivilege ? (defaults.planSavings?.[index] ?? "") : "";
-    const original = config.bluePrivilege ? (defaults.planOriginalPrices?.[index] ?? "") : "";
-    return <div className={`${nodeClass("products", "ht-plan")} ${index === selectedPlan ? "chosen" : ""} ${config.bluePrivilege ? "ht-blue-plan" : ""} ${original ? "has-original" : ""} ${extraSave ? "has-custom-save" : ""}`} style={{ ...styleFor("products"), ...productStyle, ...selectedStyle, ...(!hasProductColors && config.accentColor && index === selectedPlan ? { borderColor: config.accentColor } : {}) }} role={interactive ? "button" : undefined} tabIndex={interactive ? 0 : undefined} onClick={(event) => { if (!interactive) return; event.stopPropagation(); setSelectedPlan(index); onSelect?.("products"); }} key={`${name}-${index}`}><span>{hasBadge && variant !== "payment-recovery" && <b>{config.bluePrivilege ? defaults.badgeLabel : plan.badgeText}</b>}{original && saving && <small className="ht-plan-top-saving">{saving}</small>}<strong>{name}</strong>{original && <del>{original}</del>}{hasBadge && variant === "payment-recovery" && <small style={config.accentColor ? { background: config.accentColor } : undefined}>{plan.badgeText}</small>}</span><em>{price}</em>{saving && !original && <small className="ht-plan-saving">{saving}</small>}{primaryDetail && <i className={saveCopy ? "ht-plan-save-copy" : ""}>{primaryDetail}</i>}{extraSave && <small className="ht-plan-custom-save">{extraSave}</small>}</div>;
+    const isSaveCopy = Boolean(saveText && primaryDetail === saveText);
+    const hasBadge = Boolean(plan.showBadge);
+    const saving = plan.showSavingCopy ? plan.savingCopy : "";
+    const original = config.bluePrivilege ? referencePrice : "";
+    const planStyle = { ...productStyle, ...selectedStyle, ...(!hasProductColors && config.accentColor && index === selectedPlan ? { borderColor: config.accentColor } : {}), ...(config.planRadius !== undefined && config.planRadius !== "" ? { borderRadius: `${config.planRadius}px` } : {}), ...(config.planHeight ? { height: `${config.planHeight}px` } : {}) };
+    return <div className={`${nodeClass("products", "ht-plan")} ${index === selectedPlan ? "chosen" : ""} ${config.bluePrivilege ? "ht-blue-plan" : ""} ${original ? "has-original" : ""} ${extraSave ? "has-custom-save" : ""}`} style={planStyle} role={interactive ? "button" : undefined} tabIndex={interactive ? 0 : undefined} onClick={(event) => { if (!interactive) return; event.stopPropagation(); setSelectedPlan(index); onSelect?.("products"); }} key={`${name}-${index}`}><span>{hasBadge && variant !== "payment-recovery" && <b style={config.badgeFontSize ? { fontSize: `${config.badgeFontSize}px` } : undefined}>{plan.badgeText}</b>}{original && saving && <small className="ht-plan-top-saving">{saving}</small>}<strong style={config.nameFontSize ? { fontSize: `${config.nameFontSize}px` } : undefined}>{name}</strong>{original && <del>{original}</del>}{hasBadge && variant === "payment-recovery" && <small style={{ ...(config.accentColor ? { background: config.accentColor } : {}), ...(config.badgeFontSize ? { fontSize: `${config.badgeFontSize}px` } : {}) }}>{plan.badgeText}</small>}</span><em style={config.priceFontSize ? { fontSize: `${config.priceFontSize}px` } : undefined}>{price}</em>{saving && !original && <small className="ht-plan-saving">{saving}</small>}{primaryDetail && <i className={isSaveCopy ? "ht-plan-save-copy" : ""} style={config.detailFontSize ? { fontSize: `${config.detailFontSize}px` } : undefined}>{primaryDetail}</i>}{extraSave && <small className="ht-plan-custom-save">{extraSave}</small>}</div>;
   };
   const Status = () => <div className="ht-status"><b>{variant === "sku-sheet" ? "4:52" : variant === "blue-privilege" ? "15:48" : "16:48"}</b><span>••• ◔ ▰</span></div>;
   const Timer = () => {
@@ -2541,8 +2561,9 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
     if (id === "benefits") return <section className={nodeClass(id, "ht-privilege-table")} style={{ ...styleFor(id), "--privilege-header-background": benefitConfig.headerBackground, "--privilege-vip-background": benefitConfig.vipColumnBackground }} onClick={select(id)}><header><strong>特权名称</strong><strong>非会员</strong><b style={benefitConfig.accentColor ? { color: benefitConfig.accentColor } : undefined}>VIP</b></header>{visibleBenefits.map((row) => <div key={row.id} className={row.pageId ? "has-detail-page" : ""} onClick={(event) => { if (!interactive || !row.pageId) return; event.stopPropagation(); setOpenPrivilegeId(row.id); }}><span>{row.name}⌄</span><em style={benefitConfig.secondaryColor ? { color: benefitConfig.secondaryColor } : undefined}>{renderBenefitValue(row, "standard")}</em><b style={benefitConfig.accentColor ? { color: benefitConfig.accentColor } : undefined}>{renderBenefitValue(row, "vip")}</b></div>)}{renderChildren(id)}</section>;
     if (id === "products") {
       const plans = <>{visiblePlans.map((plan, index) => <Plan plan={plan} index={index} key={index} />)}</>;
-      if (variant === "membership-plans") return <div className="ht-member-products"><header className="ht-plan-heading"><b>选择套餐</b><span>特权对比 ›</span></header><section className="ht-plan-shell">{plans}</section></div>;
-      return <section className={variant === "payment-recovery" ? "ht-recovery-plans" : variant === "sku-sheet" ? "ht-sku-plans" : "ht-plan-shell"}>{plans}</section>;
+      const shellStyle = { ...styleFor("products"), ...(productConfig.planGap !== undefined && productConfig.planGap !== "" ? { gap: `${productConfig.planGap}px` } : {}) };
+      if (variant === "membership-plans") return <div className="ht-member-products"><header className="ht-plan-heading"><b>选择套餐</b><span>特权对比 ›</span></header><section className="ht-plan-shell" style={shellStyle}>{plans}</section></div>;
+      return <section className={variant === "payment-recovery" ? "ht-recovery-plans" : variant === "sku-sheet" ? "ht-sku-plans" : "ht-plan-shell"} style={shellStyle}>{plans}</section>;
     }
     if (id === "timer") return <Timer />;
     if (id === "purchase") return variant === "blue-privilege" ? <div className="ht-action-wrap"><Action /></div> : <Action />;
