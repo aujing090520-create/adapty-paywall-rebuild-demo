@@ -862,8 +862,8 @@ textarea { min-height: 80px; resize: vertical; }
 .preview-slide-carousel { text-align: center; }
 .preview-slide-media { aspect-ratio: 1.5; background: #f6f5fa; }
 .preview-slide-media img { width: 100%; height: 100%; object-fit: cover; }
-.preview-slide-carousel > strong { display: block; margin-top: 10px; }
-.preview-slide-carousel > p { margin: 6px 0; }
+.preview-slide-carousel > strong { display: block; padding-top: 10px; }
+.preview-slide-carousel > p { margin: 0; padding-top: 6px; }
 .preview-slide-dots { display: flex; justify-content: center; gap: 8px; }
 .preview-slide-dots button { border: 0; background: none; color: #aaa; cursor: pointer; }
 .preview-slide-dots button[aria-current="true"] { color: #6440dc; }

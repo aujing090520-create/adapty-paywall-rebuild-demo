@@ -1599,7 +1599,7 @@ function BuilderProperties({ active, markUnknown, boundary, templateLinks, setTe
   }
 
   if (type === "Carousel") {
-    return <div className="property-scroll"><h3>Carousel</h3>{canEditStructure && nodeEditor}{tabBar}{tab === "content" && <CarouselContent active={active} updateNode={updateNode} addNestedNode={addNestedNode} />}{tab === "style" && <CarouselStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
+    return <div className="property-scroll"><h3>轮播图</h3>{canEditStructure && nodeEditor}{tabBar}{tab === "content" && <CarouselContent active={active} updateNode={updateNode} addNestedNode={addNestedNode} />}{tab === "style" && <CarouselStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && (Array.isArray(active?.config?.slides) ? <CarouselLayoutEditor active={active} updateNode={updateNode} /> : <ElementLayoutEditor active={active} updateNode={updateNode} />)}</div>;
   }
 
   if (type === "Card") {
@@ -1752,9 +1752,10 @@ function ConfigNumberField({ label, active, updateNode, name, fallback, min = 0,
 function ConfigInsets({ active, updateNode, prefix = "margin" }) {
   const config = active.config ?? {};
   const keys = [["Top", "上"], ["Right", "右"], ["Bottom", "下"], ["Left", "左"]];
+  const isPadding = prefix.toLowerCase().includes("padding");
   return <div className="four-inputs">{keys.map(([label, key]) => {
     const name = `${prefix}${label}`;
-    return <label key={name} className="inset-input"><span>{key}</span><input type="number" min={prefix === "padding" ? 0 : -80} aria-label={`${key}${prefix === "padding" ? "图片边距" : "外边距"}`} value={config[name] ?? 0} onChange={(event) => updateNodeConfig(active, updateNode, { [name]: event.target.value })} /></label>;
+    return <label key={name} className="inset-input"><span>{key}</span><input type="number" min={isPadding ? 0 : -80} aria-label={`${key}${isPadding ? "图片留白" : "外边距"}`} value={config[name] ?? 0} onChange={(event) => updateNodeConfig(active, updateNode, { [name]: event.target.value })} /></label>;
   })}</div>;
 }
 
@@ -1810,7 +1811,14 @@ function TimerStyleEditor({ active, updateNode }) {
 }
 
 function CarouselStyleEditor({ active, updateNode }) {
-  return <><div className="split-fields"><ConfigColorField label="当前页圆点" active={active} updateNode={updateNode} name="accentColor" fallback="#111111" /><ConfigColorField label="其他页圆点" active={active} updateNode={updateNode} name="secondaryColor" fallback="#dedede" /></div><ConfigNumberField label="圆点间距" active={active} updateNode={updateNode} name="gap" fallback={8} min={2} max={24} suffix="px" /></>;
+  const config = active.config ?? {};
+  const updateConfig = (patch) => updateNodeConfig(active, updateNode, patch);
+  return <>{Array.isArray(config.slides) && <><h4>图片</h4><Field label="填充方式"><div className="segmented">{[["fill", "拉伸"], ["cover", "铺满"], ["contain", "完整显示"]].map(([value, label]) => <button type="button" key={value} className={(config.imageFit ?? "fill") === value ? "active" : ""} onClick={() => updateConfig({ imageFit: value })}>{label}</button>)}</div></Field><ConfigColorField label="图片背景" active={active} updateNode={updateNode} name="imageBackground" fallback="#e5f1ff" /><ConfigNumberField label="图片圆角" active={active} updateNode={updateNode} name="imageRadius" fallback={0} min={0} max={48} suffix="px" /><h4>标题</h4><div className="split-fields"><ConfigColorField label="标题颜色" active={active} updateNode={updateNode} name="titleColor" fallback="#f68920" /><ConfigNumberField label="标题字号" active={active} updateNode={updateNode} name="titleFontSize" fallback={29} min={10} max={72} suffix="px" /></div><Field label="标题字重"><select value={config.titleWeight ?? "700"} onChange={(event) => updateConfig({ titleWeight: event.target.value })}><option value="400">常规</option><option value="500">中等</option><option value="700">加粗</option><option value="900">特粗</option></select></Field><h4>说明文案</h4><div className="split-fields"><ConfigColorField label="说明颜色" active={active} updateNode={updateNode} name="captionColor" fallback="#a4a4a4" /><ConfigNumberField label="说明字号" active={active} updateNode={updateNode} name="captionFontSize" fallback={18} min={10} max={48} suffix="px" /></div><Field label="说明字重"><select value={config.captionWeight ?? "400"} onChange={(event) => updateConfig({ captionWeight: event.target.value })}><option value="400">常规</option><option value="500">中等</option><option value="700">加粗</option></select></Field></>}<h4>进度点</h4><div className="split-fields"><ConfigColorField label="当前页圆点" active={active} updateNode={updateNode} name="accentColor" fallback="#111111" /><ConfigColorField label="其他页圆点" active={active} updateNode={updateNode} name="secondaryColor" fallback="#dedede" /></div><ConfigNumberField label="圆点大小" active={active} updateNode={updateNode} name="dotSize" fallback={10} min={4} max={32} suffix="px" /></>;
+}
+
+function CarouselLayoutEditor({ active, updateNode }) {
+  const config = active.config ?? {};
+  return <><h4>图片</h4><ConfigNumberField label="图片高度" active={active} updateNode={updateNode} name="imageHeight" fallback={100} min={30} max={200} suffix="%" /><Field label="图片四侧留白"><ConfigInsets active={active} updateNode={updateNode} prefix="imagePadding" /></Field><h4>文字</h4><Field label="对齐方式"><div className="segmented">{[["left", "居左"], ["center", "居中"], ["right", "居右"]].map(([value, label]) => <button type="button" key={value} className={(config.copyAlign ?? "center") === value ? "active" : ""} onClick={() => updateNodeConfig(active, updateNode, { copyAlign: value })}>{label}</button>)}</div></Field><ConfigNumberField label="文字左右留白" active={active} updateNode={updateNode} name="copyPaddingX" fallback={19} min={0} max={100} suffix="px" /><ConfigNumberField label="图片与标题间距" active={active} updateNode={updateNode} name="titleTopGap" fallback={10} min={0} max={100} suffix="px" /><ConfigNumberField label="标题与说明间距" active={active} updateNode={updateNode} name="captionTopGap" fallback={7} min={0} max={100} suffix="px" /><h4>进度点</h4><div className="split-fields"><ConfigNumberField label="圆点间距" active={active} updateNode={updateNode} name="gap" fallback={8} min={0} max={48} suffix="px" /><ConfigNumberField label="说明与圆点间距" active={active} updateNode={updateNode} name="dotTopGap" fallback={11} min={0} max={100} suffix="px" /></div><ConfigNumberField label="圆点下方留白" active={active} updateNode={updateNode} name="dotBottomGap" fallback={6} min={0} max={100} suffix="px" /><h4>组件位置</h4><Field label="外边距"><ConfigInsets active={active} updateNode={updateNode} /></Field><ConfigNumberField label="垂直偏移" active={active} updateNode={updateNode} name="offsetY" fallback={0} min={-120} max={120} suffix="px" /></>;
 }
 
 function ProductsStyleEditor({ active, updateNode }) {
@@ -2246,6 +2254,26 @@ function RetentionPreview({ config, onClose }) {
   return <div className="ht-retention-overlay" onClick={onClose}><section className="ht-retention-card" role="dialog" aria-label="挽留弹窗" onClick={(event) => event.stopPropagation()} style={{ backgroundColor: config.backgroundColor ?? "#f7f7f7", backgroundImage: config.backgroundImage ? `url(${config.backgroundImage})` : undefined }}><h2 style={{ color: config.titleColor ?? "#111" }}>{config.title ?? "错过这次，就要多花 30%😱"}</h2>{config.imageSrc && <img className="ht-retention-image" src={config.imageSrc} alt="优惠礼物" />}<div className="ht-retention-timer" style={{ color: config.timerColor ?? "#11bf42", "--retention-timer-color": config.timerColor ?? "#11bf42" }}><strong>{config.timerLabel ?? "倒计时"}</strong><div>{parts.map((part, index) => <React.Fragment key={index}><span>{part}</span>{index < parts.length - 1 && <i>:</i>}</React.Fragment>)}</div></div><button className="ht-retention-primary" type="button" onClick={onClose} style={{ background: `linear-gradient(90deg, ${config.buttonStartColor ?? "#ff8600"}, ${config.buttonEndColor ?? "#ffcd00"})`, color: config.buttonTextColor ?? "#fff" }}>{config.buttonText ?? "立享优惠"}</button><button className="ht-retention-cancel" type="button" onClick={onClose}>{config.cancelText ?? "忍痛取消"}</button></section></div>;
 }
 
+function carouselSlideStyles(config = {}) {
+  const px = (value) => `${Math.max(0, Number(value) || 0)}px`;
+  const imageFit = config.imageFit ?? "fill";
+  return {
+    image: {
+      backgroundColor: config.imageBackground ?? "#e5f1ff",
+      backgroundSize: imageFit === "fill" ? "100% 100%" : imageFit,
+    },
+    hero: {
+      "--hero-height-scale": String((Number(config.imageHeight) || 100) / 100),
+      ...Object.fromEntries(["Top", "Right", "Bottom", "Left"].map((edge) => [`--media-inset-${edge.toLowerCase()}`, px(config[`imagePadding${edge}`])])),
+      borderRadius: px(config.imageRadius),
+      overflow: config.imageRadius ? "hidden" : undefined,
+    },
+    title: { color: config.titleColor, fontSize: config.titleFontSize ? px(config.titleFontSize) : undefined, fontWeight: config.titleWeight, textAlign: config.copyAlign ?? "center", paddingLeft: config.copyPaddingX === undefined ? undefined : px(config.copyPaddingX), paddingRight: config.copyPaddingX === undefined ? undefined : px(config.copyPaddingX), paddingTop: config.titleTopGap === undefined ? undefined : px(config.titleTopGap) },
+    caption: { color: config.captionColor, fontSize: config.captionFontSize ? px(config.captionFontSize) : undefined, fontWeight: config.captionWeight, textAlign: config.copyAlign ?? "center", paddingLeft: config.copyPaddingX === undefined ? undefined : px(config.copyPaddingX), paddingRight: config.copyPaddingX === undefined ? undefined : px(config.copyPaddingX), paddingTop: config.captionTopGap === undefined ? undefined : px(config.captionTopGap) },
+    dots: { gap: px(config.gap ?? 8), paddingTop: config.dotTopGap === undefined ? undefined : px(config.dotTopGap), paddingBottom: config.dotBottomGap === undefined ? undefined : px(config.dotBottomGap), fontSize: config.dotSize ? px(config.dotSize) : undefined },
+  };
+}
+
 function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateHeroPosition, retentionPreviewOpen = false, onOpenRetention, onCloseRetention, interactive = false }) {
   const heroCopyDrag = useRef(null);
   const heroOverlayDrag = useRef(null);
@@ -2330,6 +2358,7 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
   };
   const openPrivilege = renderedBenefits.find((row) => row.id === openPrivilegeId);
   const carouselConfig = nodeById("carousel")?.config ?? {};
+  const carouselStyles = carouselSlideStyles(carouselConfig);
   const carouselSlides = Array.isArray(carouselConfig.slides) ? carouselConfig.slides : [];
   const carouselCount = carouselSlides.length || Math.max(1, Math.min(10, Number(carouselConfig.itemCount ?? 7) || 7));
   const [activeCarouselSlide, setActiveCarouselSlide] = useState(Number(carouselConfig.initialSlide ?? 0) || 0);
@@ -2493,10 +2522,10 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
     }
     if (id === "carousel") {
       const slide = carouselSlides[carouselActive];
-      if (variant === "membership-plans" && slide) return <div className={nodeClass(id, "ht-member-slide")} style={styleFor(id)} onClick={select(id)}><div className="ht-member-hero"><div className="ht-source-art" style={slide.image ? { backgroundImage: `url(${JSON.stringify(slide.image)})` } : { backgroundImage: "none" }} /></div><h1 className="ht-member-headline">{slide.title}</h1><p className="ht-member-caption">{slide.caption}</p><div className="ht-member-carousel" style={{ gap: String(carouselConfig.gap ?? 8) + "px" }}>{carouselSlides.map((item, index) => <button type="button" key={item.id} aria-label={`查看第 ${index + 1} 页`} aria-current={index === carouselActive ? "true" : undefined} style={{ color: index === carouselActive ? carouselConfig.accentColor : carouselConfig.secondaryColor }} onClick={(event) => { event.stopPropagation(); setActiveCarouselSlide(index); if (interactive) onSelect?.(id); }}>{index === carouselActive ? "●" : "○"}</button>)}</div>{renderChildren(id)}</div>;
+      if (variant === "membership-plans" && slide) return <div className={nodeClass(id, "ht-member-slide")} style={styleFor(id)} onClick={select(id)}><div className="ht-member-hero" style={carouselStyles.hero}><div className="ht-source-art" style={{ ...carouselStyles.image, backgroundImage: slide.image ? `url(${JSON.stringify(slide.image)})` : "none" }} /></div><h1 className="ht-member-headline" style={carouselStyles.title}>{slide.title}</h1><p className="ht-member-caption" style={carouselStyles.caption}>{slide.caption}</p><div className="ht-member-carousel" style={carouselStyles.dots}>{carouselSlides.map((item, index) => <button type="button" key={item.id} aria-label={`查看第 ${index + 1} 页`} aria-current={index === carouselActive ? "true" : undefined} style={{ color: index === carouselActive ? carouselConfig.accentColor : carouselConfig.secondaryColor }} onClick={(event) => { event.stopPropagation(); setActiveCarouselSlide(index); if (interactive) onSelect?.(id); }}>{index === carouselActive ? "●" : "○"}</button>)}</div>{renderChildren(id)}</div>;
       return <div className={nodeClass(id, "ht-member-carousel")} style={{ ...styleFor(id), gap: String(carouselConfig.gap ?? 8) + "px" }} onClick={select(id)}>{Array.from({ length: carouselCount }, (_, index) => <i style={{ color: index === carouselActive ? carouselConfig.accentColor : carouselConfig.secondaryColor }} key={index}>{index === carouselActive ? "●" : "○"}</i>)}{renderChildren(id)}</div>;
     }
-    if (entry.type === "Carousel" && Array.isArray(entry.config?.slides)) return <section className={nodeClass(id, "ht-added-carousel")} style={styleFor(id)} onClick={select(id)}><PreviewSlideCarousel slides={entry.config.slides} initialSlide={entry.config.initialSlide ?? 0} /></section>;
+    if (entry.type === "Carousel" && Array.isArray(entry.config?.slides)) return <section className={nodeClass(id, "ht-added-carousel")} style={styleFor(id)} onClick={select(id)}><PreviewSlideCarousel slides={entry.config.slides} initialSlide={entry.config.initialSlide ?? 0} config={entry.config} /></section>;
     if (id === "benefits") return <section className={nodeClass(id, "ht-privilege-table")} style={{ ...styleFor(id), "--privilege-header-background": benefitConfig.headerBackground, "--privilege-vip-background": benefitConfig.vipColumnBackground }} onClick={select(id)}><header><strong>特权名称</strong><strong>非会员</strong><b style={benefitConfig.accentColor ? { color: benefitConfig.accentColor } : undefined}>VIP</b></header>{visibleBenefits.map((row) => <div key={row.id} className={row.pageId ? "has-detail-page" : ""} onClick={(event) => { if (!interactive || !row.pageId) return; event.stopPropagation(); setOpenPrivilegeId(row.id); }}><span>{row.name}⌄</span><em style={benefitConfig.secondaryColor ? { color: benefitConfig.secondaryColor } : undefined}>{renderBenefitValue(row, "standard")}</em><b style={benefitConfig.accentColor ? { color: benefitConfig.accentColor } : undefined}>{renderBenefitValue(row, "vip")}</b></div>)}{renderChildren(id)}</section>;
     if (id === "products") {
       const plans = <>{visiblePlans.map((plan, index) => <Plan plan={plan} index={index} key={index} />)}</>;
@@ -2595,7 +2624,7 @@ function PreviewElement({ node, active, activeNode, onSelect, children = [], get
     const height = Number.isFinite(scale) && scale > 0 ? `${92 * scale / 100}px` : undefined;
     return wrap(<div className="preview-image" style={{ height, background: config.mediaBackgroundColor, borderRadius: config.rounded ? `${config.radius ?? 8}px` : undefined, padding: ["Top", "Right", "Bottom", "Left"].map((edge) => `${Math.max(0, Number(config[`padding${edge}`]) || 0)}px`).join(" "), transform: config.offsetY ? `translateY(${config.offsetY}px)` : undefined }}>{config.mediaState !== "removed" && (config.mediaSrc ? <img src={config.mediaSrc} alt={node.label || ""} style={{ objectFit: config.mediaFit ?? "cover" }} /> : node.type === "Black Friday Image" ? "BLACK FRIDAY" : node.content)}</div>, "preview-image-wrap");
   }
-  if (node.type === "Carousel") return Array.isArray(config.slides) ? wrap(<PreviewSlideCarousel slides={config.slides} initialSlide={config.initialSlide ?? 0} />, "preview-carousel-wrap") : children.length ? wrap(<div className="preview-carousel">{renderChildren()}</div>, "preview-carousel-wrap") : !node.content ? wrap(<div className="preview-card-anchor" />, "preview-carousel-wrap") : wrap(<PreviewCarousel content={node.content} config={node.config} />, "preview-carousel-wrap");
+  if (node.type === "Carousel") return Array.isArray(config.slides) ? wrap(<PreviewSlideCarousel slides={config.slides} initialSlide={config.initialSlide ?? 0} config={config} />, "preview-carousel-wrap") : children.length ? wrap(<div className="preview-carousel">{renderChildren()}</div>, "preview-carousel-wrap") : !node.content ? wrap(<div className="preview-card-anchor" />, "preview-carousel-wrap") : wrap(<PreviewCarousel content={node.content} config={node.config} />, "preview-carousel-wrap");
   if (node.type === "Timer") return node.config?.enabled === false ? null : wrap(<PreviewTimer content={node.content} config={node.config} />);
   if (node.type === "Products") {
     if (node.variant === "purchase") {
@@ -2629,12 +2658,13 @@ function PreviewTimer({ content, config = {} }) {
   return <div className="preview-timer" style={{ color: config.color, borderRadius: config.radius === undefined ? undefined : `${config.radius}px` }}>{config.prefix && <strong style={{ color: config.prefixColor, fontSize: config.prefixFontSize ? `${config.prefixFontSize}px` : undefined }}>{config.prefix} </strong>}<span style={{ color: config.digitColor, backgroundColor: digitBackground, fontSize: config.fontSize ? `${config.fontSize}px` : undefined }}>{formatTimer(remaining, config.format ?? "hh:mm:ss", config.separator ?? ":")}</span>{config.suffix && <small style={config.suffixFontSize ? { fontSize: `${config.suffixFontSize}px` } : undefined}> {config.suffix}</small>}</div>;
 }
 
-function PreviewSlideCarousel({ slides, initialSlide }) {
+function PreviewSlideCarousel({ slides, initialSlide, config = {} }) {
   const [active, setActive] = useState(initialSlide);
   useEffect(() => setActive(Math.min(slides.length - 1, Math.max(0, initialSlide))), [initialSlide, slides.length]);
   const slide = slides[Math.min(active, slides.length - 1)];
   if (!slide) return null;
-  return <div className="preview-slide-carousel"><div className="preview-slide-media">{slide.image && <img src={slide.image} alt="" />}</div>{slide.title && <strong>{slide.title}</strong>}{slide.caption && <p>{slide.caption}</p>}<div className="preview-slide-dots">{slides.map((item, index) => <button type="button" key={item.id} aria-label={`查看第 ${index + 1} 页`} aria-current={index === active ? "true" : undefined} onClick={(event) => { event.stopPropagation(); setActive(index); }}>{index === active ? "●" : "○"}</button>)}</div></div>;
+  const styles = carouselSlideStyles(config);
+  return <div className="preview-slide-carousel"><div className="preview-slide-media" style={{ ...styles.hero, height: `${160 * (Number(config.imageHeight) || 100) / 100}px`, aspectRatio: "auto", boxSizing: "border-box", backgroundColor: config.imageBackground ?? "#e5f1ff", padding: ["Top", "Right", "Bottom", "Left"].map((edge) => `${Math.max(0, Number(config[`imagePadding${edge}`]) || 0)}px`).join(" ") }}>{slide.image && <img src={slide.image} alt="" style={{ objectFit: config.imageFit === "fill" ? "fill" : config.imageFit ?? "fill" }} />}</div>{slide.title && <strong style={styles.title}>{slide.title}</strong>}{slide.caption && <p style={styles.caption}>{slide.caption}</p>}<div className="preview-slide-dots" style={styles.dots}>{slides.map((item, index) => <button type="button" key={item.id} aria-label={`查看第 ${index + 1} 页`} aria-current={index === active ? "true" : undefined} style={{ color: index === active ? config.accentColor : config.secondaryColor }} onClick={(event) => { event.stopPropagation(); setActive(index); }}>{index === active ? "●" : "○"}</button>)}</div></div>;
 }
 
 function PreviewCarousel({ content, config = {} }) {
