@@ -1065,15 +1065,13 @@ function App() {
   };
 
   const createDraft = () => {
-    if (!compliance) return;
+    if (!draft.name.trim() || !draft.productGroup || !draft.offerRows?.length) return;
     const id = `research-${Date.now()}`;
     const created = { id, name: draft.name || "Untitled paywall", state: "Draft", products: draft.offerRows?.length ?? draft.products.length, startedAt: "20 Aug 2026", icon: false, config: { businessType: draft.businessType, businessScene: draft.businessScene, publicAccount: draft.publicAccount, note: draft.note, paywallStyle: draft.paywallStyle, productGroup: draft.productGroup, defaultProductId: draft.defaultProductId, offerRows: draft.offerRows } };
     setPaywalls((current) => [...current, created]);
     setSelectedId(id);
     setView("general");
-    setModal(null);
-    setCompliance(false);
-    notify(rememberCompliance ? "Draft created. Future confirmation preference saved." : "Draft created.");
+    notify("Draft created.");
   };
 
   const duplicate = (source = selected) => {
@@ -1246,16 +1244,6 @@ function App() {
       </aside>
 
       {toast && <div className="toast"><Check size={17} /> {toast}</div>}
-      {modal?.kind === "compliance" && (
-        <ComplianceModal
-          compliance={compliance}
-          setCompliance={setCompliance}
-          rememberCompliance={rememberCompliance}
-          setRememberCompliance={setRememberCompliance}
-          onClose={() => setModal(null)}
-          onAccept={createDraft}
-        />
-      )}
       {modal?.kind === "builder-save" && (
         <ComplianceModal
           compliance={compliance}
@@ -1390,7 +1378,7 @@ function CreatePaywall({ draft, setDraft, setView, setModal, createDraft }) {
   return (
     <section className="create">
       <button className="back" onClick={() => setView("list")}><ArrowLeft size={18} /> Paywalls</button>
-      <div className="create-header"><div><h1>Create paywall</h1><p>配置业务信息、Paywall 样式与商品组后创建草稿。</p></div><button className="primary" disabled={!draft.name.trim() || !draft.productGroup || !rows.length} onClick={() => setModal({ kind: "compliance" })}>Create as draft</button></div>
+      <div className="create-header"><div><h1>Create paywall</h1><p>配置业务信息、Paywall 样式与商品组后创建草稿。</p></div><button className="primary" disabled={!draft.name.trim() || !draft.productGroup || !rows.length} onClick={createDraft}>Create as draft</button></div>
       <div className="start-card">
         <span className="eyebrow">Builder & Generator</span><h2>Choose how to start</h2>
         <button onClick={() => setView("builder")}><Blocks size={22} /><span><strong>Build no-code paywall</strong><small>Start with the visual Builder.</small></span><ChevronRight size={18} /></button>
@@ -1431,7 +1419,6 @@ function CreatePaywall({ draft, setDraft, setView, setModal, createDraft }) {
           </div>
         </div>
       </div>
-      <button className="subtle-action" onClick={createDraft}>Development shortcut: create a local draft after confirmation</button>
       {labelPicker && <div className="modal-backdrop"><section className="modal create-label-modal" role="dialog" aria-label={`选择${labelPicker.label}`}><header><h2>选择{labelPicker.label}</h2><button type="button" className="icon" aria-label="关闭" onClick={() => setLabelPicker(null)}><X size={19} /></button></header><div className="create-label-modal-body"><Field label="多语言 key"><input autoFocus value={labelQuery} placeholder="输入或粘贴多语言 key" onChange={(event) => setLabelQuery(event.target.value)} /></Field><p>当前为本地 Demo，未接入线上多语言词条目录。</p></div><div className="modal-actions"><button type="button" className="secondary" onClick={() => setLabelPicker(null)}>取消</button><button type="button" className="primary" onClick={() => { patchRow(labelPicker.index, { [labelPicker.key]: labelQuery.trim() }); setLabelPicker(null); }}>确认</button></div></section></div>}
       {giftEditor !== null && <div className="modal-backdrop"><section className="modal create-label-modal" role="dialog" aria-label="编辑赠送礼包"><header><h2>编辑赠送礼包</h2><button type="button" className="icon" aria-label="关闭" onClick={() => setGiftEditor(null)}><X size={19} /></button></header><div className="create-label-modal-body"><Field label="礼包名称"><input autoFocus value={giftQuery} onChange={(event) => setGiftQuery(event.target.value)} /></Field></div><div className="modal-actions"><button type="button" className="secondary" onClick={() => setGiftEditor(null)}>取消</button><button type="button" className="primary" onClick={() => { patchRow(giftEditor, { giftPack: giftQuery.trim() }); setGiftEditor(null); }}>确认</button></div></section></div>}
     </section>
@@ -1668,11 +1655,10 @@ function MediaUploadFields({ active, updateNode, label = "Media file" }) {
 }
 
 function HeroMediaContent({ active, updateNode }) {
-  const kind = active.config?.mediaType ?? "Image";
   const config = active.config ?? {};
   const hasEmbeddedCopy = config.copyPrefix !== undefined || config.copySuffix !== undefined || config.copyTitle !== undefined;
   const titleParts = heroTitleParts(config);
-  return <><Field label="Media"><div className="segmented"><button className={kind === "Image" ? "active" : ""} onClick={() => updateNodeConfig(active, updateNode, { mediaType: "Image" })}>Image</button><button className={kind === "Video" ? "active" : ""} onClick={() => updateNodeConfig(active, updateNode, { mediaType: "Video" })}>Video</button></div></Field><MediaUploadFields active={active} updateNode={updateNode} label="Hero media" />{hasEmbeddedCopy && <section className="embedded-copy-editor"><h4>Top banner</h4><label className="switch-row"><input type="checkbox" checked={config.bannerEnabled !== false} onChange={(event) => updateNodeConfig(active, updateNode, { bannerEnabled: event.target.checked })} /><span>{config.bannerEnabled !== false ? "On" : "Off"}</span><strong>Show banner</strong></label><Field label="Banner deep link"><input value={config.deepLink ?? ""} placeholder="https://" onChange={(event) => updateNodeConfig(active, updateNode, { deepLink: event.target.value })} /></Field><h4>Copy embedded in this visual</h4><Field label="Title prefix"><input value={titleParts.prefix} onChange={(event) => updateNodeConfig(active, updateNode, { copyPrefix: event.target.value })} /></Field><Field label="Title suffix"><input value={titleParts.suffix} onChange={(event) => updateNodeConfig(active, updateNode, { copySuffix: event.target.value })} /></Field><Field label="Supporting copy"><input value={config.copyCaption ?? ""} onChange={(event) => updateNodeConfig(active, updateNode, { copyCaption: event.target.value })} /></Field><p className="property-copy">The headline and supporting copy are composited in the hero image layer, not independent text components. Show banner directly maps to its visibility in the preview.</p></section>}</>;
+  return <><MediaUploadFields active={active} updateNode={updateNode} label="Hero media" />{hasEmbeddedCopy && <section className="embedded-copy-editor"><h4>Top banner</h4><label className="switch-row"><input type="checkbox" checked={config.bannerEnabled !== false} onChange={(event) => updateNodeConfig(active, updateNode, { bannerEnabled: event.target.checked })} /><span>{config.bannerEnabled !== false ? "On" : "Off"}</span><strong>Show banner</strong></label><Field label="Banner deep link"><input value={config.deepLink ?? ""} placeholder="https://" onChange={(event) => updateNodeConfig(active, updateNode, { deepLink: event.target.value })} /></Field><h4>Copy embedded in this visual</h4><Field label="Title prefix"><input value={titleParts.prefix} onChange={(event) => updateNodeConfig(active, updateNode, { copyPrefix: event.target.value })} /></Field><Field label="Title suffix"><input value={titleParts.suffix} onChange={(event) => updateNodeConfig(active, updateNode, { copySuffix: event.target.value })} /></Field><Field label="Supporting copy"><input value={config.copyCaption ?? ""} onChange={(event) => updateNodeConfig(active, updateNode, { copyCaption: event.target.value })} /></Field><p className="property-copy">The headline and supporting copy are composited in the hero image layer, not independent text components. Show banner directly maps to its visibility in the preview.</p></section>}</>;
 }
 
 const textRunsFor = (node) => Array.isArray(node?.textRuns) ? node.textRuns : [{ text: node?.content ?? "" }];
