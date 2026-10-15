@@ -778,3 +778,60 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-sku-promo .ht-source-art > i, .ht-sku-promo .ht-source-art > b { position: absolute; z-index: 2; bottom: 10%; color: #fff; font-size: 5.6cqw; font-style: normal; font-weight: 900; text-shadow: 0 1px 1px #fff9; transform: rotate(-8deg); }
 .ht-sku-promo .ht-source-art > i { left: 8%; }
 .ht-sku-promo .ht-source-art > b { right: 11%; font-size: 4.7cqw; }
+
+/* Figma source media overrides the earlier illustrative fallback artwork. */
+.ht-blue-paywall { display: flex; flex-direction: column; }
+.ht-blue-paywall .ht-status { position: absolute; z-index: 6; }
+.ht-blue-paywall .ht-blue-hero { order: 0; flex: none; }
+.ht-blue-paywall .ht-plan-shell { order: 1; flex: none; margin: 0 4.5cqw; }
+.ht-blue-paywall .ht-privilege-table { order: 2; flex: none; }
+.ht-blue-paywall .ht-timer { order: 3; flex: none; }
+.ht-blue-paywall .ht-action-wrap { order: 4; flex: none; }
+.ht-blue-paywall .ht-legal { order: 5; flex: none; }
+.ht-blue-paywall .ht-blue-hero { height: calc(67.18cqw * var(--hero-height-scale, 1)); }
+.ht-blue-paywall .ht-blue-hero .ht-source-art { background: #0c4098 url('/figma-paywall-assets/blue-banner.png') center / cover no-repeat; }
+.ht-blue-paywall .ht-blue-hero .ht-source-art::after { content: none; }
+.ht-blue-paywall .ht-blue-copy { left: var(--hero-copy-left, 8%); bottom: var(--hero-copy-bottom, 13%); }
+.ht-blue-paywall .ht-blue-copy small { background: #ffc928; color: #fff; }
+.ht-blue-paywall .ht-blue-copy h1 { font-size: var(--hero-title-size, 30px); }
+.ht-membership-paywall .ht-member-hero { height: calc(66.67cqw * var(--hero-height-scale, 1)); }
+.ht-membership-paywall .ht-member-hero .ht-source-art {
+  display: block;
+  padding: 0;
+  background: #e5f1ff url('/figma-paywall-assets/member-hero.png') center / 100% 100% no-repeat;
+}
+.ht-membership-paywall .ht-member-hero .ht-eye-particles,
+.ht-membership-paywall .ht-member-hero .ht-phone-illustration { display: none; }
+.ht-membership-paywall .ht-plan-shell .ht-plan strong { display: block; white-space: nowrap; font-size: 3.6cqw; }
+.ht-membership-paywall .ht-plan-shell .ht-plan em { font-size: 5.7cqw; white-space: nowrap; }
+.ht-membership-paywall .ht-plan-shell .ht-plan i { font-size: 3.2cqw; white-space: nowrap; }
+.ht-membership-paywall .ht-member-copy { padding-top: 2.6cqw; padding-bottom: 1.5cqw; }
+.ht-recovery-paywall .ht-recovery-backdrop { background: #d8d8d8 url('/figma-paywall-assets/recovery-art.png') center top / 100% auto no-repeat; }
+.ht-recovery-paywall .ht-recovery-backdrop::after,
+.ht-recovery-paywall .ht-recovery-backdrop > strong,
+.ht-recovery-paywall .ht-recovery-backdrop > b { display: none; }
+.ht-recovery-paywall .ht-offer-bundle { width: 64%; border-radius: 0; background: transparent; }
+.ht-recovery-paywall .ht-offer-bundle .ht-source-art { background: transparent url('/figma-paywall-assets/recovery-bg.png') center / contain no-repeat; }
+.ht-recovery-paywall .ht-offer-bundle .ht-source-art::before,
+.ht-recovery-paywall .ht-offer-bundle .ht-source-art > span,
+.ht-recovery-paywall .ht-offer-bundle .ht-soccer-ball { display: none; }
+.ht-sku-paywall .ht-sku-promo {
+  height: calc(62cqw * var(--hero-height-scale, 1));
+  margin: 0 0 1cqw;
+  padding: 1cqw 0 0;
+  align-content: start;
+  overflow: visible;
+  background: transparent;
+}
+.ht-sku-paywall .ht-sku-promo > small { padding-top: 0; font-size: 4cqw; font-weight: 700; }
+.ht-sku-paywall .ht-sku-promo > strong { max-width: 100%; font-size: 4.7cqw; line-height: 1.05; }
+.ht-sku-paywall .ht-sku-plans { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ht-sku-paywall .ht-sku-plans .ht-plan { min-width: 0; }
+.ht-sku-paywall .ht-sku-promo .ht-source-art {
+  top: calc(19cqw + var(--media-inset-top, 0px));
+  background: transparent url('/figma-paywall-assets/sku-art-alt.png') center / contain no-repeat;
+}
+.ht-sku-paywall .ht-sku-promo .ht-source-art::before,
+.ht-sku-paywall .ht-sku-promo .ht-source-art::after,
+.ht-sku-paywall .ht-sku-promo .ht-source-art > i,
+.ht-sku-paywall .ht-sku-promo .ht-source-art > b { display: none; }

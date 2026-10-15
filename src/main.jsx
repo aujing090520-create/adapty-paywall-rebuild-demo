@@ -141,7 +141,7 @@ const templates = [
   { id: "ht-blue-privilege", title: "蓝色特权页", subtitle: "蓝色特权对比与商品套餐", tags: ["3 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-blue", visual: "ht-blue", documentTemplate: "blue-privilege", prdScreenshot: "/ht-prd-screenshots/blue-privilege.png" },
   { id: "ht-membership-plans", title: "HelloTalk 会员套餐页", subtitle: "会员订阅方案与访客示例轮播", tags: ["3 products", "Carousel", "Timer"], productCount: 2, media: "image", components: ["Carousel", "Timer"], category: "Popular", theme: "ht-plans", visual: "ht-plans", documentTemplate: "membership-plans", prdScreenshot: "/ht-prd-screenshots/membership-plans.jpg" },
   { id: "ht-payment-recovery", title: "HelloTalk 支付未完成页", subtitle: "支付恢复与倒计时优惠", tags: ["2 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-recovery", visual: "ht-recovery", documentTemplate: "payment-recovery", prdScreenshot: "/ht-prd-screenshots/payment-recovery.png" },
-  { id: "ht-sku-sheet", title: "HelloTalk SKU 半窗", subtitle: "横版促销视觉与套餐选择", tags: ["3 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-sku", visual: "ht-sku", documentTemplate: "sku-sheet", prdScreenshot: "/ht-prd-screenshots/sku-sheet.jpg" },
+  { id: "ht-sku-sheet", title: "HelloTalk SKU 半窗", subtitle: "横版促销视觉与套餐选择", tags: ["2 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-sku", visual: "ht-sku", documentTemplate: "sku-sheet", prdScreenshot: "/ht-prd-screenshots/sku-sheet.jpg" },
 ];
 
 const componentCatalog = ["Text", "Image", "Card", "Web Paywall Button", "Button", "List", "Links", "Timer", "Carousel", "Products"];
@@ -744,7 +744,7 @@ function createBuilderNodes(templateId = "knowledge") {
       node("hero-image", "Hero Image", template.visual, 1, { theme: template.theme }),
       node("headline", "Headline", "解锁谁看了我", 0, { variant: "headline" }),
       node("caption", "Text", "找到志同道合的学习语伴！", 0, { variant: "body" }),
-      node("products", "Products", "1个月会员|¥78/月|$12.99/月\n12个月会员|¥488/年|$6.67/月\n终身会员|¥698|物有所值", 0, { config: { ...documentProductColors, productTemplate: "membership-plans", defaultSelected: 1, showOfferBadge: true } }),
+      node("products", "Products", "1个月|¥78|¥78/月\n12个月|¥488|节省48%\n终身|¥998|永久会员权益", 0, { config: { ...documentProductColors, productTemplate: "membership-plans", defaultSelected: 1, showOfferBadge: true } }),
       node("timer", "Timer", "23:53:12", 0, { config: { enabled: true, format: "hh:mm:ss", separator: ":", prefix: "倒计时", suffix: "", resetMode: "Reset timer on every paywall view", prefixColor: "#303487", digitColor: "#303487", digitBackgroundColor: "#8ced75" } }),
       node("purchase", "Button", "继续", 0, { config: { action: "Purchase" } }),
       node("legal", "Text", "可随时取消", 0, { label: "订阅说明", variant: "legal" }),
@@ -773,7 +773,7 @@ function createBuilderNodes(templateId = "knowledge") {
       node("headline", "Headline", "Golden Week Special Offer", 1, { variant: "headline", config: { color: "#151515" } }),
       node("caption", "Text", "Get 30% Off\nAnnual & Lifetime VIP", 1, { variant: "body", config: { color: "#8f8f8f" }, textRuns: [{ text: "Get " }, { text: "30% Off", color: "#ee3981" }, { text: "Annual & Lifetime VIP", breakBefore: true }] }),
       node("timer", "Timer", "00:47:04", 1, { config: { enabled: true, format: "hh:mm:ss", separator: ":", prefix: "倒计时", suffix: "", resetMode: "Reset timer on every paywall view", prefixColor: "#ff842c", digitColor: "#ff842c", digitBackgroundColor: "#000000", digitBackgroundOpacity: 3 } }),
-      node("products", "Products", "1个月会员|¥39|¥78\n12个月会员|¥338|¥488\n终身会员|¥698|¥1198", 1, { config: { ...documentProductColors, productTemplate: "sku-sheet", defaultSelected: 1, showOfferBadge: true, hasSaveCopy: false, badgeGradient: ["#ff6a00", "#ff6a00", "#ff6a00"], selectedBorderGradient: ["#ff6a00", "#ffaf02", "#ffcc00"], purchaseBackgroundGradient: ["#ff6a00", "#ffaf02", "#ffcc00"] } }),
+      node("products", "Products", "12个月|¥338|¥488\n终身|¥698|¥1198", 1, { config: { ...documentProductColors, productTemplate: "sku-sheet", defaultSelected: 0, showOfferBadge: true, hasSaveCopy: false, badgeGradient: ["#ff6a00", "#ff6a00", "#ff6a00"], selectedBorderGradient: ["#ff6a00", "#ffaf02", "#ffcc00"], purchaseBackgroundGradient: ["#ff6a00", "#ffaf02", "#ffcc00"] } }),
       node("purchase", "Button", "领取限时优惠", 1, { config: { action: "Purchase" } }),
       node("legal", "Text", "订阅会在当前周期结束前 24 小时自动续订，可随时在账户设置中取消。", 1, { label: "续订说明", variant: "legal" }),
       node("links", "Links", "服务条款 · 隐私政策", 1),
@@ -2171,9 +2171,9 @@ function SourceTemplateMedia({ template }) {
 
 const helloTalkTemplateDefaults = {
   "blue-privilege": { title: "VIP 7折大促", caption: "HelloTalk 世界杯", timer: "18 : 32 : 25", action: "立即领取优惠", legal: "如果当前缴费期前 24 小时没有取消续订，系统会自动续订。", plans: [["1个月", "¥78", "¥78/月"], ["12个月", "¥488", "¥40.67/月"], ["终身", "¥698", "永久会员权益"]], selectedProductIndex: 1, badgeProductIndex: 1, badgeLabel: "🔥 30% OFF", planSavings: ["", "节省 48%", "立减¥1000"], planOriginalPrices: ["", "", "¥1698"] },
-  "membership-plans": { title: "解锁谁看了我", caption: "找到志同道合的学习语伴！", timer: "", action: "继续", legal: "如果当前缴费期前 24 小时没有取消续订，系统会自动续订。", plans: [["1个月", "$12.99", "$12.99/月"], ["12个月", "$79.99", "$6.67/月"], ["终身", "$139.99", "永久会员权益"]] },
+  "membership-plans": { title: "解锁谁看了我", caption: "找到志同道合的学习语伴！", timer: "", action: "继续", legal: "如果当前缴费期前 24 小时没有取消续订，系统会自动续订。", plans: [["1个月", "¥78", "¥78/月"], ["12个月", "¥488", "节省48%"], ["终身", "¥998", "永久会员权益"]] },
   "payment-recovery": { title: "错过就要恢复原价了", caption: "现在购买，立享 VIP 专属特权，助力你语言学习", timer: "71:49:28", action: "立即领取优惠", legal: "首年 ¥338，次年系统会以 ¥488 自动续订，可随时取消。", plans: [["1年", "¥28.17/月", "新用户立省 64%"], ["1个月", "¥78/月", ""]] },
-  "sku-sheet": { title: "Golden Week Special Offer", caption: "Get 30% Off Annual & Lifetime VIP", timer: "00 : 47 : 04", action: "sku折扣 EN", legal: "订阅会在当前周期结束前 24 小时自动续订，可随时在账户设置中取消。", plans: [["1个月", "¥39", "¥78"], ["12个月", "¥338", "¥488"], ["终身", "¥698", "¥1198"]] },
+  "sku-sheet": { title: "Golden Week Special Offer", caption: "Get 30% Off Annual & Lifetime VIP", timer: "00 : 47 : 04", action: "领取限时优惠", legal: "订阅会在当前周期结束前 24 小时自动续订，可随时在账户设置中取消。", plans: [["12个月", "¥338", "¥488"], ["终身", "¥698", "¥1198"]] },
 };
 
 function timerSeconds(value) {
@@ -2259,7 +2259,7 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
     return state === "custom" ? "media-custom" : state === "removed" ? "media-removed" : "";
   };
   const productConfig = nodeById("products")?.config ?? {};
-  const defaultSelectedPlan = variant === "blue-privilege" ? defaults.selectedProductIndex : Number.isInteger(productConfig.defaultSelected) ? productConfig.defaultSelected : (variant === "payment-recovery" ? 0 : 1);
+  const defaultSelectedPlan = variant === "blue-privilege" ? defaults.selectedProductIndex : Number.isInteger(productConfig.defaultSelected) ? productConfig.defaultSelected : (["payment-recovery", "sku-sheet"].includes(variant) ? 0 : 1);
   const [selectedPlan, setSelectedPlan] = useState(defaultSelectedPlan);
   const [retentionOpen, setRetentionOpen] = useState(false);
   const [openPrivilegeId, setOpenPrivilegeId] = useState(null);
