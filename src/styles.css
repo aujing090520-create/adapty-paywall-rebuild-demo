@@ -215,8 +215,8 @@ textarea { min-height: 80px; resize: vertical; }
 .template-requirements { display: grid; gap: 14px; }.template-requirements > div:first-child { padding: 11px; display: grid; gap: 4px; border: 1px solid #e5e0f0; border-radius: 6px; background: #faf9fc; }.template-requirements strong { color: #4d4659; font-size: 12px; }.template-requirements span { color: #77717f; font-size: 11px; line-height: 1.45; }.template-requirements .form-field { margin-bottom: 0; }
 .node-editor { margin: 0 0 15px; padding: 10px; border: 1px solid #ded9eb; border-radius: 6px; background: #faf9fe; }.node-editor .form-field { margin-bottom: 10px; }.node-editor .form-field > span { margin-bottom: 5px; font-size: 10px; }.node-editor textarea { min-height: 67px; }.node-editor input { min-height: 32px; }.node-editor .danger { width: 100%; min-height: 30px; border: 1px solid #d47b84; border-radius: 5px; background: #fff; color: #b13f4d; font-size: 11px; font-weight: 700; }
 .phone { position: relative; height: 570px; min-height: 570px; overflow: hidden; }.phone-content { height: 100%; padding: 27px 16px 18px; overflow-y: auto; scrollbar-width: thin; }.phone-kicker { display: block; margin-bottom: 5px; }.preview-node { position: relative; outline: 1px solid transparent; outline-offset: 2px; cursor: pointer; }.preview-node.selected { outline-color: #7a40ef; }.preview-node:hover { outline-color: #b29af3; }.preview-media { height: 104px; margin: 3px 0 13px; display: grid; place-items: center; overflow: hidden; border-radius: 13px; background: linear-gradient(145deg, #342a62, #8a5ce8 55%, #e4d7ff); }.preview-media::before { width: 112px; height: 112px; border: 11px solid #e9e0ff80; border-radius: 50%; content: ""; }.preview-media span { position: absolute; color: #fff; font-size: 34px; }.preview-headline h2 { margin: 7px 0 8px; color: #292336; font-size: 23px; line-height: 1.08; }.preview-copy p { margin: 0 2px 12px; font-size: 10px; }.preview-benefits { margin: 0 0 12px; padding: 0; display: grid; gap: 6px; list-style: none; text-align: left; }.preview-benefits li { display: grid; grid-template-columns: 14px 1fr; gap: 4px; color: #5d35c6; font-size: 10px; }.preview-benefits span { color: #4f4c59; }.preview-card-wrap { margin: 0 0 12px; }.preview-card { padding: 9px; display: grid; gap: 7px; border: 1px solid #e2dcf4; border-radius: 9px; background: #faf8ff; text-align: left; }.preview-card div { display: grid; gap: 2px; }.preview-card strong { color: #4a2aa4; font-size: 10px; }.preview-card small { color: #777483; font-size: 9px; }.preview-image { height: 92px; display: grid; place-items: center; border-radius: 10px; background: linear-gradient(135deg, #dfe7ff, #8fb5e7); color: #365080; font-size: 10px; font-weight: 800; letter-spacing: .6px; }.preview-image-wrap { margin-bottom: 11px; }.preview-carousel { margin: 0 0 12px; padding: 9px; border-radius: 9px; background: #f1edf9; }.preview-carousel span { color: #7850d8; font-size: 10px; letter-spacing: 1px; }.preview-carousel p { margin: 5px 0 4px; color: #4d4958; font-size: 10px; }.preview-carousel i { color: #865ce0; font-size: 10px; font-style: normal; }.preview-timer { margin: 0 0 11px; padding: 8px; border-radius: 7px; background: #2c2541; color: #fff; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 15px; font-weight: 800; letter-spacing: 1px; }.preview-products { margin: 0 0 11px; display: grid; gap: 6px; text-align: left; }.preview-products > div { padding: 9px; display: flex; align-items: center; justify-content: space-between; gap: 5px; border: 1px solid #d9d7e1; border-radius: 8px; color: #484650; font-size: 10px; }.preview-products > div.chosen { border: 2px solid #6b32e9; background: #faf8ff; }.preview-products strong { font-size: 10px; }.preview-products span { color: #645b73; font-size: 9px; }.preview-button { margin: 0 0 10px; }.preview-cta { width: 100%; min-height: 35px; border: 0; border-radius: 7px; background: #6627f0; color: #fff; font-size: 11px; font-weight: 800; }.preview-links, .preview-footer { display: block; margin: 8px 0 0; color: #87818f; font-size: 8px; line-height: 1.45; }
-.ht-template-scroll { width: 100%; height: 100%; overflow-y: auto; scrollbar-width: thin; background: #fff; }
-.ht-template-scroll > .ht-paywall { width: 100%; height: auto; margin: 0; }
+.ht-template-scroll { width: 100%; height: 100%; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; background: #fff; }
+.ht-template-scroll > .ht-paywall { width: 100%; height: auto; margin: 0; overflow: visible; }
 .ht-custom-elements { min-height: 40px; padding: 14px 18px 24px; background: #fff; color: #171717; }
 .ht-custom-elements .preview-copy p { font-size: 14px; line-height: 1.4; }
 .ht-custom-elements .preview-timer { font-size: 18px; }
@@ -659,6 +659,7 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-retention-primary { width: 100%; height: 12.5cqw; border: 0; border-radius: 8cqw; font-size: 5cqw; font-weight: 800; }
 .ht-retention-cancel { border: 0; background: none; color: #999; font-size: 4cqw; }
 .retention-image-field { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.retention-preview-button { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 20px; }
 .retention-image-field img { width: 100%; max-height: 100px; object-fit: contain; background: #eee; }
 
 
@@ -716,10 +717,10 @@ textarea { min-height: 80px; resize: vertical; }
 
 /* Image height is a ratio of each component's own source-calibrated size, never a percentage of the whole device preview. */
 .ht-recovery-paywall .ht-offer-bundle { aspect-ratio: auto; }
-.ht-blue-paywall .ht-blue-hero { height: calc(58cqw * var(--hero-height-scale, 1) + var(--hero-padding-y, 0px)); background-image: none; }
-.ht-membership-paywall .ht-member-hero { height: calc(71cqw * var(--hero-height-scale, 1) + var(--hero-padding-y, 0px)); }
-.ht-recovery-paywall .ht-offer-bundle { height: calc(48cqw * var(--hero-height-scale, 1) + var(--hero-padding-y, 0px)); }
-.ht-sku-paywall .ht-sku-promo { height: calc(45cqw * var(--hero-height-scale, 1) + var(--hero-padding-y, 0px)); }
+.ht-blue-paywall .ht-blue-hero { height: calc(58cqw * var(--hero-height-scale, 1)); background-image: none; }
+.ht-membership-paywall .ht-member-hero { height: calc(71cqw * var(--hero-height-scale, 1)); }
+.ht-recovery-paywall .ht-offer-bundle { height: calc(48cqw * var(--hero-height-scale, 1)); }
+.ht-sku-paywall .ht-sku-promo { height: calc(45cqw * var(--hero-height-scale, 1)); }
 
 /* A Hero Image may include source-observed copy. Its media and embedded copy use separate Builder controls. */
 .ht-blue-paywall .ht-blue-copy {
