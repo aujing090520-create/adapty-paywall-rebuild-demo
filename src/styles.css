@@ -582,7 +582,7 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-vip-check { display: grid; place-items: center; width: 6.5cqw; height: 6.5cqw; border-radius: 50%; background: #ffb40d; color: #fff; font-size: 4cqw; }
 .ht-action-gradient-text { background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: none; }
 .ht-plan span b { background: var(--badge-background, linear-gradient(90deg, #ff8409, #ffc906)); }
-.ht-plan .ht-plan-save-copy { color: var(--save-text-color, #ff8912); }
+.ht-plan .ht-plan-save-copy { color: var(--save-text-color, #ff8912); background-color: var(--save-background-color, transparent); }
 .ht-plan .ht-plan-custom-save { display: block; color: var(--save-text-color, #ff8912); font-size: 2.8cqw; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .product-package-list { margin: 12px 0; border-top: 1px solid #e5e5eb; }
 .product-row-editor { padding: 14px 0; border-bottom: 1px solid #e5e5eb; }
@@ -644,7 +644,8 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-blue-paywall .ht-action-wrap { position: relative; height: 16cqw; }
 .ht-blue-paywall .ht-action-wrap .ht-action { width: calc(100% - 9cqw); }
 .ht-blue-paywall .ht-timer { background: transparent; }
-.ht-blue-paywall .ht-timer-digits b { background: var(--timer-digit-background, #ffd16b); }
+.ht-blue-paywall .ht-timer-digits b { background: var(--timer-digit-background, #ffd16b); color: var(--timer-digit-color, #1aad3e); }
+.ht-blue-paywall .ht-timer-digits i { color: var(--timer-digit-color, #1aad3e); }
 .ht-action-badge { position: absolute; top: -2cqw; right: 4cqw; padding: .7cqw 1.5cqw; border-radius: 2cqw; background: #11bd3d; color: #fff; font-size: 3.5cqw; font-weight: 800; }
 .ht-blue-paywall .ht-legal { font-size: 2.9cqw; line-height: 1.3; }
 .ht-retention-overlay { position: absolute; z-index: 20; inset: 0; display: grid; place-items: center; background: #0007; }
@@ -668,7 +669,12 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-membership-paywall .ht-member-sheet { height: 183cqw; min-height: 0; }
 .ht-membership-paywall .ht-member-hero { height: 71cqw; }
 .ht-membership-paywall .ht-plan-shell { height: 46cqw; min-height: 0; }
+.ht-membership-paywall .ht-timer { position: absolute; top: 148cqw; left: 0; right: 0; margin: 0; font-size: 3cqw; }
+.ht-membership-paywall .ht-timer > span.ht-timer-digits { display: inline-flex; align-items: center; gap: .6cqw; padding: 0; background: transparent; font-size: 3.5cqw; }
+.ht-membership-paywall .ht-timer-digits b { min-width: 5.5cqw; padding: .5cqw; border-radius: .5cqw; background: var(--timer-digit-background, #83ec87); color: var(--timer-digit-color, #1435a3); font: inherit; }
+.ht-membership-paywall .ht-timer-digits i { color: var(--timer-digit-color, #1435a3); font-style: normal; }
 .ht-membership-paywall .ht-action { height: 20cqw; min-height: 0; }
+.ht-membership-paywall .ht-member-sheet > .ht-action { position: absolute; top: 155cqw; margin-top: 0; }
 .ht-membership-paywall .ht-legal { min-height: 14cqw; }
 
 .ht-recovery-paywall .ht-recovery-backdrop { height: 39cqw; }
