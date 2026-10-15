@@ -1391,6 +1391,11 @@ function CreatePaywall({ draft, setDraft, setView, setModal, createDraft }) {
     <section className="create">
       <button className="back" onClick={() => setView("list")}><ArrowLeft size={18} /> Paywalls</button>
       <div className="create-header"><div><h1>Create paywall</h1><p>配置业务信息、Paywall 样式与商品组后创建草稿。</p></div><button className="primary" disabled={!draft.name.trim() || !draft.productGroup || !rows.length} onClick={() => setModal({ kind: "compliance" })}>Create as draft</button></div>
+      <div className="start-card">
+        <span className="eyebrow">Builder & Generator</span><h2>Choose how to start</h2>
+        <button onClick={() => setView("builder")}><Blocks size={22} /><span><strong>Build no-code paywall</strong><small>Start with the visual Builder.</small></span><ChevronRight size={18} /></button>
+        <button onClick={() => setModal({ kind: "templates" })}><LayoutTemplate size={22} /><span><strong>Choose a template</strong><small>Observed template library and filters.</small></span><ChevronRight size={18} /></button>
+      </div>
       <div className="create-grid">
         <div className="form-card">
           <h2>General</h2>
@@ -1424,11 +1429,6 @@ function CreatePaywall({ draft, setDraft, setView, setModal, createDraft }) {
               </table>
             </div>
           </div>
-        </div>
-        <div className="start-card">
-          <span className="eyebrow">Builder & Generator</span><h2>Choose how to start</h2>
-          <button onClick={() => setView("builder")}><Blocks size={22} /><span><strong>Build no-code paywall</strong><small>Start with the visual Builder.</small></span><ChevronRight size={18} /></button>
-          <button onClick={() => setModal({ kind: "templates" })}><LayoutTemplate size={22} /><span><strong>Choose a template</strong><small>Observed template library and filters.</small></span><ChevronRight size={18} /></button>
         </div>
       </div>
       <button className="subtle-action" onClick={createDraft}>Development shortcut: create a local draft after confirmation</button>
