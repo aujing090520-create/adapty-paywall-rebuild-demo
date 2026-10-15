@@ -818,6 +818,25 @@ const productOptions = [
   "Japanese Ai - 1 Year / Annual",
 ];
 
+const paywallBusinessTypes = ["83 - 特权类VIP", "6 - 会员"];
+const paywallScenesByBusinessType = {
+  "83 - 特权类VIP": ["48 - 直播语聊无限时长特权"],
+  "6 - 会员": ["40 - SKU半窗"],
+};
+const paywallStyles = ["[71]-SKU半窗", "[90]-SKU新增倒计时字段", "[96]-SKU半窗-无倒计时", "[169]-⚽SKU二阶段半窗"];
+const paywallProductGroups = {
+  "[10361] - 直播语聊无限时长商品组-1周": [
+    { id: "11109", name: "Android_1周直播语聊特权微信" },
+    { id: "11110", name: "Android_1周直播语聊特权-alipay" },
+  ],
+  "[10364] - 直播语聊无限时长商品组-1个月,3个月,6个月,12个月": [
+    { id: "10065", name: "iOS_1周直播语聊特权" },
+    { id: "10869", name: "GP_1周直播语聊特权" },
+  ],
+};
+const initialPaywallGroup = Object.keys(paywallProductGroups)[0];
+const paywallOfferRows = (group) => (paywallProductGroups[group] ?? []).map((product) => ({ ...product, offerLabel: "不展示", unselectedTopLabel: "", selectedTopLabel: "", selectedButtonCopy: "", selectedButtonTagCopy: "不展示", discountMultiplier: "1.0", giftPack: "" }));
+
 const observedProductRows = [
   { product: "Japanese Ai - 1 Year", period: "Annual", offer: "Black Friday" },
   { product: "Japanese ai", period: "3 months", offer: "No offers for this product" },
@@ -997,7 +1016,10 @@ function App() {
   const [toast, setToast] = useState("");
   const [draft, setDraft] = useState({
     name: "RESEARCH - Rebuild Draft",
-    products: ["月度会员 / Monthly", "Japanese Ai - 1 Year / Annual"],
+    businessType: paywallBusinessTypes[0], businessScene: paywallScenesByBusinessType[paywallBusinessTypes[0]][0], publicAccount: "11006 - hey_livea",
+    note: "", paywallStyle: "", productGroup: initialPaywallGroup,
+    offerRows: paywallOfferRows(initialPaywallGroup),
+    products: paywallProductGroups[initialPaywallGroup].map((product) => product.name),
   });
   const [compliance, setCompliance] = useState(false);
   const [rememberCompliance, setRememberCompliance] = useState(false);
@@ -1043,7 +1065,7 @@ function App() {
   const createDraft = () => {
     if (!compliance) return;
     const id = `research-${Date.now()}`;
-    const created = { id, name: draft.name || "Untitled paywall", state: "Draft", products: draft.products.length, startedAt: "20 Aug 2026", icon: false };
+    const created = { id, name: draft.name || "Untitled paywall", state: "Draft", products: draft.offerRows?.length ?? draft.products.length, startedAt: "20 Aug 2026", icon: false, config: { businessType: draft.businessType, businessScene: draft.businessScene, publicAccount: draft.publicAccount, note: draft.note, paywallStyle: draft.paywallStyle, productGroup: draft.productGroup, defaultProductId: draft.defaultProductId, offerRows: draft.offerRows } };
     setPaywalls((current) => [...current, created]);
     setSelectedId(id);
     setView("general");
@@ -1256,9 +1278,7 @@ function App() {
           selected={templateSelected}
           setSelected={setTemplateSelected}
           onClose={() => setModal(null)}
-          onOpenAi={() => setModal({ kind: "ai" })}
           onOpenBuilder={(templateIndex) => { const template = templates[templateIndex]; applyTemplate(templateIndex); setModal(null); setView("builder"); notify(isEditableTemplate(template) ? (documentStyleTemplateIds.has(template.id) ? "已应用基于飞书 Paywall 规范的可编辑模板。" : "已应用基于源端核心结构的可编辑复现。") : "已应用源端预览内容；精确节点树仍在采集。"); }}
-          markUnknown={markUnknown}
         />
       )}
       {modal?.kind === "ai" && <AiModal onClose={() => setModal(null)} markUnknown={markUnknown} />}
@@ -1356,38 +1376,39 @@ function PaywallList({
   );
 }
 
-function CreatePaywall({ draft, setDraft, setView, setModal, createDraft, markUnknown }) {
+function CreatePaywall({ draft, setDraft, setView, setModal, createDraft }) {
+  const rows = draft.offerRows ?? paywallOfferRows(draft.productGroup);
+  const [labelPicker, setLabelPicker] = useState(null);
+  const [labelQuery, setLabelQuery] = useState("");
+  const patch = (next) => setDraft((current) => ({ ...current, ...next }));
+  const patchRow = (index, next) => setDraft((current) => ({ ...current, offerRows: (current.offerRows ?? rows).map((row, position) => position === index ? { ...row, ...next } : row) }));
+  const labelInput = (row, index, key, label) => <div className="create-label-picker"><input aria-label={`${row.name} ${label}`} placeholder="输入标签多语言key" value={row[key] ?? ""} onChange={(event) => patchRow(index, { [key]: event.target.value })} /><button type="button" onClick={() => { setLabelPicker({ index, key, label }); setLabelQuery(row[key] ?? ""); }}>选择</button></div>;
   return (
     <section className="create">
       <button className="back" onClick={() => setView("list")}><ArrowLeft size={18} /> Paywalls</button>
-      <div className="create-header"><div><h1>Create paywall</h1><p>Create a draft and configure it with products and a no-code builder.</p></div><button className="primary" onClick={() => setModal({ kind: "compliance" })}>Create as draft</button></div>
+      <div className="create-header"><div><h1>Create paywall</h1><p>配置业务信息、Paywall 样式与商品组后创建草稿。</p></div><button className="primary" disabled={!draft.name.trim() || !draft.productGroup || !rows.length} onClick={() => setModal({ kind: "compliance" })}>Create as draft</button></div>
       <div className="create-grid">
         <div className="form-card">
           <h2>General</h2>
-          <Field label="Paywall name"><input value={draft.name} onChange={(event) => setDraft((state) => ({ ...state, name: event.target.value }))} /></Field>
-          <Field label="Products">
-            {draft.products.map((product, index) => (
-              <ProductRow
-                key={`${product}-${index}`}
-                product={product}
-                index={index}
-                onProductChange={(nextProduct) => setDraft((state) => ({ ...state, products: state.products.map((current, currentIndex) => currentIndex === index ? nextProduct : current) }))}
-                onRemove={() => setDraft((state) => ({ ...state, products: state.products.filter((_, currentIndex) => currentIndex !== index) }))}
-                markUnknown={markUnknown}
-              />
-            ))}
-            <button className="secondary" onClick={() => setDraft((state) => ({ ...state, products: [...state.products, productOptions[0]] }))}><Plus size={16} /> Add product</button>
-          </Field>
+          <div className="create-fields">
+            <Field label="业务类型 *"><select value={draft.businessType ?? ""} onChange={(event) => patch({ businessType: event.target.value, businessScene: paywallScenesByBusinessType[event.target.value][0] })}>{paywallBusinessTypes.map((value) => <option key={value}>{value}</option>)}</select></Field>
+            <Field label="业务场景 *"><select value={draft.businessScene ?? ""} onChange={(event) => patch({ businessScene: event.target.value })}>{(paywallScenesByBusinessType[draft.businessType] ?? []).map((value) => <option key={value}>{value}</option>)}</select></Field>
+            <Field label="公众号 *"><select value={draft.publicAccount ?? ""} onChange={(event) => patch({ publicAccount: event.target.value })}><option>11006 - hey_livea</option></select></Field>
+            <Field label="Paywall 名称 *"><input value={draft.name} onChange={(event) => patch({ name: event.target.value })} /></Field>
+            <Field label="备注"><textarea value={draft.note ?? ""} onChange={(event) => patch({ note: event.target.value })} /></Field>
+            <Field label="paywall样式"><select value={draft.paywallStyle ?? ""} onChange={(event) => patch({ paywallStyle: event.target.value })}><option value="">请选择</option>{paywallStyles.map((value) => <option key={value}>{value}</option>)}</select><small className="create-field-note">样式仅 Deeplink 生效</small></Field>
+            <Field label="商品组 *"><select value={draft.productGroup ?? ""} onChange={(event) => { const productGroup = event.target.value; patch({ productGroup, offerRows: paywallOfferRows(productGroup), products: (paywallProductGroups[productGroup] ?? []).map((product) => product.name), defaultProductId: "" }); }}>{Object.keys(paywallProductGroups).map((value) => <option key={value}>{value}</option>)}</select></Field>
+          </div>
+          <div className="create-offers"><h3>优惠信息</h3><div className="create-offers-scroll"><table><thead><tr><th>默认选中</th><th>Product ID</th><th>商品名称</th><th>优惠标签</th><th>未选中时顶部标签</th><th>选中时顶部标签</th><th>选中时的按钮文案</th><th>选中时按钮标签文案</th><th>折扣倍率</th><th>赠送礼包</th><th>操作</th></tr></thead><tbody>{rows.map((row, index) => <tr key={`${row.id}-${index}`}><td><input type="radio" name="create-default-product" aria-label={`默认选中 ${row.name}`} checked={draft.defaultProductId === row.id} onChange={() => patch({ defaultProductId: row.id })} /></td><td>{row.id}</td><td>{row.name}</td><td><select aria-label={`${row.name} 优惠标签`} value={row.offerLabel} onChange={(event) => patchRow(index, { offerLabel: event.target.value })}><option>不展示</option><option>展示</option></select></td><td>{labelInput(row, index, "unselectedTopLabel", "未选中时顶部标签")}</td><td>{labelInput(row, index, "selectedTopLabel", "选中时顶部标签")}</td><td>{labelInput(row, index, "selectedButtonCopy", "选中时的按钮文案")}</td><td><select aria-label={`${row.name} 选中时按钮标签文案`} value={row.selectedButtonTagCopy} onChange={(event) => patchRow(index, { selectedButtonTagCopy: event.target.value })}><option>不展示</option><option>展示</option></select></td><td><input type="number" min="0" step="0.1" aria-label={`${row.name} 折扣倍率`} value={row.discountMultiplier} onChange={(event) => patchRow(index, { discountMultiplier: event.target.value })} /></td><td><select aria-label={`${row.name} 赠送礼包`} value={row.giftPack} onChange={(event) => patchRow(index, { giftPack: event.target.value })}><option value="">请选择</option><option>618-年活动礼包（test）</option><option>618-终身</option></select></td><td><div className="create-offer-actions"><button type="button" onClick={() => patchRow(index, { ...rows[index - 1], id: row.id, name: row.name })} disabled={index === 0}>复制上条配置</button><button type="button" onClick={() => patchRow(index, { ...paywallOfferRows(draft.productGroup)[index], id: row.id, name: row.name })}>清除</button></div></td></tr>)}</tbody></table></div></div>
         </div>
         <div className="start-card">
           <span className="eyebrow">Builder & Generator</span><h2>Choose how to start</h2>
           <button onClick={() => setView("builder")}><Blocks size={22} /><span><strong>Build no-code paywall</strong><small>Start with the visual Builder.</small></span><ChevronRight size={18} /></button>
           <button onClick={() => setModal({ kind: "templates" })}><LayoutTemplate size={22} /><span><strong>Choose a template</strong><small>Observed template library and filters.</small></span><ChevronRight size={18} /></button>
-          <button onClick={() => setModal({ kind: "ai" })}><WandSparkles size={22} /><span><strong>Generate Paywall with AI</strong><small>Entry is known; generation output is not.</small></span><ChevronRight size={18} /></button>
-          <button onClick={() => setModal({ kind: "migration" })}><Copy size={22} /><span><strong>Copy a Design from Your Apps</strong><small>Visual Builder configuration only.</small></span><ChevronRight size={18} /></button>
         </div>
       </div>
       <button className="subtle-action" onClick={createDraft}>Development shortcut: create a local draft after confirmation</button>
+      {labelPicker && <div className="modal-backdrop"><section className="modal create-label-modal" role="dialog" aria-label={`选择${labelPicker.label}`}><header><h2>选择{labelPicker.label}</h2><button type="button" className="icon" aria-label="关闭" onClick={() => setLabelPicker(null)}><X size={19} /></button></header><div className="create-label-modal-body"><Field label="多语言 key"><input autoFocus value={labelQuery} placeholder="输入或粘贴多语言 key" onChange={(event) => setLabelQuery(event.target.value)} /></Field><p>当前为本地 Demo，未接入线上多语言词条目录。</p></div><div className="modal-actions"><button type="button" className="secondary" onClick={() => setLabelPicker(null)}>取消</button><button type="button" className="primary" onClick={() => { patchRow(labelPicker.index, { [labelPicker.key]: labelQuery.trim() }); setLabelPicker(null); }}>确认</button></div></section></div>}
     </section>
   );
 }
@@ -2033,7 +2054,7 @@ function ArchiveModal({ name, onClose, onArchive }) {
   return <Modal title="Archive paywall" onClose={onClose}><p className="modal-copy">This action cannot be undone. Type the complete paywall name to continue.</p><Field label={`Type "${name}"`}><input value={value} onChange={(event) => setValue(event.target.value)} /></Field><div className="modal-actions"><button className="secondary" onClick={onClose}>Cancel</button><button className="danger-button" disabled={value !== name} onClick={onArchive}>Archive paywall</button></div></Modal>;
 }
 
-function TemplatesModal({ selected, setSelected, onClose, onOpenAi, onOpenBuilder, markUnknown }) {
+function TemplatesModal({ selected, setSelected, onClose, onOpenBuilder }) {
   const [pendingSelected, setPendingSelected] = useState(selected);
   const [filters, setFilters] = useState({
     // Start unfiltered so the HelloTalk document templates are discoverable on first open.
@@ -2063,7 +2084,7 @@ function TemplatesModal({ selected, setSelected, onClose, onOpenAi, onOpenBuilde
   });
   const documentTemplates = filteredTemplates.filter((template) => template.documentTemplate);
   const prioritizedTemplates = [...documentTemplates, ...filteredTemplates.filter((template) => !template.documentTemplate)];
-  return <Modal title="Choose a template" onClose={onClose} wide><div className="template-modal"><aside><div className="filter-heading"><strong>Filters</strong><span className="filter-count">{filteredTemplates.length}</span></div><p>Number of products</p><Filter group="products" value="1 product" list>1 product (31)</Filter><Filter group="products" value="More than 1 product" list>More than 1 product (56)</Filter><p>Image / video</p><Filter group="media" value="All">All</Filter><Filter group="media" value="With Image or Video">With Image or Video (77)</Filter><Filter group="media" value="No media">No media (3)</Filter><p>Components</p><Filter group="components" value="Free trial toggle" list>Free trial toggle (5)</Filter><Filter group="components" value="Trial timeline" list>Trial timeline (24)</Filter><Filter group="components" value="Reviews" list>Reviews (7)</Filter><Filter group="components" value="Timer" list>Timer (5)</Filter><p>Length</p><Filter group="length" value="All">All</Filter><Filter group="length" value="Short">Short</Filter><Filter group="length" value="Long">Long</Filter><p>Background theme</p><Filter group="background" value="All">All</Filter><Filter group="background" value="Light">Light</Filter><Filter group="background" value="Dark">Dark</Filter><p>Category</p><Filter group="category" value="All">All paywalls</Filter><Filter group="category" value="Popular">Popular</Filter><Filter group="category" value="Seasonal">Seasonal</Filter></aside><div className="template-content"><div className="template-scroll-content"><div className="template-entries"><button className="secondary" onClick={onOpenAi}><WandSparkles size={18} /><span><strong>Generate a Design with AI</strong><small>Don't have a design? Our AI will create a unique paywall for you from scratch.</small></span></button><button onClick={() => markUnknown(missingItems[3])}><Copy size={18} /><span><strong>Copy a Design from Your Apps</strong><small>Reuse a design you've built with Paywall Builder in another app.</small></span></button></div><div className="template-selection-summary">{pendingTemplate ? <><span>Selected template</span><strong>{pendingTemplate.title}</strong><small>{displayTags(pendingTemplate).join(" · ")}</small></> : <span>No template selected</span>}</div><div className="template-grid rich-template-grid">{prioritizedTemplates.map((template) => { const index = templates.indexOf(template); return <button aria-pressed={pendingSelected === index} className={`template template-${template.theme} ${pendingSelected === index ? "selected" : ""}`} onClick={() => setPendingSelected(index)} key={template.id}><div className="template-source-preview"><SourceTemplateMedia template={template} /></div><strong>{template.title}</strong><small>{displayTags(template).join(" · ")}</small></button>; })}</div>{!filteredTemplates.length && <div className="template-empty">No locally captured Adapty templates match this filter combination.</div>}</div><div className="modal-actions template-modal-actions"><button className="secondary" onClick={onClose}>Cancel</button><button className="primary" disabled={pendingSelected === null} onClick={() => onOpenBuilder(pendingSelected)}>Open in Builder</button></div></div></div></Modal>;
+  return <Modal title="Choose a template" onClose={onClose} wide><div className="template-modal"><aside><div className="filter-heading"><strong>Filters</strong><span className="filter-count">{filteredTemplates.length}</span></div><p>Number of products</p><Filter group="products" value="1 product" list>1 product (31)</Filter><Filter group="products" value="More than 1 product" list>More than 1 product (56)</Filter><p>Image / video</p><Filter group="media" value="All">All</Filter><Filter group="media" value="With Image or Video">With Image or Video (77)</Filter><Filter group="media" value="No media">No media (3)</Filter><p>Components</p><Filter group="components" value="Free trial toggle" list>Free trial toggle (5)</Filter><Filter group="components" value="Trial timeline" list>Trial timeline (24)</Filter><Filter group="components" value="Reviews" list>Reviews (7)</Filter><Filter group="components" value="Timer" list>Timer (5)</Filter><p>Length</p><Filter group="length" value="All">All</Filter><Filter group="length" value="Short">Short</Filter><Filter group="length" value="Long">Long</Filter><p>Background theme</p><Filter group="background" value="All">All</Filter><Filter group="background" value="Light">Light</Filter><Filter group="background" value="Dark">Dark</Filter><p>Category</p><Filter group="category" value="All">All paywalls</Filter><Filter group="category" value="Popular">Popular</Filter><Filter group="category" value="Seasonal">Seasonal</Filter></aside><div className="template-content"><div className="template-scroll-content"><div className="template-selection-summary">{pendingTemplate ? <><span>Selected template</span><strong>{pendingTemplate.title}</strong><small>{displayTags(pendingTemplate).join(" · ")}</small></> : <span>No template selected</span>}</div><div className="template-grid rich-template-grid">{prioritizedTemplates.map((template) => { const index = templates.indexOf(template); return <button aria-pressed={pendingSelected === index} className={`template template-${template.theme} ${pendingSelected === index ? "selected" : ""}`} onClick={() => setPendingSelected(index)} key={template.id}><div className="template-source-preview"><SourceTemplateMedia template={template} /></div><strong>{template.title}</strong><small>{displayTags(template).join(" · ")}</small></button>; })}</div>{!filteredTemplates.length && <div className="template-empty">No locally captured Adapty templates match this filter combination.</div>}</div><div className="modal-actions template-modal-actions"><button className="secondary" onClick={onClose}>Cancel</button><button className="primary" disabled={pendingSelected === null} onClick={() => onOpenBuilder(pendingSelected)}>Open in Builder</button></div></div></div></Modal>;
 }
 
 function AiModal({ onClose, markUnknown }) {

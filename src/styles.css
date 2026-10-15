@@ -109,6 +109,26 @@ textarea { min-height: 80px; resize: vertical; }
 .upload { min-height: 92px; width: 100%; display: grid; place-content: center; gap: 5px; border: 1px dashed #bcbcc5; border-radius: 7px; background: #fafafd; color: #5a5a64; font-weight: 600; }.upload small { color: #9696a0; font-weight: 400; }
 .start-card { background: #fbfaff; }.eyebrow { color: #7f7f89; font-size: 10px; font-weight: 700; letter-spacing: .7px; text-transform: uppercase; }.start-card h2 { margin-top: 7px; }.start-card > button { width: 100%; min-height: 72px; padding: 12px; display: grid; grid-template-columns: 28px 1fr 22px; align-items: center; gap: 10px; border: 1px solid #e6e0fb; border-radius: 7px; background: #fff; color: #4b3a72; text-align: left; }.start-card > button + button { margin-top: 9px; }.start-card > button span { display: grid; gap: 3px; }.start-card > button small { color: #85818e; }
 .subtle-action { margin-top: 22px; border: 0; background: transparent; color: #8a8a94; text-decoration: underline; font-size: 11px; }
+.create-grid { grid-template-columns: minmax(0, 1fr); }
+.create-fields { max-width: 1000px; }
+.create-fields .form-field { display: grid; grid-template-columns: 150px minmax(0, 1fr); align-items: start; gap: 12px; }
+.create-fields .form-field > span { margin: 9px 0 0; text-align: right; }
+.create-fields .form-field textarea { min-height: 76px; }
+.create-field-note { grid-column: 2; color: #d65a5a; font-size: 11px; }
+.create-offers { margin-top: 22px; }
+.create-offers h3 { margin: 0 0 12px; font-size: 14px; }
+.create-offers-scroll { width: 100%; overflow-x: auto; border: 1px solid #e3e3e7; border-radius: 6px; }
+.create-offers table { width: 100%; min-width: 1680px; border-collapse: collapse; table-layout: fixed; font-size: 11px; }
+.create-offers th, .create-offers td { padding: 8px; border-right: 1px solid #eee; border-bottom: 1px solid #eee; text-align: center; vertical-align: middle; overflow-wrap: anywhere; }
+.create-offers th { background: #fafafa; font-weight: 700; }
+.create-offers th:nth-child(1) { width: 72px; }.create-offers th:nth-child(2) { width: 78px; }.create-offers th:nth-child(3) { width: 205px; }.create-offers th:nth-child(9) { width: 95px; }.create-offers th:nth-child(11) { width: 120px; }
+.create-offers td input[type="radio"] { width: 17px; min-height: 17px; margin: 0; accent-color: #1860bf; }
+.create-offers td input, .create-offers td select { min-height: 32px; font-size: 11px; }
+.create-label-picker { display: flex; min-width: 0; }.create-label-picker input { min-width: 0; }.create-label-picker button, .create-offer-actions button { border: 0; border-radius: 4px; background: #1461bd; color: #fff; font-size: 11px; white-space: nowrap; cursor: pointer; }
+.create-label-picker button { padding: 0 8px; }.create-offer-actions { display: grid; gap: 5px; }.create-offer-actions button { min-height: 27px; padding: 3px 5px; }.create-offer-actions button:disabled { background: #d5d9df; cursor: default; }
+.create-label-modal { max-width: 520px; }.create-label-modal-body { padding: 18px; }.create-label-modal-body p { color: #777; font-size: 12px; }
+.start-card { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }.start-card > .eyebrow, .start-card > h2 { grid-column: 1 / -1; }.start-card h2 { margin-bottom: 8px; }.start-card > button + button { margin-top: 0; }
+@media (max-width: 800px) { .create-fields .form-field { grid-template-columns: 1fr; gap: 4px; }.create-fields .form-field > span { margin: 0; text-align: left; }.create-field-note { grid-column: 1; }.start-card { grid-template-columns: 1fr; } }
 .text-action { min-height: 34px; padding: 0 4px; border: 0; background: transparent; color: #5f25de; font-size: 12px; font-weight: 700; }
 .migration-warning, .unknown-rule { margin-top: 20px; padding: 10px; display: flex; align-items: flex-start; gap: 7px; border-radius: 6px; background: #f7f5fd; color: #6a5a9c; font-size: 11px; text-align: left; }
 
