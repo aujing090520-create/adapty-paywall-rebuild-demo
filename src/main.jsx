@@ -723,9 +723,9 @@ function createBuilderNodes(templateId = "knowledge") {
 
   if (template.id === "ht-blue-privilege") {
     return [
-      node("hero-image", "Hero Image", template.visual, 0, { theme: template.theme, config: { copyPrefix: "VIP", copySuffix: "7折大促", copyCaption: "HelloTalk 世界杯", bannerEnabled: true, deepLink: "" } }),
-      node("products", "Products", "", 0, { config: { bluePrivilege: true, badgeGradient: ["#003bec", "#3ed6ea", "#bbff62"], selectedBorderGradient: ["#003bec", "#3ed6ea", "#bbff62"], selectedBackground: "#ffffff", saveTextColor: "#2e89ff", purchaseTextGradient: ["#ffffff", "#ffffff", "#ffffff"], purchaseBackgroundGradient: ["#6783d8", "#bbff62", "#bbff62"] } }),
+      node("hero-image", "Hero Image", template.visual, 0, { theme: template.theme, config: { copyPrefix: "VIP", copySuffix: "7折大促", copyCaption: "HelloTalk 世界杯", bannerEnabled: true, deepLink: "", overlayImageEnabled: true, overlayImageLeft: 8, overlayImageTop: 27, overlayImageWidth: 14 } }),
       node("benefits", "List", "", 0, { label: "特权对比", config: { bluePrivilege: true, privilegeRows: initialPrivilegeRows, maxVisibleRows: 5, headerBackground: "#f1f1f1", vipColumnBackground: "#ffffff", backgroundColor: "#f5f5f5", secondaryColor: "#bdbdbd", accentColor: "#ffb40d" } }),
+      node("products", "Products", "", 0, { config: { bluePrivilege: true, badgeGradient: ["#003bec", "#3ed6ea", "#bbff62"], selectedBorderGradient: ["#003bec", "#3ed6ea", "#bbff62"], selectedBackground: "#ffffff", saveTextColor: "#2e89ff", purchaseTextGradient: ["#ffffff", "#ffffff", "#ffffff"], purchaseBackgroundGradient: ["#6783d8", "#bbff62", "#bbff62"] } }),
       node("timer", "Timer", "18:32:25", 0, { config: { bluePrivilege: true, enabled: true, format: "hh:mm:ss", separator: ":", prefix: "倒计时", suffix: "", resetMode: "Reset timer on every paywall view", locale: "English", prefixColor: "#303487", digitColor: "#303487", digitBackgroundColor: "#8ced75" } }),
       node("purchase", "Button", "立即领取优惠", 0, { config: { action: "Purchase" } }),
       node("retention", "Card", "", 0, { label: "挽留弹窗", config: { retention: true, title: "错过这次，就要多花 30%😱", timerLabel: "倒计时", timerStart: "71:22:22", buttonText: "立享优惠", cancelText: "忍痛取消", backgroundColor: "#f7f7f7", buttonStartColor: "#ff8600", buttonEndColor: "#ffcd00", buttonTextColor: "#ffffff", titleColor: "#111111", timerColor: "#11bf42", imageSrc: "/ht-retention-gift.png", backgroundImage: "" } }),
@@ -1571,7 +1571,7 @@ function BuilderProperties({ active, markUnknown, boundary, templateLinks, setTe
   }
 
   if (type === "List item" || type === "Today" || /^Item \d+$/.test(type) || /^Day \d+$/.test(type)) {
-    return <div className="property-scroll"><h3>List item</h3>{nodeEditor}{tabBar}{tab === "content" && <ListItemContent active={active} updateNode={updateNode} />}{tab === "style" && <ListItemStyle />}{tab === "layout" && <ListItemLayout />}</div>;
+    return <div className="property-scroll"><h3>List item</h3>{nodeEditor}{tabBar}{tab === "content" && <ListItemContent active={active} updateNode={updateNode} />}{tab === "style" && <TextStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
   }
 
   if (["Text", "Header", "Headline", "Subhead", "Caption", "Legal", "Top Text"].includes(type) || /^(HEADER|Header|Caption|Title|Repeats|Subheader) \d+$/.test(type)) {
@@ -1670,7 +1670,20 @@ function HeroMediaContent({ active, updateNode }) {
   const config = active.config ?? {};
   const hasEmbeddedCopy = config.copyPrefix !== undefined || config.copySuffix !== undefined || config.copyTitle !== undefined;
   const titleParts = heroTitleParts(config);
-  return <><MediaUploadFields active={active} updateNode={updateNode} label="Hero media" />{hasEmbeddedCopy && <section className="embedded-copy-editor"><h4>Top banner</h4><label className="switch-row"><input type="checkbox" checked={config.bannerEnabled !== false} onChange={(event) => updateNodeConfig(active, updateNode, { bannerEnabled: event.target.checked })} /><span>{config.bannerEnabled !== false ? "On" : "Off"}</span><strong>Show banner</strong></label><Field label="Banner deep link"><input value={config.deepLink ?? ""} placeholder="https://" onChange={(event) => updateNodeConfig(active, updateNode, { deepLink: event.target.value })} /></Field><h4>Copy embedded in this visual</h4><Field label="Title prefix"><input value={titleParts.prefix} onChange={(event) => updateNodeConfig(active, updateNode, { copyPrefix: event.target.value })} /></Field><Field label="Title suffix"><input value={titleParts.suffix} onChange={(event) => updateNodeConfig(active, updateNode, { copySuffix: event.target.value })} /></Field><Field label="Supporting copy"><input value={config.copyCaption ?? ""} onChange={(event) => updateNodeConfig(active, updateNode, { copyCaption: event.target.value })} /></Field><p className="property-copy">The headline and supporting copy are composited in the hero image layer, not independent text components. Show banner directly maps to its visibility in the preview.</p></section>}</>;
+  return <><MediaUploadFields active={active} updateNode={updateNode} label="Hero media" />{hasEmbeddedCopy && <section className="embedded-copy-editor"><h4>顶部横幅</h4><label className="switch-row"><input type="checkbox" checked={config.bannerEnabled !== false} onChange={(event) => updateNodeConfig(active, updateNode, { bannerEnabled: event.target.checked })} /><span>{config.bannerEnabled !== false ? "开启" : "关闭"}</span><strong>展示横幅</strong></label><Field label="横幅跳转链接"><input value={config.deepLink ?? ""} placeholder="https://" onChange={(event) => updateNodeConfig(active, updateNode, { deepLink: event.target.value })} /></Field><HeroOverlayImageField active={active} updateNode={updateNode} /><h4>主视觉内嵌文案</h4><Field label="标题前缀"><input value={titleParts.prefix} onChange={(event) => updateNodeConfig(active, updateNode, { copyPrefix: event.target.value })} /></Field><Field label="标题后缀"><input value={titleParts.suffix} onChange={(event) => updateNodeConfig(active, updateNode, { copySuffix: event.target.value })} /></Field><Field label="辅助文案"><input value={config.copyCaption ?? ""} onChange={(event) => updateNodeConfig(active, updateNode, { copyCaption: event.target.value })} /></Field></section>}</>;
+}
+
+function HeroOverlayImageField({ active, updateNode }) {
+  const config = active.config ?? {};
+  const inputRef = useRef(null);
+  const upload = (event) => {
+    const file = event.target.files?.[0];
+    if (!file?.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = () => updateNodeConfig(active, updateNode, { overlayImageSrc: String(reader.result), overlayImageName: file.name, overlayImageEnabled: true });
+    reader.readAsDataURL(file);
+  };
+  return <section className="hero-overlay-editor"><h4>叠加图片</h4><label className="switch-row"><input type="checkbox" checked={config.overlayImageEnabled !== false} onChange={(event) => updateNodeConfig(active, updateNode, { overlayImageEnabled: event.target.checked })} /><span>{config.overlayImageEnabled !== false ? "开启" : "关闭"}</span><strong>展示叠加图片</strong></label><input ref={inputRef} className="visually-hidden" type="file" accept="image/*" onChange={upload} /><div className="hero-overlay-actions"><img src={config.overlayImageSrc || "/ht-vip-badge.svg"} alt="叠加图片预览" /><button type="button" className="secondary" onClick={() => inputRef.current?.click()}><Upload size={16} />{config.overlayImageName ? "替换图片" : "上传图片"}</button>{config.overlayImageSrc && <button type="button" className="text-action" onClick={() => updateNodeConfig(active, updateNode, { overlayImageSrc: "", overlayImageName: "" })}>恢复默认</button>}</div></section>;
 }
 
 const textRunsFor = (node) => Array.isArray(node?.textRuns) ? node.textRuns : [{ text: node?.content ?? "" }];
@@ -1680,7 +1693,7 @@ const validTextLink = (value) => {
 
 function RichText({ node, fallback = "", interactive = false }) {
   const runs = node ? textRunsFor(node) : [{ text: fallback }];
-  if (runs.length === 1 && !runs[0].text && fallback) return <span>{fallback}</span>;
+  if (!node && fallback) return <span>{fallback}</span>;
   return runs.map((run, index) => {
     const style = { fontWeight: run.bold ? 700 : undefined, fontStyle: run.italic ? "italic" : undefined, textDecoration: run.underline || run.link !== undefined ? "underline" : undefined, color: /^#[\da-fA-F]{6}$/.test(run.color ?? "") ? run.color : undefined, fontSize: Number.isFinite(Number(run.fontSize)) && Number(run.fontSize) >= 8 && Number(run.fontSize) <= 72 ? `${run.fontSize}px` : undefined };
     const content = run.link !== undefined && validTextLink(run.link)
@@ -1768,7 +1781,7 @@ function ElementLayoutEditor({ active, updateNode, showHeight = false }) {
 
 function HeroLayoutEditor({ active, updateNode }) {
   const config = active.config ?? {};
-  return <><h4>Visual media</h4><ConfigNumberField label="Image height" active={active} updateNode={updateNode} name="mediaHeight" fallback={100} min={1} max={200} suffix="%" /><label className="switch-row"><input type="checkbox" checked={config.rounded === true} onChange={(event) => updateNodeConfig(active, updateNode, { rounded: event.target.checked })} /><span>{config.rounded ? "On" : "Off"}</span><strong>Rounded rectangle</strong></label>{config.rounded && <ConfigNumberField label="Corner radius" active={active} updateNode={updateNode} name="radius" fallback={0} min={0} max={64} suffix="px" />}<HeroInsetEditor active={active} updateNode={updateNode} /><HeroOffsetEditor active={active} updateNode={updateNode} />{(config.copyPrefix !== undefined || config.copySuffix !== undefined || config.copyTitle !== undefined) && <section className="embedded-copy-editor"><h4>文案位置</h4><div className="split-fields"><ConfigNumberField label="距左侧" active={active} updateNode={updateNode} name="copyLeft" fallback={12} min={0} max={100} suffix="%" /><ConfigNumberField label="距底部" active={active} updateNode={updateNode} name="copyBottom" fallback={15} min={0} max={100} suffix="%" /></div><Field label="Align"><select value={config.copyAlign ?? "left"} onChange={(event) => updateNodeConfig(active, updateNode, { copyAlign: event.target.value })}><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></Field></section>}</>;
+  return <><h4>Visual media</h4><ConfigNumberField label="Image height" active={active} updateNode={updateNode} name="mediaHeight" fallback={100} min={1} max={200} suffix="%" /><label className="switch-row"><input type="checkbox" checked={config.rounded === true} onChange={(event) => updateNodeConfig(active, updateNode, { rounded: event.target.checked })} /><span>{config.rounded ? "On" : "Off"}</span><strong>Rounded rectangle</strong></label>{config.rounded && <ConfigNumberField label="Corner radius" active={active} updateNode={updateNode} name="radius" fallback={0} min={0} max={64} suffix="px" />}<HeroInsetEditor active={active} updateNode={updateNode} /><HeroOffsetEditor active={active} updateNode={updateNode} />{(config.copyPrefix !== undefined || config.copySuffix !== undefined || config.copyTitle !== undefined) && <><section className="embedded-copy-editor"><h4>叠加图片位置</h4><div className="split-fields"><ConfigNumberField label="距左侧" active={active} updateNode={updateNode} name="overlayImageLeft" fallback={8} min={0} max={100} suffix="%" /><ConfigNumberField label="距顶部" active={active} updateNode={updateNode} name="overlayImageTop" fallback={27} min={0} max={100} suffix="%" /></div><ConfigNumberField label="图片宽度" active={active} updateNode={updateNode} name="overlayImageWidth" fallback={14} min={1} max={100} suffix="%" /></section><section className="embedded-copy-editor"><h4>文案位置</h4><div className="split-fields"><ConfigNumberField label="距左侧" active={active} updateNode={updateNode} name="copyLeft" fallback={12} min={0} max={100} suffix="%" /><ConfigNumberField label="距底部" active={active} updateNode={updateNode} name="copyBottom" fallback={15} min={0} max={100} suffix="%" /></div><Field label="Align"><select value={config.copyAlign ?? "left"} onChange={(event) => updateNodeConfig(active, updateNode, { copyAlign: event.target.value })}><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></Field></section></>}</>;
 }
 
 function ButtonStyleEditor({ active, updateNode, productOwnedColors = false }) {
@@ -1871,7 +1884,7 @@ function LinksContent({ active, updateNode, templateLinks, setTemplateLinks }) {
 }
 
 function ListContent({ active, updateNode, addNestedNode, allowAdd = true }) {
-  if (!allowAdd && active.id === "benefits") return <PrivilegeComparisonEditor active={active} updateNode={updateNode} />;
+  if (active.id === "benefits" && active.config?.bluePrivilege) return <><PrivilegeComparisonEditor active={active} updateNode={updateNode} />{allowAdd && <button type="button" className="text-action" onClick={() => addNestedNode(active.id, "List item")}><Plus size={15} /> 添加独立子元素</button>}</>;
   const rows = listRowsFor(active);
   const commit = (nextRows) => updateNodeConfig(active, updateNode, { listRows: nextRows });
   const patchRow = (index, patch) => commit(rows.map((row, position) => position === index ? { ...row, ...patch } : row));
@@ -2213,10 +2226,11 @@ function RetentionPreview({ config, onClose }) {
 
 function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateHeroPosition, retentionPreviewToken = 0, interactive = false }) {
   const heroCopyDrag = useRef(null);
+  const heroOverlayDrag = useRef(null);
   const defaults = helloTalkTemplateDefaults[variant];
   const renderedNodes = nodes.length ? nodes : createBuilderNodes(templates.find((item) => item.documentTemplate === variant));
   const nodeById = (id) => renderedNodes.find((item) => item.id === id);
-  const value = (id, fallback) => nodeById(id)?.content || fallback;
+  const value = (id, fallback) => nodeById(id)?.content ?? fallback;
   const configFor = (id) => nodeById(id)?.config ?? {};
   const styleFor = (id) => {
     const config = configFor(id);
@@ -2346,6 +2360,27 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
     onPointerCancel: heroCopyPointerUp,
     onLostPointerCapture: () => { heroCopyDrag.current = null; },
   } : {};
+  const heroOverlayProps = canDragHeroCopy ? {
+    title: "拖动调整叠加图片位置",
+    onPointerDown: (event) => {
+      if (event.button !== 0) return;
+      const overlay = event.currentTarget.getBoundingClientRect();
+      const hero = event.currentTarget.parentElement.getBoundingClientRect();
+      heroOverlayDrag.current = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, left: (overlay.left - hero.left) / hero.width * 100, top: (overlay.top - hero.top) / hero.height * 100, maxLeft: (hero.width - overlay.width) / hero.width * 100, maxTop: (hero.height - overlay.height) / hero.height * 100, width: hero.width, height: hero.height };
+      event.currentTarget.setPointerCapture(event.pointerId);
+      event.preventDefault();
+      event.stopPropagation();
+      onSelect?.("hero-image");
+    },
+    onPointerMove: (event) => {
+      const drag = heroOverlayDrag.current;
+      if (!drag || drag.pointerId !== event.pointerId) return;
+      const clamp = (value, max) => Math.min(Math.max(0, max), Math.max(0, value));
+      onUpdateHeroPosition({ overlayImageLeft: Math.round(clamp(drag.left + (event.clientX - drag.startX) / drag.width * 100, drag.maxLeft) * 10) / 10, overlayImageTop: Math.round(clamp(drag.top + (event.clientY - drag.startY) / drag.height * 100, drag.maxTop) * 10) / 10 });
+    },
+    onPointerUp: (event) => { if (heroOverlayDrag.current?.pointerId !== event.pointerId) return; heroOverlayDrag.current = null; if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); },
+    onPointerCancel: () => { heroOverlayDrag.current = null; },
+  } : {};
   const nodeClass = (id, name = "") => `ht-node ${activeNode === id ? "selected" : ""} ${name}`;
   const Plan = ({ plan, index }) => {
     const config = configFor("products");
@@ -2418,7 +2453,7 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
     if (id === "offer-card") return <section className={nodeClass(id, "ht-recovery-sheet")} style={styleFor(id)} onClick={select(id)}><span className="ht-sheet-close">×</span>{renderChildren(id)}</section>;
     if (id === "sku-card") return <section className={nodeClass(id, "ht-sku-sheet")} style={styleFor(id)} onClick={select(id)}><span className="ht-sheet-close">×</span>{renderChildren(id)}</section>;
     if (id === "hero-image") {
-      if (variant === "blue-privilege") return heroConfig.bannerEnabled !== false && <section className={nodeClass(id, "ht-blue-hero") + " " + mediaClass(id)} style={heroStyleFor(id)} onClick={select(id)}><HeroMediaLayer config={heroConfig} /><div className="ht-source-art" /><button className="ht-back" type="button" aria-label="返回" onClick={(event) => { event.stopPropagation(); if (hasRetention) setRetentionOpen(true); }}>‹</button><div className={"ht-blue-copy " + (canDragHeroCopy ? "can-drag" : "")} {...heroCopyProps}><small>VIP</small><h1>{titleParts.prefix && <b>{titleParts.prefix}</b>}{titleParts.suffix}</h1><p>{caption}</p></div></section>;
+      if (variant === "blue-privilege") return heroConfig.bannerEnabled !== false && <section className={nodeClass(id, "ht-blue-hero") + " " + mediaClass(id)} style={heroStyleFor(id)} onClick={select(id)}><HeroMediaLayer config={heroConfig} /><div className="ht-source-art" /><button className="ht-back" type="button" aria-label="返回" onClick={(event) => { event.stopPropagation(); if (hasRetention) setRetentionOpen(true); }}>‹</button>{heroConfig.overlayImageEnabled !== false && <img className={"ht-hero-overlay-image" + (canDragHeroCopy ? " can-drag" : "")} src={heroConfig.overlayImageSrc || "/ht-vip-badge.svg"} alt="VIP 标识" style={{ left: `${Number(heroConfig.overlayImageLeft ?? 8)}%`, top: `${Number(heroConfig.overlayImageTop ?? 27)}%`, width: `${Number(heroConfig.overlayImageWidth ?? 14)}%` }} {...heroOverlayProps} />}<div className={"ht-blue-copy " + (canDragHeroCopy ? "can-drag" : "")} {...heroCopyProps}><h1>{titleParts.prefix && <b>{titleParts.prefix}</b>}{titleParts.suffix}</h1><p>{caption}</p></div></section>;
       if (variant === "membership-plans") return <section className={nodeClass(id, "ht-member-hero") + " " + mediaClass(id)} style={heroStyleFor(id)} onClick={select(id)}><HeroMediaLayer config={heroConfig} /><div className="ht-source-art"><div className="ht-eye-particles"><i /><i /><i /><i /></div><div className="ht-phone-illustration"><b>Visit Info</b><span>Visitors　Visited　Liked</span><div className="ht-phone-rows">{["Peggie", "Nilson", "Cookie", "Hampton"].map((name) => <p key={name}><i /><strong>{name}</strong><small>is <b>1km</b> away from you</small><em>Say Hi</em></p>)}</div></div></div></section>;
       if (variant === "payment-recovery") return <div className={nodeClass(id, "ht-offer-bundle") + " " + mediaClass(id)} style={heroStyleFor(id)} onClick={select(id)}><HeroMediaLayer config={heroConfig} /><div className="ht-source-art"><span>30%<br />OFF</span><SoccerBall /></div></div>;
       return <section className={nodeClass(id, "ht-sku-promo") + " " + mediaClass(id)} style={heroStyleFor(id)} onClick={select(id)}><HeroMediaLayer config={heroConfig} /><div className="ht-source-art"><i>セール</i><b>VIP</b></div>{skuOverlayIds.map((copyId) => <React.Fragment key={copyId}>{renderSkuCopy(copyId)}</React.Fragment>)}</section>;
@@ -2445,7 +2480,7 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
     if (id === "legal") return <Legal />;
     if (id === "links") return <Links />;
     const children = renderedNodes.filter((child, index) => nodeParentId(renderedNodes, index) === id);
-    return <PreviewElement node={entry} children={children} getChildren={(childId) => renderedNodes.filter((child) => nodeParentId(child, renderedNodes) === childId)} active={id === activeNode} activeNode={activeNode} onSelect={onSelect} />;
+    return <PreviewElement node={entry} children={children} getChildren={(childId) => renderedNodes.filter((child, index) => nodeParentId(renderedNodes, index) === childId)} active={id === activeNode} activeNode={activeNode} onSelect={onSelect} />;
   };
 
   if (variant === "blue-privilege") return <div className="ht-paywall ht-blue-paywall"><Status />{openPrivilege ? <div className="ht-privilege-detail"><button type="button" className="ht-detail-back" aria-label="返回特权页" onClick={() => setOpenPrivilegeId(null)}>‹</button><h1 style={{ color: openPrivilege.detail?.titleColor }}>{openPrivilege.detail?.title || openPrivilege.name}</h1>{openPrivilege.detail?.iconSrc && <img className="ht-detail-icon" src={openPrivilege.detail.iconSrc} alt="" />}{openPrivilege.detail?.images?.find((image) => image.locale === "简体中文" && image.src)?.src && <img className="ht-detail-image" src={openPrivilege.detail.images.find((image) => image.locale === "简体中文" && image.src).src} alt="" />}</div> : <>{renderChildren(null)}{hasRetention && retentionOpen && <RetentionPreview config={retentionConfig} onClose={() => setRetentionOpen(false)} />}</>}</div>;
@@ -2478,7 +2513,23 @@ function PaywallPreview({ nodes, template, mode, activeNode, onSelect, onUpdateH
 
 function PreviewElement({ node, active, activeNode, onSelect, children = [], getChildren = () => [] }) {
   const select = () => onSelect(node.id);
-  const wrap = (content, className = "") => <div className={`preview-node ${active ? "selected" : ""} ${className}`} onClick={select}>{content}</div>;
+  const config = node.config ?? {};
+  const nodeStyle = {
+    ...(config.color ? { color: config.color } : {}),
+    ...(config.backgroundColor ? { backgroundColor: config.backgroundColor } : {}),
+    ...(config.fontSize ? { fontSize: `${config.fontSize}px` } : {}),
+    ...(config.fontWeight ? { fontWeight: config.fontWeight } : {}),
+    ...(config.textAlign ? { textAlign: config.textAlign } : {}),
+    ...(config.fontFamily === "serif" ? { fontFamily: "Georgia, serif" } : config.fontFamily === "mono" ? { fontFamily: "ui-monospace, monospace" } : {}),
+    ...(config.opacity !== undefined ? { opacity: Number(config.opacity) / 100 } : {}),
+    ...(config.radius !== undefined ? { borderRadius: `${config.radius}px` } : {}),
+    ...(config.shadow ? { boxShadow: `0 ${Math.max(2, Math.round(config.shadow / 2))}px ${config.shadow}px #17172833` } : {}),
+    ...(config.maxLines ? { display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: config.maxLines, overflow: "hidden" } : {}),
+    ...(config.scaleText ? { overflowWrap: "anywhere" } : {}),
+    ...(config.offsetY ? { transform: `translateY(${config.offsetY}px)` } : {}),
+    ...(Object.keys(config).some((key) => key.startsWith("margin")) ? { margin: ["Top", "Right", "Bottom", "Left"].map((edge) => `${config[`margin${edge}`] ?? 0}px`).join(" ") } : {}),
+  };
+  const wrap = (content, className = "") => <div className={`preview-node ${active ? "selected" : ""} ${className}`} style={nodeStyle} onClick={select}>{content}</div>;
   const renderChildren = () => children.map((child) => <PreviewElement key={child.id} node={child} children={getChildren(child.id)} getChildren={getChildren} active={child.id === activeNode} activeNode={activeNode} onSelect={onSelect} />);
   const isTextLayer = ["Text", "Header", "Headline", "Subhead", "Caption", "Legal", "Top Text"].includes(node.type) || /^(HEADER|Header|Caption|Title|Repeats|Subheader) \d+$/.test(node.type);
   const isListLayer = ["List", "Feature list", "Features"].includes(node.type) || /^List \d+$/.test(node.type);
