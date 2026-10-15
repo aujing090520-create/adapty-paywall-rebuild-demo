@@ -25,6 +25,7 @@ import {
   X,
   Download,
   Eye,
+  EyeOff,
   GripVertical,
   GalleryHorizontal,
   Link2,
@@ -799,6 +800,10 @@ function createComponentNode(type, index) {
   return { id: `added-${type.toLowerCase().replace(/[^a-z]+/g, "-")}-${index}`, type, label: "", depth: 0, content: contentByType[type] ?? "", config: configByType[type] };
 }
 
+function isTextNodeType(type) {
+  return ["Text", "Header", "Headline", "Subhead", "Caption", "Legal", "Top Text"].includes(type) || /^(HEADER|Header|Caption|Title|Repeats|Subheader) \d+$/.test(type);
+}
+
 function BuilderNodeIcon({ type }) {
   const Icon = type === "Timer" ? Clock3
     : type === "Products" ? Package
@@ -808,7 +813,7 @@ function BuilderNodeIcon({ type }) {
             : ["Button", "Purchase Button", "Web Paywall Button"].includes(type) ? MousePointerClick
               : ["Hero Image", "Image"].includes(type) ? ImageIcon
                 : type === "List" ? List
-                  : ["Text", "Headline", "Header", "Caption", "Legal"].includes(type) ? Type
+                  : isTextNodeType(type) ? Type
                     : Blocks;
   return <Icon size={13} strokeWidth={2.15} />;
 }
@@ -1440,6 +1445,7 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
   const [transientProducts, setTransientProducts] = useState([]);
   const [previewMode, setPreviewMode] = useState("source");
   const [retentionPreview, setRetentionPreview] = useState(null);
+  const retentionPreviewOpen = retentionPreview?.templateId === templates[appliedTemplate]?.id;
   const [dragState, setDragState] = useState(null);
   const updateNodeWithPreview = (id, patch) => {
     updateBuilderNode(id, patch);
@@ -1524,11 +1530,11 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
             <div className="node-list">{builderNodes.map((node) => {
               const isDragging = dragState?.id === node.id;
               const dropClass = dragState?.targetId === node.id ? `drop-${dragState.position}` : "";
-              return <button type="button" data-node-id={node.id} style={{ paddingLeft: `${7 + (node.depth ?? 0) * 15}px` }} className={`node ${activeNode === node.id ? "selected" : ""} ${isDragging ? "dragging" : ""} ${dropClass}`} onPointerDown={(event) => beginNodeDrag(event, node.id)} onPointerMove={updateNodeDropTarget} onPointerUp={dropNode} onPointerCancel={() => setDragState(null)} onClick={() => setActiveNode(node.id)} key={node.id} aria-grabbed={isDragging}><span className="drag-handle" aria-hidden="true"><GripVertical size={14} /></span><i><BuilderNodeIcon type={node.type} /></i><strong>{node.config?.retention ? "挽留弹窗" : node.type}</strong><small>{node.config?.retention ? "" : node.label}</small></button>;
+              return <button type="button" data-node-id={node.id} style={{ paddingLeft: `${7 + (node.depth ?? 0) * 15}px` }} className={`node ${activeNode === node.id ? "selected" : ""} ${isDragging ? "dragging" : ""} ${dropClass}`} onPointerDown={(event) => beginNodeDrag(event, node.id)} onPointerMove={updateNodeDropTarget} onPointerUp={dropNode} onPointerCancel={() => setDragState(null)} onClick={() => setActiveNode(node.id)} key={node.id} aria-grabbed={isDragging}><span className="drag-handle" aria-hidden="true"><GripVertical size={14} /></span><i><BuilderNodeIcon type={node.type} /></i><strong>{node.config?.retention ? "挽留弹窗" : isTextNodeType(node.type) ? "Text" : node.type}</strong><small>{node.config?.retention ? "" : node.label}</small></button>;
             })}</div>
           </aside>
-          <div className="canvas-area"><div className="device-controls"><button className="unknown-action" onClick={() => markUnknown(builderBoundary)}><Smartphone size={16} /> iPhone 15 Pro <ChevronDown size={14} /></button>{appliedTemplate !== null && <div className="preview-mode" aria-label="Preview mode"><button className={previewMode === "source" ? "active" : ""} onClick={() => setPreviewMode("source")}>{templates[appliedTemplate].documentTemplate ? "文档样式" : "Source visual"}</button><button className={previewMode === "editable" ? "active" : ""} disabled={!isEditableTemplate(templates[appliedTemplate])} onClick={() => setPreviewMode("editable")}>Editable structure</button></div>}<button className="icon unknown-action" title="Preview orientation" onClick={() => markUnknown(builderBoundary)}><RotateCw size={15} /></button><button className="icon unknown-action" title="Preview visibility" onClick={() => markUnknown(builderBoundary)}><Eye size={15} /></button></div><PaywallPreview nodes={builderNodes} template={appliedTemplate !== null ? templates[appliedTemplate] : null} mode={previewMode} activeNode={activeNode} onSelect={setActiveNode} onUpdateHeroPosition={updateHeroCopyPosition} retentionPreviewToken={retentionPreview?.templateId === templates[appliedTemplate]?.id ? retentionPreview?.token ?? 0 : 0} />{appliedTemplate !== null && previewMode === "source" && <p className="source-preview-note">{templates[appliedTemplate].documentTemplate ? "飞书文档中的 Paywall 样式参考，与模板库卡片一一对应。" : "源端模板画面，与模板库卡片一一对应。"}</p>}{appliedTemplate !== null && previewMode === "editable" && <p className="source-preview-note">{isEditableTemplate(templates[appliedTemplate]) ? "已采集样式与核心字段的本地可编辑复现。" : "精确节点树仍在采集。"}</p>}<p className="preview-disclaimer">All prices, titles, and offers displayed are placeholders. The actual data from App Store and Google Play will be shown in the app.</p></div>
-          <aside className="property-panel"><BuilderProperties active={active} markUnknown={markUnknown} boundary={builderBoundary} templateLinks={templateLinks} setTemplateLinks={setTemplateLinks} updateNode={updateNodeWithPreview} removeNode={removeBuilderNode} addNestedNode={addNestedElement} isDocumentTemplate={isDocumentTemplate} onPreviewRetention={() => { setPreviewMode("editable"); setRetentionPreview((current) => ({ templateId: templates[appliedTemplate]?.id, token: (current?.token ?? 0) + 1 })); }} /></aside>
+          <div className="canvas-area"><div className="device-controls"><button className="unknown-action" onClick={() => markUnknown(builderBoundary)}><Smartphone size={16} /> iPhone 15 Pro <ChevronDown size={14} /></button>{appliedTemplate !== null && <div className="preview-mode" aria-label="Preview mode"><button className={previewMode === "source" ? "active" : ""} onClick={() => setPreviewMode("source")}>{templates[appliedTemplate].documentTemplate ? "文档样式" : "Source visual"}</button><button className={previewMode === "editable" ? "active" : ""} disabled={!isEditableTemplate(templates[appliedTemplate])} onClick={() => setPreviewMode("editable")}>Editable structure</button></div>}<button className="icon unknown-action" title="Preview orientation" onClick={() => markUnknown(builderBoundary)}><RotateCw size={15} /></button><button className="icon unknown-action" title="Preview visibility" onClick={() => markUnknown(builderBoundary)}><Eye size={15} /></button></div><PaywallPreview nodes={builderNodes} template={appliedTemplate !== null ? templates[appliedTemplate] : null} mode={previewMode} activeNode={activeNode} onSelect={setActiveNode} onUpdateHeroPosition={updateHeroCopyPosition} retentionPreviewOpen={retentionPreviewOpen} onOpenRetention={() => setRetentionPreview({ templateId: templates[appliedTemplate]?.id })} onCloseRetention={() => setRetentionPreview(null)} />{appliedTemplate !== null && previewMode === "source" && <p className="source-preview-note">{templates[appliedTemplate].documentTemplate ? "飞书文档中的 Paywall 样式参考，与模板库卡片一一对应。" : "源端模板画面，与模板库卡片一一对应。"}</p>}{appliedTemplate !== null && previewMode === "editable" && <p className="source-preview-note">{isEditableTemplate(templates[appliedTemplate]) ? "已采集样式与核心字段的本地可编辑复现。" : "精确节点树仍在采集。"}</p>}<p className="preview-disclaimer">All prices, titles, and offers displayed are placeholders. The actual data from App Store and Google Play will be shown in the app.</p></div>
+          <aside className="property-panel"><BuilderProperties active={active} markUnknown={markUnknown} boundary={builderBoundary} templateLinks={templateLinks} setTemplateLinks={setTemplateLinks} updateNode={updateNodeWithPreview} removeNode={removeBuilderNode} addNestedNode={addNestedElement} isDocumentTemplate={isDocumentTemplate} retentionPreviewOpen={retentionPreviewOpen} onPreviewRetention={() => { setPreviewMode("editable"); setRetentionPreview((current) => current?.templateId === templates[appliedTemplate]?.id ? null : { templateId: templates[appliedTemplate]?.id }); }} /></aside>
         </div>
         <div className="builder-footer"><button className="secondary unknown-action" onClick={() => markUnknown(builderBoundary)}>Discard</button><button className="primary" onClick={() => setModal({ kind: appliedTemplate !== null ? "template-requirements" : "builder-save" })}>Save</button></div>
       </section>
@@ -1548,7 +1554,7 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
   );
 }
 
-function BuilderProperties({ active, markUnknown, boundary, templateLinks, setTemplateLinks, updateNode, removeNode, addNestedNode, isDocumentTemplate, onPreviewRetention }) {
+function BuilderProperties({ active, markUnknown, boundary, templateLinks, setTemplateLinks, updateNode, removeNode, addNestedNode, isDocumentTemplate, retentionPreviewOpen, onPreviewRetention }) {
   const [tab, setTab] = useState("content");
   const type = active?.type ?? "Elements";
   const componentBoundary = {
@@ -1574,7 +1580,7 @@ function BuilderProperties({ active, markUnknown, boundary, templateLinks, setTe
     return <div className="property-scroll"><h3>List item</h3>{nodeEditor}{tabBar}{tab === "content" && <ListItemContent active={active} updateNode={updateNode} />}{tab === "style" && <TextStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
   }
 
-  if (["Text", "Header", "Headline", "Subhead", "Caption", "Legal", "Top Text"].includes(type) || /^(HEADER|Header|Caption|Title|Repeats|Subheader) \d+$/.test(type)) {
+  if (isTextNodeType(type)) {
     return <div className="property-scroll"><h3>Text</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}{tab === "content" && <TextContent active={active} updateNode={updateNode} />}{tab === "style" && <TextStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
   }
 
@@ -1599,7 +1605,7 @@ function BuilderProperties({ active, markUnknown, boundary, templateLinks, setTe
   }
 
   if (type === "Card") {
-    if (active?.config?.retention) return <div className="property-scroll"><h3>挽留弹窗</h3>{tabBar}{tab === "content" && <RetentionContent active={active} updateNode={updateNode} onPreview={onPreviewRetention} />}{tab === "style" && <RetentionStyle active={active} updateNode={updateNode} />}{tab === "layout" && <p className="property-copy">弹窗尺寸和各区域高度按 HT 基准图固定，内容变化不撑开页面。</p>}</div>;
+    if (active?.config?.retention) return <div className="property-scroll"><h3>挽留弹窗</h3>{tabBar}{tab === "content" && <RetentionContent active={active} updateNode={updateNode} previewOpen={retentionPreviewOpen} onPreview={onPreviewRetention} />}{tab === "style" && <RetentionStyle active={active} updateNode={updateNode} />}{tab === "layout" && <p className="property-copy">弹窗尺寸和各区域高度按 HT 基准图固定，内容变化不撑开页面。</p>}</div>;
     return <div className="property-scroll"><h3>Card</h3>{canEditStructure && nodeEditor}{tabBar}{tab === "content" && <CardContent active={active} addNestedNode={addNestedNode} />}{tab === "style" && <CardStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
   }
 
@@ -2001,10 +2007,10 @@ function RetentionImageField({ active, updateNode, name, label, fallback }) {
   return <Field label={label}><div className="retention-image-field"><input ref={inputRef} className="visually-hidden" type="file" accept="image/png,image/jpeg,image/webp" onChange={upload} /><button type="button" className="secondary" onClick={() => inputRef.current?.click()}>{current ? "替换图片" : "上传图片"}</button>{current && <button type="button" className="secondary" onClick={() => updateNodeConfig(active, updateNode, { [name]: "" })}>移除</button>}{current && <img src={current} alt="当前素材" />}</div></Field>;
 }
 
-function RetentionContent({ active, updateNode, onPreview }) {
+function RetentionContent({ active, updateNode, previewOpen, onPreview }) {
   const config = active.config ?? {};
   const field = (name, label, fallback = "") => <Field label={label} key={name}><input value={config[name] ?? fallback} onChange={(event) => updateNodeConfig(active, updateNode, { [name]: event.target.value })} /></Field>;
-  return <><button type="button" className="secondary retention-preview-button" onClick={onPreview}><Eye size={16} />预览弹窗</button>{field("title", "标题", "错过这次，就要多花 30%😱")}<RetentionImageField active={active} updateNode={updateNode} name="backgroundImage" label="弹窗背景图片" fallback="" /><RetentionImageField active={active} updateNode={updateNode} name="imageSrc" label="主视觉图片" fallback="/ht-retention-gift.png" />{field("timerLabel", "倒计时文案", "倒计时")}{field("timerStart", "倒计时初始值", "71:22:22")}{field("buttonText", "主按钮文案", "立享优惠")}{field("cancelText", "取消按钮文案", "忍痛取消")}</>;
+  return <><button type="button" className="secondary retention-preview-button" onClick={onPreview}>{previewOpen ? <EyeOff size={16} /> : <Eye size={16} />}{previewOpen ? "关闭预览" : "预览弹窗"}</button>{field("title", "标题", "错过这次，就要多花 30%😱")}<RetentionImageField active={active} updateNode={updateNode} name="backgroundImage" label="弹窗背景图片" fallback="" /><RetentionImageField active={active} updateNode={updateNode} name="imageSrc" label="主视觉图片" fallback="/ht-retention-gift.png" />{field("timerLabel", "倒计时文案", "倒计时")}{field("timerStart", "倒计时初始值", "71:22:22")}{field("buttonText", "主按钮文案", "立享优惠")}{field("cancelText", "取消按钮文案", "忍痛取消")}</>;
 }
 
 function RetentionStyle({ active, updateNode }) {
@@ -2224,7 +2230,7 @@ function RetentionPreview({ config, onClose }) {
   return <div className="ht-retention-overlay" onClick={onClose}><section className="ht-retention-card" role="dialog" aria-label="挽留弹窗" onClick={(event) => event.stopPropagation()} style={{ backgroundColor: config.backgroundColor ?? "#f7f7f7", backgroundImage: config.backgroundImage ? `url(${config.backgroundImage})` : undefined }}><h2 style={{ color: config.titleColor ?? "#111" }}>{config.title ?? "错过这次，就要多花 30%😱"}</h2>{config.imageSrc && <img className="ht-retention-image" src={config.imageSrc} alt="优惠礼物" />}<div className="ht-retention-timer" style={{ color: config.timerColor ?? "#11bf42", "--retention-timer-color": config.timerColor ?? "#11bf42" }}><strong>{config.timerLabel ?? "倒计时"}</strong><div>{parts.map((part, index) => <React.Fragment key={index}><span>{part}</span>{index < parts.length - 1 && <i>:</i>}</React.Fragment>)}</div></div><button className="ht-retention-primary" type="button" onClick={onClose} style={{ background: `linear-gradient(90deg, ${config.buttonStartColor ?? "#ff8600"}, ${config.buttonEndColor ?? "#ffcd00"})`, color: config.buttonTextColor ?? "#fff" }}>{config.buttonText ?? "立享优惠"}</button><button className="ht-retention-cancel" type="button" onClick={onClose}>{config.cancelText ?? "忍痛取消"}</button></section></div>;
 }
 
-function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateHeroPosition, retentionPreviewToken = 0, interactive = false }) {
+function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateHeroPosition, retentionPreviewOpen = false, onOpenRetention, onCloseRetention, interactive = false }) {
   const heroCopyDrag = useRef(null);
   const heroOverlayDrag = useRef(null);
   const defaults = helloTalkTemplateDefaults[variant];
@@ -2282,11 +2288,9 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
   const productConfig = nodeById("products")?.config ?? {};
   const defaultSelectedPlan = variant === "blue-privilege" ? defaults.selectedProductIndex : Number.isInteger(productConfig.defaultSelected) ? productConfig.defaultSelected : (["payment-recovery", "sku-sheet"].includes(variant) ? 0 : 1);
   const [selectedPlan, setSelectedPlan] = useState(defaultSelectedPlan);
-  const [retentionOpen, setRetentionOpen] = useState(false);
   const [openPrivilegeId, setOpenPrivilegeId] = useState(null);
   const retentionConfig = configFor("retention");
   const hasRetention = Boolean(nodeById("retention"));
-  useEffect(() => { if (retentionPreviewToken > 0 && hasRetention) setRetentionOpen(true); }, [retentionPreviewToken, hasRetention]);
   useEffect(() => setSelectedPlan(defaultSelectedPlan), [defaultSelectedPlan, variant]);
   const heroConfig = configFor("hero-image");
   const title = heroConfig.copyTitle ?? value("headline", defaults.title);
@@ -2453,7 +2457,7 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
     if (id === "offer-card") return <section className={nodeClass(id, "ht-recovery-sheet")} style={styleFor(id)} onClick={select(id)}><span className="ht-sheet-close">×</span>{renderChildren(id)}</section>;
     if (id === "sku-card") return <section className={nodeClass(id, "ht-sku-sheet")} style={styleFor(id)} onClick={select(id)}><span className="ht-sheet-close">×</span>{renderChildren(id)}</section>;
     if (id === "hero-image") {
-      if (variant === "blue-privilege") return heroConfig.bannerEnabled !== false && <section className={nodeClass(id, "ht-blue-hero") + " " + mediaClass(id)} style={heroStyleFor(id)} onClick={select(id)}><HeroMediaLayer config={heroConfig} /><div className="ht-source-art" /><button className="ht-back" type="button" aria-label="返回" onClick={(event) => { event.stopPropagation(); if (hasRetention) setRetentionOpen(true); }}>‹</button>{heroConfig.overlayImageEnabled !== false && <img className={"ht-hero-overlay-image" + (canDragHeroCopy ? " can-drag" : "")} src={heroConfig.overlayImageSrc || "/ht-vip-badge.svg"} alt="VIP 标识" style={{ left: `${Number(heroConfig.overlayImageLeft ?? 8)}%`, top: `${Number(heroConfig.overlayImageTop ?? 27)}%`, width: `${Number(heroConfig.overlayImageWidth ?? 14)}%` }} {...heroOverlayProps} />}<div className={"ht-blue-copy " + (canDragHeroCopy ? "can-drag" : "")} {...heroCopyProps}><h1>{titleParts.prefix && <b>{titleParts.prefix}</b>}{titleParts.suffix}</h1><p>{caption}</p></div></section>;
+      if (variant === "blue-privilege") return heroConfig.bannerEnabled !== false && <section className={nodeClass(id, "ht-blue-hero") + " " + mediaClass(id)} style={heroStyleFor(id)} onClick={select(id)}><HeroMediaLayer config={heroConfig} /><div className="ht-source-art" /><button className="ht-back" type="button" aria-label="返回" onClick={(event) => { event.stopPropagation(); if (hasRetention) onOpenRetention?.(); }}>‹</button>{heroConfig.overlayImageEnabled !== false && <img className={"ht-hero-overlay-image" + (canDragHeroCopy ? " can-drag" : "")} src={heroConfig.overlayImageSrc || "/ht-vip-badge.svg"} alt="VIP 标识" style={{ left: `${Number(heroConfig.overlayImageLeft ?? 8)}%`, top: `${Number(heroConfig.overlayImageTop ?? 27)}%`, width: `${Number(heroConfig.overlayImageWidth ?? 14)}%` }} {...heroOverlayProps} />}<div className={"ht-blue-copy " + (canDragHeroCopy ? "can-drag" : "")} {...heroCopyProps}><h1>{titleParts.prefix && <b>{titleParts.prefix}</b>}{titleParts.suffix}</h1><p>{caption}</p></div></section>;
       if (variant === "membership-plans") return <section className={nodeClass(id, "ht-member-hero") + " " + mediaClass(id)} style={heroStyleFor(id)} onClick={select(id)}><HeroMediaLayer config={heroConfig} /><div className="ht-source-art"><div className="ht-eye-particles"><i /><i /><i /><i /></div><div className="ht-phone-illustration"><b>Visit Info</b><span>Visitors　Visited　Liked</span><div className="ht-phone-rows">{["Peggie", "Nilson", "Cookie", "Hampton"].map((name) => <p key={name}><i /><strong>{name}</strong><small>is <b>1km</b> away from you</small><em>Say Hi</em></p>)}</div></div></div></section>;
       if (variant === "payment-recovery") return <div className={nodeClass(id, "ht-offer-bundle") + " " + mediaClass(id)} style={heroStyleFor(id)} onClick={select(id)}><HeroMediaLayer config={heroConfig} /><div className="ht-source-art"><span>30%<br />OFF</span><SoccerBall /></div></div>;
       return <section className={nodeClass(id, "ht-sku-promo") + " " + mediaClass(id)} style={heroStyleFor(id)} onClick={select(id)}><HeroMediaLayer config={heroConfig} /><div className="ht-source-art"><i>セール</i><b>VIP</b></div>{skuOverlayIds.map((copyId) => <React.Fragment key={copyId}>{renderSkuCopy(copyId)}</React.Fragment>)}</section>;
@@ -2483,14 +2487,14 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
     return <PreviewElement node={entry} children={children} getChildren={(childId) => renderedNodes.filter((child, index) => nodeParentId(renderedNodes, index) === childId)} active={id === activeNode} activeNode={activeNode} onSelect={onSelect} />;
   };
 
-  if (variant === "blue-privilege") return <div className="ht-paywall ht-blue-paywall"><Status />{openPrivilege ? <div className="ht-privilege-detail"><button type="button" className="ht-detail-back" aria-label="返回特权页" onClick={() => setOpenPrivilegeId(null)}>‹</button><h1 style={{ color: openPrivilege.detail?.titleColor }}>{openPrivilege.detail?.title || openPrivilege.name}</h1>{openPrivilege.detail?.iconSrc && <img className="ht-detail-icon" src={openPrivilege.detail.iconSrc} alt="" />}{openPrivilege.detail?.images?.find((image) => image.locale === "简体中文" && image.src)?.src && <img className="ht-detail-image" src={openPrivilege.detail.images.find((image) => image.locale === "简体中文" && image.src).src} alt="" />}</div> : <>{renderChildren(null)}{hasRetention && retentionOpen && <RetentionPreview config={retentionConfig} onClose={() => setRetentionOpen(false)} />}</>}</div>;
+  if (variant === "blue-privilege") return <div className="ht-paywall ht-blue-paywall"><Status />{openPrivilege ? <div className="ht-privilege-detail"><button type="button" className="ht-detail-back" aria-label="返回特权页" onClick={() => setOpenPrivilegeId(null)}>‹</button><h1 style={{ color: openPrivilege.detail?.titleColor }}>{openPrivilege.detail?.title || openPrivilege.name}</h1>{openPrivilege.detail?.iconSrc && <img className="ht-detail-icon" src={openPrivilege.detail.iconSrc} alt="" />}{openPrivilege.detail?.images?.find((image) => image.locale === "简体中文" && image.src)?.src && <img className="ht-detail-image" src={openPrivilege.detail.images.find((image) => image.locale === "简体中文" && image.src).src} alt="" />}</div> : <>{renderChildren(null)}{hasRetention && retentionPreviewOpen && <RetentionPreview config={retentionConfig} onClose={onCloseRetention} />}</>}</div>;
   if (variant === "membership-plans") return <div className="ht-paywall ht-membership-paywall"><div className="ht-member-backdrop"><Status /><span className="ht-back">‹</span><strong>我的访问</strong><b>ϟ</b><div><span>访客</span><span>谁看了我</span><span>喜欢我的人</span></div></div><section className="ht-member-sheet"><span className="ht-sheet-close">×</span>{renderChildren(null)}</section></div>;
   if (variant === "payment-recovery") return <div className="ht-paywall ht-recovery-paywall"><div className="ht-recovery-backdrop"><Status /><b>‹</b><strong>我的访问</strong></div>{renderChildren(null)}</div>;
   return <div className="ht-paywall ht-sku-paywall"><div className="ht-chat-scene"><Status /><b>‹</b><strong>huangzefeng</strong><small>上午4:52</small><span>Hi</span></div>{renderChildren(null)}</div>;
 }
-function PaywallPreview({ nodes, template, mode, activeNode, onSelect, onUpdateHeroPosition, retentionPreviewToken }) {
+function PaywallPreview({ nodes, template, mode, activeNode, onSelect, onUpdateHeroPosition, retentionPreviewOpen, onOpenRetention, onCloseRetention }) {
   if (template?.documentTemplate) {
-    const paywall = <HelloTalkPaywall variant={template.documentTemplate} nodes={nodes} activeNode={activeNode} onSelect={onSelect} onUpdateHeroPosition={onUpdateHeroPosition} retentionPreviewToken={retentionPreviewToken} interactive={mode === "editable"} />;
+    const paywall = <HelloTalkPaywall variant={template.documentTemplate} nodes={nodes} activeNode={activeNode} onSelect={onSelect} onUpdateHeroPosition={onUpdateHeroPosition} retentionPreviewOpen={retentionPreviewOpen} onOpenRetention={onOpenRetention} onCloseRetention={onCloseRetention} interactive={mode === "editable"} />;
     return <div className="phone source-template-phone"><div className="ht-template-scroll" tabIndex={0} aria-label="付费墙页面预览">{paywall}</div><button className="close-phone" aria-label="Close preview">×</button></div>;
   }
   if (template && mode === "source") return <div className="phone source-template-phone"><SourceTemplateMedia template={template} /><button className="close-phone" aria-label="Close preview">×</button></div>;
@@ -2534,7 +2538,7 @@ function PreviewElement({ node, active, activeNode, onSelect, children = [], get
   const buttonStyle = { backgroundColor: config.backgroundColor, color: config.color, borderRadius: config.radius === undefined ? undefined : `${config.radius}px` };
   const cardStyle = { backgroundColor: config.backgroundColor, borderRadius: config.radius === undefined ? undefined : `${config.radius}px`, boxShadow: config.shadow ? `0 ${Math.max(2, Math.round(config.shadow / 2))}px ${config.shadow}px #17172833` : undefined };
   const renderChildren = () => children.map((child) => <PreviewElement key={child.id} node={child} children={getChildren(child.id)} getChildren={getChildren} active={child.id === activeNode} activeNode={activeNode} onSelect={onSelect} />);
-  const isTextLayer = ["Text", "Header", "Headline", "Subhead", "Caption", "Legal", "Top Text"].includes(node.type) || /^(HEADER|Header|Caption|Title|Repeats|Subheader) \d+$/.test(node.type);
+  const isTextLayer = isTextNodeType(node.type);
   const isListLayer = ["List", "Feature list", "Features"].includes(node.type) || /^List \d+$/.test(node.type);
   const isListItemLayer = node.type === "List item" || node.type === "Today" || /^Item \d+$/.test(node.type) || /^Day \d+$/.test(node.type);
   const isImageLayer = ["Image", "Black Friday Image"].includes(node.type) || /^Image \d+$/.test(node.type);
