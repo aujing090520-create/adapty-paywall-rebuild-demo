@@ -1731,7 +1731,7 @@ function ConfigInsets({ active, updateNode, prefix = "margin" }) {
 
 function HeroInsetEditor({ active, updateNode }) {
   const config = active.config ?? {};
-  const edge = (name, label) => <label className={`hero-inset-field hero-inset-${name.toLowerCase()}`}><span>{label}</span><div className="number-unit"><input type="number" min="0" max="240" aria-label={`图片${label}留白`} value={config[`padding${name}`] ?? 0} onChange={(event) => updateNodeConfig(active, updateNode, { [`padding${name}`]: event.target.value })} /><span>px</span></div></label>;
+  const edge = (name, label) => <label className={`hero-inset-field hero-inset-${name.toLowerCase()}`}><span>{label}</span><div className="number-unit"><input type="number" min="0" max="240" aria-label={`图片${label}留白`} value={Number(config[`padding${name}`]) || 0} onFocus={(event) => event.currentTarget.select()} onChange={(event) => updateNodeConfig(active, updateNode, { [`padding${name}`]: Math.min(240, Math.max(0, Number(event.target.value) || 0)) })} /><span>px</span></div></label>;
   return <div className="hero-inset-editor"><strong>图片四侧留白</strong><div className="hero-inset-map">{edge("Top", "上")}{edge("Left", "左")}<div className="hero-inset-center" aria-hidden="true"><span>图片</span></div>{edge("Right", "右")}{edge("Bottom", "下")}</div></div>;
 }
 
@@ -2424,8 +2424,9 @@ function PreviewElement({ node, active, activeNode, onSelect, children = [] }) {
   if (node.sourcePending) return wrap(<p className="preview-boundary">Source layer confirmed; field content pending</p>, "preview-copy");
   if (["Hero Image", "Hero Video"].includes(node.type)) {
     const config = node.config ?? {};
-    const padding = ["Top", "Right", "Bottom", "Left"].map((edge) => `${Math.max(0, Number(config[`padding${edge}`]) || 0)}px`).join(" ");
-    const height = 104 * Math.max(1, Number(config.mediaHeight) || 100) / 100;
+    const insets = ["Top", "Right", "Bottom", "Left"].map((edge) => Math.max(0, Number(config[`padding${edge}`]) || 0));
+    const padding = insets.map((value) => `${value}px`).join(" ");
+    const height = 104 * Math.max(1, Number(config.mediaHeight) || 100) / 100 + insets[0] + insets[2];
     const media = config.mediaState === "removed" ? null : config.mediaSrc
       ? config.mediaType === "Video" ? <video src={config.mediaSrc} autoPlay loop muted playsInline style={{ objectFit: config.mediaFit ?? "cover" }} /> : <img src={config.mediaSrc} alt={node.label || ""} style={{ objectFit: config.mediaFit ?? "cover" }} />
       : <span>{node.type === "Hero Video" || config.mediaType === "Video" ? "VIDEO" : node.content === "knowledge" ? "✦" : ""}</span>;

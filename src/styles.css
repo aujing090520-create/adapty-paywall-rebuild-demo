@@ -452,7 +452,8 @@ textarea { min-height: 80px; resize: vertical; }
 .hero-inset-map { display: grid; grid-template-columns: minmax(0, 1fr) minmax(62px, 1.2fr) minmax(0, 1fr); grid-template-rows: auto 76px auto; align-items: center; gap: 7px; padding: 12px; border: 1px solid #e2e0ea; border-radius: 8px; background: #faf9fd; }
 .hero-inset-field { min-width: 0; display: grid; gap: 4px; text-align: center; font-size: 11px; color: #646473; }
 .hero-inset-field .number-unit { height: 32px; min-width: 0; padding: 0 4px; background: #fff; }
-.hero-inset-field input { min-width: 0; width: 100%; padding: 0 2px; text-align: center; }
+.hero-inset-field input { min-width: 0; width: 100%; padding: 0 2px; text-align: center; font-size: 12px; appearance: textfield; }
+.hero-inset-field input::-webkit-inner-spin-button, .hero-inset-field input::-webkit-outer-spin-button { appearance: none; margin: 0; }
 .hero-inset-field .number-unit span { font-size: 10px; }
 .hero-inset-top { grid-column: 2; grid-row: 1; }.hero-inset-left { grid-column: 1; grid-row: 2; }.hero-inset-right { grid-column: 3; grid-row: 2; }.hero-inset-bottom { grid-column: 2; grid-row: 3; }
 .hero-inset-center { grid-column: 2; grid-row: 2; display: grid; place-items: center; height: 64px; border: 1px dashed #b3a8d8; border-radius: 5px; background: #eee9fc; color: #6b49ca; font-size: 12px; }
