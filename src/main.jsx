@@ -2422,7 +2422,15 @@ function PreviewElement({ node, active, activeNode, onSelect, children = [] }) {
   const isListItemLayer = node.type === "List item" || node.type === "Today" || /^Item \d+$/.test(node.type) || /^Day \d+$/.test(node.type);
   const isImageLayer = ["Image", "Black Friday Image"].includes(node.type) || /^Image \d+$/.test(node.type);
   if (node.sourcePending) return wrap(<p className="preview-boundary">Source layer confirmed; field content pending</p>, "preview-copy");
-  if (["Hero Image", "Hero Video"].includes(node.type)) return wrap(<div className={`preview-media visual-${node.content}`}><span>{node.type === "Hero Video" || node.config?.mediaType === "Video" ? "VIDEO" : node.content === "knowledge" ? "✦" : ""}</span></div>, "preview-hero");
+  if (["Hero Image", "Hero Video"].includes(node.type)) {
+    const config = node.config ?? {};
+    const padding = ["Top", "Right", "Bottom", "Left"].map((edge) => `${Math.max(0, Number(config[`padding${edge}`]) || 0)}px`).join(" ");
+    const height = 104 * Math.max(1, Number(config.mediaHeight) || 100) / 100;
+    const media = config.mediaState === "removed" ? null : config.mediaSrc
+      ? config.mediaType === "Video" ? <video src={config.mediaSrc} autoPlay loop muted playsInline style={{ objectFit: config.mediaFit ?? "cover" }} /> : <img src={config.mediaSrc} alt={node.label || ""} style={{ objectFit: config.mediaFit ?? "cover" }} />
+      : <span>{node.type === "Hero Video" || config.mediaType === "Video" ? "VIDEO" : node.content === "knowledge" ? "✦" : ""}</span>;
+    return wrap(<div className={`preview-media visual-${node.content}`} style={{ height: `${height}px`, padding, transform: config.offsetY ? `translateY(${config.offsetY}px)` : undefined, borderRadius: config.rounded ? `${config.radius ?? 0}px` : undefined, backgroundColor: config.mediaBackgroundColor ?? "#f5f5f5" }}><div className={`preview-media-art${config.mediaSrc ? " has-media" : ""}`}>{media}</div></div>, "preview-hero");
+  }
   if (node.type === "Stars") return wrap(<div className="preview-stars">{node.content || "★★★★★"}</div>);
   if (node.type === "Discount") return wrap(<h2>{node.content || "Discount"}</h2>, "preview-headline");
   if (isTextLayer) return wrap(node.variant === "headline" ? <h2><RichText node={node} fallback="Heading" interactive /></h2> : node.variant === "section" ? <h3><RichText node={node} interactive /></h3> : <p className={node.variant === "boundary" ? "preview-boundary" : ""}><RichText node={node} fallback="Supporting text" interactive /></p>, node.variant === "headline" ? "preview-headline" : "preview-copy");

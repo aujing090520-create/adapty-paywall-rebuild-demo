@@ -459,6 +459,18 @@ textarea { min-height: 80px; resize: vertical; }
 .hero-offset-heading { display: flex; align-items: baseline; justify-content: space-between; }.hero-offset-heading button { border: 0; background: none; color: #6736db; font-size: 11px; cursor: pointer; }.hero-offset-heading button:disabled { color: #a9a9b1; cursor: default; }
 .hero-offset-control { display: grid; grid-template-columns: minmax(0, 1fr) 86px; align-items: center; gap: 10px; }.hero-offset-control input[type="range"] { width: 100%; accent-color: #6835dc; }.hero-offset-control .number-unit { height: 36px; min-width: 0; }.hero-offset-control .number-unit input { min-width: 0; width: 100%; }
 .hero-offset-scale { display: flex; justify-content: space-between; margin: 5px 96px 0 0; color: #777780; font-size: 11px; }
+.preview-hero .preview-media { display: block; box-sizing: border-box; background-clip: content-box; }
+.preview-hero .preview-media::before, .preview-hero .preview-media::after { display: none; }
+.preview-media-art { position: relative; display: grid; place-items: center; width: 100%; height: 100%; overflow: hidden; border-radius: inherit; background: inherit; }
+.preview-media-art::before { width: 112px; height: 112px; border: 11px solid #e9e0ff80; border-radius: 50%; content: ""; }
+.preview-media-art span { position: absolute; color: #fff; font-size: 34px; }
+.preview-media-art.has-media::before, .preview-media-art.has-media::after { display: none; }
+.preview-media-art img, .preview-media-art video { width: 100%; height: 100%; object-fit: cover; }
+.template-ht-blue .preview-media-art::before { border-color: #ffffff55; }
+.template-ht-blue .preview-media-art::after, .template-ht-plans .preview-media-art::after, .template-ht-recovery .preview-media-art::after { position: absolute; color: #fff; font-size: 14px; font-weight: 900; }
+.template-ht-blue .preview-media-art::after { content: "VIP · 70% OFF"; }
+.template-ht-plans .preview-media-art::after { content: "MOST POPULAR"; }
+.template-ht-recovery .preview-media-art::after { content: "SPECIAL OFFER"; }
 .ht-blue-hero > :not(.ht-hero-media), .ht-member-hero > :not(.ht-hero-media), .ht-offer-bundle > :not(.ht-hero-media), .ht-sku-promo > :not(.ht-hero-media) { z-index: 1; }
 .ht-blue-hero::after { z-index: 0; opacity: calc(.78 - var(--media-overlay, 0)); }
 .ht-blue-hero.media-custom .ht-stadium-lines, .ht-blue-hero.media-custom .ht-trophy, .ht-blue-hero.media-custom .ht-soccer-ball, .ht-blue-hero.media-custom .ht-vip-card, .ht-blue-hero.media-removed .ht-stadium-lines, .ht-blue-hero.media-removed .ht-trophy, .ht-blue-hero.media-removed .ht-soccer-ball, .ht-blue-hero.media-removed .ht-vip-card { display: none; }
