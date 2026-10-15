@@ -855,6 +855,18 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-member-caption { margin: 0; padding: 1.8cqw 5cqw 0; color: #a4a4a4; font-size: 4.7cqw; text-align: center; }
 .ht-member-carousel { display: flex; justify-content: center; padding: 2.8cqw 0 1.5cqw; color: #dedede; font-size: 2.7cqw; }
 .ht-member-carousel i { font-style: normal; }
+.ht-member-slide .ht-member-hero { position: relative; }
+.ht-member-slide .ht-member-hero .ht-source-art { background-size: 100% 100%; }
+.ht-member-carousel button { appearance: none; border: 0; background: none; padding: 0 1px; color: inherit; font: inherit; line-height: 1; cursor: pointer; }
+.carousel-slide-thumbnail { display: block; width: 100%; max-height: 96px; margin-top: 8px; object-fit: contain; background: #f6f5fa; }
+.preview-slide-carousel { text-align: center; }
+.preview-slide-media { aspect-ratio: 1.5; background: #f6f5fa; }
+.preview-slide-media img { width: 100%; height: 100%; object-fit: cover; }
+.preview-slide-carousel > strong { display: block; margin-top: 10px; }
+.preview-slide-carousel > p { margin: 6px 0; }
+.preview-slide-dots { display: flex; justify-content: center; gap: 8px; }
+.preview-slide-dots button { border: 0; background: none; color: #aaa; cursor: pointer; }
+.preview-slide-dots button[aria-current="true"] { color: #6440dc; }
 .ht-membership-paywall .ht-member-sheet > .ht-timer { position: relative; top: auto; left: auto; right: auto; margin: 1.8cqw auto 0; }
 .ht-membership-paywall .ht-member-sheet > .ht-action { position: relative; top: auto; margin: 2cqw auto 0; }
 .ht-membership-paywall .ht-member-sheet > .ht-legal { min-height: 0; margin: 2cqw 4.5cqw 0; }

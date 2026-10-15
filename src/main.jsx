@@ -741,10 +741,7 @@ function createBuilderNodes(templateId = "knowledge") {
 
   if (template.id === "ht-membership-plans") {
     return [
-      node("hero-image", "Hero Image", template.visual, 0, { theme: template.theme }),
-      node("headline", "Headline", "解锁谁看了我", 0, { variant: "headline" }),
-      node("caption", "Text", "找到志同道合的学习语伴！", 0, { variant: "body" }),
-      node("carousel", "Carousel", "7", 0, { label: "访客示例轮播", config: { itemCount: 7, initialSlide: 0 } }),
+      node("carousel", "Carousel", "", 0, { label: "访客示例轮播", config: { initialSlide: 0, slides: [{ id: "member-slide-1", image: "/figma-paywall-assets/member-hero.png", title: "解锁谁看了我", caption: "找到志同道合的学习语伴！" }] } }),
       node("products", "Products", "1个月|¥78|¥78/月\n12个月|¥488|节省48%\n终身|¥998|永久会员权益", 0, { config: { ...documentProductColors, productTemplate: "membership-plans", defaultSelected: 1, showOfferBadge: true } }),
       node("timer", "Timer", "23:53:12", 0, { config: { enabled: true, format: "hh:mm:ss", separator: ":", prefix: "倒计时", suffix: "", resetMode: "Reset timer on every paywall view", prefixColor: "#303487", digitColor: "#303487", digitBackgroundColor: "#8ced75" } }),
       node("purchase", "Button", "继续", 0, { config: { action: "Purchase" } }),
@@ -794,6 +791,7 @@ function createComponentNode(type, index) {
   };
   const configByType = {
     Timer: { enabled: true, format: "hh:mm:ss", separator: ":", prefix: "", suffix: "", resetMode: "Reset timer on every paywall view" },
+    Carousel: { initialSlide: 0, slides: [{ id: `slide-${index}-1`, image: "", title: "", caption: "" }] },
     Products: { defaultSelected: 0, showOfferBadge: true },
     Button: { action: "Purchase" },
   };
@@ -1976,6 +1974,24 @@ function ListStyle() {
 function CarouselContent({ active, updateNode, addNestedNode, allowAdd = true }) {
   const config = active.config ?? {};
   const updateConfig = (patch) => updateNode(active.id, { config: { ...config, ...patch } });
+  if (Array.isArray(config.slides)) {
+    const slides = config.slides;
+    const updateSlides = (next, initialSlide = config.initialSlide ?? 0) => updateConfig({ slides: next, initialSlide: Math.min(Math.max(0, initialSlide), next.length - 1) });
+    const updateSlide = (index, patch) => updateSlides(slides.map((slide, position) => position === index ? { ...slide, ...patch } : slide));
+    const uploadSlide = (index, file) => {
+      if (!file?.type.startsWith("image/")) return;
+      const reader = new FileReader();
+      reader.onload = () => updateSlide(index, { image: String(reader.result) });
+      reader.readAsDataURL(file);
+    };
+    const moveSlide = (index, direction) => {
+      const next = [...slides];
+      [next[index], next[index + direction]] = [next[index + direction], next[index]];
+      const initial = config.initialSlide ?? 0;
+      updateSlides(next, initial === index ? index + direction : initial === index + direction ? index : initial);
+    };
+    return <><Field label="初始展示"><select value={Math.min(config.initialSlide ?? 0, slides.length - 1)} onChange={(event) => updateConfig({ initialSlide: Number(event.target.value) })}>{slides.map((slide, index) => <option key={slide.id} value={index}>第 {index + 1} 页</option>)}</select></Field><div className="carousel-slide-list">{slides.map((slide, index) => <section className="product-row-editor" key={slide.id}><header><strong>第 {index + 1} 页</strong><div><button type="button" title="上移" disabled={index === 0} onClick={() => moveSlide(index, -1)}>↑</button><button type="button" title="下移" disabled={index === slides.length - 1} onClick={() => moveSlide(index, 1)}>↓</button><button type="button" title="删除此页" disabled={slides.length === 1} onClick={() => updateSlides(slides.filter((_, position) => position !== index), (config.initialSlide ?? 0) > index ? (config.initialSlide ?? 0) - 1 : config.initialSlide)}><X size={15} /></button></div></header><Field label="图片"><input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => uploadSlide(index, event.target.files?.[0])} />{slide.image && <img className="carousel-slide-thumbnail" src={slide.image} alt={`第 ${index + 1} 页图片`} />}</Field><Field label="标题"><input value={slide.title ?? ""} onChange={(event) => updateSlide(index, { title: event.target.value })} /></Field><Field label="说明文案"><textarea value={slide.caption ?? ""} onChange={(event) => updateSlide(index, { caption: event.target.value })} /></Field></section>)}</div><button type="button" className="text-action" onClick={() => updateSlides([...slides, { id: `slide-${Date.now()}`, image: "", title: "", caption: "" }])}><Plus size={15} /> 添加一页</button></>;
+  }
   return <><h4>Carousel behavior</h4><div className="split-fields"><Field label="Number of slides"><input type="number" min="1" max="10" value={config.itemCount ?? active.content ?? 1} onChange={(event) => updateConfig({ itemCount: Math.max(1, Math.min(10, Number(event.target.value) || 1)) })} /></Field><Field label="Initial slide"><input type="number" min="0" max={Math.max(0, (config.itemCount ?? active.content ?? 1) - 1)} value={config.initialSlide ?? 0} onChange={(event) => updateConfig({ initialSlide: Math.max(0, Number(event.target.value) || 0) })} /></Field></div>{allowAdd && <><h4>Carousel items</h4><button className="text-action" onClick={() => addNestedNode(active.id, "Card")}><Plus size={15} /> Add element</button></>}</>;
 }
 
@@ -2314,8 +2330,11 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
   };
   const openPrivilege = renderedBenefits.find((row) => row.id === openPrivilegeId);
   const carouselConfig = nodeById("carousel")?.config ?? {};
-  const carouselCount = Math.max(1, Math.min(10, Number(carouselConfig.itemCount ?? 7) || 7));
-  const carouselActive = Math.min(carouselCount - 1, Math.max(0, Number(carouselConfig.initialSlide ?? 0) || 0));
+  const carouselSlides = Array.isArray(carouselConfig.slides) ? carouselConfig.slides : [];
+  const carouselCount = carouselSlides.length || Math.max(1, Math.min(10, Number(carouselConfig.itemCount ?? 7) || 7));
+  const [activeCarouselSlide, setActiveCarouselSlide] = useState(Number(carouselConfig.initialSlide ?? 0) || 0);
+  useEffect(() => setActiveCarouselSlide(Math.min(carouselCount - 1, Math.max(0, Number(carouselConfig.initialSlide ?? 0) || 0))), [carouselConfig.initialSlide, carouselCount, variant]);
+  const carouselActive = Math.min(carouselCount - 1, Math.max(0, activeCarouselSlide));
   const select = (id) => (event) => {
     if (!interactive) return;
     event?.stopPropagation();
@@ -2472,7 +2491,12 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
       if (variant === "sku-sheet") return skuOverlayIds.includes(id) ? null : renderSkuCopy(id);
       return <p className={nodeClass(id, "ht-member-caption")} style={styleFor(id)} onClick={select(id)}><RichText node={entry} fallback={caption} interactive={interactive} /></p>;
     }
-    if (id === "carousel") return <div className={nodeClass(id, "ht-member-carousel")} style={{ ...styleFor(id), gap: String(carouselConfig.gap ?? 8) + "px" }} onClick={select(id)}>{Array.from({ length: carouselCount }, (_, index) => <i style={{ color: index === carouselActive ? carouselConfig.accentColor : carouselConfig.secondaryColor }} key={index}>{index === carouselActive ? "●" : "○"}</i>)}{renderChildren(id)}</div>;
+    if (id === "carousel") {
+      const slide = carouselSlides[carouselActive];
+      if (variant === "membership-plans" && slide) return <div className={nodeClass(id, "ht-member-slide")} style={styleFor(id)} onClick={select(id)}><div className="ht-member-hero"><div className="ht-source-art" style={slide.image ? { backgroundImage: `url(${JSON.stringify(slide.image)})` } : { backgroundImage: "none" }} /></div><h1 className="ht-member-headline">{slide.title}</h1><p className="ht-member-caption">{slide.caption}</p><div className="ht-member-carousel" style={{ gap: String(carouselConfig.gap ?? 8) + "px" }}>{carouselSlides.map((item, index) => <button type="button" key={item.id} aria-label={`查看第 ${index + 1} 页`} aria-current={index === carouselActive ? "true" : undefined} style={{ color: index === carouselActive ? carouselConfig.accentColor : carouselConfig.secondaryColor }} onClick={(event) => { event.stopPropagation(); setActiveCarouselSlide(index); if (interactive) onSelect?.(id); }}>{index === carouselActive ? "●" : "○"}</button>)}</div>{renderChildren(id)}</div>;
+      return <div className={nodeClass(id, "ht-member-carousel")} style={{ ...styleFor(id), gap: String(carouselConfig.gap ?? 8) + "px" }} onClick={select(id)}>{Array.from({ length: carouselCount }, (_, index) => <i style={{ color: index === carouselActive ? carouselConfig.accentColor : carouselConfig.secondaryColor }} key={index}>{index === carouselActive ? "●" : "○"}</i>)}{renderChildren(id)}</div>;
+    }
+    if (entry.type === "Carousel" && Array.isArray(entry.config?.slides)) return <section className={nodeClass(id, "ht-added-carousel")} style={styleFor(id)} onClick={select(id)}><PreviewSlideCarousel slides={entry.config.slides} initialSlide={entry.config.initialSlide ?? 0} /></section>;
     if (id === "benefits") return <section className={nodeClass(id, "ht-privilege-table")} style={{ ...styleFor(id), "--privilege-header-background": benefitConfig.headerBackground, "--privilege-vip-background": benefitConfig.vipColumnBackground }} onClick={select(id)}><header><strong>特权名称</strong><strong>非会员</strong><b style={benefitConfig.accentColor ? { color: benefitConfig.accentColor } : undefined}>VIP</b></header>{visibleBenefits.map((row) => <div key={row.id} className={row.pageId ? "has-detail-page" : ""} onClick={(event) => { if (!interactive || !row.pageId) return; event.stopPropagation(); setOpenPrivilegeId(row.id); }}><span>{row.name}⌄</span><em style={benefitConfig.secondaryColor ? { color: benefitConfig.secondaryColor } : undefined}>{renderBenefitValue(row, "standard")}</em><b style={benefitConfig.accentColor ? { color: benefitConfig.accentColor } : undefined}>{renderBenefitValue(row, "vip")}</b></div>)}{renderChildren(id)}</section>;
     if (id === "products") {
       const plans = <>{visiblePlans.map((plan, index) => <Plan plan={plan} index={index} key={index} />)}</>;
@@ -2571,7 +2595,7 @@ function PreviewElement({ node, active, activeNode, onSelect, children = [], get
     const height = Number.isFinite(scale) && scale > 0 ? `${92 * scale / 100}px` : undefined;
     return wrap(<div className="preview-image" style={{ height, background: config.mediaBackgroundColor, borderRadius: config.rounded ? `${config.radius ?? 8}px` : undefined, padding: ["Top", "Right", "Bottom", "Left"].map((edge) => `${Math.max(0, Number(config[`padding${edge}`]) || 0)}px`).join(" "), transform: config.offsetY ? `translateY(${config.offsetY}px)` : undefined }}>{config.mediaState !== "removed" && (config.mediaSrc ? <img src={config.mediaSrc} alt={node.label || ""} style={{ objectFit: config.mediaFit ?? "cover" }} /> : node.type === "Black Friday Image" ? "BLACK FRIDAY" : node.content)}</div>, "preview-image-wrap");
   }
-  if (node.type === "Carousel") return children.length ? wrap(<div className="preview-carousel">{renderChildren()}</div>, "preview-carousel-wrap") : !node.content ? wrap(<div className="preview-card-anchor" />, "preview-card-anchor-wrap") : wrap(<PreviewCarousel content={node.content} config={node.config} />, "preview-carousel-wrap");
+  if (node.type === "Carousel") return Array.isArray(config.slides) ? wrap(<PreviewSlideCarousel slides={config.slides} initialSlide={config.initialSlide ?? 0} />, "preview-carousel-wrap") : children.length ? wrap(<div className="preview-carousel">{renderChildren()}</div>, "preview-carousel-wrap") : !node.content ? wrap(<div className="preview-card-anchor" />, "preview-carousel-wrap") : wrap(<PreviewCarousel content={node.content} config={node.config} />, "preview-carousel-wrap");
   if (node.type === "Timer") return node.config?.enabled === false ? null : wrap(<PreviewTimer content={node.content} config={node.config} />);
   if (node.type === "Products") {
     if (node.variant === "purchase") {
@@ -2603,6 +2627,14 @@ function PreviewTimer({ content, config = {} }) {
   const opacity = Math.max(0, Math.min(100, Number(config.digitBackgroundOpacity ?? 100)));
   const digitBackground = config.digitBackgroundColor ? `color-mix(in srgb, ${config.digitBackgroundColor} ${opacity}%, transparent)` : config.backgroundColor;
   return <div className="preview-timer" style={{ color: config.color, borderRadius: config.radius === undefined ? undefined : `${config.radius}px` }}>{config.prefix && <strong style={{ color: config.prefixColor, fontSize: config.prefixFontSize ? `${config.prefixFontSize}px` : undefined }}>{config.prefix} </strong>}<span style={{ color: config.digitColor, backgroundColor: digitBackground, fontSize: config.fontSize ? `${config.fontSize}px` : undefined }}>{formatTimer(remaining, config.format ?? "hh:mm:ss", config.separator ?? ":")}</span>{config.suffix && <small style={config.suffixFontSize ? { fontSize: `${config.suffixFontSize}px` } : undefined}> {config.suffix}</small>}</div>;
+}
+
+function PreviewSlideCarousel({ slides, initialSlide }) {
+  const [active, setActive] = useState(initialSlide);
+  useEffect(() => setActive(Math.min(slides.length - 1, Math.max(0, initialSlide))), [initialSlide, slides.length]);
+  const slide = slides[Math.min(active, slides.length - 1)];
+  if (!slide) return null;
+  return <div className="preview-slide-carousel"><div className="preview-slide-media">{slide.image && <img src={slide.image} alt="" />}</div>{slide.title && <strong>{slide.title}</strong>}{slide.caption && <p>{slide.caption}</p>}<div className="preview-slide-dots">{slides.map((item, index) => <button type="button" key={item.id} aria-label={`查看第 ${index + 1} 页`} aria-current={index === active ? "true" : undefined} onClick={(event) => { event.stopPropagation(); setActive(index); }}>{index === active ? "●" : "○"}</button>)}</div></div>;
 }
 
 function PreviewCarousel({ content, config = {} }) {
