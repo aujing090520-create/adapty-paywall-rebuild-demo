@@ -740,10 +740,10 @@ function createBuilderNodes(templateId = "knowledge") {
 
   if (template.id === "ht-membership-plans") {
     return [
-      node("carousel", "Carousel", "7", 0, { label: "访客示例轮播", config: { itemCount: 7, initialSlide: 0 } }),
-      node("hero-image", "Hero Image", template.visual, 1, { theme: template.theme }),
+      node("hero-image", "Hero Image", template.visual, 0, { theme: template.theme }),
       node("headline", "Headline", "解锁谁看了我", 0, { variant: "headline" }),
       node("caption", "Text", "找到志同道合的学习语伴！", 0, { variant: "body" }),
+      node("carousel", "Carousel", "7", 0, { label: "访客示例轮播", config: { itemCount: 7, initialSlide: 0 } }),
       node("products", "Products", "1个月|¥78|¥78/月\n12个月|¥488|节省48%\n终身|¥998|永久会员权益", 0, { config: { ...documentProductColors, productTemplate: "membership-plans", defaultSelected: 1, showOfferBadge: true } }),
       node("timer", "Timer", "23:53:12", 0, { config: { enabled: true, format: "hh:mm:ss", separator: ":", prefix: "倒计时", suffix: "", resetMode: "Reset timer on every paywall view", prefixColor: "#303487", digitColor: "#303487", digitBackgroundColor: "#8ced75" } }),
       node("purchase", "Button", "继续", 0, { config: { action: "Purchase" } }),
@@ -755,8 +755,8 @@ function createBuilderNodes(templateId = "knowledge") {
   if (template.id === "ht-payment-recovery") {
     return [
       node("offer-card", "Card", "", 0, { label: "支付恢复弹窗" }),
-      hero(1),
       node("headline", "Headline", "错过就要恢复原价了", 1, { variant: "headline", config: { color: "#333333" } }),
+      hero(1),
       node("caption", "Text", "现在领取优惠，继续解锁 VIP 专属权益", 1, { variant: "body", config: { color: "#333333" } }),
       node("products", "Products", "1年会员|¥28.17/月|新用户立省 64%\n1个月会员|¥78/月|", 1, { config: { ...documentProductColors, productTemplate: "payment-recovery", defaultSelected: 0, showOfferBadge: true, selectedBorderGradient: ["#0180ff", "#0180ff", "#0180ff"], selectedBackground: "#d3edff", saveTextColor: "#ffffff", saveBackgroundColor: "#0180ff", purchaseBackgroundGradient: ["#014dff", "#0180ff", "#4ec4ff"] } }),
       node("timer", "Timer", "71:49:28", 1, { config: { enabled: true, format: "hh:mm:ss", separator: ":", prefix: "倒计时", suffix: "", resetMode: "Reset timer on every paywall view", prefixColor: "#0180ff", digitColor: "#0180ff" } }),
@@ -1462,13 +1462,10 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
       setBuilderNodes((current) => [...current, next]);
       setActiveNode(next.id);
       setAddElementOpen(false);
+      if (appliedTemplate !== null && isEditableTemplate(templates[appliedTemplate])) setPreviewMode("editable");
       notify(`${type} 已添加到构建器，并可在右侧继续编辑。`);
     };
     const addNestedElement = (parentId, type) => {
-      if (isDocumentTemplate && !parentId.startsWith("added-")) {
-        markUnknown(builderBoundary);
-        return;
-      }
       const nextId = `added-${type.toLowerCase().replace(/[^a-z]+/g, "-")}-${builderNodes.filter((node) => node.id.startsWith("added-")).length + 1}`;
       setBuilderNodes((current) => {
         const parentIndex = current.findIndex((node) => node.id === parentId);
@@ -1480,6 +1477,7 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
         return [...current.slice(0, insertAt), next, ...current.slice(insertAt)];
       });
       setActiveNode(nextId);
+      if (appliedTemplate !== null && isEditableTemplate(templates[appliedTemplate])) setPreviewMode("editable");
       const parent = builderNodes.find((node) => node.id === parentId);
       notify(`${type} 已作为 ${parent?.type ?? "容器"} 子元素添加。`);
     };
@@ -1593,16 +1591,16 @@ function BuilderProperties({ active, markUnknown, boundary, templateLinks, setTe
   }
 
   if (type === "List" || /^List \d+$/.test(type) || ["Feature list", "Features"].includes(type)) {
-    return <div className="property-scroll"><h3>List</h3>{canEditStructure && nodeEditor}{tabBar}{tab === "content" && <ListContent active={active} updateNode={updateNode} addNestedNode={addNestedNode} allowAdd={canEditStructure} />}{tab === "style" && <ListStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
+    return <div className="property-scroll"><h3>List</h3>{canEditStructure && nodeEditor}{tabBar}{tab === "content" && <ListContent active={active} updateNode={updateNode} addNestedNode={addNestedNode} />}{tab === "style" && <ListStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
   }
 
   if (type === "Carousel") {
-    return <div className="property-scroll"><h3>Carousel</h3>{canEditStructure && nodeEditor}{tabBar}{tab === "content" && <CarouselContent active={active} updateNode={updateNode} addNestedNode={addNestedNode} allowAdd={canEditStructure} />}{tab === "style" && <CarouselStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
+    return <div className="property-scroll"><h3>Carousel</h3>{canEditStructure && nodeEditor}{tabBar}{tab === "content" && <CarouselContent active={active} updateNode={updateNode} addNestedNode={addNestedNode} />}{tab === "style" && <CarouselStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
   }
 
   if (type === "Card") {
     if (active?.config?.retention) return <div className="property-scroll"><h3>挽留弹窗</h3>{tabBar}{tab === "content" && <RetentionContent active={active} updateNode={updateNode} onPreview={onPreviewRetention} />}{tab === "style" && <RetentionStyle active={active} updateNode={updateNode} />}{tab === "layout" && <p className="property-copy">弹窗尺寸和各区域高度按 HT 基准图固定，内容变化不撑开页面。</p>}</div>;
-    return <div className="property-scroll"><h3>Card</h3>{canEditStructure && nodeEditor}{tabBar}{tab === "content" && <CardContent active={active} addNestedNode={addNestedNode} allowAdd={canEditStructure} />}{tab === "style" && <CardStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
+    return <div className="property-scroll"><h3>Card</h3>{canEditStructure && nodeEditor}{tabBar}{tab === "content" && <CardContent active={active} addNestedNode={addNestedNode} />}{tab === "style" && <CardStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
   }
 
   if (type === "Timer") {
@@ -2216,7 +2214,8 @@ function RetentionPreview({ config, onClose }) {
 function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateHeroPosition, retentionPreviewToken = 0, interactive = false }) {
   const heroCopyDrag = useRef(null);
   const defaults = helloTalkTemplateDefaults[variant];
-  const nodeById = (id) => nodes.find((item) => item.id === id);
+  const renderedNodes = nodes.length ? nodes : createBuilderNodes(templates.find((item) => item.documentTemplate === variant));
+  const nodeById = (id) => renderedNodes.find((item) => item.id === id);
   const value = (id, fallback) => nodeById(id)?.content || fallback;
   const configFor = (id) => nodeById(id)?.config ?? {};
   const styleFor = (id) => {
@@ -2393,23 +2392,71 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
   const actionStyle = productColorsEnabled ? { ...styleFor("purchase"), background: productGradient(productConfig.purchaseBackgroundGradient, ["#ff8707", "#ffb000", "#ffd10b"]) } : styleFor("purchase");
   const actionCopy = productColorsEnabled ? <span className="ht-action-gradient-text" style={{ backgroundImage: productGradient(productConfig.purchaseTextGradient, ["#ffffff", "#ffffff", "#ffffff"]) }}>{action}</span> : action;
   const Action = () => interactive ? <button className={nodeClass("purchase", "ht-action")} style={actionStyle} onClick={select("purchase")}>{actionCopy}</button> : <div className="ht-action" style={actionStyle}>{actionCopy}</div>;
-  const Legal = () => <p className="ht-legal"><span className={nodeClass("legal")} style={styleFor("legal")} onClick={select("legal")}><RichText node={nodeById("legal")} fallback={legal} interactive={interactive} /></span>{nodeById("links") && <>{" "}<span className={nodeClass("links")} style={styleFor("links")} onClick={select("links")}>{links}</span></>}</p>;
+  const Legal = () => <p className={nodeClass("legal", "ht-legal")} style={styleFor("legal")} onClick={select("legal")}><RichText node={nodeById("legal")} fallback={legal} interactive={interactive} /></p>;
+  const Links = () => <p className={nodeClass("links", "ht-links")} style={styleFor("links")} onClick={select("links")}>{links}</p>;
   const SoccerBall = () => <span className="ht-soccer-ball"><i /><i /><i /></span>;
 
-  if (variant === "blue-privilege") { return <div className="ht-paywall ht-blue-paywall"><Status />{openPrivilege ? <div className="ht-privilege-detail"><button type="button" className="ht-detail-back" aria-label="返回特权页" onClick={() => setOpenPrivilegeId(null)}>‹</button><h1 style={{ color: openPrivilege.detail?.titleColor }}>{openPrivilege.detail?.title || openPrivilege.name}</h1>{openPrivilege.detail?.iconSrc && <img className="ht-detail-icon" src={openPrivilege.detail.iconSrc} alt="" />}{openPrivilege.detail?.images?.find((image) => image.locale === "简体中文" && image.src)?.src && <img className="ht-detail-image" src={openPrivilege.detail.images.find((image) => image.locale === "简体中文" && image.src).src} alt="" />}</div> : <>{heroConfig.bannerEnabled !== false && <section className={`${nodeClass("hero-image", "ht-blue-hero")} ${mediaClass("hero-image")}`} style={heroStyleFor("hero-image")} onClick={select("hero-image")}><HeroMediaLayer config={heroConfig} /><div className="ht-source-art" /><button className="ht-back" type="button" aria-label="返回" onClick={(event) => { event.stopPropagation(); if (hasRetention) setRetentionOpen(true); }}>‹</button><div className={`ht-blue-copy ${canDragHeroCopy ? "can-drag" : ""}`} {...heroCopyProps}><small>VIP</small><h1>{titleParts.prefix && <b>{titleParts.prefix}</b>}{titleParts.suffix}</h1><p>{caption}</p></div></section>}<section className={nodeClass("benefits", "ht-privilege-table")} style={{ ...styleFor("benefits"), "--privilege-header-background": benefitConfig.headerBackground, "--privilege-vip-background": benefitConfig.vipColumnBackground }} onClick={select("benefits")}><header><strong>特权名称</strong><strong>非会员</strong><b style={benefitConfig.accentColor ? { color: benefitConfig.accentColor } : undefined}>VIP</b></header>{visibleBenefits.map((row) => <div key={row.id} className={row.pageId ? "has-detail-page" : ""} onClick={(event) => { if (!interactive || !row.pageId) return; event.stopPropagation(); setOpenPrivilegeId(row.id); }}><span>{row.name}⌄</span><em className={(row.standardMode ?? (row.standard === "受限" ? "icon" : "text")) === "icon" && (row.standardIcon ?? "lock") === "lock" ? "is-locked" : ""} style={benefitConfig.secondaryColor ? { color: benefitConfig.secondaryColor } : undefined}>{renderBenefitValue(row, "standard")}</em><b style={benefitConfig.accentColor ? { color: benefitConfig.accentColor } : undefined}>{renderBenefitValue(row, "vip")}</b></div>)}</section><section className="ht-plan-shell">{visiblePlans.map((plan, index) => <Plan plan={plan} index={index} />)}</section><Timer /><div className="ht-action-wrap"><Action /></div><Legal />{hasRetention && retentionOpen && <RetentionPreview config={retentionConfig} onClose={() => setRetentionOpen(false)} />}</>}</div>; }
-  if (variant === "membership-plans") { const carouselStyle = styleFor("carousel"); const carouselConfigStyle = configFor("carousel"); return <div className="ht-paywall ht-membership-paywall"><div className="ht-member-backdrop"><Status /><span className="ht-back">‹</span><strong>我的访问</strong><b>ϟ</b><div><span>访客</span><span>谁看了我</span><span>喜欢我的人</span></div></div><section className="ht-member-sheet"><span className="ht-sheet-close">×</span><section className={`${nodeClass("hero-image", "ht-member-hero")} ${mediaClass("hero-image")}`} style={heroStyleFor("hero-image")} onClick={select("hero-image")}><HeroMediaLayer config={configFor("hero-image")} /><div className="ht-source-art"><div className="ht-eye-particles"><i /><i /><i /><i /></div><div className="ht-phone-illustration"><b>Visit Info</b><span>Visitors　Visited　Liked</span><div className="ht-phone-rows">{["Peggie", "Nilson", "Cookie", "Hampton"].map((name) => <p key={name}><i /><strong>{name}</strong><small>is <b>1km</b> away from you</small><em>Say Hi</em></p>)}</div></div></div></section><section className={nodeClass("headline", "ht-member-copy")} style={styleFor("headline")} onClick={select("headline")}><h1><RichText node={nodeById("headline")} fallback={title} interactive={interactive} /></h1><p className={nodeClass("caption")} style={styleFor("caption")} onClick={select("caption")}><RichText node={nodeById("caption")} fallback={caption} interactive={interactive} /></p><div className={nodeClass("carousel")} style={{ ...carouselStyle, gap: `${carouselConfigStyle.gap ?? 8}px` }} onClick={select("carousel")}>{Array.from({ length: carouselCount }, (_, index) => <i style={{ color: index === carouselActive ? (carouselConfigStyle.accentColor ?? undefined) : (carouselConfigStyle.secondaryColor ?? undefined) }} key={index}>{index === carouselActive ? "●" : "○"}</i>)}</div></section><header className="ht-plan-heading"><b>选择套餐</b><span>特权对比 ›</span></header><section className="ht-plan-shell">{visiblePlans.map((plan, index) => <Plan plan={plan} index={index} key={index} />)}</section><Timer /><Action /><Legal /></section></div>; }
-  if (variant === "payment-recovery") return <div className="ht-paywall ht-recovery-paywall"><div className="ht-recovery-backdrop"><Status /><b>‹</b><strong>我的访问</strong></div><section className={nodeClass("offer-card", "ht-recovery-sheet")} style={styleFor("offer-card")} onClick={select("offer-card")}><span className="ht-sheet-close">×</span><h1 className={nodeClass("headline")} style={styleFor("headline")} onClick={select("headline")}><RichText node={nodeById("headline")} fallback={title} interactive={interactive} /></h1><div className={`${nodeClass("hero-image", "ht-offer-bundle")} ${mediaClass("hero-image")}`} style={heroStyleFor("hero-image")} onClick={select("hero-image")}><HeroMediaLayer config={configFor("hero-image")} /><div className="ht-source-art"><span>30%<br />OFF</span><SoccerBall /></div></div><p className={nodeClass("caption", "ht-recovery-caption")} style={styleFor("caption")} onClick={select("caption")}><RichText node={nodeById("caption")} fallback={caption} interactive={interactive} /></p><section className="ht-recovery-plans">{visiblePlans.map((plan, index) => <Plan plan={plan} index={index} key={index} />)}</section><Timer /><Action /><Legal /></section></div>;
-  return <div className="ht-paywall ht-sku-paywall"><div className="ht-chat-scene"><Status /><b>‹</b><strong>huangzefeng</strong><small>上午4:52</small><span>Hi</span></div><section className={nodeClass("sku-card", "ht-sku-sheet")} style={styleFor("sku-card")} onClick={select("sku-card")}><span className="ht-sheet-close">×</span><section className={`${nodeClass("hero-image", "ht-sku-promo")} ${mediaClass("hero-image")}`} style={heroStyleFor("hero-image")} onClick={select("hero-image")}><HeroMediaLayer config={configFor("hero-image")} /><small className={nodeClass("headline")} style={styleFor("headline")} onClick={select("headline")}><RichText node={nodeById("headline")} fallback={title} interactive={interactive} /></small><strong className={nodeClass("caption")} style={styleFor("caption")} onClick={select("caption")}><RichText node={nodeById("caption")} fallback={caption} interactive={interactive} /></strong><div className="ht-source-art"><i>セール</i><b>VIP</b></div></section><Timer /><section className="ht-sku-plans">{visiblePlans.map((plan, index) => <Plan plan={plan} index={index} key={index} />)}</section><Action /><Legal /></section></div>;
+  const renderChildren = (parentId) => renderedNodes.map((entry, index) =>
+    nodeParentId(renderedNodes, index) === parentId
+      ? <React.Fragment key={entry.id}>{renderModule(entry)}</React.Fragment>
+      : null
+  );
+  const skuHeroIndex = renderedNodes.findIndex((entry) => entry.id === "hero-image");
+  const skuOverlayIds = [];
+  if (variant === "sku-sheet" && skuHeroIndex >= 0) {
+    for (let index = skuHeroIndex + 1; index < renderedNodes.length; index += 1) {
+      if (!["headline", "caption"].includes(renderedNodes[index].id)) break;
+      skuOverlayIds.push(renderedNodes[index].id);
+    }
+  }
+  const renderSkuCopy = (id) => id === "headline"
+    ? <small className={nodeClass(id, "ht-sku-headline")} style={styleFor(id)} onClick={select(id)}><RichText node={nodeById(id)} fallback={title} interactive={interactive} /></small>
+    : <strong className={nodeClass(id, "ht-sku-caption")} style={styleFor(id)} onClick={select(id)}><RichText node={nodeById(id)} fallback={caption} interactive={interactive} /></strong>;
+  const renderModule = (entry) => {
+    const id = entry.id;
+    if (id === "retention") return null;
+    if (id === "offer-card") return <section className={nodeClass(id, "ht-recovery-sheet")} style={styleFor(id)} onClick={select(id)}><span className="ht-sheet-close">×</span>{renderChildren(id)}</section>;
+    if (id === "sku-card") return <section className={nodeClass(id, "ht-sku-sheet")} style={styleFor(id)} onClick={select(id)}><span className="ht-sheet-close">×</span>{renderChildren(id)}</section>;
+    if (id === "hero-image") {
+      if (variant === "blue-privilege") return heroConfig.bannerEnabled !== false && <section className={nodeClass(id, "ht-blue-hero") + " " + mediaClass(id)} style={heroStyleFor(id)} onClick={select(id)}><HeroMediaLayer config={heroConfig} /><div className="ht-source-art" /><button className="ht-back" type="button" aria-label="返回" onClick={(event) => { event.stopPropagation(); if (hasRetention) setRetentionOpen(true); }}>‹</button><div className={"ht-blue-copy " + (canDragHeroCopy ? "can-drag" : "")} {...heroCopyProps}><small>VIP</small><h1>{titleParts.prefix && <b>{titleParts.prefix}</b>}{titleParts.suffix}</h1><p>{caption}</p></div></section>;
+      if (variant === "membership-plans") return <section className={nodeClass(id, "ht-member-hero") + " " + mediaClass(id)} style={heroStyleFor(id)} onClick={select(id)}><HeroMediaLayer config={heroConfig} /><div className="ht-source-art"><div className="ht-eye-particles"><i /><i /><i /><i /></div><div className="ht-phone-illustration"><b>Visit Info</b><span>Visitors　Visited　Liked</span><div className="ht-phone-rows">{["Peggie", "Nilson", "Cookie", "Hampton"].map((name) => <p key={name}><i /><strong>{name}</strong><small>is <b>1km</b> away from you</small><em>Say Hi</em></p>)}</div></div></div></section>;
+      if (variant === "payment-recovery") return <div className={nodeClass(id, "ht-offer-bundle") + " " + mediaClass(id)} style={heroStyleFor(id)} onClick={select(id)}><HeroMediaLayer config={heroConfig} /><div className="ht-source-art"><span>30%<br />OFF</span><SoccerBall /></div></div>;
+      return <section className={nodeClass(id, "ht-sku-promo") + " " + mediaClass(id)} style={heroStyleFor(id)} onClick={select(id)}><HeroMediaLayer config={heroConfig} /><div className="ht-source-art"><i>セール</i><b>VIP</b></div>{skuOverlayIds.map((copyId) => <React.Fragment key={copyId}>{renderSkuCopy(copyId)}</React.Fragment>)}</section>;
+    }
+    if (id === "headline") {
+      if (variant === "payment-recovery") return <h1 className={nodeClass(id)} style={styleFor(id)} onClick={select(id)}><RichText node={entry} fallback={title} interactive={interactive} /></h1>;
+      if (variant === "sku-sheet") return skuOverlayIds.includes(id) ? null : renderSkuCopy(id);
+      return <h1 className={nodeClass(id, "ht-member-headline")} style={styleFor(id)} onClick={select(id)}><RichText node={entry} fallback={title} interactive={interactive} /></h1>;
+    }
+    if (id === "caption") {
+      if (variant === "payment-recovery") return <p className={nodeClass(id, "ht-recovery-caption")} style={styleFor(id)} onClick={select(id)}><RichText node={entry} fallback={caption} interactive={interactive} /></p>;
+      if (variant === "sku-sheet") return skuOverlayIds.includes(id) ? null : renderSkuCopy(id);
+      return <p className={nodeClass(id, "ht-member-caption")} style={styleFor(id)} onClick={select(id)}><RichText node={entry} fallback={caption} interactive={interactive} /></p>;
+    }
+    if (id === "carousel") return <div className={nodeClass(id, "ht-member-carousel")} style={{ ...styleFor(id), gap: String(carouselConfig.gap ?? 8) + "px" }} onClick={select(id)}>{Array.from({ length: carouselCount }, (_, index) => <i style={{ color: index === carouselActive ? carouselConfig.accentColor : carouselConfig.secondaryColor }} key={index}>{index === carouselActive ? "●" : "○"}</i>)}{renderChildren(id)}</div>;
+    if (id === "benefits") return <section className={nodeClass(id, "ht-privilege-table")} style={{ ...styleFor(id), "--privilege-header-background": benefitConfig.headerBackground, "--privilege-vip-background": benefitConfig.vipColumnBackground }} onClick={select(id)}><header><strong>特权名称</strong><strong>非会员</strong><b style={benefitConfig.accentColor ? { color: benefitConfig.accentColor } : undefined}>VIP</b></header>{visibleBenefits.map((row) => <div key={row.id} className={row.pageId ? "has-detail-page" : ""} onClick={(event) => { if (!interactive || !row.pageId) return; event.stopPropagation(); setOpenPrivilegeId(row.id); }}><span>{row.name}⌄</span><em style={benefitConfig.secondaryColor ? { color: benefitConfig.secondaryColor } : undefined}>{renderBenefitValue(row, "standard")}</em><b style={benefitConfig.accentColor ? { color: benefitConfig.accentColor } : undefined}>{renderBenefitValue(row, "vip")}</b></div>)}{renderChildren(id)}</section>;
+    if (id === "products") {
+      const plans = <>{visiblePlans.map((plan, index) => <Plan plan={plan} index={index} key={index} />)}</>;
+      if (variant === "membership-plans") return <div className="ht-member-products"><header className="ht-plan-heading"><b>选择套餐</b><span>特权对比 ›</span></header><section className="ht-plan-shell">{plans}</section></div>;
+      return <section className={variant === "payment-recovery" ? "ht-recovery-plans" : variant === "sku-sheet" ? "ht-sku-plans" : "ht-plan-shell"}>{plans}</section>;
+    }
+    if (id === "timer") return <Timer />;
+    if (id === "purchase") return variant === "blue-privilege" ? <div className="ht-action-wrap"><Action /></div> : <Action />;
+    if (id === "legal") return <Legal />;
+    if (id === "links") return <Links />;
+    const children = renderedNodes.filter((child, index) => nodeParentId(renderedNodes, index) === id);
+    return <PreviewElement node={entry} children={children} getChildren={(childId) => renderedNodes.filter((child) => nodeParentId(child, renderedNodes) === childId)} active={id === activeNode} activeNode={activeNode} onSelect={onSelect} />;
+  };
+
+  if (variant === "blue-privilege") return <div className="ht-paywall ht-blue-paywall"><Status />{openPrivilege ? <div className="ht-privilege-detail"><button type="button" className="ht-detail-back" aria-label="返回特权页" onClick={() => setOpenPrivilegeId(null)}>‹</button><h1 style={{ color: openPrivilege.detail?.titleColor }}>{openPrivilege.detail?.title || openPrivilege.name}</h1>{openPrivilege.detail?.iconSrc && <img className="ht-detail-icon" src={openPrivilege.detail.iconSrc} alt="" />}{openPrivilege.detail?.images?.find((image) => image.locale === "简体中文" && image.src)?.src && <img className="ht-detail-image" src={openPrivilege.detail.images.find((image) => image.locale === "简体中文" && image.src).src} alt="" />}</div> : <>{renderChildren(null)}{hasRetention && retentionOpen && <RetentionPreview config={retentionConfig} onClose={() => setRetentionOpen(false)} />}</>}</div>;
+  if (variant === "membership-plans") return <div className="ht-paywall ht-membership-paywall"><div className="ht-member-backdrop"><Status /><span className="ht-back">‹</span><strong>我的访问</strong><b>ϟ</b><div><span>访客</span><span>谁看了我</span><span>喜欢我的人</span></div></div><section className="ht-member-sheet"><span className="ht-sheet-close">×</span>{renderChildren(null)}</section></div>;
+  if (variant === "payment-recovery") return <div className="ht-paywall ht-recovery-paywall"><div className="ht-recovery-backdrop"><Status /><b>‹</b><strong>我的访问</strong></div>{renderChildren(null)}</div>;
+  return <div className="ht-paywall ht-sku-paywall"><div className="ht-chat-scene"><Status /><b>‹</b><strong>huangzefeng</strong><small>上午4:52</small><span>Hi</span></div>{renderChildren(null)}</div>;
 }
 function PaywallPreview({ nodes, template, mode, activeNode, onSelect, onUpdateHeroPosition, retentionPreviewToken }) {
   if (template?.documentTemplate) {
-    const moduleOrder = Object.fromEntries([
-      ["hero-image", "hero"], ["products", "products"], ["benefits", "benefits"],
-      ["timer", "timer"], ["purchase", "purchase"], ["legal", "legal"],
-    ].map(([id, name]) => [`--node-order-${name}`, nodes.findIndex((node) => node.id === id)]));
-    const customNodes = nodes.filter((node) => node.id.startsWith("added-"));
     const paywall = <HelloTalkPaywall variant={template.documentTemplate} nodes={nodes} activeNode={activeNode} onSelect={onSelect} onUpdateHeroPosition={onUpdateHeroPosition} retentionPreviewToken={retentionPreviewToken} interactive={mode === "editable"} />;
-    return <div className="phone source-template-phone"><div className="ht-template-scroll" style={moduleOrder} tabIndex={0} aria-label="付费墙页面预览">{paywall}{customNodes.length > 0 && <TemplateExtraNodes nodes={customNodes} activeNode={activeNode} onSelect={onSelect} />}</div><button className="close-phone" aria-label="Close preview">×</button></div>;
+    return <div className="phone source-template-phone"><div className="ht-template-scroll" tabIndex={0} aria-label="付费墙页面预览">{paywall}</div><button className="close-phone" aria-label="Close preview">×</button></div>;
   }
   if (template && mode === "source") return <div className="phone source-template-phone"><SourceTemplateMedia template={template} /><button className="close-phone" aria-label="Close preview">×</button></div>;
   const hero = nodes.find((node) => node.type === "Hero Image");
@@ -2426,22 +2473,13 @@ function PaywallPreview({ nodes, template, mode, activeNode, onSelect, onUpdateH
     latestAtDepth[depth] = node.id;
     latestAtDepth.length = depth + 1;
   });
-  return <div className={`phone template-${hero?.theme ?? "lavender"}`}><button className="close-phone" aria-label="Close preview">×</button><div className="phone-content"><span className="phone-kicker">PREMIUM ACCESS</span>{nodes.filter((node) => !parents.has(node.id)).map((node) => <PreviewElement key={node.id} node={node} children={children.get(node.id) ?? []} active={node.id === activeNode} activeNode={activeNode} onSelect={onSelect} />)}</div></div>;
+  return <div className={`phone template-${hero?.theme ?? "lavender"}`}><button className="close-phone" aria-label="Close preview">×</button><div className="phone-content"><span className="phone-kicker">PREMIUM ACCESS</span>{nodes.filter((node) => !parents.has(node.id)).map((node) => <PreviewElement key={node.id} node={node} children={children.get(node.id) ?? []} getChildren={(childId) => children.get(childId) ?? []} active={node.id === activeNode} activeNode={activeNode} onSelect={onSelect} />)}</div></div>;
 }
 
-function TemplateExtraNodes({ nodes, activeNode, onSelect }) {
-  const children = new Map();
-  const roots = [];
-  for (const node of nodes) {
-    if (node.parentId && nodes.some((item) => item.id === node.parentId)) children.set(node.parentId, [...(children.get(node.parentId) ?? []), node]);
-    else roots.push(node);
-  }
-  return <div className="ht-custom-elements">{roots.map((node) => <PreviewElement key={node.id} node={node} children={children.get(node.id) ?? []} active={node.id === activeNode} activeNode={activeNode} onSelect={onSelect} />)}</div>;
-}
-
-function PreviewElement({ node, active, activeNode, onSelect, children = [] }) {
+function PreviewElement({ node, active, activeNode, onSelect, children = [], getChildren = () => [] }) {
   const select = () => onSelect(node.id);
   const wrap = (content, className = "") => <div className={`preview-node ${active ? "selected" : ""} ${className}`} onClick={select}>{content}</div>;
+  const renderChildren = () => children.map((child) => <PreviewElement key={child.id} node={child} children={getChildren(child.id)} getChildren={getChildren} active={child.id === activeNode} activeNode={activeNode} onSelect={onSelect} />);
   const isTextLayer = ["Text", "Header", "Headline", "Subhead", "Caption", "Legal", "Top Text"].includes(node.type) || /^(HEADER|Header|Caption|Title|Repeats|Subheader) \d+$/.test(node.type);
   const isListLayer = ["List", "Feature list", "Features"].includes(node.type) || /^List \d+$/.test(node.type);
   const isListItemLayer = node.type === "List item" || node.type === "Today" || /^Item \d+$/.test(node.type) || /^Day \d+$/.test(node.type);
@@ -2463,10 +2501,10 @@ function PreviewElement({ node, active, activeNode, onSelect, children = [] }) {
   if (isListLayer) {
     const rows = listRowsFor(node);
     if (!rows.length && !children.length) return wrap(<div className="preview-list-anchor">List</div>, "preview-list-anchor-wrap");
-    return wrap(<div className="preview-benefits" style={{ background: node.config?.backgroundColor }}><ul className="preview-benefits">{rows.map((row, index) => <li key={index} className={row.leadingMode === "none" ? "no-leading" : ""}><i style={{ color: node.config?.accentColor }}>{row.leadingMode !== "none" ? row.leading || "✓" : ""}</i><span><strong>{row.title}</strong>{row.showCaption !== false && row.caption && <small>{row.caption}</small>}</span></li>)}</ul>{children.map((child) => <PreviewElement key={child.id} node={child} active={child.id === activeNode} activeNode={activeNode} onSelect={onSelect} />)}</div>, "preview-list");
+    return wrap(<div className="preview-benefits" style={{ background: node.config?.backgroundColor }}><ul className="preview-benefits">{rows.map((row, index) => <li key={index} className={row.leadingMode === "none" ? "no-leading" : ""}><i style={{ color: node.config?.accentColor }}>{row.leadingMode !== "none" ? row.leading || "✓" : ""}</i><span><strong>{row.title}</strong>{row.showCaption !== false && row.caption && <small>{row.caption}</small>}</span></li>)}</ul>{renderChildren()}</div>, "preview-list");
   }
   if (isListItemLayer) { const [title, caption] = (node.content || "").split("|"); return wrap(<div className="preview-list-item"><i>●</i><span><strong>{title || "Item"}</strong>{caption && <small>{caption}</small>}</span></div>, "preview-list-item-wrap"); }
-  if (node.type === "Card") return children.length ? wrap(<div className="preview-card">{children.map((child) => <PreviewElement key={child.id} node={child} active={child.id === activeNode} activeNode={activeNode} onSelect={onSelect} />)}</div>, "preview-card-wrap") : !node.content ? wrap(<div className="preview-card-anchor" />, "preview-card-anchor-wrap") : wrap(<div className="preview-card">{node.content.split("\n").map((row) => { const [title, copy] = row.split("|"); return <div key={row}><strong>{title}</strong>{copy && <small>{copy}</small>}</div>; })}</div>, "preview-card-wrap");
+  if (node.type === "Card") return children.length ? wrap(<div className="preview-card">{renderChildren()}</div>, "preview-card-wrap") : !node.content ? wrap(<div className="preview-card-anchor" />, "preview-card-anchor-wrap") : wrap(<div className="preview-card">{node.content.split("\n").map((row) => { const [title, copy] = row.split("|"); return <div key={row}><strong>{title}</strong>{copy && <small>{copy}</small>}</div>; })}</div>, "preview-card-wrap");
   if (["Product", "Japanese Ai - 1 Year"].includes(node.type)) { const [name, price] = (node.content || "").split("|"); return wrap(<div className="preview-product"><strong>{name || "Product"}</strong>{price && <small>{price}</small>}</div>, "preview-product-anchor-wrap"); }
   if (node.type === "App Icon") return wrap(<div className="preview-app-icon">✦</div>, "preview-app-icon-wrap");
   if (isImageLayer) {
@@ -2475,14 +2513,14 @@ function PreviewElement({ node, active, activeNode, onSelect, children = [] }) {
     const height = Number.isFinite(scale) && scale > 0 ? `${92 * scale / 100}px` : undefined;
     return wrap(<div className="preview-image" style={{ height, background: config.mediaBackgroundColor, borderRadius: config.rounded ? `${config.radius ?? 8}px` : undefined, padding: ["Top", "Right", "Bottom", "Left"].map((edge) => `${Math.max(0, Number(config[`padding${edge}`]) || 0)}px`).join(" "), transform: config.offsetY ? `translateY(${config.offsetY}px)` : undefined }}>{config.mediaState !== "removed" && (config.mediaSrc ? <img src={config.mediaSrc} alt={node.label || ""} style={{ objectFit: config.mediaFit ?? "cover" }} /> : node.type === "Black Friday Image" ? "BLACK FRIDAY" : node.content)}</div>, "preview-image-wrap");
   }
-  if (node.type === "Carousel") return children.length ? wrap(<div className="preview-carousel">{children.map((child) => <PreviewElement key={child.id} node={child} active={child.id === activeNode} activeNode={activeNode} onSelect={onSelect} />)}</div>, "preview-carousel-wrap") : !node.content ? wrap(<div className="preview-card-anchor" />, "preview-card-anchor-wrap") : wrap(<PreviewCarousel content={node.content} config={node.config} />, "preview-carousel-wrap");
+  if (node.type === "Carousel") return children.length ? wrap(<div className="preview-carousel">{renderChildren()}</div>, "preview-carousel-wrap") : !node.content ? wrap(<div className="preview-card-anchor" />, "preview-card-anchor-wrap") : wrap(<PreviewCarousel content={node.content} config={node.config} />, "preview-carousel-wrap");
   if (node.type === "Timer") return node.config?.enabled === false ? null : wrap(<PreviewTimer content={node.content} config={node.config} />);
   if (node.type === "Products") {
     if (node.variant === "purchase") {
       const [label = "Continue", , price = ""] = node.content.split("|");
       return wrap(<button className="preview-cta"><span>{label}</span>{price && <small>{price}</small>}</button>, "preview-button");
     }
-    if (children.length) return wrap(<div className="preview-products">{children.map((child) => <PreviewElement key={child.id} node={child} active={child.id === activeNode} activeNode={activeNode} onSelect={onSelect} />)}</div>, "preview-products-wrap");
+    if (children.length) return wrap(<div className="preview-products">{renderChildren()}</div>, "preview-products-wrap");
     return wrap(<PreviewProducts content={node.content} config={node.config} />, "preview-products-wrap");
   }
   if (node.type === "Toggle") return wrap(<PreviewToggle key={`${node.id}-${node.defaultState ?? "Off"}`} content={node.content} defaultState={node.defaultState} />, "preview-toggle-wrap");
