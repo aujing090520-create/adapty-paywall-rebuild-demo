@@ -724,11 +724,11 @@ function createBuilderNodes(templateId = "knowledge") {
   if (template.id === "ht-blue-privilege") {
     return [
       node("hero-image", "Hero Image", template.visual, 0, { theme: template.theme, config: { copyPrefix: "VIP", copySuffix: "7折大促", copyCaption: "HelloTalk 世界杯", bannerEnabled: true, deepLink: "" } }),
+      node("products", "Products", "", 0, { config: { bluePrivilege: true, badgeGradient: ["#003bec", "#3ed6ea", "#bbff62"], selectedBorderGradient: ["#003bec", "#3ed6ea", "#bbff62"], selectedBackground: "#ffffff", saveTextColor: "#2e89ff", purchaseTextGradient: ["#ffffff", "#ffffff", "#ffffff"], purchaseBackgroundGradient: ["#6783d8", "#bbff62", "#bbff62"] } }),
       node("benefits", "List", "", 0, { label: "特权对比", config: { bluePrivilege: true, privilegeRows: initialPrivilegeRows, maxVisibleRows: 5, headerBackground: "#f1f1f1", vipColumnBackground: "#ffffff", backgroundColor: "#f5f5f5", secondaryColor: "#bdbdbd", accentColor: "#ffb40d" } }),
       node("timer", "Timer", "18:32:25", 0, { config: { bluePrivilege: true, enabled: true, format: "hh:mm:ss", separator: ":", prefix: "倒计时", suffix: "", resetMode: "Reset timer on every paywall view", locale: "English", prefixColor: "#303487", digitColor: "#303487", digitBackgroundColor: "#8ced75" } }),
-      node("products", "Products", "", 0, { config: { bluePrivilege: true, badgeGradient: ["#003bec", "#3ed6ea", "#bbff62"], selectedBorderGradient: ["#003bec", "#3ed6ea", "#bbff62"], selectedBackground: "#ffffff", saveTextColor: "#2e89ff", purchaseTextGradient: ["#ffffff", "#ffffff", "#ffffff"], purchaseBackgroundGradient: ["#6783d8", "#bbff62", "#bbff62"] } }),
-      node("retention", "Card", "", 0, { label: "挽留弹窗", config: { retention: true, title: "错过这次，就要多花 30%😱", timerLabel: "倒计时", timerStart: "71:22:22", buttonText: "立享优惠", cancelText: "忍痛取消", backgroundColor: "#f7f7f7", buttonStartColor: "#ff8600", buttonEndColor: "#ffcd00", buttonTextColor: "#ffffff", titleColor: "#111111", timerColor: "#11bf42", imageSrc: "/ht-retention-gift.png", backgroundImage: "" } }),
       node("purchase", "Button", "立即领取优惠", 0, { config: { action: "Purchase" } }),
+      node("retention", "Card", "", 0, { label: "挽留弹窗", config: { retention: true, title: "错过这次，就要多花 30%😱", timerLabel: "倒计时", timerStart: "71:22:22", buttonText: "立享优惠", cancelText: "忍痛取消", backgroundColor: "#f7f7f7", buttonStartColor: "#ff8600", buttonEndColor: "#ffcd00", buttonTextColor: "#ffffff", titleColor: "#111111", timerColor: "#11bf42", imageSrc: "/ht-retention-gift.png", backgroundImage: "" } }),
       node("legal", "Text", "如果当前缴费期前 24 小时没有取消续订，系统会自动续订，费用将从你的 iTunes 账户收取，你可随时前往 iTunes 商店的设置界面管理自己的订阅设定。有关详细信息，请访问我们的服务条款 · 隐私政策", 0, { label: "续订说明", variant: "legal", textRuns: [
         { text: "如果当前缴费期前 24 小时没有取消续订，系统会自动续订，费用将从你的 iTunes 账户收取，你可随时前往 iTunes 商店的设置界面管理自己的订阅设定。有关详细信息，请访问我们的" },
         { text: "服务条款", link: "" },
@@ -1030,6 +1030,7 @@ function App() {
   const [appliedTemplate, setAppliedTemplate] = useState(null);
   const [templateLinks, setTemplateLinks] = useState({ terms: "terms-link", privacy: "privacy-link" });
   const [builderNodes, setBuilderNodes] = useState(() => createBuilderNodes());
+  const [builderOrigin, setBuilderOrigin] = useState("existing");
   const [activeNode, setActiveNode] = useState("links");
   const [unknownOpen, setUnknownOpen] = useState(false);
   const [placementFilter, setPlacementFilter] = useState([]);
@@ -1062,8 +1063,13 @@ function App() {
 
   const openPaywall = (item) => {
     setSelectedId(item.id);
+    setBuilderOrigin("existing");
     setView("general");
   };
+
+  useEffect(() => {
+    if (view === "create") setBuilderOrigin("create");
+  }, [view]);
 
   const createDraft = () => {
     if (!draft.name.trim() || !draft.productGroup || !draft.offerRows?.length) return;
@@ -1071,6 +1077,7 @@ function App() {
     const created = { id, name: draft.name || "Untitled paywall", state: "Draft", products: draft.offerRows?.length ?? draft.products.length, startedAt: "20 Aug 2026", icon: false, config: { businessType: draft.businessType, businessScene: draft.businessScene, publicAccount: draft.publicAccount, note: draft.note, paywallStyle: draft.paywallStyle, productGroup: draft.productGroup, defaultProductId: draft.defaultProductId, offerRows: draft.offerRows } };
     setPaywalls((current) => [...current, created]);
     setSelectedId(id);
+    setBuilderOrigin("existing");
     setView("general");
     notify("Draft created.");
   };
@@ -1199,7 +1206,8 @@ function App() {
           )}
           {view === "builder" && (
             <PaywallWorkspace
-              selected={selected}
+              selected={builderOrigin === "create" ? { ...selected, name: draft.name, state: "Draft" } : selected}
+              isNew={builderOrigin === "create"}
               draft={draft}
               setDraft={setDraft}
               view={view}
@@ -1426,7 +1434,7 @@ function CreatePaywall({ draft, setDraft, setView, setModal, createDraft }) {
   );
 }
 
-function PaywallWorkspace({ selected, draft, setDraft, view, setView, duplicate, setModal, markUnknown, builderNodes, setBuilderNodes, updateBuilderNode, removeBuilderNode, activeNode, setActiveNode, appliedTemplate, templateLinks, setTemplateLinks, notify }) {
+function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setView, duplicate, setModal, markUnknown, builderNodes, setBuilderNodes, updateBuilderNode, removeBuilderNode, activeNode, setActiveNode, appliedTemplate, templateLinks, setTemplateLinks, notify }) {
   const [addElementOpen, setAddElementOpen] = useState(false);
   const [productPickerOpen, setProductPickerOpen] = useState(false);
   const [transientProducts, setTransientProducts] = useState([]);
@@ -1508,8 +1516,8 @@ function PaywallWorkspace({ selected, draft, setDraft, view, setView, duplicate,
     };
     return (
       <section className="builder-page">
-        <WorkspaceHeader selected={selected} setView={setView} duplicate={duplicate} setModal={setModal} markUnknown={markUnknown} />
-        <div className="detail-tabs"><button onClick={() => setView("general")}>General</button><button className="active">Builder & Generator</button></div>
+        {isNew ? <><button className="back" onClick={() => setView("create")}><ArrowLeft size={18} /> 创建付费墙</button><div className="workspace-heading"><div><span className="eyebrow">新建草稿</span><h1>{selected.name}</h1></div></div></> : <WorkspaceHeader selected={selected} setView={setView} duplicate={duplicate} setModal={setModal} markUnknown={markUnknown} />}
+        <div className="detail-tabs"><button onClick={() => setView(isNew ? "create" : "general")}>General</button><button className="active">Builder & Generator</button></div>
         {appliedTemplate !== null && <div className={`template-context ${isEditableTemplate(templates[appliedTemplate]) ? "observed-tree" : "preview-only"}`}><span>Template</span><strong>{templates[appliedTemplate].title}</strong><small>{isEditableTemplate(templates[appliedTemplate]) ? templateEditableStatus(templates[appliedTemplate]) : "源端已采集预览内容；精确节点树待采集"}</small><button className="secondary" onClick={() => setModal({ kind: "templates" })}><LayoutTemplate size={15} /> Change template</button></div>}
         <div className="builder">
           <aside className="node-panel">
@@ -1521,7 +1529,7 @@ function PaywallWorkspace({ selected, draft, setDraft, view, setView, duplicate,
               return <button type="button" data-node-id={node.id} style={{ paddingLeft: `${7 + (node.depth ?? 0) * 15}px` }} className={`node ${activeNode === node.id ? "selected" : ""} ${isDragging ? "dragging" : ""} ${dropClass}`} onPointerDown={(event) => beginNodeDrag(event, node.id)} onPointerMove={updateNodeDropTarget} onPointerUp={dropNode} onPointerCancel={() => setDragState(null)} onClick={() => setActiveNode(node.id)} key={node.id} aria-grabbed={isDragging}><span className="drag-handle" aria-hidden="true"><GripVertical size={14} /></span><i><BuilderNodeIcon type={node.type} /></i><strong>{node.config?.retention ? "挽留弹窗" : node.type}</strong><small>{node.config?.retention ? "" : node.label}</small></button>;
             })}</div>
           </aside>
-          <div className="canvas-area"><div className="device-controls"><button className="unknown-action" onClick={() => markUnknown(builderBoundary)}><Smartphone size={16} /> iPhone 15 Pro <ChevronDown size={14} /></button>{appliedTemplate !== null && <div className="preview-mode" aria-label="Preview mode"><button className={previewMode === "source" ? "active" : ""} onClick={() => setPreviewMode("source")}>{templates[appliedTemplate].documentTemplate ? "文档样式" : "Source visual"}</button><button className={previewMode === "editable" ? "active" : ""} disabled={!isEditableTemplate(templates[appliedTemplate])} onClick={() => setPreviewMode("editable")}>Editable structure</button></div>}<button className="icon unknown-action" title="Preview orientation" onClick={() => markUnknown(builderBoundary)}><RotateCw size={15} /></button><button className="icon unknown-action" title="Preview visibility" onClick={() => markUnknown(builderBoundary)}><Eye size={15} /></button></div><PaywallPreview nodes={builderNodes} template={appliedTemplate !== null ? templates[appliedTemplate] : null} mode={previewMode} activeNode={activeNode} onSelect={setActiveNode} onUpdateHeroPosition={updateHeroCopyPosition} retentionPreviewToken={retentionPreview?.templateId === templates[appliedTemplate]?.id ? retentionPreview.token : 0} />{appliedTemplate !== null && previewMode === "source" && <p className="source-preview-note">{templates[appliedTemplate].documentTemplate ? "飞书文档中的 Paywall 样式参考，与模板库卡片一一对应。" : "源端模板画面，与模板库卡片一一对应。"}</p>}{appliedTemplate !== null && previewMode === "editable" && <p className="source-preview-note">{isEditableTemplate(templates[appliedTemplate]) ? "已采集样式与核心字段的本地可编辑复现。" : "精确节点树仍在采集。"}</p>}<p className="preview-disclaimer">All prices, titles, and offers displayed are placeholders. The actual data from App Store and Google Play will be shown in the app.</p></div>
+          <div className="canvas-area"><div className="device-controls"><button className="unknown-action" onClick={() => markUnknown(builderBoundary)}><Smartphone size={16} /> iPhone 15 Pro <ChevronDown size={14} /></button>{appliedTemplate !== null && <div className="preview-mode" aria-label="Preview mode"><button className={previewMode === "source" ? "active" : ""} onClick={() => setPreviewMode("source")}>{templates[appliedTemplate].documentTemplate ? "文档样式" : "Source visual"}</button><button className={previewMode === "editable" ? "active" : ""} disabled={!isEditableTemplate(templates[appliedTemplate])} onClick={() => setPreviewMode("editable")}>Editable structure</button></div>}<button className="icon unknown-action" title="Preview orientation" onClick={() => markUnknown(builderBoundary)}><RotateCw size={15} /></button><button className="icon unknown-action" title="Preview visibility" onClick={() => markUnknown(builderBoundary)}><Eye size={15} /></button></div><PaywallPreview nodes={builderNodes} template={appliedTemplate !== null ? templates[appliedTemplate] : null} mode={previewMode} activeNode={activeNode} onSelect={setActiveNode} onUpdateHeroPosition={updateHeroCopyPosition} retentionPreviewToken={retentionPreview?.templateId === templates[appliedTemplate]?.id ? retentionPreview?.token ?? 0 : 0} />{appliedTemplate !== null && previewMode === "source" && <p className="source-preview-note">{templates[appliedTemplate].documentTemplate ? "飞书文档中的 Paywall 样式参考，与模板库卡片一一对应。" : "源端模板画面，与模板库卡片一一对应。"}</p>}{appliedTemplate !== null && previewMode === "editable" && <p className="source-preview-note">{isEditableTemplate(templates[appliedTemplate]) ? "已采集样式与核心字段的本地可编辑复现。" : "精确节点树仍在采集。"}</p>}<p className="preview-disclaimer">All prices, titles, and offers displayed are placeholders. The actual data from App Store and Google Play will be shown in the app.</p></div>
           <aside className="property-panel"><BuilderProperties active={active} markUnknown={markUnknown} boundary={builderBoundary} templateLinks={templateLinks} setTemplateLinks={setTemplateLinks} updateNode={updateNodeWithPreview} removeNode={removeBuilderNode} addNestedNode={addNestedElement} isDocumentTemplate={isDocumentTemplate} onPreviewRetention={() => { setPreviewMode("editable"); setRetentionPreview((current) => ({ templateId: templates[appliedTemplate]?.id, token: (current?.token ?? 0) + 1 })); }} /></aside>
         </div>
         <div className="builder-footer"><button className="secondary unknown-action" onClick={() => markUnknown(builderBoundary)}>Discard</button><button className="primary" onClick={() => setModal({ kind: appliedTemplate !== null ? "template-requirements" : "builder-save" })}>Save</button></div>
@@ -2395,9 +2403,13 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
 }
 function PaywallPreview({ nodes, template, mode, activeNode, onSelect, onUpdateHeroPosition, retentionPreviewToken }) {
   if (template?.documentTemplate) {
+    const moduleOrder = Object.fromEntries([
+      ["hero-image", "hero"], ["products", "products"], ["benefits", "benefits"],
+      ["timer", "timer"], ["purchase", "purchase"], ["legal", "legal"],
+    ].map(([id, name]) => [`--node-order-${name}`, nodes.findIndex((node) => node.id === id)]));
     const customNodes = nodes.filter((node) => node.id.startsWith("added-"));
     const paywall = <HelloTalkPaywall variant={template.documentTemplate} nodes={nodes} activeNode={activeNode} onSelect={onSelect} onUpdateHeroPosition={onUpdateHeroPosition} retentionPreviewToken={retentionPreviewToken} interactive={mode === "editable"} />;
-    return <div className="phone source-template-phone"><div className="ht-template-scroll" tabIndex={0} aria-label="付费墙页面预览">{paywall}{customNodes.length > 0 && <TemplateExtraNodes nodes={customNodes} activeNode={activeNode} onSelect={onSelect} />}</div><button className="close-phone" aria-label="Close preview">×</button></div>;
+    return <div className="phone source-template-phone"><div className="ht-template-scroll" style={moduleOrder} tabIndex={0} aria-label="付费墙页面预览">{paywall}{customNodes.length > 0 && <TemplateExtraNodes nodes={customNodes} activeNode={activeNode} onSelect={onSelect} />}</div><button className="close-phone" aria-label="Close preview">×</button></div>;
   }
   if (template && mode === "source") return <div className="phone source-template-phone"><SourceTemplateMedia template={template} /><button className="close-phone" aria-label="Close preview">×</button></div>;
   const hero = nodes.find((node) => node.type === "Hero Image");

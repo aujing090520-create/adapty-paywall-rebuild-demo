@@ -782,12 +782,12 @@ textarea { min-height: 80px; resize: vertical; }
 /* Figma source media overrides the earlier illustrative fallback artwork. */
 .ht-blue-paywall { display: flex; flex-direction: column; }
 .ht-blue-paywall .ht-status { position: absolute; z-index: 6; }
-.ht-blue-paywall .ht-blue-hero { order: 0; flex: none; }
-.ht-blue-paywall .ht-plan-shell { order: 1; flex: none; margin: 0 4.5cqw; }
-.ht-blue-paywall .ht-privilege-table { order: 2; flex: none; }
-.ht-blue-paywall .ht-timer { order: 3; flex: none; }
-.ht-blue-paywall .ht-action-wrap { order: 4; flex: none; }
-.ht-blue-paywall .ht-legal { order: 5; flex: none; }
+.ht-blue-paywall .ht-blue-hero { order: var(--node-order-hero, 0); flex: none; }
+.ht-blue-paywall .ht-plan-shell { order: var(--node-order-products, 1); flex: none; margin: 0 4.5cqw; }
+.ht-blue-paywall .ht-privilege-table { order: var(--node-order-benefits, 2); flex: none; }
+.ht-blue-paywall .ht-timer { order: var(--node-order-timer, 3); flex: none; }
+.ht-blue-paywall .ht-action-wrap { order: var(--node-order-purchase, 4); flex: none; }
+.ht-blue-paywall .ht-legal { order: var(--node-order-legal, 5); flex: none; }
 .ht-blue-paywall .ht-blue-hero { height: calc(67.18cqw * var(--hero-height-scale, 1)); }
 .ht-blue-paywall .ht-blue-hero .ht-source-art { background: #0c4098 url('/figma-paywall-assets/blue-banner.png') center / cover no-repeat; }
 .ht-blue-paywall .ht-blue-hero .ht-source-art::after { content: none; }
