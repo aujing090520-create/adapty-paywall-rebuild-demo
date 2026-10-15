@@ -2530,6 +2530,9 @@ function PreviewElement({ node, active, activeNode, onSelect, children = [], get
     ...(Object.keys(config).some((key) => key.startsWith("margin")) ? { margin: ["Top", "Right", "Bottom", "Left"].map((edge) => `${config[`margin${edge}`] ?? 0}px`).join(" ") } : {}),
   };
   const wrap = (content, className = "") => <div className={`preview-node ${active ? "selected" : ""} ${className}`} style={nodeStyle} onClick={select}>{content}</div>;
+  const textStyle = { color: config.color, fontSize: config.fontSize ? `${config.fontSize}px` : undefined, fontWeight: config.fontWeight, textAlign: config.textAlign };
+  const buttonStyle = { backgroundColor: config.backgroundColor, color: config.color, borderRadius: config.radius === undefined ? undefined : `${config.radius}px` };
+  const cardStyle = { backgroundColor: config.backgroundColor, borderRadius: config.radius === undefined ? undefined : `${config.radius}px`, boxShadow: config.shadow ? `0 ${Math.max(2, Math.round(config.shadow / 2))}px ${config.shadow}px #17172833` : undefined };
   const renderChildren = () => children.map((child) => <PreviewElement key={child.id} node={child} children={getChildren(child.id)} getChildren={getChildren} active={child.id === activeNode} activeNode={activeNode} onSelect={onSelect} />);
   const isTextLayer = ["Text", "Header", "Headline", "Subhead", "Caption", "Legal", "Top Text"].includes(node.type) || /^(HEADER|Header|Caption|Title|Repeats|Subheader) \d+$/.test(node.type);
   const isListLayer = ["List", "Feature list", "Features"].includes(node.type) || /^List \d+$/.test(node.type);
@@ -2548,14 +2551,14 @@ function PreviewElement({ node, active, activeNode, onSelect, children = [], get
   }
   if (node.type === "Stars") return wrap(<div className="preview-stars">{node.content || "★★★★★"}</div>);
   if (node.type === "Discount") return wrap(<h2>{node.content || "Discount"}</h2>, "preview-headline");
-  if (isTextLayer) return wrap(node.variant === "headline" ? <h2><RichText node={node} fallback="Heading" interactive /></h2> : node.variant === "section" ? <h3><RichText node={node} interactive /></h3> : <p className={node.variant === "boundary" ? "preview-boundary" : ""}><RichText node={node} fallback="Supporting text" interactive /></p>, node.variant === "headline" ? "preview-headline" : "preview-copy");
+  if (isTextLayer) return wrap(node.variant === "headline" ? <h2 style={textStyle}><RichText node={node} fallback="Heading" interactive /></h2> : node.variant === "section" ? <h3 style={textStyle}><RichText node={node} interactive /></h3> : <p style={textStyle} className={node.variant === "boundary" ? "preview-boundary" : ""}><RichText node={node} fallback="Supporting text" interactive /></p>, node.variant === "headline" ? "preview-headline" : "preview-copy");
   if (isListLayer) {
     const rows = listRowsFor(node);
     if (!rows.length && !children.length) return wrap(<div className="preview-list-anchor">List</div>, "preview-list-anchor-wrap");
     return wrap(<div className="preview-benefits" style={{ background: node.config?.backgroundColor }}><ul className="preview-benefits">{rows.map((row, index) => <li key={index} className={row.leadingMode === "none" ? "no-leading" : ""}><i style={{ color: node.config?.accentColor }}>{row.leadingMode !== "none" ? row.leading || "✓" : ""}</i><span><strong>{row.title}</strong>{row.showCaption !== false && row.caption && <small>{row.caption}</small>}</span></li>)}</ul>{renderChildren()}</div>, "preview-list");
   }
-  if (isListItemLayer) { const [title, caption] = (node.content || "").split("|"); return wrap(<div className="preview-list-item"><i>●</i><span><strong>{title || "Item"}</strong>{caption && <small>{caption}</small>}</span></div>, "preview-list-item-wrap"); }
-  if (node.type === "Card") return children.length ? wrap(<div className="preview-card">{renderChildren()}</div>, "preview-card-wrap") : !node.content ? wrap(<div className="preview-card-anchor" />, "preview-card-anchor-wrap") : wrap(<div className="preview-card">{node.content.split("\n").map((row) => { const [title, copy] = row.split("|"); return <div key={row}><strong>{title}</strong>{copy && <small>{copy}</small>}</div>; })}</div>, "preview-card-wrap");
+  if (isListItemLayer) { const [title, caption] = (node.content ?? "").split("|"); return wrap(<div className="preview-list-item" style={textStyle}><i>●</i><span><strong style={textStyle}>{title}</strong>{caption && <small style={textStyle}>{caption}</small>}</span></div>, "preview-list-item-wrap"); }
+  if (node.type === "Card") return children.length ? wrap(<div className="preview-card" style={cardStyle}>{renderChildren()}</div>, "preview-card-wrap") : !node.content ? wrap(<div className="preview-card-anchor" style={cardStyle} />, "preview-card-anchor-wrap") : wrap(<div className="preview-card" style={cardStyle}>{node.content.split("\n").map((row) => { const [title, copy] = row.split("|"); return <div key={row}><strong>{title}</strong>{copy && <small>{copy}</small>}</div>; })}</div>, "preview-card-wrap");
   if (["Product", "Japanese Ai - 1 Year"].includes(node.type)) { const [name, price] = (node.content || "").split("|"); return wrap(<div className="preview-product"><strong>{name || "Product"}</strong>{price && <small>{price}</small>}</div>, "preview-product-anchor-wrap"); }
   if (node.type === "App Icon") return wrap(<div className="preview-app-icon">✦</div>, "preview-app-icon-wrap");
   if (isImageLayer) {
@@ -2577,15 +2580,15 @@ function PreviewElement({ node, active, activeNode, onSelect, children = [], get
   if (node.type === "Toggle") return wrap(<PreviewToggle key={`${node.id}-${node.defaultState ?? "Off"}`} content={node.content} defaultState={node.defaultState} />, "preview-toggle-wrap");
   if (["Toggle On", "Toggle Off"].includes(node.type)) return wrap(<div className="preview-toggle-anchor" />, "preview-toggle-anchor-wrap");
   if (node.type === "Footer Top Part") return wrap(<div className="preview-card-anchor" />, "preview-card-anchor-wrap");
-  if (node.type === "Button and Links") { const [cta, links] = (node.content || "GET FULL ACCESS|Terms · Privacy · Restore").split("|"); return wrap(<><button className="preview-cta">{cta}</button><small className="preview-links">{links}</small></>, "preview-button"); }
-  if (node.type === "Button" || node.type === "Web Paywall Button" || node.type === "Purchase Button") return wrap(<button className="preview-cta">{node.content || (node.type === "Web Paywall Button" ? "Pay on web" : node.type === "Button" ? "button text" : "Continue")}</button>, "preview-button");
-  if (node.type === "Links") return wrap(<small className="preview-links">{node.content || "Terms · Privacy · Restore · Login"}</small>);
+  if (node.type === "Button and Links") { const [cta, links] = (node.content ?? "GET FULL ACCESS|Terms · Privacy · Restore").split("|"); return wrap(<><button className="preview-cta" style={buttonStyle}>{cta}</button><small className="preview-links" style={textStyle}>{links}</small></>, "preview-button"); }
+  if (node.type === "Button" || node.type === "Web Paywall Button" || node.type === "Purchase Button") return wrap(<button className="preview-cta" style={buttonStyle}>{node.content ?? (node.type === "Web Paywall Button" ? "Pay on web" : node.type === "Button" ? "button text" : "Continue")}</button>, "preview-button");
+  if (node.type === "Links") return wrap(<small className="preview-links" style={textStyle}>{node.content ?? "Terms · Privacy · Restore · Login"}</small>);
   if (node.type === "Footer") return wrap(<small className="preview-footer">{node.content}</small>);
   return wrap(<p>{node.content || node.type}</p>);
 }
 
 function PreviewTimer({ content, config = {} }) {
-  const startValue = timerSeconds(content || "04:59:59");
+  const startValue = timerSeconds(content ?? "04:59:59");
   const [remaining, setRemaining] = useState(startValue);
   useEffect(() => {
     setRemaining(startValue);
@@ -2593,16 +2596,20 @@ function PreviewTimer({ content, config = {} }) {
     const interval = window.setInterval(() => setRemaining((value) => Math.max(0, value - 1)), 1000);
     return () => window.clearInterval(interval);
   }, [startValue, config.resetMode]);
-  return <div className="preview-timer" style={{ color: config.color, backgroundColor: config.backgroundColor, borderRadius: config.radius === undefined ? undefined : `${config.radius}px` }}>{config.prefix && <strong style={config.prefixFontSize ? { fontSize: `${config.prefixFontSize}px` } : undefined}>{config.prefix} </strong>}<span style={config.fontSize ? { fontSize: `${config.fontSize}px` } : undefined}>{formatTimer(remaining, config.format ?? "hh:mm:ss", config.separator ?? ":")}</span>{config.suffix && <small style={config.suffixFontSize ? { fontSize: `${config.suffixFontSize}px` } : undefined}> {config.suffix}</small>}</div>;
+  const opacity = Math.max(0, Math.min(100, Number(config.digitBackgroundOpacity ?? 100)));
+  const digitBackground = config.digitBackgroundColor ? `color-mix(in srgb, ${config.digitBackgroundColor} ${opacity}%, transparent)` : config.backgroundColor;
+  return <div className="preview-timer" style={{ color: config.color, borderRadius: config.radius === undefined ? undefined : `${config.radius}px` }}>{config.prefix && <strong style={{ color: config.prefixColor, fontSize: config.prefixFontSize ? `${config.prefixFontSize}px` : undefined }}>{config.prefix} </strong>}<span style={{ color: config.digitColor, backgroundColor: digitBackground, fontSize: config.fontSize ? `${config.fontSize}px` : undefined }}>{formatTimer(remaining, config.format ?? "hh:mm:ss", config.separator ?? ":")}</span>{config.suffix && <small style={config.suffixFontSize ? { fontSize: `${config.suffixFontSize}px` } : undefined}> {config.suffix}</small>}</div>;
 }
 
 function PreviewCarousel({ content, config = {} }) {
-  const slides = (content || "Customer story").split("\n---\n").filter(Boolean);
+  const sourceSlides = (content ?? "Customer story").split("\n---\n").filter(Boolean);
+  const count = Math.max(1, Math.min(10, Number(config.itemCount ?? sourceSlides.length) || 1));
+  const slides = Array.from({ length: count }, (_, index) => sourceSlides[index] ?? sourceSlides.at(-1) ?? "");
   const [current, setCurrent] = useState(Math.min(slides.length - 1, Math.max(0, Number(config.initialSlide) || 0)));
   useEffect(() => setCurrent(Math.min(slides.length - 1, Math.max(0, Number(config.initialSlide) || 0))), [config.initialSlide, slides.length]);
   const slide = slides[current] ?? slides[0];
   const [title, copy] = slide.split("|");
-  return <div className="preview-carousel"><span>★★★★★</span><p>{copy ? <><strong>{title}</strong><small>{copy}</small></> : slide}</p><div><button aria-label="Previous review" onClick={(event) => { event.stopPropagation(); setCurrent((index) => (index - 1 + slides.length) % slides.length); }}>‹</button><i>{slides.map((_, index) => <b className={index === current ? "active" : ""} key={index}>•</b>)}</i><button aria-label="Next review" onClick={(event) => { event.stopPropagation(); setCurrent((index) => (index + 1) % slides.length); }}>›</button></div></div>;
+  return <div className="preview-carousel"><span>★★★★★</span><p>{copy ? <><strong>{title}</strong><small>{copy}</small></> : slide}</p><div><button aria-label="Previous review" onClick={(event) => { event.stopPropagation(); setCurrent((index) => (index - 1 + slides.length) % slides.length); }}>‹</button><i style={{ gap: `${config.gap ?? 8}px` }}>{slides.map((_, index) => <b className={index === current ? "active" : ""} style={{ color: index === current ? config.accentColor : config.secondaryColor }} key={index}>•</b>)}</i><button aria-label="Next review" onClick={(event) => { event.stopPropagation(); setCurrent((index) => (index + 1) % slides.length); }}>›</button></div></div>;
 }
 
 function PreviewProducts({ content, config = {} }) {
@@ -2610,7 +2617,7 @@ function PreviewProducts({ content, config = {} }) {
   const defaultChoice = Math.min(Math.max(0, Number(config.defaultSelected) || 0), Math.max(0, rows.length - 1));
   const [chosen, setChosen] = useState(defaultChoice);
   useEffect(() => setChosen(defaultChoice), [defaultChoice]);
-  return <div className="preview-products">{rows.map((row, index) => <button className={index === chosen ? "chosen" : ""} onClick={(event) => { event.stopPropagation(); setChosen(index); }} key={`${row.name}-${index}`}><span><strong>{row.name}</strong>{row.caption && row.price !== row.caption && <small>{row.caption}</small>}</span><em>{row.price}</em></button>)}</div>;
+  return <div className="preview-products">{rows.map((row, index) => <button className={index === chosen ? "chosen" : ""} style={{ borderColor: index === chosen ? config.accentColor : undefined, backgroundColor: index === chosen ? config.selectedBackground : undefined, borderRadius: config.radius === undefined ? undefined : `${config.radius}px` }} onClick={(event) => { event.stopPropagation(); setChosen(index); }} key={`${row.name}-${index}`}><span><strong>{row.name}</strong>{row.caption && row.price !== row.caption && <small>{row.caption}</small>}</span><em>{row.price}</em></button>)}</div>;
 }
 
 function PreviewToggle({ content, defaultState = "Off" }) {

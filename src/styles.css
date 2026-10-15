@@ -800,6 +800,7 @@ textarea { min-height: 80px; resize: vertical; }
 .hero-overlay-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .hero-overlay-actions img { width: 60px; height: 42px; object-fit: contain; background: #f6f5fa; border: 1px solid #e2e0ea; border-radius: 5px; }
 .hero-overlay-actions .secondary { display: inline-flex; align-items: center; gap: 5px; }
+.preview-carousel i:has(b) { display: inline-flex; align-items: center; }
 .ht-membership-paywall .ht-member-hero { height: calc(66.67cqw * var(--hero-height-scale, 1)); }
 .ht-membership-paywall .ht-member-hero .ht-source-art {
   display: block;
