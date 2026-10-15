@@ -828,6 +828,8 @@ const paywallProductGroups = {
   "[10361] - 直播语聊无限时长商品组-1周": [
     { id: "11109", name: "Android_1周直播语聊特权微信" },
     { id: "11110", name: "Android_1周直播语聊特权-alipay" },
+    { id: "10065", name: "iOS_1周直播语聊特权" },
+    { id: "10869", name: "GP_1周直播语聊特权" },
   ],
   "[10364] - 直播语聊无限时长商品组-1个月,3个月,6个月,12个月": [
     { id: "10065", name: "iOS_1周直播语聊特权" },
@@ -1380,6 +1382,8 @@ function CreatePaywall({ draft, setDraft, setView, setModal, createDraft }) {
   const rows = draft.offerRows ?? paywallOfferRows(draft.productGroup);
   const [labelPicker, setLabelPicker] = useState(null);
   const [labelQuery, setLabelQuery] = useState("");
+  const [giftEditor, setGiftEditor] = useState(null);
+  const [giftQuery, setGiftQuery] = useState("");
   const patch = (next) => setDraft((current) => ({ ...current, ...next }));
   const patchRow = (index, next) => setDraft((current) => ({ ...current, offerRows: (current.offerRows ?? rows).map((row, position) => position === index ? { ...row, ...next } : row) }));
   const labelInput = (row, index, key, label) => <div className="create-label-picker"><input aria-label={`${row.name} ${label}`} placeholder="输入标签多语言key" value={row[key] ?? ""} onChange={(event) => patchRow(index, { [key]: event.target.value })} /><button type="button" onClick={() => { setLabelPicker({ index, key, label }); setLabelQuery(row[key] ?? ""); }}>选择</button></div>;
@@ -1399,7 +1403,27 @@ function CreatePaywall({ draft, setDraft, setView, setModal, createDraft }) {
             <Field label="paywall样式"><select value={draft.paywallStyle ?? ""} onChange={(event) => patch({ paywallStyle: event.target.value })}><option value="">请选择</option>{paywallStyles.map((value) => <option key={value}>{value}</option>)}</select><small className="create-field-note">样式仅 Deeplink 生效</small></Field>
             <Field label="商品组 *"><select value={draft.productGroup ?? ""} onChange={(event) => { const productGroup = event.target.value; patch({ productGroup, offerRows: paywallOfferRows(productGroup), products: (paywallProductGroups[productGroup] ?? []).map((product) => product.name), defaultProductId: "" }); }}>{Object.keys(paywallProductGroups).map((value) => <option key={value}>{value}</option>)}</select></Field>
           </div>
-          <div className="create-offers"><h3>优惠信息</h3><div className="create-offers-scroll"><table><thead><tr><th>默认选中</th><th>Product ID</th><th>商品名称</th><th>优惠标签</th><th>未选中时顶部标签</th><th>选中时顶部标签</th><th>选中时的按钮文案</th><th>选中时按钮标签文案</th><th>折扣倍率</th><th>赠送礼包</th><th>操作</th></tr></thead><tbody>{rows.map((row, index) => <tr key={`${row.id}-${index}`}><td><input type="radio" name="create-default-product" aria-label={`默认选中 ${row.name}`} checked={draft.defaultProductId === row.id} onChange={() => patch({ defaultProductId: row.id })} /></td><td>{row.id}</td><td>{row.name}</td><td><select aria-label={`${row.name} 优惠标签`} value={row.offerLabel} onChange={(event) => patchRow(index, { offerLabel: event.target.value })}><option>不展示</option><option>展示</option></select></td><td>{labelInput(row, index, "unselectedTopLabel", "未选中时顶部标签")}</td><td>{labelInput(row, index, "selectedTopLabel", "选中时顶部标签")}</td><td>{labelInput(row, index, "selectedButtonCopy", "选中时的按钮文案")}</td><td><select aria-label={`${row.name} 选中时按钮标签文案`} value={row.selectedButtonTagCopy} onChange={(event) => patchRow(index, { selectedButtonTagCopy: event.target.value })}><option>不展示</option><option>展示</option></select></td><td><input type="number" min="0" step="0.1" aria-label={`${row.name} 折扣倍率`} value={row.discountMultiplier} onChange={(event) => patchRow(index, { discountMultiplier: event.target.value })} /></td><td><select aria-label={`${row.name} 赠送礼包`} value={row.giftPack} onChange={(event) => patchRow(index, { giftPack: event.target.value })}><option value="">请选择</option><option>618-年活动礼包（test）</option><option>618-终身</option></select></td><td><div className="create-offer-actions"><button type="button" onClick={() => patchRow(index, { ...rows[index - 1], id: row.id, name: row.name })} disabled={index === 0}>复制上条配置</button><button type="button" onClick={() => patchRow(index, { ...paywallOfferRows(draft.productGroup)[index], id: row.id, name: row.name })}>清除</button></div></td></tr>)}</tbody></table></div></div>
+          <div className="create-offers">
+            <h3>优惠信息：</h3>
+            <div className="create-offers-scroll">
+              <table>
+                <thead><tr><th>默认选中</th><th>Product ID</th><th>商品名称</th><th>优惠标签</th><th>未选中时顶部标签</th><th>选中时顶部标签</th><th>选中时的按钮文案</th><th>选中时按钮标签文案</th><th>折扣倍率</th><th>赠送礼包 <CircleHelp size={15} /></th><th>操作</th></tr></thead>
+                <tbody>{rows.map((row, index) => <tr key={row.id}>
+                  <td><input type="checkbox" aria-label={`默认选中 ${row.name}`} checked={draft.defaultProductId === row.id} onChange={() => patch({ defaultProductId: draft.defaultProductId === row.id ? "" : row.id })} /></td>
+                  <td>{row.id}</td>
+                  <td className="create-product-name">{row.name}</td>
+                  <td><select aria-label={`${row.name} 优惠标签`} value={row.offerLabel} onChange={(event) => patchRow(index, { offerLabel: event.target.value })}><option>不展示</option><option>展示</option></select></td>
+                  <td>{labelInput(row, index, "unselectedTopLabel", "未选中时顶部标签")}</td>
+                  <td>{labelInput(row, index, "selectedTopLabel", "选中时顶部标签")}</td>
+                  <td>{labelInput(row, index, "selectedButtonCopy", "选中时的按钮文案")}</td>
+                  <td><select aria-label={`${row.name} 选中时按钮标签文案`} value={row.selectedButtonTagCopy} onChange={(event) => patchRow(index, { selectedButtonTagCopy: event.target.value })}><option>不展示</option><option>展示</option></select></td>
+                  <td><input type="number" min="0" step="0.1" aria-label={`${row.name} 折扣倍率`} value={row.discountMultiplier} onChange={(event) => patchRow(index, { discountMultiplier: event.target.value })} /></td>
+                  <td><div className="create-gift-controls"><select aria-label={`${row.name} 赠送礼包`} value={row.giftPack} onChange={(event) => patchRow(index, { giftPack: event.target.value })}><option value="">请选择</option><option>618-年活动礼包（test）</option><option>618-终身</option>{row.giftPack && !["618-年活动礼包（test）", "618-终身"].includes(row.giftPack) && <option>{row.giftPack}</option>}</select><button type="button" className="create-gift-clear" title="清除礼包" aria-label={`清除 ${row.name} 赠送礼包`} onClick={() => patchRow(index, { giftPack: "" })}><X size={13} /></button><button type="button" className="create-gift-edit" title="编辑礼包" aria-label={`编辑 ${row.name} 赠送礼包`} onClick={() => { setGiftEditor(index); setGiftQuery(row.giftPack); }}><Pencil size={16} /></button></div></td>
+                  <td><div className="create-offer-actions"><button type="button" onClick={() => patchRow(index, { ...rows[index - 1], id: row.id, name: row.name })} disabled={index === 0}>复制上条配置</button><button type="button" onClick={() => patchRow(index, { ...paywallOfferRows(draft.productGroup)[index], id: row.id, name: row.name })}>清 除</button></div></td>
+                </tr>)}</tbody>
+              </table>
+            </div>
+          </div>
         </div>
         <div className="start-card">
           <span className="eyebrow">Builder & Generator</span><h2>Choose how to start</h2>
@@ -1409,6 +1433,7 @@ function CreatePaywall({ draft, setDraft, setView, setModal, createDraft }) {
       </div>
       <button className="subtle-action" onClick={createDraft}>Development shortcut: create a local draft after confirmation</button>
       {labelPicker && <div className="modal-backdrop"><section className="modal create-label-modal" role="dialog" aria-label={`选择${labelPicker.label}`}><header><h2>选择{labelPicker.label}</h2><button type="button" className="icon" aria-label="关闭" onClick={() => setLabelPicker(null)}><X size={19} /></button></header><div className="create-label-modal-body"><Field label="多语言 key"><input autoFocus value={labelQuery} placeholder="输入或粘贴多语言 key" onChange={(event) => setLabelQuery(event.target.value)} /></Field><p>当前为本地 Demo，未接入线上多语言词条目录。</p></div><div className="modal-actions"><button type="button" className="secondary" onClick={() => setLabelPicker(null)}>取消</button><button type="button" className="primary" onClick={() => { patchRow(labelPicker.index, { [labelPicker.key]: labelQuery.trim() }); setLabelPicker(null); }}>确认</button></div></section></div>}
+      {giftEditor !== null && <div className="modal-backdrop"><section className="modal create-label-modal" role="dialog" aria-label="编辑赠送礼包"><header><h2>编辑赠送礼包</h2><button type="button" className="icon" aria-label="关闭" onClick={() => setGiftEditor(null)}><X size={19} /></button></header><div className="create-label-modal-body"><Field label="礼包名称"><input autoFocus value={giftQuery} onChange={(event) => setGiftQuery(event.target.value)} /></Field></div><div className="modal-actions"><button type="button" className="secondary" onClick={() => setGiftEditor(null)}>取消</button><button type="button" className="primary" onClick={() => { patchRow(giftEditor, { giftPack: giftQuery.trim() }); setGiftEditor(null); }}>确认</button></div></section></div>}
     </section>
   );
 }
