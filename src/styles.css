@@ -118,7 +118,7 @@ textarea { min-height: 80px; resize: vertical; }
 .create-offers { display: grid; grid-template-columns: 88px minmax(0, 1fr); align-items: start; margin-top: 22px; }
 .create-offers h3 { margin: 12px 0 0; font-size: 14px; font-weight: 500; white-space: nowrap; }
 .create-offers-scroll { width: 100%; min-width: 0; container-type: inline-size; overflow: hidden; border: 1px solid #ececec; border-radius: 8px 8px 0 0; }
-.create-offers table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 12px; color: #252525; }
+.create-offers table { width: 100%; min-width: 0; border-collapse: collapse; table-layout: fixed; font-size: 12px; color: #252525; }
 .create-offers th, .create-offers td { padding: 8px 5px; border-right: 1px solid #efefef; border-bottom: 1px solid #efefef; text-align: center; vertical-align: middle; overflow-wrap: anywhere; }
 .create-offers th { height: 64px; background: #fafafa; font-weight: 700; }
 .create-offers th svg { display: inline-block; vertical-align: middle; margin-left: 4px; }
