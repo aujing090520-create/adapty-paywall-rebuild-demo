@@ -1404,9 +1404,9 @@ function CreatePaywall({ draft, setDraft, setView, setModal, createDraft }) {
             <Field label="业务场景 *"><select value={draft.businessScene ?? ""} onChange={(event) => patch({ businessScene: event.target.value })}>{(paywallScenesByBusinessType[draft.businessType] ?? []).map((value) => <option key={value}>{value}</option>)}</select></Field>
             <Field label="公众号 *"><select value={draft.publicAccount ?? ""} onChange={(event) => patch({ publicAccount: event.target.value })}><option>11006 - hey_livea</option></select></Field>
             <Field label="Paywall 名称 *"><input value={draft.name} onChange={(event) => patch({ name: event.target.value })} /></Field>
-            <Field label="备注"><textarea value={draft.note ?? ""} onChange={(event) => patch({ note: event.target.value })} /></Field>
             <Field label="paywall样式"><select value={draft.paywallStyle ?? ""} onChange={(event) => patch({ paywallStyle: event.target.value })}><option value="">请选择</option>{paywallStyles.map((value) => <option key={value}>{value}</option>)}</select><small className="create-field-note">样式仅 Deeplink 生效</small></Field>
             <Field label="商品组 *"><select value={draft.productGroup ?? ""} onChange={(event) => { const productGroup = event.target.value; patch({ productGroup, offerRows: paywallOfferRows(productGroup), products: (paywallProductGroups[productGroup] ?? []).map((product) => product.name), defaultProductId: "" }); }}>{Object.keys(paywallProductGroups).map((value) => <option key={value}>{value}</option>)}</select></Field>
+            <Field label="备注"><textarea value={draft.note ?? ""} onChange={(event) => patch({ note: event.target.value })} /></Field>
           </div>
           <div className="create-offers">
             <h3>优惠信息：</h3>
