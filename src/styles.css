@@ -715,10 +715,11 @@ textarea { min-height: 80px; resize: vertical; }
 }
 
 /* Image height is a ratio of each component's own source-calibrated size, never a percentage of the whole device preview. */
-.ht-blue-paywall .ht-blue-hero { height: calc(58cqw * var(--hero-height-scale, 1)); }
-.ht-membership-paywall .ht-member-hero { height: calc(71cqw * var(--hero-height-scale, 1)); }
-.ht-recovery-paywall .ht-offer-bundle { height: calc(48cqw * var(--hero-height-scale, 1)); aspect-ratio: auto; }
-.ht-sku-paywall .ht-sku-promo { height: calc(45cqw * var(--hero-height-scale, 1)); }
+.ht-recovery-paywall .ht-offer-bundle { aspect-ratio: auto; }
+.ht-blue-paywall .ht-blue-hero { height: calc(58cqw * var(--hero-height-scale, 1) + var(--hero-padding-y, 0px)); background-image: none; }
+.ht-membership-paywall .ht-member-hero { height: calc(71cqw * var(--hero-height-scale, 1) + var(--hero-padding-y, 0px)); }
+.ht-recovery-paywall .ht-offer-bundle { height: calc(48cqw * var(--hero-height-scale, 1) + var(--hero-padding-y, 0px)); }
+.ht-sku-paywall .ht-sku-promo { height: calc(45cqw * var(--hero-height-scale, 1) + var(--hero-padding-y, 0px)); }
 
 /* A Hero Image may include source-observed copy. Its media and embedded copy use separate Builder controls. */
 .ht-blue-paywall .ht-blue-copy {
@@ -756,7 +757,7 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-paywall .media-custom .ht-source-art, .ht-paywall .media-removed .ht-source-art { display: none; }
 .ht-blue-hero::after, .ht-offer-bundle::before, .ht-sku-promo::before, .ht-sku-promo::after { content: none; }
 .ht-blue-hero .ht-source-art {
-  background: radial-gradient(ellipse at 51% -5%, #f8f7ff 0 3%, transparent 14%), radial-gradient(ellipse at 19% 4%, #50a3ef 0 2%, transparent 13%), radial-gradient(ellipse at 86% 14%, #7c73e7 0 3%, transparent 17%), linear-gradient(160deg, #090f4c 0%, #062a77 25%, #095ab0 48%, #1496d4 59%, #4e982f 60%, #347226 81%, #1f4d25 100%);
+  background: #07316b url('/ht-blue-stadium.png') left center / 115% 100% no-repeat;
 }
 .ht-blue-hero .ht-source-art::after { position: absolute; inset: 0; background: repeating-radial-gradient(ellipse at 52% 21%, transparent 0 8%, #d6f3ff12 8.3% 9.2%, transparent 9.5% 14%); content: ""; opacity: calc(.78 - var(--media-overlay, 0)); }
 .ht-member-hero { padding-top: 0; }
