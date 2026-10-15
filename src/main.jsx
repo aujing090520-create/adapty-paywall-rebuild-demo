@@ -2205,7 +2205,19 @@ function UnknownModal({ item, onClose }) {
   return <Modal title={`${item.id} · Known boundary`} onClose={onClose}><div className="unknown"><span className="eyebrow">Observed</span><p>{item.known}</p><span className="eyebrow">Not reproduced</span><p>{item.unknown}</p><div className="unknown-rule"><CircleHelp size={18} /> This demo keeps the entry point but does not invent its result.</div></div><div className="modal-actions"><button className="primary" onClick={onClose}>Close</button></div></Modal>;
 }
 
-function Modal({ title, onClose, children, wide = false }) { return <div className="modal-backdrop"><section className={`modal ${wide ? "wide" : ""}`}><header><h2>{title}</h2><button className="icon" onClick={onClose}><X size={19} /></button></header>{children}</section></div>; }
+function Modal({ title, onClose, children, wide = false }) {
+  useEffect(() => {
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    const previousBodyOverflow = document.body.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      document.body.style.overflow = previousBodyOverflow;
+    };
+  }, []);
+  return <div className="modal-backdrop"><section className={`modal ${wide ? "wide" : ""}`}><header><h2>{title}</h2><button className="icon" onClick={onClose}><X size={19} /></button></header>{children}</section></div>;
+}
 function Field({ label, children }) { return <label className="form-field"><span>{label}</span>{children}</label>; }
 function StateBadge({ state }) { return <span className={`state ${state.toLowerCase()}`}><i /> {state}</span>; }
 function Sort() { return <span className="sort">↕</span>; }
