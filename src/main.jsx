@@ -846,12 +846,12 @@ const productOptions = [
   "Japanese Ai - 1 Year / Annual",
 ];
 
-const paywallBusinessTypes = ["83 - 特权类VIP", "6 - 会员"];
+const paywallBusinessTypes = ["6 - 会员", "83 - 特权类VIP"];
 const paywallScenesByBusinessType = {
   "83 - 特权类VIP": ["48 - 直播语聊无限时长特权"],
-  "6 - 会员": ["40 - SKU半窗"],
+  "6 - 会员": ["3 - 新会员特权页-蓝色", "40 - SKU半窗", "16 - 访客", "17 - 附近", "18 - 城市特权"],
 };
-const paywallStyles = ["[71]-SKU半窗", "[90]-SKU新增倒计时字段", "[96]-SKU半窗-无倒计时", "[169]-⚽SKU二阶段半窗"];
+const paywallPublicAccounts = ["11000 - ht_vip", "11001 - hello_hellotalky", "15304 - ht_vip_plus", "11006 - hey_livea"];
 const paywallProductGroups = {
   "[10361] - 直播语聊无限时长商品组-1周": [
     { id: "11109", name: "Android_1周直播语聊特权微信" },
@@ -864,8 +864,8 @@ const paywallProductGroups = {
     { id: "10869", name: "GP_1周直播语聊特权" },
   ],
 };
-const initialPaywallGroup = Object.keys(paywallProductGroups)[0];
-const paywallOfferRows = (group) => (paywallProductGroups[group] ?? []).map((product) => ({ ...product, offerLabel: "不展示", unselectedTopLabel: "", selectedTopLabel: "", selectedButtonCopy: "", selectedButtonTagCopy: "不展示", discountMultiplier: "1.0", giftPack: "" }));
+const paywallProductCatalog = [...new Map(Object.values(paywallProductGroups).flat().map((product) => [product.id, product])).values()];
+const emptyPaywallOfferRow = () => ({ key: crypto.randomUUID(), id: "", name: "", offer: "0", offerLabel: "不展示", unselectedTopLabel: "", selectedTopLabel: "", selectedButtonCopy: "", selectedButtonTagCopy: "不展示", giftPack: "0" });
 
 const observedProductRows = [
   { product: "Japanese Ai - 1 Year", period: "Annual", offer: "Black Friday" },
@@ -1046,10 +1046,8 @@ function App() {
   const [toast, setToast] = useState("");
   const [draft, setDraft] = useState({
     name: "RESEARCH - Rebuild Draft",
-    businessType: paywallBusinessTypes[0], businessScene: paywallScenesByBusinessType[paywallBusinessTypes[0]][0], publicAccount: "11006 - hey_livea",
-    note: "", paywallStyle: "", productGroup: initialPaywallGroup,
-    offerRows: paywallOfferRows(initialPaywallGroup),
-    products: paywallProductGroups[initialPaywallGroup].map((product) => product.name),
+    businessType: paywallBusinessTypes[0], businessScene: paywallScenesByBusinessType[paywallBusinessTypes[0]][0], publicAccount: paywallPublicAccounts[0],
+    note: "", offerRows: [], products: [],
   });
   const [compliance, setCompliance] = useState(false);
   const [rememberCompliance, setRememberCompliance] = useState(false);
@@ -1099,9 +1097,9 @@ function App() {
   }, [view]);
 
   const createDraft = () => {
-    if (!draft.name.trim() || !draft.productGroup || !draft.offerRows?.length) return;
+    if (!draft.name.trim() || !draft.offerRows?.length || draft.offerRows.some((row) => !row.id)) return;
     const id = `research-${Date.now()}`;
-    const created = { id, name: draft.name || "Untitled paywall", state: "Draft", products: draft.offerRows?.length ?? draft.products.length, startedAt: "20 Aug 2026", icon: false, config: { businessType: draft.businessType, businessScene: draft.businessScene, publicAccount: draft.publicAccount, note: draft.note, paywallStyle: draft.paywallStyle, productGroup: draft.productGroup, defaultProductId: draft.defaultProductId, offerRows: draft.offerRows } };
+    const created = { id, name: draft.name || "Untitled paywall", state: "Draft", products: draft.offerRows.length, startedAt: "20 Aug 2026", icon: false, config: { businessType: draft.businessType, businessScene: draft.businessScene, publicAccount: draft.publicAccount, note: draft.note, defaultProductId: draft.defaultProductId, offerRows: draft.offerRows } };
     setPaywalls((current) => [...current, created]);
     setSelectedId(id);
     setBuilderOrigin("existing");
@@ -1403,18 +1401,22 @@ function PaywallList({
 }
 
 function CreatePaywall({ draft, setDraft, setView, setModal, createDraft }) {
-  const rows = draft.offerRows ?? paywallOfferRows(draft.productGroup);
+  const rows = draft.offerRows ?? [];
   const [labelPicker, setLabelPicker] = useState(null);
   const [labelQuery, setLabelQuery] = useState("");
   const [giftEditor, setGiftEditor] = useState(null);
   const [giftQuery, setGiftQuery] = useState("");
+  const [offerEditor, setOfferEditor] = useState(null);
+  const [offerQuery, setOfferQuery] = useState("");
   const patch = (next) => setDraft((current) => ({ ...current, ...next }));
-  const patchRow = (index, next) => setDraft((current) => ({ ...current, offerRows: (current.offerRows ?? rows).map((row, position) => position === index ? { ...row, ...next } : row) }));
-  const labelInput = (row, index, key, label) => <div className="create-label-picker"><input aria-label={`${row.name} ${label}`} placeholder="输入标签多语言key" value={row[key] ?? ""} onChange={(event) => patchRow(index, { [key]: event.target.value })} /><button type="button" onClick={() => { setLabelPicker({ index, key, label }); setLabelQuery(row[key] ?? ""); }}>选择</button></div>;
+  const patchRow = (index, next) => setDraft((current) => ({ ...current, offerRows: (current.offerRows ?? []).map((row, position) => position === index ? { ...row, ...next } : row) }));
+  const labelInput = (row, index, key, label) => <div className="create-label-picker"><input aria-label={`商品 ${index + 1} ${label}`} placeholder="多语言 key" value={row[key] ?? ""} onChange={(event) => patchRow(index, { [key]: event.target.value })} /><button type="button" onClick={() => { setLabelPicker({ index, key, label }); setLabelQuery(row[key] ?? ""); }}>选择</button></div>;
+  const addProduct = () => patch({ offerRows: [...rows, emptyPaywallOfferRow()] });
+  const removeProduct = (index) => patch({ offerRows: rows.filter((_, position) => position !== index), defaultProductId: draft.defaultProductId === rows[index].id ? "" : draft.defaultProductId });
   return (
     <section className="create">
       <button className="back" onClick={() => setView("list")}><ArrowLeft size={18} /> Paywalls</button>
-      <div className="create-header"><div><h1>Create paywall</h1><p>配置业务信息、Paywall 样式与商品组后创建草稿。</p></div><button className="primary" disabled={!draft.name.trim() || !draft.productGroup || !rows.length} onClick={createDraft}>Create as draft</button></div>
+      <div className="create-header"><div><h1>Create paywall</h1><p>配置业务信息与商品后创建草稿。</p></div><button className="primary" disabled={!draft.name.trim() || !rows.length || rows.some((row) => !row.id)} onClick={createDraft}>Create as draft</button></div>
       <div className="start-card">
         <span className="eyebrow">Builder & Generator</span><h2>Choose how to start</h2>
         <button onClick={() => setView("builder")}><Blocks size={22} /><span><strong>Build no-code paywall</strong><small>Start with the visual Builder.</small></span><ChevronRight size={18} /></button>
@@ -1425,30 +1427,27 @@ function CreatePaywall({ draft, setDraft, setView, setModal, createDraft }) {
           <h2>General</h2>
           <div className="create-fields">
             <Field label="业务类型 *"><select value={draft.businessType ?? ""} onChange={(event) => patch({ businessType: event.target.value, businessScene: paywallScenesByBusinessType[event.target.value][0] })}>{paywallBusinessTypes.map((value) => <option key={value}>{value}</option>)}</select></Field>
+            <Field label="公众号 *"><select value={draft.publicAccount ?? ""} onChange={(event) => patch({ publicAccount: event.target.value })}>{paywallPublicAccounts.map((value) => <option key={value}>{value}</option>)}</select></Field>
             <Field label="业务场景 *"><select value={draft.businessScene ?? ""} onChange={(event) => patch({ businessScene: event.target.value })}>{(paywallScenesByBusinessType[draft.businessType] ?? []).map((value) => <option key={value}>{value}</option>)}</select></Field>
-            <Field label="公众号 *"><select value={draft.publicAccount ?? ""} onChange={(event) => patch({ publicAccount: event.target.value })}><option>11006 - hey_livea</option></select></Field>
             <Field label="Paywall 名称 *"><input value={draft.name} onChange={(event) => patch({ name: event.target.value })} /></Field>
-            <Field label="paywall样式"><select value={draft.paywallStyle ?? ""} onChange={(event) => patch({ paywallStyle: event.target.value })}><option value="">请选择</option>{paywallStyles.map((value) => <option key={value}>{value}</option>)}</select><small className="create-field-note">样式仅 Deeplink 生效</small></Field>
-            <Field label="商品组 *"><select value={draft.productGroup ?? ""} onChange={(event) => { const productGroup = event.target.value; patch({ productGroup, offerRows: paywallOfferRows(productGroup), products: (paywallProductGroups[productGroup] ?? []).map((product) => product.name), defaultProductId: "" }); }}>{Object.keys(paywallProductGroups).map((value) => <option key={value}>{value}</option>)}</select></Field>
-            <Field label="备注"><textarea value={draft.note ?? ""} onChange={(event) => patch({ note: event.target.value })} /></Field>
+            <Field label="描述"><textarea value={draft.note ?? ""} onChange={(event) => patch({ note: event.target.value })} /></Field>
           </div>
           <div className="create-offers">
-            <h3>优惠信息：</h3>
+            <div className="create-offers-heading"><h3>商品信息：</h3><button type="button" onClick={addProduct}>+ 添加商品</button></div>
             <div className="create-offers-scroll">
               <table>
-                <thead><tr><th>默认选中</th><th>Product ID</th><th>商品名称</th><th>优惠标签</th><th>未选中时顶部标签</th><th>选中时顶部标签</th><th>选中时的按钮文案</th><th>选中时按钮标签文案</th><th>折扣倍率</th><th>赠送礼包 <CircleHelp size={15} /></th><th>操作</th></tr></thead>
-                <tbody>{rows.map((row, index) => <tr key={row.id}>
-                  <td><input type="checkbox" aria-label={`默认选中 ${row.name}`} checked={draft.defaultProductId === row.id} onChange={() => patch({ defaultProductId: draft.defaultProductId === row.id ? "" : row.id })} /></td>
-                  <td>{row.id}</td>
-                  <td className="create-product-name">{row.name}</td>
-                  <td><select aria-label={`${row.name} 优惠标签`} value={row.offerLabel} onChange={(event) => patchRow(index, { offerLabel: event.target.value })}><option>不展示</option><option>展示</option></select></td>
-                  <td>{labelInput(row, index, "unselectedTopLabel", "未选中时顶部标签")}</td>
-                  <td>{labelInput(row, index, "selectedTopLabel", "选中时顶部标签")}</td>
-                  <td>{labelInput(row, index, "selectedButtonCopy", "选中时的按钮文案")}</td>
-                  <td><select aria-label={`${row.name} 选中时按钮标签文案`} value={row.selectedButtonTagCopy} onChange={(event) => patchRow(index, { selectedButtonTagCopy: event.target.value })}><option>不展示</option><option>展示</option></select></td>
-                  <td><input type="number" min="0" step="0.1" aria-label={`${row.name} 折扣倍率`} value={row.discountMultiplier} onChange={(event) => patchRow(index, { discountMultiplier: event.target.value })} /></td>
-                  <td><div className="create-gift-controls"><select aria-label={`${row.name} 赠送礼包`} value={row.giftPack} onChange={(event) => patchRow(index, { giftPack: event.target.value })}><option value="">请选择</option><option>618-年活动礼包（test）</option><option>618-终身</option>{row.giftPack && !["618-年活动礼包（test）", "618-终身"].includes(row.giftPack) && <option>{row.giftPack}</option>}</select><button type="button" className="create-gift-clear" title="清除礼包" aria-label={`清除 ${row.name} 赠送礼包`} onClick={() => patchRow(index, { giftPack: "" })}><X size={13} /></button><button type="button" className="create-gift-edit" title="编辑礼包" aria-label={`编辑 ${row.name} 赠送礼包`} onClick={() => { setGiftEditor(index); setGiftQuery(row.giftPack); }}><Pencil size={16} /></button></div></td>
-                  <td><div className="create-offer-actions"><button type="button" onClick={() => patchRow(index, { ...rows[index - 1], id: row.id, name: row.name })} disabled={index === 0}>复制上条配置</button><button type="button" onClick={() => patchRow(index, { ...paywallOfferRows(draft.productGroup)[index], id: row.id, name: row.name })}>清 除</button></div></td>
+                <thead><tr><th>商品</th><th>优惠</th><th>优惠标签</th><th>默认<br />选中</th><th>推荐标签(未选中)</th><th>推荐标签(选中态)</th><th>选中按钮文案</th><th>按钮标签类型</th><th>赠送</th><th>操作</th></tr></thead>
+                <tbody>{rows.map((row, index) => <tr key={row.key}>
+                  <td><select aria-label={`商品 ${index + 1}`} value={row.id} onChange={(event) => { const product = paywallProductCatalog.find((item) => item.id === event.target.value); setDraft((current) => ({ ...current, defaultProductId: current.defaultProductId === row.id ? "" : current.defaultProductId, offerRows: current.offerRows.map((item, position) => position === index ? { ...item, id: product?.id ?? "", name: product?.name ?? "" } : item) })); }}><option value="">请选择商品</option>{paywallProductCatalog.map((product) => <option key={product.id} value={product.id} disabled={rows.some((item, position) => position !== index && item.id === product.id)}>{product.id} - {product.name}</option>)}</select></td>
+                  <td><div className="create-gift-controls"><input aria-label={`商品 ${index + 1} 优惠`} value={row.offer ?? "0"} readOnly /><button type="button" title="编辑优惠" aria-label={`编辑商品 ${index + 1} 优惠`} onClick={() => { setOfferEditor(index); setOfferQuery(row.offer ?? "0"); }}><Pencil size={15} /></button></div></td>
+                  <td><select aria-label={`商品 ${index + 1} 优惠标签`} value={row.offerLabel} onChange={(event) => patchRow(index, { offerLabel: event.target.value })}><option>不展示</option><option>展示推荐标签</option></select></td>
+                  <td><input type="checkbox" aria-label={`默认选中商品 ${index + 1}`} checked={Boolean(row.id) && draft.defaultProductId === row.id} disabled={!row.id} onChange={() => patch({ defaultProductId: draft.defaultProductId === row.id ? "" : row.id })} /></td>
+                  <td>{labelInput(row, index, "unselectedTopLabel", "推荐标签(未选中)")}</td>
+                  <td>{labelInput(row, index, "selectedTopLabel", "推荐标签(选中态)")}</td>
+                  <td>{labelInput(row, index, "selectedButtonCopy", "选中按钮文案")}</td>
+                  <td><select aria-label={`商品 ${index + 1} 按钮标签类型`} value={row.selectedButtonTagCopy} onChange={(event) => patchRow(index, { selectedButtonTagCopy: event.target.value })}><option>不展示</option><option>展示</option></select></td>
+                  <td><div className="create-gift-controls"><input aria-label={`商品 ${index + 1} 赠送`} value={row.giftPack ?? "0"} readOnly /><button type="button" title="编辑赠送" aria-label={`编辑商品 ${index + 1} 赠送`} onClick={() => { setGiftEditor(index); setGiftQuery(row.giftPack ?? "0"); }}>+</button></div></td>
+                  <td><div className="create-offer-actions"><button type="button" onClick={() => patchRow(index, { ...rows[index - 1], key: row.key, id: row.id, name: row.name })} disabled={index === 0}>复制上条配置</button><button type="button" onClick={() => removeProduct(index)}>删除</button></div></td>
                 </tr>)}</tbody>
               </table>
             </div>
@@ -1457,6 +1456,7 @@ function CreatePaywall({ draft, setDraft, setView, setModal, createDraft }) {
       </div>
       {labelPicker && <div className="modal-backdrop"><section className="modal create-label-modal" role="dialog" aria-label={`选择${labelPicker.label}`}><header><h2>选择{labelPicker.label}</h2><button type="button" className="icon" aria-label="关闭" onClick={() => setLabelPicker(null)}><X size={19} /></button></header><div className="create-label-modal-body"><Field label="多语言 key"><input autoFocus value={labelQuery} placeholder="输入或粘贴多语言 key" onChange={(event) => setLabelQuery(event.target.value)} /></Field><p>当前为本地 Demo，未接入线上多语言词条目录。</p></div><div className="modal-actions"><button type="button" className="secondary" onClick={() => setLabelPicker(null)}>取消</button><button type="button" className="primary" onClick={() => { patchRow(labelPicker.index, { [labelPicker.key]: labelQuery.trim() }); setLabelPicker(null); }}>确认</button></div></section></div>}
       {giftEditor !== null && <div className="modal-backdrop"><section className="modal create-label-modal" role="dialog" aria-label="编辑赠送礼包"><header><h2>编辑赠送礼包</h2><button type="button" className="icon" aria-label="关闭" onClick={() => setGiftEditor(null)}><X size={19} /></button></header><div className="create-label-modal-body"><Field label="礼包名称"><input autoFocus value={giftQuery} onChange={(event) => setGiftQuery(event.target.value)} /></Field></div><div className="modal-actions"><button type="button" className="secondary" onClick={() => setGiftEditor(null)}>取消</button><button type="button" className="primary" onClick={() => { patchRow(giftEditor, { giftPack: giftQuery.trim() }); setGiftEditor(null); }}>确认</button></div></section></div>}
+      {offerEditor !== null && <div className="modal-backdrop"><section className="modal create-label-modal" role="dialog" aria-label="编辑优惠"><header><h2>编辑优惠</h2><button type="button" className="icon" aria-label="关闭" onClick={() => setOfferEditor(null)}><X size={19} /></button></header><div className="create-label-modal-body"><Field label="优惠"><input autoFocus value={offerQuery} onChange={(event) => setOfferQuery(event.target.value)} /></Field></div><div className="modal-actions"><button type="button" className="secondary" onClick={() => setOfferEditor(null)}>取消</button><button type="button" className="primary" onClick={() => { patchRow(offerEditor, { offer: offerQuery.trim() || "0" }); setOfferEditor(null); }}>确认</button></div></section></div>}
     </section>
   );
 }
