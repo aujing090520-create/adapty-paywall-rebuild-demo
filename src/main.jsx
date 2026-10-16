@@ -1476,6 +1476,15 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
   const linkedNodes = builderNodes.map((item) => item.type === "Products" ? linkedPackageNode(item, linkedOfferRows, linkedDefaultProductId, item.config?.productTemplate ?? (item.config?.bluePrivilege ? "blue-privilege" : templates[appliedTemplate]?.documentTemplate)) : item);
   const updateNodeWithPreview = (id, patch) => {
     updateBuilderNode(id, patch);
+    if (id === "products" && patch.config?.packageLayout === "vertical") setBuilderNodes((current) => {
+      const productIndex = current.findIndex((node) => node.id === "products");
+      const benefitsIndex = current.findIndex((node) => node.id === "benefits");
+      if (productIndex < 0 || benefitsIndex < 0 || productIndex < benefitsIndex) return current;
+      const reordered = [...current];
+      const [products] = reordered.splice(productIndex, 1);
+      reordered.splice(benefitsIndex, 0, products);
+      return reordered;
+    });
     if (appliedTemplate !== null && isEditableTemplate(templates[appliedTemplate])) setPreviewMode("editable");
   };
   const updateHeroCopyPosition = (position) => setBuilderNodes((current) => current.map((node) => node.id === "hero-image" ? { ...node, config: { ...node.config, ...position } } : node));
@@ -1876,7 +1885,8 @@ function ProductsStyleEditor({ active, updateNode, pricePreviewMode }) {
 }
 
 function ProductsLayoutEditor({ active, updateNode }) {
-  return <><h4>套餐布局</h4><ConfigNumberField label="套餐间距" active={active} updateNode={updateNode} name="planGap" fallback="" min={0} max={48} suffix="px" /><ConfigNumberField label="套餐最小高度" active={active} updateNode={updateNode} name="planHeight" fallback="" min={30} max={300} suffix="px" /><h4>组件位置</h4><ElementLayoutEditor active={active} updateNode={updateNode} /></>;
+  const config = active.config ?? {};
+  return <><h4>套餐布局</h4>{config.bluePrivilege && <Field label="布局类型"><select aria-label="布局类型" value={config.packageLayout ?? "horizontal"} onChange={(event) => updateNodeConfig(active, updateNode, { packageLayout: event.target.value })}><option value="horizontal">横向卡片（默认）</option><option value="vertical">纵向列表</option></select></Field>}<ConfigNumberField label="套餐间距" active={active} updateNode={updateNode} name="planGap" fallback="" min={0} max={48} suffix="px" /><ConfigNumberField label="套餐最小高度" active={active} updateNode={updateNode} name="planHeight" fallback="" min={30} max={300} suffix="px" /><h4>组件位置</h4><ElementLayoutEditor active={active} updateNode={updateNode} /></>;
 }
 
 function ImageStyle() {
@@ -2521,7 +2531,7 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
   const nodeClass = (id, name = "") => `ht-node ${activeNode === id ? "selected" : ""} ${name}`;
   const Plan = ({ plan, index }) => {
     const config = configFor("products");
-    if (plan.emptySlot) return <div className={`${nodeClass("products", "ht-plan")} ht-plan-empty ${config.bluePrivilege ? "ht-blue-plan" : ""}`} aria-label={`套餐 ${index + 1} 空坑位`} key={`empty-plan-${index}`} />;
+    if (plan.emptySlot) return <div className={`${config.bluePrivilege && config.packageLayout === "vertical" ? "ht-vertical-plan" : nodeClass("products", "ht-plan")} ht-plan-empty ${config.bluePrivilege && config.packageLayout !== "vertical" ? "ht-blue-plan" : ""}`} aria-label={`套餐 ${index + 1} 空坑位`} key={`empty-plan-${index}`} />;
     const hasProductColors = config.bluePrivilege || config.productColors;
     const name = plan.name;
     const priceView = resolveProductPrice(plan, pricePreviewMode);
@@ -2543,6 +2553,16 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
     const priceStyle = { ...(compactPrice ? { fontSize: `min(${Number(configuredPriceSize) > 0 ? `${configuredPriceSize}px` : "6cqw"}, 4cqw)` } : Number(configuredPriceSize) > 0 ? { fontSize: `${configuredPriceSize}px` } : {}), ...(modeStyle.mainColor ? { color: modeStyle.mainColor } : {}) };
     const strikeStyle = { ...(Number(modeStyle.strikeFontSize) > 0 ? { fontSize: `${modeStyle.strikeFontSize}px` } : {}), ...(modeStyle.strikeColor ? { color: modeStyle.strikeColor } : {}) };
     const planStyle = { ...productStyle, ...selectedStyle, ...(!hasProductColors && config.accentColor && index === selectedPlan ? { borderColor: config.accentColor } : {}), ...(config.planRadius !== undefined && config.planRadius !== "" ? { borderRadius: `${config.planRadius}px` } : {}), ...(config.planHeight ? { minHeight: `${config.planHeight}px` } : {}) };
+    if (variant === "blue-privilege" && config.packageLayout === "vertical") {
+      const fields = productPriceFields(plan);
+      const total = fields.total;
+      const monthly = fields.monthly;
+      return <div className={`ht-vertical-plan ${index === selectedPlan ? "chosen" : ""}`} style={planStyle} role={interactive ? "button" : undefined} tabIndex={interactive ? 0 : undefined} onClick={(event) => { if (!interactive) return; event.stopPropagation(); setSelectedPlan(index); onSelect?.("products"); }} key={`${name}-${index}`}>
+        {(saving || hasBadge) && <b className="ht-vertical-badge" style={config.badgeFontSize ? { fontSize: `${config.badgeFontSize}px` } : undefined}>{saving || plan.badgeText}</b>}
+        <div className="ht-vertical-main"><strong style={config.nameFontSize ? { fontSize: `${config.nameFontSize}px` } : undefined}>{name}</strong><span className="ht-vertical-total" style={priceStyle}>{total}</span></div>
+        <div className="ht-vertical-side">{monthly && <span>{monthly}</span>}{fields.months === 0 && fields.referenceTotal && <del style={strikeStyle}>{fields.referenceTotal}</del>}</div>
+      </div>;
+    }
     const priceNode = <em className="ht-plan-main-price" style={priceStyle}>{price}</em>;
     return <div className={`${nodeClass("products", "ht-plan")} ${index === selectedPlan ? "chosen" : ""} ${config.bluePrivilege ? "ht-blue-plan" : ""} ${original ? "has-original" : ""} ${priceView.prominent ? "price-prominent" : ""} ${priceView.missing ? "price-missing" : ""} ${extraSave ? "has-custom-save" : ""}`} style={planStyle} role={interactive ? "button" : undefined} tabIndex={interactive ? 0 : undefined} onClick={(event) => { if (!interactive) return; event.stopPropagation(); setSelectedPlan(index); onSelect?.("products"); }} key={`${name}-${index}`}><span>{hasBadge && variant !== "payment-recovery" && <b style={config.badgeFontSize ? { fontSize: `${config.badgeFontSize}px` } : undefined}>{plan.badgeText}</b>}<strong style={config.nameFontSize ? { fontSize: `${config.nameFontSize}px` } : undefined}>{name}</strong>{original && <del style={strikeStyle}>{original}</del>}{hasBadge && variant === "payment-recovery" && <small style={{ ...(config.accentColor ? { background: config.accentColor } : {}), ...(config.badgeFontSize ? { fontSize: `${config.badgeFontSize}px` } : {}) }}>{plan.badgeText}</small>}</span>{extraReference ? <div className="ht-plan-price-stack"><del className="ht-plan-extra-reference" style={strikeStyle}>{extraReference}</del>{priceNode}</div> : priceNode}{saving && <small className="ht-plan-saving">{saving}</small>}{primaryDetail && <i className={isSaveCopy ? "ht-plan-save-copy" : ""} style={config.detailFontSize ? { fontSize: `${config.detailFontSize}px` } : undefined}>{primaryDetail}</i>}{extraSave && <small className="ht-plan-custom-save">{extraSave}</small>}</div>;
   };
@@ -2625,6 +2645,7 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
       const plans = <>{visiblePlans.map((plan, index) => <Plan plan={plan} index={index} key={index} />)}</>;
       const shellStyle = { ...styleFor("products"), ...(productConfig.planGap !== undefined && productConfig.planGap !== "" ? { gap: `${productConfig.planGap}px` } : {}) };
       if (variant === "membership-plans") return <div className="ht-member-products"><header className="ht-plan-heading"><b>选择套餐</b><span>特权对比 ›</span></header><section className="ht-plan-shell" style={shellStyle}>{plans}</section></div>;
+      if (variant === "blue-privilege" && productConfig.packageLayout === "vertical") return <section className={nodeClass("products", "ht-vertical-products")} style={shellStyle} onClick={select("products")}><h3>选择套餐</h3>{plans}</section>;
       return <section className={variant === "payment-recovery" ? "ht-recovery-plans" : variant === "sku-sheet" ? "ht-sku-plans" : "ht-plan-shell"} style={shellStyle}>{plans}</section>;
     }
     if (id === "timer") return <Timer />;
