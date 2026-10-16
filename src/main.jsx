@@ -866,6 +866,7 @@ function linkedPackageNode(productNode, offerRows, defaultProductId, variant) {
   return { ...productNode, config: { ...productNode.config, linkedProducts: true, packageRows, defaultSelected: packageRows.findIndex((row) => row.skuId === defaultProductId) } };
 }
 const emptyPaywallOfferRow = () => ({ key: crypto.randomUUID(), id: "", name: "", offer: "0", offerLabel: "不展示", unselectedTopLabel: "", selectedTopLabel: "", selectedButtonCopy: "", selectedButtonTagCopy: "不展示", giftPack: "0" });
+const defaultPaywallOfferRows = () => ["DEMO-BLUE-MONTH", "DEMO-BLUE-YEAR", "DEMO-BLUE-LIFETIME"].map((id) => ({ ...emptyPaywallOfferRow(), id, name: paywallProductCatalog.find((product) => product.id === id)?.name ?? "" }));
 
 const observedProductRows = [
   { product: "Japanese Ai - 1 Year", period: "Annual", offer: "Black Friday" },
@@ -1047,7 +1048,7 @@ function App() {
   const [draft, setDraft] = useState({
     name: "RESEARCH - Rebuild Draft",
     businessType: paywallBusinessTypes[0], businessScene: paywallScenesByBusinessType[paywallBusinessTypes[0]][0], publicAccount: paywallPublicAccounts[0],
-    note: "", offerRows: [], products: [],
+    note: "", offerRows: defaultPaywallOfferRows(), defaultProductId: "DEMO-BLUE-YEAR", products: [],
   });
   const [compliance, setCompliance] = useState(false);
   const [rememberCompliance, setRememberCompliance] = useState(false);
