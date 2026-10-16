@@ -10,15 +10,15 @@ export const PRICE_DISPLAY_MODES = [
 // Local demo records stand in for the SKU service; IDs are intentionally not production IDs.
 export const DEMO_SKUS = [
   { id: "DEMO-BLUE-MONTH", label: "蓝色特权 · 1个月", displayName: "1个月", months: 1, total: "¥78", monthly: "¥78/月" },
-  { id: "DEMO-BLUE-YEAR", label: "蓝色特权 · 12个月", displayName: "12个月", months: 12, total: "¥488", monthly: "¥40.67/月" },
-  { id: "DEMO-BLUE-LIFETIME", label: "蓝色特权 · 终身", displayName: "终身", months: 0, total: "¥698", referenceTotal: "¥1698" },
+  { id: "DEMO-BLUE-YEAR", label: "蓝色特权 · 12个月", displayName: "12个月", months: 12, total: "¥488", monthly: "¥40.67/月", copy: { savingCopy: "节省 48%", badgeText: "🔥 30% OFF" } },
+  { id: "DEMO-BLUE-LIFETIME", label: "蓝色特权 · 终身", displayName: "终身", months: 0, total: "¥698", referenceTotal: "¥1698", copy: { savingCopy: "立减¥1000", saveCopy: "永久会员权益" } },
   { id: "DEMO-MEMBER-MONTH", label: "会员套餐 · 1个月", displayName: "1个月", months: 1, total: "¥78", monthly: "¥78/月" },
-  { id: "DEMO-MEMBER-YEAR", label: "会员套餐 · 12个月", displayName: "12个月", months: 12, total: "¥488", monthly: "¥40.67/月" },
-  { id: "DEMO-MEMBER-LIFETIME", label: "会员套餐 · 终身", displayName: "终身", months: 0, total: "¥998" },
-  { id: "DEMO-RECOVERY-YEAR", label: "支付未完成 · 1年", displayName: "1年会员", months: 12, total: "¥338", monthly: "¥28.17/月" },
+  { id: "DEMO-MEMBER-YEAR", label: "会员套餐 · 12个月", displayName: "12个月", months: 12, total: "¥488", monthly: "¥40.67/月", copy: { supportingCopy: "节省48%", badgeText: "最受欢迎" } },
+  { id: "DEMO-MEMBER-LIFETIME", label: "会员套餐 · 终身", displayName: "终身", months: 0, total: "¥998", copy: { saveCopy: "永久会员权益" } },
+  { id: "DEMO-RECOVERY-YEAR", label: "支付未完成 · 1年", displayName: "1年会员", months: 12, total: "¥338", monthly: "¥28.17/月", copy: { saveCopy: "新用户立省 64%", badgeText: "30% OFF" } },
   { id: "DEMO-RECOVERY-MONTH", label: "支付未完成 · 1个月", displayName: "1个月会员", months: 1, total: "¥78", monthly: "¥78/月" },
   { id: "DEMO-SKU-YEAR", label: "SKU 半窗 · 12个月", displayName: "12个月", months: 12, total: "¥338", monthly: "¥28.17/月", referenceTotal: "¥488" },
-  { id: "DEMO-SKU-LIFETIME", label: "SKU 半窗 · 终身", displayName: "终身", months: 0, total: "¥698", referenceTotal: "¥1198" },
+  { id: "DEMO-SKU-LIFETIME", label: "SKU 半窗 · 终身", displayName: "终身", months: 0, total: "¥698", referenceTotal: "¥1198", copy: { badgeText: "sku 折扣 EN" } },
 ];
 
 const templateSkus = {
@@ -30,6 +30,7 @@ const templateSkus = {
 
 export const templateSkuId = (variant, index) => templateSkus[variant]?.[index] ?? "";
 export const skuById = (id) => DEMO_SKUS.find((sku) => sku.id === id);
+export const skuCopy = (id) => ({ supportingCopy: "", savingCopy: "", saveCopy: "", badgeText: "", ...skuById(id)?.copy });
 
 const monthlyText = (value = "") => /\/\s*月|每月|per\s*month/i.test(value);
 

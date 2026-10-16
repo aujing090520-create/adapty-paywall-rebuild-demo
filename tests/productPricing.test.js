@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { PRICE_DISPLAY_MODES, billingMonths, productPriceFields, resolveProductPrice, templateSkuId } from "../src/productPricing.js";
+import { PRICE_DISPLAY_MODES, billingMonths, productPriceFields, resolveProductPrice, skuCopy, templateSkuId } from "../src/productPricing.js";
 
 test("all six backend mode ids remain available", () => {
   assert.deepEqual(PRICE_DISPLAY_MODES.map((mode) => mode.id), ["0", "1", "3", "4", "6", "7"]);
@@ -49,4 +49,13 @@ test("unknown SKU cannot reuse stale manual price", () => {
   assert.equal(productPriceFields(row).total, "");
   assert.equal(billingMonths(row), null);
   assert.equal(resolveProductPrice(row, "1").missing, true);
+});
+
+test("package copy comes from the selected SKU and absent copy stays unavailable", () => {
+  assert.deepEqual(skuCopy("DEMO-BLUE-MONTH"), { supportingCopy: "", savingCopy: "", saveCopy: "", badgeText: "" });
+  assert.equal(skuCopy("DEMO-BLUE-YEAR").savingCopy, "节省 48%");
+  assert.equal(skuCopy("DEMO-BLUE-YEAR").badgeText, "🔥 30% OFF");
+  assert.equal(skuCopy("DEMO-MEMBER-YEAR").supportingCopy, "节省48%");
+  assert.equal(skuCopy("DEMO-RECOVERY-YEAR").saveCopy, "新用户立省 64%");
+  assert.equal(skuCopy("UNKNOWN").badgeText, "");
 });

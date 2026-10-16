@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { DEMO_SKUS, PRICE_DISPLAY_MODES, billingMonths, productPriceFields, resolveProductPrice, skuById, templateSkuId } from "./productPricing.js";
+import { DEMO_SKUS, PRICE_DISPLAY_MODES, billingMonths, productPriceFields, resolveProductPrice, skuById, skuCopy, templateSkuId } from "./productPricing.js";
 import {
   Archive,
   ArrowLeft,
@@ -220,7 +220,10 @@ const documentProductColors = {
 
 function productPackageRows(productNode, variant) {
   const config = productNode?.config ?? {};
-  if (Array.isArray(config.packageRows)) return config.packageRows.map((row, index) => ({ ...row, skuId: row.skuId ?? templateSkuId(variant, index) }));
+  if (Array.isArray(config.packageRows)) return config.packageRows.map((row, index) => {
+    const skuId = row.skuId ?? templateSkuId(variant, index);
+    return { ...row, skuId, ...skuCopy(skuId) };
+  });
   if (config.bluePrivilege) {
     const source = helloTalkTemplateDefaults["blue-privilege"];
     return source.plans.map(([name, price, detail], index) => ({
@@ -2046,7 +2049,10 @@ function ProductsContent({ active, updateNode, pricePreviewMode }) {
     const rows = productPackageRows(active, variant);
     const updateRows = (nextRows, patch = {}) => updateNode(active.id, { config: { ...config, productTemplate: variant, packageRows: nextRows, ...patch } });
     const updateRow = (index, patch) => updateRows(rows.map((row, rowIndex) => rowIndex === index ? { ...row, ...patch } : row));
-    const optionalField = (row, index, valueKey, visibilityKey, label) => <div className="product-optional-field" key={valueKey}><label className="switch-row"><input type="checkbox" aria-label={`套餐 ${index + 1} 展示${label}`} checked={row[visibilityKey] === true} onChange={(event) => updateRow(index, { [visibilityKey]: event.target.checked })} /><span>{row[visibilityKey] ? "开启" : "关闭"}</span><strong>{label}</strong></label>{row[visibilityKey] && <input aria-label={`${row.name || `套餐 ${index + 1}`} ${label}`} value={row[valueKey] ?? ""} onChange={(event) => updateRow(index, { [valueKey]: event.target.value })} />}</div>;
+    const optionalField = (row, index, valueKey, visibilityKey, label) => {
+      const available = Boolean(row[valueKey]);
+      return <div className="product-optional-field" key={valueKey}><label className="switch-row"><input type="checkbox" aria-label={`套餐 ${index + 1} 展示${label}`} checked={available && row[visibilityKey] === true} disabled={!available} onChange={(event) => updateRow(index, { [visibilityKey]: event.target.checked })} /><span>{!available ? "无文案" : row[visibilityKey] ? "开启" : "关闭"}</span><strong>{label}</strong></label></div>;
+    };
     const removeRow = (index) => {
       if (rows.length <= 1) return;
       const selected = config.defaultSelected ?? (config.bluePrivilege ? 1 : 0);
@@ -2522,7 +2528,7 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
     const selectedStyle = index === selectedPlan ? hasProductColors ? { borderColor: "transparent", background: `${productGradient([config.selectedBackground ?? "#ffffff", config.selectedBackground ?? "#ffffff", config.selectedBackground ?? "#ffffff"], ["#ffffff", "#ffffff", "#ffffff"])} padding-box, ${productGradient(config.selectedBorderGradient, ["#ff860a", "#ff860a", "#ff860a"])} border-box` } : config.selectedBackground ? { background: config.selectedBackground } : {} : {};
     const productStyle = hasProductColors ? { "--badge-background": productGradient(config.badgeGradient, ["#ff860a", "#ffb000", "#ffd10b"]), "--save-text-color": config.saveTextColor ?? "#ff8207", "--save-background-color": config.saveBackgroundColor ?? "transparent" } : {};
     const isSaveCopy = Boolean(saveText && primaryDetail === saveText);
-    const hasBadge = Boolean(plan.showBadge);
+    const hasBadge = Boolean(plan.showBadge && plan.badgeText);
     const saving = plan.showSavingCopy ? plan.savingCopy : "";
     const original = config.bluePrivilege ? priceView.strike : "";
     const priceStyle = { ...(Number(modeStyle.mainFontSize) > 0 ? { fontSize: `${modeStyle.mainFontSize}px` } : config.priceFontSize ? { fontSize: `${config.priceFontSize}px` } : {}), ...(modeStyle.mainColor ? { color: modeStyle.mainColor } : {}) };
