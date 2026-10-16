@@ -813,10 +813,12 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-blue-paywall .ht-vertical-plan.chosen { border: 1px solid #ff8707; background: #fff8f1; }
 .ht-blue-paywall .ht-vertical-main, .ht-blue-paywall .ht-vertical-side { min-width: 0; display: flex; flex-direction: column; gap: 1.5cqw; }
 .ht-blue-paywall .ht-vertical-main strong { font-size: 5.4cqw; }
+.ht-blue-paywall .ht-vertical-price-line { min-width: 0; display: flex; align-items: baseline; gap: 1.2cqw; white-space: nowrap; }
 .ht-blue-paywall .ht-vertical-total { font-size: 4.8cqw; font-weight: 800; }
+.ht-blue-paywall .ht-vertical-saving { overflow: hidden; color: var(--save-text-color, #ff8207); font-size: 2.7cqw; font-weight: 500; text-overflow: ellipsis; }
 .ht-blue-paywall .ht-vertical-side { align-items: flex-end; color: #777; font-size: 4cqw; white-space: nowrap; }
 .ht-blue-paywall .ht-vertical-side del { color: #aaa; }
-.ht-blue-paywall .ht-vertical-badge { position: absolute; top: -2.5cqw; left: 0; z-index: 1; max-width: 80%; padding: .7cqw 2.5cqw; border-radius: 2cqw 2cqw 2cqw 0; background: var(--badge-background, #ff910a); color: #fff; font-size: 3.5cqw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ht-blue-paywall .ht-vertical-badge { position: absolute; top: -2.5cqw; right: 0; z-index: 1; max-width: 80%; padding: .7cqw 2.5cqw; border-radius: 2cqw 2cqw 0 2cqw; background: var(--badge-background, #ff910a); color: #fff; font-size: 3.5cqw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ht-blue-paywall .ht-privilege-table { flex: none; }
 .ht-blue-paywall .ht-timer { flex: none; }
 .ht-blue-paywall .ht-action-wrap { flex: none; }

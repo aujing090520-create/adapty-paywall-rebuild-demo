@@ -1650,7 +1650,8 @@ function BuilderProperties({ active, markUnknown, boundary, templateLinks, setTe
   }
 
   if (type === "Products") {
-    return <div className="property-scroll"><h3>商品套餐</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}<div className="product-price-mode-control"><Field label="价格样式预览"><select aria-label="价格样式预览" value={pricePreviewMode} onChange={(event) => setPricePreviewMode(event.target.value)}>{PRICE_DISPLAY_MODES.map((mode) => <option key={mode.id} value={mode.id}>{mode.id} · {mode.label}</option>)}</select></Field><small>仅切换编辑预览，实际展示由分发样式开关决定</small></div>{tab === "content" && <ProductsContent active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} />}{tab === "style" && <ProductsStyleEditor active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} />}{tab === "layout" && <ProductsLayoutEditor active={active} updateNode={updateNode} />}</div>;
+    const verticalBlue = active.config?.bluePrivilege && active.config?.packageLayout === "vertical";
+    return <div className="property-scroll"><h3>商品套餐</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}{verticalBlue ? <p className="product-price-warning">纵向列表固定展示 SKU 总价和月均价。</p> : <div className="product-price-mode-control"><Field label="价格样式预览"><select aria-label="价格样式预览" value={pricePreviewMode} onChange={(event) => setPricePreviewMode(event.target.value)}>{PRICE_DISPLAY_MODES.map((mode) => <option key={mode.id} value={mode.id}>{mode.id} · {mode.label}</option>)}</select></Field><small>仅切换编辑预览，实际展示由分发样式开关决定</small></div>}{tab === "content" && <ProductsContent active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} />}{tab === "style" && <ProductsStyleEditor active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} />}{tab === "layout" && <ProductsLayoutEditor active={active} updateNode={updateNode} />}</div>;
   }
 
   if (type === "Toggle") {
@@ -1870,16 +1871,17 @@ function ProductPriceModeStyleEditor({ active, updateNode, pricePreviewMode }) {
 }
 
 function ProductsStyleEditor({ active, updateNode, pricePreviewMode }) {
+  const verticalBlue = active.config?.bluePrivilege && active.config?.packageLayout === "vertical";
   if (active.config?.bluePrivilege || active.config?.productColors) return <div className="product-color-settings">
-    <ProductColorField label="商品标签颜色" active={active} updateNode={updateNode} name="badgeGradient" fallback={["#ff860a", "#ffb000", "#ffd10b"]} gradient />
+    <ProductColorField label={verticalBlue ? "商品角标颜色" : "商品标签颜色"} active={active} updateNode={updateNode} name="badgeGradient" fallback={["#ff860a", "#ffb000", "#ffd10b"]} gradient />
     <ProductColorField label="商品选中框颜色" active={active} updateNode={updateNode} name="selectedBorderGradient" fallback={["#ff860a", "#ff860a", "#ff860a"]} gradient />
     <ProductColorField label="商品选中背景颜色" active={active} updateNode={updateNode} name="selectedBackground" fallback="#ffffff" />
-    <ProductColorField label="商品SAVE文字颜色" active={active} updateNode={updateNode} name="saveTextColor" fallback="#ff8207" />
-    <label className="switch-row"><input type="checkbox" checked={Boolean(active.config?.saveBackgroundColor)} onChange={(event) => updateNodeConfig(active, updateNode, { saveBackgroundColor: event.target.checked ? "#ffffff" : "" })} /><span>{active.config?.saveBackgroundColor ? "开启" : "关闭"}</span><strong>SAVE 背景</strong></label>
-    {active.config?.saveBackgroundColor && <ProductColorField label="SAVE 背景颜色" active={active} updateNode={updateNode} name="saveBackgroundColor" fallback="#ffffff" />}
+    <ProductColorField label={verticalBlue ? "优惠信息文字颜色" : "商品SAVE文字颜色"} active={active} updateNode={updateNode} name="saveTextColor" fallback="#ff8207" />
+    {!verticalBlue && <label className="switch-row"><input type="checkbox" checked={Boolean(active.config?.saveBackgroundColor)} onChange={(event) => updateNodeConfig(active, updateNode, { saveBackgroundColor: event.target.checked ? "#ffffff" : "" })} /><span>{active.config?.saveBackgroundColor ? "开启" : "关闭"}</span><strong>SAVE 背景</strong></label>}
+    {!verticalBlue && active.config?.saveBackgroundColor && <ProductColorField label="SAVE 背景颜色" active={active} updateNode={updateNode} name="saveBackgroundColor" fallback="#ffffff" />}
     <ProductColorField label="购买按钮文字颜色" active={active} updateNode={updateNode} name="purchaseTextGradient" fallback={["#ffffff", "#ffffff", "#ffffff"]} gradient />
     <ProductColorField label="购买按钮背景颜色" active={active} updateNode={updateNode} name="purchaseBackgroundGradient" fallback={["#ff8707", "#ffb000", "#ffd10b"]} gradient />
-    <h4>套餐文字</h4><div className="split-fields"><ConfigNumberField label="名称字号" active={active} updateNode={updateNode} name="nameFontSize" fallback="" min={8} max={48} suffix="px" /><ConfigNumberField label="通用价格字号" active={active} updateNode={updateNode} name="priceFontSize" fallback="" min={8} max={56} suffix="px" /></div><div className="split-fields"><ConfigNumberField label="辅助文案字号" active={active} updateNode={updateNode} name="detailFontSize" fallback="" min={8} max={40} suffix="px" /><ConfigNumberField label="角标字号" active={active} updateNode={updateNode} name="badgeFontSize" fallback="" min={8} max={40} suffix="px" /></div><ProductPriceModeStyleEditor active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} />
+    <h4>套餐文字</h4><div className="split-fields"><ConfigNumberField label="名称字号" active={active} updateNode={updateNode} name="nameFontSize" fallback="" min={8} max={48} suffix="px" /><ConfigNumberField label={verticalBlue ? "总价字号" : "通用价格字号"} active={active} updateNode={updateNode} name="priceFontSize" fallback="" min={8} max={56} suffix="px" /></div><div className="split-fields">{!verticalBlue && <ConfigNumberField label="辅助文案字号" active={active} updateNode={updateNode} name="detailFontSize" fallback="" min={8} max={40} suffix="px" />}<ConfigNumberField label="角标字号" active={active} updateNode={updateNode} name="badgeFontSize" fallback="" min={8} max={40} suffix="px" /></div>{!verticalBlue && <ProductPriceModeStyleEditor active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} />}
   </div>;
   return <><div className="split-fields"><ConfigColorField label="Selection color" active={active} updateNode={updateNode} name="accentColor" fallback="#ff860a" /><ConfigColorField label="Selected background" active={active} updateNode={updateNode} name="selectedBackground" fallback="#ffffff" /></div><ConfigNumberField label="Corner radius" active={active} updateNode={updateNode} name="radius" fallback={18} min={0} max={32} suffix="px" /></>;
 }
@@ -2059,13 +2061,14 @@ function CarouselContent({ active, updateNode, addNestedNode, allowAdd = true })
 function ProductsContent({ active, updateNode, pricePreviewMode }) {
   const config = active.config ?? {};
   if (config.productColors || config.bluePrivilege || config.linkedProducts) {
+    const verticalBlue = config.bluePrivilege && config.packageLayout === "vertical";
     const variant = config.productTemplate ?? (config.bluePrivilege ? "blue-privilege" : active.content?.includes("¥1198") ? "sku-sheet" : active.content?.includes("新用户立省") ? "payment-recovery" : "membership-plans");
     const rows = productPackageRows(active, variant);
     const updateRows = (nextRows, patch = {}) => updateNode(active.id, { config: { ...config, productTemplate: variant, packageRows: nextRows, ...patch } });
     const updateRow = (index, patch) => updateRows(rows.map((row, rowIndex) => rowIndex === index ? { ...row, ...patch } : row));
-    const optionalField = (row, index, valueKey, visibilityKey, label) => {
+    const optionalField = (row, index, valueKey, visibilityKey, label, hiddenByReference = false) => {
       const available = Boolean(row[valueKey]);
-      return <div className="product-optional-field" key={valueKey}><label className="switch-row"><input type="checkbox" aria-label={`套餐 ${index + 1} 展示${label}`} checked={available && row[visibilityKey] === true} disabled={!available} onChange={(event) => updateRow(index, { [visibilityKey]: event.target.checked })} /><span>{!available ? "无文案" : row[visibilityKey] ? "开启" : "关闭"}</span><strong>{label}</strong></label></div>;
+      return <div className="product-optional-field" key={valueKey}><label className="switch-row"><input type="checkbox" aria-label={`套餐 ${index + 1} 展示${label}`} checked={available && !hiddenByReference && row[visibilityKey] === true} disabled={!available || hiddenByReference} onChange={(event) => updateRow(index, { [visibilityKey]: event.target.checked })} /><span>{!available ? "无文案" : hiddenByReference ? "已隐藏" : row[visibilityKey] ? "开启" : "关闭"}</span><strong>{label}</strong></label>{hiddenByReference && <small className="property-copy">展示参考价时不显示优惠信息</small>}</div>;
     };
     const linked = config.linkedProducts === true;
     const removeRow = (index) => {
@@ -2074,7 +2077,7 @@ function ProductsContent({ active, updateNode, pricePreviewMode }) {
       const nextSelected = selected > index ? selected - 1 : selected === index ? Math.min(index, rows.length - 2) : selected;
       updateRows(rows.filter((_, rowIndex) => rowIndex !== index), { defaultSelected: nextSelected });
     };
-    const missing = rows.map((row, index) => !row.emptySlot && resolveProductPrice(row, pricePreviewMode).missing ? index + 1 : null).filter(Boolean);
+    const missing = rows.map((row, index) => !row.emptySlot && (verticalBlue ? !productPriceFields(row).total : resolveProductPrice(row, pricePreviewMode).missing) ? index + 1 : null).filter(Boolean);
     return <>
       {linked ? <p className="product-price-warning">商品、顺序及默认选中由基础设置统一控制；这里配置套餐样式。</p> : <Field label="默认选中商品"><select value={String(Math.min(config.defaultSelected ?? (config.bluePrivilege ? 1 : 0), Math.max(0, rows.length - 1)))} onChange={(event) => updateRows(rows, { defaultSelected: Number(event.target.value) })}>{rows.map((row, index) => <option key={index} value={index}>{row.name || `套餐 ${index + 1}`}</option>)}</select></Field>}
       {missing.length > 0 && <p className="product-price-warning">套餐 {missing.join("、")} 未关联有效 SKU；请先选择 SKU ID。</p>}
@@ -2087,9 +2090,9 @@ function ProductsContent({ active, updateNode, pricePreviewMode }) {
           {linked ? <div className="product-sku-summary"><span>{row.name}</span><span>SKU：{row.skuId}</span></div> : <div className="split-fields"><Field label="展示名称"><input aria-label={`套餐 ${index + 1} 名称`} value={row.name} onChange={(event) => updateRow(index, { name: event.target.value })} /></Field><Field label="SKU ID（演示映射）"><select aria-label={`套餐 ${index + 1} SKU ID`} value={row.skuId ?? ""} onChange={(event) => { const previous = skuById(row.skuId); const next = skuById(event.target.value); updateRow(index, { skuId: event.target.value, name: !row.name || row.name === previous?.displayName ? next?.displayName ?? row.name : row.name }); }}><option value="">请选择 SKU</option>{DEMO_SKUS.map((sku) => <option key={sku.id} value={sku.id}>{sku.id} · {sku.label}</option>)}</select></Field></div>}
           <div className="product-sku-summary" aria-label={`套餐 ${index + 1} SKU 商品信息`}><span>周期：{months === 0 ? "终身" : months ? `${months} 个月` : "未关联"}</span><span>总价：{fields.total || "未关联"}</span>{months !== 0 && <span>月均价：{fields.monthly || "未关联"}</span>}{fields.referenceTotal && <span>参考价：{fields.referenceTotal}</span>}</div>
           {skuById(row.skuId)?.referenceTotal && <label className="switch-row"><input type="checkbox" aria-label={`套餐 ${index + 1} 展示参考总价`} checked={row.showReferencePrice !== false} onChange={(event) => updateRow(index, { showReferencePrice: event.target.checked })} /><span>{row.showReferencePrice !== false ? "开启" : "关闭"}</span><strong>展示参考价</strong></label>}
-          {optionalField(row, index, "supportingCopy", "showSupportingCopy", "辅助文案")}
-          {optionalField(row, index, "savingCopy", "showSavingCopy", "优惠信息")}
-          {optionalField(row, index, "saveCopy", "showSaveCopy", "SAVE 文案")}
+          {!verticalBlue && optionalField(row, index, "supportingCopy", "showSupportingCopy", "辅助文案")}
+          {optionalField(row, index, "savingCopy", "showSavingCopy", verticalBlue ? "总价旁优惠信息" : "优惠信息", verticalBlue && Boolean(fields.referenceTotal))}
+          {!verticalBlue && optionalField(row, index, "saveCopy", "showSaveCopy", "SAVE 文案")}
           {optionalField(row, index, "badgeText", "showBadge", "商品角标")}
         </section>;
       })}</div>
@@ -2535,7 +2538,8 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
     const hasProductColors = config.bluePrivilege || config.productColors;
     const name = plan.name;
     const priceView = resolveProductPrice(plan, pricePreviewMode);
-    const modeStyle = config.priceModeStyles?.[pricePreviewMode] ?? {};
+    const verticalBlue = variant === "blue-privilege" && config.packageLayout === "vertical";
+    const modeStyle = verticalBlue ? {} : config.priceModeStyles?.[pricePreviewMode] ?? {};
     const price = priceView.main;
     const supportingCopy = plan.showSupportingCopy && plan.supportingCopy !== productPriceFields(plan).monthly ? plan.supportingCopy : "";
     const saveText = plan.showSaveCopy ? plan.saveCopy : "";
@@ -2549,17 +2553,17 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
     const saving = plan.showSavingCopy ? plan.savingCopy : "";
     const original = config.bluePrivilege ? priceView.strike : "";
     const configuredPriceSize = Number(modeStyle.mainFontSize) > 0 ? modeStyle.mainFontSize : config.priceFontSize;
-    const compactPrice = price.length >= 6 && ["blue-privilege", "membership-plans"].includes(variant);
+    const compactPrice = (verticalBlue ? productPriceFields(plan).total : price).length >= 6 && ["blue-privilege", "membership-plans"].includes(variant);
     const priceStyle = { ...(compactPrice ? { fontSize: `min(${Number(configuredPriceSize) > 0 ? `${configuredPriceSize}px` : "6cqw"}, 4cqw)` } : Number(configuredPriceSize) > 0 ? { fontSize: `${configuredPriceSize}px` } : {}), ...(modeStyle.mainColor ? { color: modeStyle.mainColor } : {}) };
     const strikeStyle = { ...(Number(modeStyle.strikeFontSize) > 0 ? { fontSize: `${modeStyle.strikeFontSize}px` } : {}), ...(modeStyle.strikeColor ? { color: modeStyle.strikeColor } : {}) };
     const planStyle = { ...productStyle, ...selectedStyle, ...(!hasProductColors && config.accentColor && index === selectedPlan ? { borderColor: config.accentColor } : {}), ...(config.planRadius !== undefined && config.planRadius !== "" ? { borderRadius: `${config.planRadius}px` } : {}), ...(config.planHeight ? { minHeight: `${config.planHeight}px` } : {}) };
-    if (variant === "blue-privilege" && config.packageLayout === "vertical") {
+    if (verticalBlue) {
       const fields = productPriceFields(plan);
       const total = fields.total;
       const monthly = fields.monthly;
       return <div className={`ht-vertical-plan ${index === selectedPlan ? "chosen" : ""}`} style={planStyle} role={interactive ? "button" : undefined} tabIndex={interactive ? 0 : undefined} onClick={(event) => { if (!interactive) return; event.stopPropagation(); setSelectedPlan(index); onSelect?.("products"); }} key={`${name}-${index}`}>
-        {(saving || hasBadge) && <b className="ht-vertical-badge" style={config.badgeFontSize ? { fontSize: `${config.badgeFontSize}px` } : undefined}>{saving || plan.badgeText}</b>}
-        <div className="ht-vertical-main"><strong style={config.nameFontSize ? { fontSize: `${config.nameFontSize}px` } : undefined}>{name}</strong><span className="ht-vertical-total" style={priceStyle}>{total}</span></div>
+        {hasBadge && <b className="ht-vertical-badge" style={config.badgeFontSize ? { fontSize: `${config.badgeFontSize}px` } : undefined}>{plan.badgeText}</b>}
+        <div className="ht-vertical-main"><strong style={config.nameFontSize ? { fontSize: `${config.nameFontSize}px` } : undefined}>{name}</strong><div className="ht-vertical-price-line"><span className="ht-vertical-total" style={priceStyle}>{total}</span>{saving && !fields.referenceTotal && <small className="ht-vertical-saving">{saving}</small>}</div></div>
         <div className="ht-vertical-side">{monthly && <span>{monthly}</span>}{fields.months === 0 && fields.referenceTotal && <del style={strikeStyle}>{fields.referenceTotal}</del>}</div>
       </div>;
     }
