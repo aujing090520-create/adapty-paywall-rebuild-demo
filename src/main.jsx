@@ -857,9 +857,11 @@ const paywallProductCatalog = DEMO_SKUS.map((sku) => ({ id: sku.id, name: sku.la
 function linkedPackageNode(productNode, offerRows, defaultProductId, variant) {
   if (!productNode || !Array.isArray(offerRows)) return productNode;
   const originalRows = productPackageRows(productNode, variant);
-  const packageRows = offerRows.filter((row) => row.id).map((row, index) => {
-    const existing = originalRows.find((item) => item.skuId === row.id) ?? originalRows[index] ?? {};
-    return { ...existing, skuId: row.id, name: skuById(row.id)?.displayName ?? row.name };
+  const slotCount = { "blue-privilege": 3, "membership-plans": 3, "payment-recovery": 2, "sku-sheet": 2 }[variant] ?? originalRows.length;
+  const packageRows = Array.from({ length: slotCount }, (_, index) => {
+    const row = offerRows[index];
+    const existing = originalRows.find((item) => item.skuId === row?.id) ?? originalRows[index] ?? {};
+    return row?.id ? { ...existing, skuId: row.id, name: skuById(row.id)?.displayName ?? row.name, emptySlot: false } : { ...existing, skuId: "", name: "", emptySlot: true };
   });
   return { ...productNode, config: { ...productNode.config, linkedProducts: true, packageRows, defaultSelected: packageRows.findIndex((row) => row.skuId === defaultProductId) } };
 }
@@ -2061,11 +2063,12 @@ function ProductsContent({ active, updateNode, pricePreviewMode }) {
       const nextSelected = selected > index ? selected - 1 : selected === index ? Math.min(index, rows.length - 2) : selected;
       updateRows(rows.filter((_, rowIndex) => rowIndex !== index), { defaultSelected: nextSelected });
     };
-    const missing = rows.map((row, index) => resolveProductPrice(row, pricePreviewMode).missing ? index + 1 : null).filter(Boolean);
+    const missing = rows.map((row, index) => !row.emptySlot && resolveProductPrice(row, pricePreviewMode).missing ? index + 1 : null).filter(Boolean);
     return <>
       {linked ? <p className="product-price-warning">商品、顺序及默认选中由基础设置统一控制；这里配置套餐样式。</p> : <Field label="默认选中商品"><select value={String(Math.min(config.defaultSelected ?? (config.bluePrivilege ? 1 : 0), Math.max(0, rows.length - 1)))} onChange={(event) => updateRows(rows, { defaultSelected: Number(event.target.value) })}>{rows.map((row, index) => <option key={index} value={index}>{row.name || `套餐 ${index + 1}`}</option>)}</select></Field>}
       {missing.length > 0 && <p className="product-price-warning">套餐 {missing.join("、")} 未关联有效 SKU；请先选择 SKU ID。</p>}
       <div className="product-package-list">{rows.map((row, index) => {
+        if (linked && row.emptySlot) return <section className="product-row-editor" key={index}><header><strong>套餐 {index + 1} · 空坑位</strong></header></section>;
         const fields = productPriceFields(row);
         const months = billingMonths(row);
         return <section className="product-row-editor" key={index}>
@@ -2517,6 +2520,7 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
   const nodeClass = (id, name = "") => `ht-node ${activeNode === id ? "selected" : ""} ${name}`;
   const Plan = ({ plan, index }) => {
     const config = configFor("products");
+    if (plan.emptySlot) return <div className={`${nodeClass("products", "ht-plan")} ht-plan-empty ${config.bluePrivilege ? "ht-blue-plan" : ""}`} aria-label={`套餐 ${index + 1} 空坑位`} key={`empty-plan-${index}`} />;
     const hasProductColors = config.bluePrivilege || config.productColors;
     const name = plan.name;
     const priceView = resolveProductPrice(plan, pricePreviewMode);
@@ -2769,11 +2773,11 @@ function PreviewCarousel({ content, config = {} }) {
 }
 
 function PreviewProducts({ content, config = {} }) {
-  const rows = config.linkedProducts ? (config.packageRows ?? []).map((row) => ({ name: row.name, caption: "", price: productPriceFields(row).total || "未关联 SKU" })) : (content || "").split("\n").filter(Boolean).map((row) => { const [name, caption, price] = row.split("|"); return { name, caption, price: price ?? caption }; });
+  const rows = config.linkedProducts ? (config.packageRows ?? []).map((row) => ({ name: row.emptySlot ? "" : row.name, caption: "", price: row.emptySlot ? "" : productPriceFields(row).total || "未关联 SKU", emptySlot: row.emptySlot })) : (content || "").split("\n").filter(Boolean).map((row) => { const [name, caption, price] = row.split("|"); return { name, caption, price: price ?? caption }; });
   const defaultChoice = config.linkedProducts && config.defaultSelected === -1 ? -1 : Math.min(Math.max(0, Number(config.defaultSelected) || 0), Math.max(0, rows.length - 1));
   const [chosen, setChosen] = useState(defaultChoice);
   useEffect(() => setChosen(defaultChoice), [defaultChoice]);
-  return <div className="preview-products">{rows.map((row, index) => <button className={index === chosen ? "chosen" : ""} style={{ borderColor: index === chosen ? config.accentColor : undefined, backgroundColor: index === chosen ? config.selectedBackground : undefined, borderRadius: config.radius === undefined ? undefined : `${config.radius}px` }} onClick={(event) => { event.stopPropagation(); setChosen(index); }} key={`${row.name}-${index}`}><span><strong>{row.name}</strong>{row.caption && row.price !== row.caption && <small>{row.caption}</small>}</span><em>{row.price}</em></button>)}</div>;
+  return <div className="preview-products">{rows.map((row, index) => row.emptySlot ? <div className="preview-product-empty" aria-label={`套餐 ${index + 1} 空坑位`} key={`empty-${index}`} /> : <button className={index === chosen ? "chosen" : ""} style={{ borderColor: index === chosen ? config.accentColor : undefined, backgroundColor: index === chosen ? config.selectedBackground : undefined, borderRadius: config.radius === undefined ? undefined : `${config.radius}px` }} onClick={(event) => { event.stopPropagation(); setChosen(index); }} key={`${row.name}-${index}`}><span><strong>{row.name}</strong>{row.caption && row.price !== row.caption && <small>{row.caption}</small>}</span><em>{row.price}</em></button>)}</div>;
 }
 
 function PreviewToggle({ content, defaultState = "Off" }) {
