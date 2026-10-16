@@ -67,6 +67,11 @@ export function productPriceFields(row) {
   return { total, monthly, referenceTotal, referenceMonthly, months };
 }
 
+export function verticalProductPriceFields(row) {
+  const fields = productPriceFields(row);
+  return { ...fields, saving: row.showSavingCopy && !fields.referenceTotal ? row.savingCopy ?? "" : "" };
+}
+
 export function resolveProductPrice(row, modeId) {
   const fields = productPriceFields(row);
   if (fields.months === 0) return { main: fields.total || "未关联 SKU", strike: modeId === "0" || modeId === "1" ? "" : fields.referenceTotal, missing: !fields.total, prominent: modeId === "7" };

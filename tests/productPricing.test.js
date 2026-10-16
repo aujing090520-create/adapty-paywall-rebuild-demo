@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { PRICE_DISPLAY_MODES, billingMonths, productPriceFields, resolveProductPrice, skuCopy, templateSkuId } from "../src/productPricing.js";
+import { PRICE_DISPLAY_MODES, billingMonths, productPriceFields, resolveProductPrice, skuCopy, templateSkuId, verticalProductPriceFields } from "../src/productPricing.js";
 
 test("all six backend mode ids remain available", () => {
   assert.deepEqual(PRICE_DISPLAY_MODES.map((mode) => mode.id), ["0", "1", "3", "4", "6", "7"]);
@@ -58,4 +58,11 @@ test("package copy comes from the selected SKU and absent copy stays unavailable
   assert.equal(skuCopy("DEMO-MEMBER-YEAR").supportingCopy, "节省48%");
   assert.equal(skuCopy("DEMO-RECOVERY-YEAR").saveCopy, "新用户立省 64%");
   assert.equal(skuCopy("UNKNOWN").badgeText, "");
+});
+
+test("vertical products hide saving copy only while a reference total is shown", () => {
+  const row = { name: "12个月", totalPrice: "¥488", referenceTotalPrice: "¥698", savingCopy: "节省 48%", showSavingCopy: true };
+  assert.deepEqual(verticalProductPriceFields(row), { total: "¥488", monthly: "¥40.67/月", referenceTotal: "¥698", referenceMonthly: "¥58.17/月", months: 12, saving: "" });
+  assert.equal(verticalProductPriceFields({ ...row, showReferencePrice: false }).saving, "节省 48%");
+  assert.equal(verticalProductPriceFields({ skuId: "DEMO-BLUE-LIFETIME", savingCopy: "立减¥1000", showSavingCopy: true }).saving, "");
 });

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { DEMO_SKUS, PRICE_DISPLAY_MODES, billingMonths, productPriceFields, resolveProductPrice, skuById, skuCopy, templateSkuId } from "./productPricing.js";
+import { DEMO_SKUS, PRICE_DISPLAY_MODES, billingMonths, productPriceFields, resolveProductPrice, skuById, skuCopy, templateSkuId, verticalProductPriceFields } from "./productPricing.js";
 import {
   Archive,
   ArrowLeft,
@@ -2558,12 +2558,12 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
     const strikeStyle = { ...(Number(modeStyle.strikeFontSize) > 0 ? { fontSize: `${modeStyle.strikeFontSize}px` } : {}), ...(modeStyle.strikeColor ? { color: modeStyle.strikeColor } : {}) };
     const planStyle = { ...productStyle, ...selectedStyle, ...(!hasProductColors && config.accentColor && index === selectedPlan ? { borderColor: config.accentColor } : {}), ...(config.planRadius !== undefined && config.planRadius !== "" ? { borderRadius: `${config.planRadius}px` } : {}), ...(config.planHeight ? { minHeight: `${config.planHeight}px` } : {}) };
     if (verticalBlue) {
-      const fields = productPriceFields(plan);
+      const fields = verticalProductPriceFields(plan);
       const total = fields.total;
       const monthly = fields.monthly;
       return <div className={`ht-vertical-plan ${index === selectedPlan ? "chosen" : ""}`} style={planStyle} role={interactive ? "button" : undefined} tabIndex={interactive ? 0 : undefined} onClick={(event) => { if (!interactive) return; event.stopPropagation(); setSelectedPlan(index); onSelect?.("products"); }} key={`${name}-${index}`}>
         {hasBadge && <b className="ht-vertical-badge" style={config.badgeFontSize ? { fontSize: `${config.badgeFontSize}px` } : undefined}>{plan.badgeText}</b>}
-        <div className="ht-vertical-main"><strong style={config.nameFontSize ? { fontSize: `${config.nameFontSize}px` } : undefined}>{name}</strong><div className="ht-vertical-price-line"><span className="ht-vertical-total" style={priceStyle}>{total}</span>{saving && !fields.referenceTotal && <small className="ht-vertical-saving">{saving}</small>}</div></div>
+        <div className="ht-vertical-main"><strong style={config.nameFontSize ? { fontSize: `${config.nameFontSize}px` } : undefined}>{name}</strong><div className="ht-vertical-price-line"><span className="ht-vertical-total" style={priceStyle}>{total}</span>{fields.months !== 0 && fields.referenceTotal && <del style={strikeStyle}>{fields.referenceTotal}</del>}{fields.saving && <small className="ht-vertical-saving">{fields.saving}</small>}</div></div>
         <div className="ht-vertical-side">{monthly && <span>{monthly}</span>}{fields.months === 0 && fields.referenceTotal && <del style={strikeStyle}>{fields.referenceTotal}</del>}</div>
       </div>;
     }

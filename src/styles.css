@@ -815,6 +815,7 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-blue-paywall .ht-vertical-main strong { font-size: 5.4cqw; }
 .ht-blue-paywall .ht-vertical-price-line { min-width: 0; display: flex; align-items: baseline; gap: 1.2cqw; white-space: nowrap; }
 .ht-blue-paywall .ht-vertical-total { font-size: 4.8cqw; font-weight: 800; }
+.ht-blue-paywall .ht-vertical-price-line del { color: #aaa; font-size: 3.2cqw; font-weight: 400; }
 .ht-blue-paywall .ht-vertical-saving { overflow: hidden; color: var(--save-text-color, #ff8207); font-size: 2.7cqw; font-weight: 500; text-overflow: ellipsis; }
 .ht-blue-paywall .ht-vertical-side { align-items: flex-end; color: #777; font-size: 4cqw; white-space: nowrap; }
 .ht-blue-paywall .ht-vertical-side del { color: #aaa; }
