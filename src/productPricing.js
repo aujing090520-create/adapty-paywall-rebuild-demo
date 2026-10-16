@@ -7,9 +7,34 @@ export const PRICE_DISPLAY_MODES = [
   { id: "7", label: "总价／月价划线显眼版" },
 ];
 
+// Local demo records stand in for the SKU service; IDs are intentionally not production IDs.
+export const DEMO_SKUS = [
+  { id: "DEMO-BLUE-MONTH", label: "蓝色特权 · 1个月", displayName: "1个月", months: 1, total: "¥78", monthly: "¥78/月" },
+  { id: "DEMO-BLUE-YEAR", label: "蓝色特权 · 12个月", displayName: "12个月", months: 12, total: "¥488", monthly: "¥40.67/月" },
+  { id: "DEMO-BLUE-LIFETIME", label: "蓝色特权 · 终身", displayName: "终身", months: 0, total: "¥698", referenceTotal: "¥1698" },
+  { id: "DEMO-MEMBER-MONTH", label: "会员套餐 · 1个月", displayName: "1个月", months: 1, total: "¥78", monthly: "¥78/月" },
+  { id: "DEMO-MEMBER-YEAR", label: "会员套餐 · 12个月", displayName: "12个月", months: 12, total: "¥488", monthly: "¥40.67/月" },
+  { id: "DEMO-MEMBER-LIFETIME", label: "会员套餐 · 终身", displayName: "终身", months: 0, total: "¥998" },
+  { id: "DEMO-RECOVERY-YEAR", label: "支付未完成 · 1年", displayName: "1年会员", months: 12, total: "¥338", monthly: "¥28.17/月" },
+  { id: "DEMO-RECOVERY-MONTH", label: "支付未完成 · 1个月", displayName: "1个月会员", months: 1, total: "¥78", monthly: "¥78/月" },
+  { id: "DEMO-SKU-YEAR", label: "SKU 半窗 · 12个月", displayName: "12个月", months: 12, total: "¥338", monthly: "¥28.17/月", referenceTotal: "¥488" },
+  { id: "DEMO-SKU-LIFETIME", label: "SKU 半窗 · 终身", displayName: "终身", months: 0, total: "¥698", referenceTotal: "¥1198" },
+];
+
+const templateSkus = {
+  "blue-privilege": ["DEMO-BLUE-MONTH", "DEMO-BLUE-YEAR", "DEMO-BLUE-LIFETIME"],
+  "membership-plans": ["DEMO-MEMBER-MONTH", "DEMO-MEMBER-YEAR", "DEMO-MEMBER-LIFETIME"],
+  "payment-recovery": ["DEMO-RECOVERY-YEAR", "DEMO-RECOVERY-MONTH"],
+  "sku-sheet": ["DEMO-SKU-YEAR", "DEMO-SKU-LIFETIME"],
+};
+
+export const templateSkuId = (variant, index) => templateSkus[variant]?.[index] ?? "";
+export const skuById = (id) => DEMO_SKUS.find((sku) => sku.id === id);
+
 const monthlyText = (value = "") => /\/\s*月|每月|per\s*month/i.test(value);
 
 export function billingMonths(row) {
+  if (row.skuId) return skuById(row.skuId)?.months ?? null;
   if (row.billingMonths === 0 || /终身|永久|lifetime/i.test(row.name ?? "")) return 0;
   if (Number(row.billingMonths) > 0) return Number(row.billingMonths);
   const years = (row.name ?? "").match(/(\d+)\s*年/);
@@ -29,6 +54,10 @@ function monthlyFromTotal(total, months) {
 }
 
 export function productPriceFields(row) {
+  if (row.skuId) {
+    const sku = skuById(row.skuId);
+    return { total: sku?.total ?? "", monthly: sku?.monthly ?? "", referenceTotal: row.showReferencePrice === false ? "" : sku?.referenceTotal ?? "", referenceMonthly: "", months: sku?.months ?? null };
+  }
   const months = billingMonths(row);
   const total = row.totalPrice ?? (monthlyText(row.price) ? (months === 1 ? row.price.replace(/\/\s*月.*/, "") : "") : row.price ?? "");
   const monthly = months === 0 ? "" : row.monthlyPrice ?? (monthlyText(row.price) ? row.price : monthlyText(row.supportingCopy) ? row.supportingCopy : monthlyFromTotal(total, months));
@@ -39,9 +68,9 @@ export function productPriceFields(row) {
 
 export function resolveProductPrice(row, modeId) {
   const fields = productPriceFields(row);
-  if (fields.months === 0) return { main: fields.total || "待配置总价", strike: modeId === "0" || modeId === "1" ? "" : fields.referenceTotal, missing: !fields.total, prominent: modeId === "7" };
+  if (fields.months === 0) return { main: fields.total || "未关联 SKU", strike: modeId === "0" || modeId === "1" ? "" : fields.referenceTotal, missing: !fields.total, prominent: modeId === "7" };
   const monthlyMain = modeId === "0" || modeId === "4";
   const main = monthlyMain ? fields.monthly : fields.total;
   const strike = modeId === "4" ? fields.total : ["3", "6", "7"].includes(modeId) ? fields.monthly : "";
-  return { main: main || `待配置${monthlyMain ? "月价" : "总价"}`, strike: strike && strike !== main ? strike : "", missing: !main, prominent: modeId === "7" };
+  return { main: main || (row.skuId ? "未关联 SKU" : `待配置${monthlyMain ? "月价" : "总价"}`), strike: strike && strike !== main ? strike : "", missing: !main, prominent: modeId === "7" };
 }

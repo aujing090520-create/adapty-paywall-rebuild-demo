@@ -605,6 +605,7 @@ textarea { min-height: 80px; resize: vertical; }
 .product-price-mode-control .field { margin-bottom: 4px; }
 .product-price-mode-control small { color: #73717d; font-size: 11px; }
 .product-price-warning { margin: 10px 14px; color: #bb4b33; font-size: 12px; }
+.product-sku-summary { display: flex; flex-wrap: wrap; gap: 5px 12px; margin: 10px 0; color: #676570; font-size: 11px; line-height: 1.4; }
 .product-mode-style { display: grid; gap: 12px; padding-top: 16px; border-top: 1px solid #e5e5eb; }
 .product-mode-style-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .product-mode-style-heading h4 { margin: 0; }

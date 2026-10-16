@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { PRICE_DISPLAY_MODES, productPriceFields, resolveProductPrice } from "../src/productPricing.js";
+import { PRICE_DISPLAY_MODES, billingMonths, productPriceFields, resolveProductPrice, templateSkuId } from "../src/productPricing.js";
 
 test("all six backend mode ids remain available", () => {
   assert.deepEqual(PRICE_DISPLAY_MODES.map((mode) => mode.id), ["0", "1", "3", "4", "6", "7"]);
@@ -30,4 +30,23 @@ test("legacy monthly prices stay monthly and missing totals are explicit", () =>
 
 test("edited total prices update derived monthly previews", () => {
   assert.equal(productPriceFields({ name: "12个月", totalPrice: "¥600" }).monthly, "¥50/月");
+});
+
+test("all four templates resolve price and period from their SKU IDs", () => {
+  for (const [variant, count] of [["blue-privilege", 3], ["membership-plans", 3], ["payment-recovery", 2], ["sku-sheet", 2]]) {
+    for (let index = 0; index < count; index++) {
+      const row = { skuId: templateSkuId(variant, index), name: "自定义名称", price: "¥9999", billingMonths: 99 };
+      assert.ok(row.skuId);
+      assert.notEqual(productPriceFields(row).total, "¥9999");
+      assert.notEqual(billingMonths(row), 99);
+      assert.equal(resolveProductPrice(row, "1").missing, false);
+    }
+  }
+});
+
+test("unknown SKU cannot reuse stale manual price", () => {
+  const row = { skuId: "UNKNOWN", name: "12个月", price: "¥488", monthlyPrice: "¥40.67/月" };
+  assert.equal(productPriceFields(row).total, "");
+  assert.equal(billingMonths(row), null);
+  assert.equal(resolveProductPrice(row, "1").missing, true);
 });

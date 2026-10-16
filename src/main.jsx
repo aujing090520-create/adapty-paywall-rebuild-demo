@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { PRICE_DISPLAY_MODES, billingMonths, productPriceFields, resolveProductPrice } from "./productPricing.js";
+import { DEMO_SKUS, PRICE_DISPLAY_MODES, billingMonths, productPriceFields, resolveProductPrice, skuById, templateSkuId } from "./productPricing.js";
 import {
   Archive,
   ArrowLeft,
@@ -220,11 +220,11 @@ const documentProductColors = {
 
 function productPackageRows(productNode, variant) {
   const config = productNode?.config ?? {};
-  if (Array.isArray(config.packageRows)) return config.packageRows.map((row) => row.monthlyPrice === undefined && /\/\s*月/.test(row.supportingCopy ?? "") ? { ...row, monthlyPrice: row.supportingCopy, supportingCopy: "", showSupportingCopy: false } : row);
+  if (Array.isArray(config.packageRows)) return config.packageRows.map((row, index) => ({ ...row, skuId: row.skuId ?? templateSkuId(variant, index) }));
   if (config.bluePrivilege) {
     const source = helloTalkTemplateDefaults["blue-privilege"];
     return source.plans.map(([name, price, detail], index) => ({
-      name, price,
+      name, price, skuId: templateSkuId(variant, index),
       supportingCopy: "",
       showSupportingCopy: false,
       monthlyPrice: index === 2 ? "" : detail,
@@ -241,7 +241,7 @@ function productPackageRows(productNode, variant) {
   const legacyRows = (productNode?.content ?? "").split("\n").filter(Boolean);
   return legacyRows.map((line, index) => {
     const [name = "", price = "", detail = ""] = line.split("|");
-    const row = { name, price, supportingCopy: "", referencePrice: "", saveCopy: "", badgeText: "", showSupportingCopy: false, showReferencePrice: false, showSaveCopy: false, showBadge: false };
+    const row = { name, price, skuId: templateSkuId(variant, index), supportingCopy: "", referencePrice: "", saveCopy: "", badgeText: "", showSupportingCopy: false, showReferencePrice: false, showSaveCopy: false, showBadge: false };
     if (variant === "sku-sheet") {
       row.referencePrice = detail;
       row.showReferencePrice = Boolean(detail);
@@ -2056,22 +2056,22 @@ function ProductsContent({ active, updateNode, pricePreviewMode }) {
     const missing = rows.map((row, index) => resolveProductPrice(row, pricePreviewMode).missing ? index + 1 : null).filter(Boolean);
     return <>
       <Field label="默认选中商品"><select value={String(Math.min(config.defaultSelected ?? (config.bluePrivilege ? 1 : 0), Math.max(0, rows.length - 1)))} onChange={(event) => updateRows(rows, { defaultSelected: Number(event.target.value) })}>{rows.map((row, index) => <option key={index} value={index}>{row.name || `套餐 ${index + 1}`}</option>)}</select></Field>
-      {missing.length > 0 && <p className="product-price-warning">套餐 {missing.join("、")} 缺少当前模式所需的价格预览数据。</p>}
+      {missing.length > 0 && <p className="product-price-warning">套餐 {missing.join("、")} 未关联有效 SKU；请先选择 SKU ID。</p>}
       <div className="product-package-list">{rows.map((row, index) => {
         const fields = productPriceFields(row);
         const months = billingMonths(row);
         return <section className="product-row-editor" key={index}>
           <header><strong>套餐 {index + 1}</strong><button type="button" className="icon" title={rows.length <= 1 ? "至少保留一个套餐" : "删除套餐"} aria-label={`删除套餐 ${index + 1}`} disabled={rows.length <= 1} onClick={() => removeRow(index)}><X size={15} /></button></header>
-          <div className="split-fields"><Field label="套餐名称"><input aria-label={`套餐 ${index + 1} 名称`} value={row.name} onChange={(event) => updateRow(index, { name: event.target.value })} /></Field><Field label="商品周期"><select aria-label={`套餐 ${index + 1} 商品周期`} value={months ?? ""} onChange={(event) => updateRow(index, { billingMonths: event.target.value === "" ? null : Number(event.target.value) })}><option value="">未设置</option>{[1, 3, 6, 12].map((value) => <option key={value} value={value}>{value} 个月</option>)}{months !== null && months !== 0 && ![1, 3, 6, 12].includes(months) && <option value={months}>{months} 个月</option>}<option value="0">终身</option></select></Field></div>
-          <div className="split-fields"><Field label="总价（预览数据）"><input aria-label={`套餐 ${index + 1} 总价`} value={fields.total} onChange={(event) => updateRow(index, { totalPrice: event.target.value })} /></Field>{months !== 0 && <Field label="月均价（预览数据）"><input aria-label={`套餐 ${index + 1} 月均价`} value={fields.monthly} onChange={(event) => updateRow(index, { monthlyPrice: event.target.value })} /></Field>}</div>
-          {optionalField(row, index, "referencePrice", "showReferencePrice", "参考总价")}
+          <div className="split-fields"><Field label="展示名称"><input aria-label={`套餐 ${index + 1} 名称`} value={row.name} onChange={(event) => updateRow(index, { name: event.target.value })} /></Field><Field label="SKU ID（演示映射）"><select aria-label={`套餐 ${index + 1} SKU ID`} value={row.skuId ?? ""} onChange={(event) => { const previous = skuById(row.skuId); const next = skuById(event.target.value); updateRow(index, { skuId: event.target.value, name: !row.name || row.name === previous?.displayName ? next?.displayName ?? row.name : row.name }); }}><option value="">请选择 SKU</option>{DEMO_SKUS.map((sku) => <option key={sku.id} value={sku.id}>{sku.id} · {sku.label}</option>)}</select></Field></div>
+          <div className="product-sku-summary" aria-label={`套餐 ${index + 1} SKU 商品信息`}><span>周期：{months === 0 ? "终身" : months ? `${months} 个月` : "未关联"}</span><span>总价：{fields.total || "未关联"}</span>{months !== 0 && <span>月均价：{fields.monthly || "未关联"}</span>}{fields.referenceTotal && <span>参考价：{fields.referenceTotal}</span>}</div>
+          {skuById(row.skuId)?.referenceTotal && <label className="switch-row"><input type="checkbox" aria-label={`套餐 ${index + 1} 展示参考总价`} checked={row.showReferencePrice !== false} onChange={(event) => updateRow(index, { showReferencePrice: event.target.checked })} /><span>{row.showReferencePrice !== false ? "开启" : "关闭"}</span><strong>展示参考价</strong></label>}
           {optionalField(row, index, "supportingCopy", "showSupportingCopy", "辅助文案")}
           {optionalField(row, index, "savingCopy", "showSavingCopy", "优惠信息")}
           {optionalField(row, index, "saveCopy", "showSaveCopy", "SAVE 文案")}
           {optionalField(row, index, "badgeText", "showBadge", "商品角标")}
         </section>;
       })}</div>
-      <button type="button" className="text-action" onClick={() => updateRows([...rows, { name: "新套餐", totalPrice: "", monthlyPrice: "", billingMonths: 1, supportingCopy: "", referencePrice: "", savingCopy: "", saveCopy: "", badgeText: "", showSupportingCopy: false, showReferencePrice: false, showSavingCopy: false, showSaveCopy: false, showBadge: false }])}><Plus size={15} /> 添加套餐</button>
+      <button type="button" className="text-action" onClick={() => updateRows([...rows, { name: "新套餐", skuId: "", supportingCopy: "", savingCopy: "", saveCopy: "", badgeText: "", showSupportingCopy: false, showReferencePrice: false, showSavingCopy: false, showSaveCopy: false, showBadge: false }])}><Plus size={15} /> 添加套餐</button>
     </>;
   }
   const products = (active.content ?? "").split("\n").filter(Boolean);
