@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { DEMO_SKUS, PRICE_DISPLAY_MODES, billingMonths, productPriceFields, resolveProductPrice, skuById, skuCopy, templateSkuId, verticalProductPriceFields } from "./productPricing.js";
+import { applyComponent, captureComponent, componentKind, readComponentLibrary, writeComponentLibrary } from "./componentLibrary.js";
 import {
   Archive,
   ArrowLeft,
@@ -25,6 +26,8 @@ import {
   WandSparkles,
   X,
   Download,
+  FolderOpen,
+  Save,
   Eye,
   EyeOff,
   GripVertical,
@@ -1463,6 +1466,11 @@ function CreatePaywall({ draft, setDraft, setView, setModal, createDraft }) {
 }
 
 function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setView, duplicate, setModal, markUnknown, builderNodes, setBuilderNodes, updateBuilderNode, removeBuilderNode, activeNode, setActiveNode, appliedTemplate, templateLinks, setTemplateLinks, notify }) {
+  const [componentRecords, setComponentRecords] = useState(() => readComponentLibrary(window.localStorage));
+  const [libraryMode, setLibraryMode] = useState(null);
+  const [libraryName, setLibraryName] = useState("");
+  const [librarySearch, setLibrarySearch] = useState("");
+  const [libraryError, setLibraryError] = useState("");
   const [addElementOpen, setAddElementOpen] = useState(false);
   const [productPickerOpen, setProductPickerOpen] = useState(false);
   const [transientProducts, setTransientProducts] = useState([]);
@@ -1497,6 +1505,27 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
   }, [activeNode, builderNodes]);
   if (view === "builder") {
     const active = linkedNodes.find((node) => node.id === activeNode);
+    const rawActive = builderNodes.find((node) => node.id === activeNode);
+    const matchingRecords = componentRecords.filter((record) => record.kind === componentKind(rawActive?.type) && record.name.toLocaleLowerCase().includes(librarySearch.trim().toLocaleLowerCase())).sort((a, b) => b.createdAt - a.createdAt);
+    const saveCurrentComponent = () => {
+      const name = libraryName.trim();
+      if (!name) return setLibraryError("请输入组件名称");
+      if (name.length > 40) return setLibraryError("名称最多 40 个字");
+      const record = captureComponent(builderNodes, activeNode, name);
+      if (!record) return setLibraryError("当前组件已不存在");
+      if (componentRecords.some((item) => item.kind === record.kind && item.name === name)) return setLibraryError("该类型下已有同名组件，请换一个名称");
+      const next = [record, ...componentRecords];
+      if (!writeComponentLibrary(window.localStorage, next)) return setLibraryError("本地存储空间不足，未能保存。请尝试缩小图片文件。");
+      setComponentRecords(next);
+      setLibraryMode(null);
+      notify(`“${name}”已保存到浏览器本地组件库。`);
+    };
+    const loadComponent = (record) => {
+      setBuilderNodes((current) => applyComponent(current, activeNode, record));
+      if (appliedTemplate !== null && isEditableTemplate(templates[appliedTemplate])) setPreviewMode("editable");
+      setLibraryMode(null);
+      notify(`已将“${record.name}”应用到当前组件。`);
+    };
     const builderBoundary = missingItems.find((item) => item.id === "B-01");
     const isDocumentTemplate = appliedTemplate !== null && Boolean(templates[appliedTemplate]?.documentTemplate);
     const addElement = (type) => {
@@ -1570,9 +1599,10 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
             })}</div>
           </aside>
           <div className="canvas-area"><div className="device-controls"><button className="unknown-action" onClick={() => markUnknown(builderBoundary)}><Smartphone size={16} /> iPhone 15 Pro <ChevronDown size={14} /></button>{appliedTemplate !== null && <div className="preview-mode" aria-label="Preview mode"><button className={previewMode === "source" ? "active" : ""} onClick={() => setPreviewMode("source")}>{templates[appliedTemplate].documentTemplate ? "文档样式" : "Source visual"}</button><button className={previewMode === "editable" ? "active" : ""} disabled={!isEditableTemplate(templates[appliedTemplate])} onClick={() => setPreviewMode("editable")}>Editable structure</button></div>}<button className="icon unknown-action" title="Preview orientation" onClick={() => markUnknown(builderBoundary)}><RotateCw size={15} /></button><button className="icon unknown-action" title="Preview visibility" onClick={() => markUnknown(builderBoundary)}><Eye size={15} /></button></div><PaywallPreview nodes={linkedNodes} template={appliedTemplate !== null ? templates[appliedTemplate] : null} mode={previewMode} pricePreviewMode={pricePreviewMode} activeNode={activeNode} onSelect={setActiveNode} onUpdateHeroPosition={updateHeroCopyPosition} retentionPreviewOpen={retentionPreviewOpen} onOpenRetention={() => setRetentionPreview({ templateId: templates[appliedTemplate]?.id })} onCloseRetention={() => setRetentionPreview(null)} />{appliedTemplate !== null && previewMode === "source" && <p className="source-preview-note">{templates[appliedTemplate].documentTemplate ? "飞书文档中的 Paywall 样式参考，与模板库卡片一一对应。" : "源端模板画面，与模板库卡片一一对应。"}</p>}{appliedTemplate !== null && previewMode === "editable" && <p className="source-preview-note">{isEditableTemplate(templates[appliedTemplate]) ? "已采集样式与核心字段的本地可编辑复现。" : "精确节点树仍在采集。"}</p>}<p className="preview-disclaimer">All prices, titles, and offers displayed are placeholders. The actual data from App Store and Google Play will be shown in the app.</p></div>
-          <aside className="property-panel"><BuilderProperties active={active} markUnknown={markUnknown} boundary={builderBoundary} templateLinks={templateLinks} setTemplateLinks={setTemplateLinks} updateNode={updateNodeWithPreview} removeNode={removeBuilderNode} addNestedNode={addNestedElement} isDocumentTemplate={isDocumentTemplate} pricePreviewMode={pricePreviewMode} setPricePreviewMode={setPricePreviewMode} retentionPreviewOpen={retentionPreviewOpen} onPreviewRetention={() => { setPreviewMode("editable"); setRetentionPreview((current) => current?.templateId === templates[appliedTemplate]?.id ? null : { templateId: templates[appliedTemplate]?.id }); }} /></aside>
+          <aside className="property-panel"><div className="component-library-toolbar"><span>组件库</span><div><button type="button" className="icon" title="保存当前组件" aria-label="保存当前组件" disabled={!rawActive} onClick={() => { setLibraryName(""); setLibraryError(""); setLibraryMode("save"); }}><Save size={17} /></button><button type="button" className="icon" title="读取已保存组件" aria-label="读取已保存组件" disabled={!rawActive} onClick={() => { setLibrarySearch(""); setLibraryError(""); setLibraryMode("load"); }}><FolderOpen size={17} /></button></div></div><BuilderProperties active={active} markUnknown={markUnknown} boundary={builderBoundary} templateLinks={templateLinks} setTemplateLinks={setTemplateLinks} updateNode={updateNodeWithPreview} removeNode={removeBuilderNode} addNestedNode={addNestedElement} isDocumentTemplate={isDocumentTemplate} pricePreviewMode={pricePreviewMode} setPricePreviewMode={setPricePreviewMode} retentionPreviewOpen={retentionPreviewOpen} onPreviewRetention={() => { setPreviewMode("editable"); setRetentionPreview((current) => current?.templateId === templates[appliedTemplate]?.id ? null : { templateId: templates[appliedTemplate]?.id }); }} /></aside>
         </div>
         <div className="builder-footer"><button className="secondary unknown-action" onClick={() => markUnknown(builderBoundary)}>Discard</button><button className="primary" onClick={() => setModal({ kind: appliedTemplate !== null ? "template-requirements" : "builder-save" })}>Save</button></div>
+        {libraryMode && <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setLibraryMode(null); }}><section className="modal component-library-modal" role="dialog" aria-modal="true" aria-label={libraryMode === "save" ? "保存组件" : "读取组件"}><header><h2>{libraryMode === "save" ? "保存组件" : "读取组件"}</h2><button type="button" className="icon" title="关闭" aria-label="关闭" onClick={() => setLibraryMode(null)}><X size={19} /></button></header><div className="component-library-body"><p className="component-library-note">仅保存在当前浏览器中，不会同步到账号或其他设备。{rawActive?.type === "Products" && "商品套餐只保存样式配置，不保存 SKU、商品坑位和价格。"}</p>{libraryMode === "save" ? <Field label="组件名称"><input autoFocus maxLength={41} value={libraryName} placeholder="例如：蓝色特权页主视觉" onChange={(event) => { setLibraryName(event.target.value); setLibraryError(""); }} onKeyDown={(event) => { if (event.key === "Enter") saveCurrentComponent(); }} /></Field> : <><div className="component-library-search"><Search size={17} /><input autoFocus value={librarySearch} placeholder="搜索已保存组件" aria-label="搜索已保存组件" onChange={(event) => setLibrarySearch(event.target.value)} /></div><div className="component-library-list">{matchingRecords.length ? matchingRecords.map((record) => <button type="button" key={record.id} className="component-library-item" onClick={() => loadComponent(record)}><span><strong>{record.name}</strong><small>{new Date(record.createdAt).toLocaleString("zh-CN")}</small></span><ChevronRight size={17} /></button>) : <p className="component-library-empty">没有可用于当前组件的记录</p>}</div></>}{libraryError && <p className="component-library-error" role="alert">{libraryError}</p>}</div><div className="modal-actions"><button type="button" className="secondary" onClick={() => setLibraryMode(null)}>取消</button>{libraryMode === "save" && <button type="button" className="primary" onClick={saveCurrentComponent}>保存</button>}</div></section></div>}
       </section>
     );
   }

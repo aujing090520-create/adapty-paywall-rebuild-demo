@@ -914,3 +914,25 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-sku-caption { display: block; padding: 1cqw 4cqw 2cqw; color: #151515; font-size: 4.7cqw; line-height: 1.05; }
 .ht-sku-caption em { color: #ee3981; font-style: normal; }
 .ht-sku-paywall .ht-sku-sheet > .ht-legal { min-height: 0; }
+
+.property-panel { display: flex; flex-direction: column; }
+.property-panel .property-scroll { flex: 1; min-height: 0; height: auto; }
+.component-library-toolbar { display: flex; align-items: center; justify-content: space-between; flex: none; min-height: 48px; padding: 0 16px; border-bottom: 1px solid #e8e8ec; color: #555561; font-size: 12px; font-weight: 700; }
+.component-library-toolbar > div { display: flex; gap: 6px; }
+.component-library-toolbar .icon { width: 31px; height: 31px; display: grid; place-items: center; border: 1px solid #dddde5; border-radius: 6px; background: #fff; color: #6231d7; cursor: pointer; }
+.component-library-toolbar .icon:hover:not(:disabled) { background: #f4efff; border-color: #ae94f4; }
+.component-library-toolbar .icon:disabled { color: #aaa; cursor: not-allowed; }
+.component-library-modal { width: min(460px, calc(100vw - 32px)); }
+.component-library-body { padding: 18px 22px; }
+.component-library-note { margin: 0 0 18px; color: #777783; font-size: 12px; line-height: 1.6; }
+.component-library-body .field { margin-bottom: 0; }
+.component-library-search { display: flex; align-items: center; gap: 8px; padding: 0 10px; border: 1px solid #d9d9e1; border-radius: 6px; color: #777; }
+.component-library-search input { width: 100%; height: 38px; border: 0; outline: 0; }
+.component-library-list { max-height: 290px; min-height: 72px; margin-top: 10px; overflow: auto; }
+.component-library-item { width: 100%; min-height: 59px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 10px; border: 0; border-bottom: 1px solid #eeeef2; background: #fff; color: #303039; text-align: left; cursor: pointer; }
+.component-library-item:hover { background: #f6f2ff; }
+.component-library-item span { display: grid; min-width: 0; gap: 4px; }
+.component-library-item strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.component-library-item small { color: #85858e; font-size: 11px; }
+.component-library-empty { padding: 17px 4px; color: #85858e; text-align: center; font-size: 12px; }
+.component-library-error { color: #c93242; font-size: 12px; }
