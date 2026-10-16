@@ -852,19 +852,17 @@ const paywallScenesByBusinessType = {
   "6 - 会员": ["3 - 新会员特权页-蓝色", "40 - SKU半窗", "16 - 访客", "17 - 附近", "18 - 城市特权"],
 };
 const paywallPublicAccounts = ["11000 - ht_vip", "11001 - hello_hellotalky", "15304 - ht_vip_plus", "11006 - hey_livea"];
-const paywallProductGroups = {
-  "[10361] - 直播语聊无限时长商品组-1周": [
-    { id: "11109", name: "Android_1周直播语聊特权微信" },
-    { id: "11110", name: "Android_1周直播语聊特权-alipay" },
-    { id: "10065", name: "iOS_1周直播语聊特权" },
-    { id: "10869", name: "GP_1周直播语聊特权" },
-  ],
-  "[10364] - 直播语聊无限时长商品组-1个月,3个月,6个月,12个月": [
-    { id: "10065", name: "iOS_1周直播语聊特权" },
-    { id: "10869", name: "GP_1周直播语聊特权" },
-  ],
-};
-const paywallProductCatalog = [...new Map(Object.values(paywallProductGroups).flat().map((product) => [product.id, product])).values()];
+const paywallProductCatalog = DEMO_SKUS.map((sku) => ({ id: sku.id, name: sku.label }));
+
+function linkedPackageNode(productNode, offerRows, defaultProductId, variant) {
+  if (!productNode || !Array.isArray(offerRows)) return productNode;
+  const originalRows = productPackageRows(productNode, variant);
+  const packageRows = offerRows.filter((row) => row.id).map((row, index) => {
+    const existing = originalRows.find((item) => item.skuId === row.id) ?? originalRows[index] ?? {};
+    return { ...existing, skuId: row.id, name: skuById(row.id)?.displayName ?? row.name };
+  });
+  return { ...productNode, config: { ...productNode.config, linkedProducts: true, packageRows, defaultSelected: packageRows.findIndex((row) => row.skuId === defaultProductId) } };
+}
 const emptyPaywallOfferRow = () => ({ key: crypto.randomUUID(), id: "", name: "", offer: "0", offerLabel: "不展示", unselectedTopLabel: "", selectedTopLabel: "", selectedButtonCopy: "", selectedButtonTagCopy: "不展示", giftPack: "0" });
 
 const observedProductRows = [
@@ -1470,12 +1468,15 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
   const [retentionPreview, setRetentionPreview] = useState(null);
   const retentionPreviewOpen = retentionPreview?.templateId === templates[appliedTemplate]?.id;
   const [dragState, setDragState] = useState(null);
+  const linkedOfferRows = isNew ? draft.offerRows : selected.config?.offerRows;
+  const linkedDefaultProductId = isNew ? draft.defaultProductId : selected.config?.defaultProductId;
+  const linkedNodes = builderNodes.map((item) => item.type === "Products" ? linkedPackageNode(item, linkedOfferRows, linkedDefaultProductId, item.config?.productTemplate ?? (item.config?.bluePrivilege ? "blue-privilege" : templates[appliedTemplate]?.documentTemplate)) : item);
   const updateNodeWithPreview = (id, patch) => {
     updateBuilderNode(id, patch);
     if (appliedTemplate !== null && isEditableTemplate(templates[appliedTemplate])) setPreviewMode("editable");
   };
   const updateHeroCopyPosition = (position) => setBuilderNodes((current) => current.map((node) => node.id === "hero-image" ? { ...node, config: { ...node.config, ...position } } : node));
-  useEffect(() => setPreviewMode(appliedTemplate !== null && templates[appliedTemplate]?.documentTemplate ? "editable" : "source"), [appliedTemplate]);
+  useEffect(() => setPreviewMode(Array.isArray(linkedOfferRows) || (appliedTemplate !== null && templates[appliedTemplate]?.documentTemplate) ? "editable" : "source"), [appliedTemplate, Boolean(linkedOfferRows)]);
   useEffect(() => {
     if (!activeNode?.startsWith("added-")) return;
     const scroll = document.querySelector(".ht-template-scroll");
@@ -1483,7 +1484,7 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
     if (selectedNode) scroll.scrollTop += selectedNode.getBoundingClientRect().top - scroll.getBoundingClientRect().top - 16;
   }, [activeNode, builderNodes]);
   if (view === "builder") {
-    const active = builderNodes.find((node) => node.id === activeNode);
+    const active = linkedNodes.find((node) => node.id === activeNode);
     const builderBoundary = missingItems.find((item) => item.id === "B-01");
     const isDocumentTemplate = appliedTemplate !== null && Boolean(templates[appliedTemplate]?.documentTemplate);
     const addElement = (type) => {
@@ -1556,7 +1557,7 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
               return <button type="button" data-node-id={node.id} style={{ paddingLeft: `${7 + (node.depth ?? 0) * 15}px` }} className={`node ${activeNode === node.id ? "selected" : ""} ${isDragging ? "dragging" : ""} ${dropClass}`} onPointerDown={(event) => beginNodeDrag(event, node.id)} onPointerMove={updateNodeDropTarget} onPointerUp={dropNode} onPointerCancel={() => setDragState(null)} onClick={() => setActiveNode(node.id)} key={node.id} aria-grabbed={isDragging}><span className="drag-handle" aria-hidden="true"><GripVertical size={14} /></span><i><BuilderNodeIcon type={node.type} /></i><strong>{node.config?.retention ? "挽留弹窗" : isTextNodeType(node.type) ? "Text" : node.type}</strong><small>{node.config?.retention ? "" : node.label}</small></button>;
             })}</div>
           </aside>
-          <div className="canvas-area"><div className="device-controls"><button className="unknown-action" onClick={() => markUnknown(builderBoundary)}><Smartphone size={16} /> iPhone 15 Pro <ChevronDown size={14} /></button>{appliedTemplate !== null && <div className="preview-mode" aria-label="Preview mode"><button className={previewMode === "source" ? "active" : ""} onClick={() => setPreviewMode("source")}>{templates[appliedTemplate].documentTemplate ? "文档样式" : "Source visual"}</button><button className={previewMode === "editable" ? "active" : ""} disabled={!isEditableTemplate(templates[appliedTemplate])} onClick={() => setPreviewMode("editable")}>Editable structure</button></div>}<button className="icon unknown-action" title="Preview orientation" onClick={() => markUnknown(builderBoundary)}><RotateCw size={15} /></button><button className="icon unknown-action" title="Preview visibility" onClick={() => markUnknown(builderBoundary)}><Eye size={15} /></button></div><PaywallPreview nodes={builderNodes} template={appliedTemplate !== null ? templates[appliedTemplate] : null} mode={previewMode} pricePreviewMode={pricePreviewMode} activeNode={activeNode} onSelect={setActiveNode} onUpdateHeroPosition={updateHeroCopyPosition} retentionPreviewOpen={retentionPreviewOpen} onOpenRetention={() => setRetentionPreview({ templateId: templates[appliedTemplate]?.id })} onCloseRetention={() => setRetentionPreview(null)} />{appliedTemplate !== null && previewMode === "source" && <p className="source-preview-note">{templates[appliedTemplate].documentTemplate ? "飞书文档中的 Paywall 样式参考，与模板库卡片一一对应。" : "源端模板画面，与模板库卡片一一对应。"}</p>}{appliedTemplate !== null && previewMode === "editable" && <p className="source-preview-note">{isEditableTemplate(templates[appliedTemplate]) ? "已采集样式与核心字段的本地可编辑复现。" : "精确节点树仍在采集。"}</p>}<p className="preview-disclaimer">All prices, titles, and offers displayed are placeholders. The actual data from App Store and Google Play will be shown in the app.</p></div>
+          <div className="canvas-area"><div className="device-controls"><button className="unknown-action" onClick={() => markUnknown(builderBoundary)}><Smartphone size={16} /> iPhone 15 Pro <ChevronDown size={14} /></button>{appliedTemplate !== null && <div className="preview-mode" aria-label="Preview mode"><button className={previewMode === "source" ? "active" : ""} onClick={() => setPreviewMode("source")}>{templates[appliedTemplate].documentTemplate ? "文档样式" : "Source visual"}</button><button className={previewMode === "editable" ? "active" : ""} disabled={!isEditableTemplate(templates[appliedTemplate])} onClick={() => setPreviewMode("editable")}>Editable structure</button></div>}<button className="icon unknown-action" title="Preview orientation" onClick={() => markUnknown(builderBoundary)}><RotateCw size={15} /></button><button className="icon unknown-action" title="Preview visibility" onClick={() => markUnknown(builderBoundary)}><Eye size={15} /></button></div><PaywallPreview nodes={linkedNodes} template={appliedTemplate !== null ? templates[appliedTemplate] : null} mode={previewMode} pricePreviewMode={pricePreviewMode} activeNode={activeNode} onSelect={setActiveNode} onUpdateHeroPosition={updateHeroCopyPosition} retentionPreviewOpen={retentionPreviewOpen} onOpenRetention={() => setRetentionPreview({ templateId: templates[appliedTemplate]?.id })} onCloseRetention={() => setRetentionPreview(null)} />{appliedTemplate !== null && previewMode === "source" && <p className="source-preview-note">{templates[appliedTemplate].documentTemplate ? "飞书文档中的 Paywall 样式参考，与模板库卡片一一对应。" : "源端模板画面，与模板库卡片一一对应。"}</p>}{appliedTemplate !== null && previewMode === "editable" && <p className="source-preview-note">{isEditableTemplate(templates[appliedTemplate]) ? "已采集样式与核心字段的本地可编辑复现。" : "精确节点树仍在采集。"}</p>}<p className="preview-disclaimer">All prices, titles, and offers displayed are placeholders. The actual data from App Store and Google Play will be shown in the app.</p></div>
           <aside className="property-panel"><BuilderProperties active={active} markUnknown={markUnknown} boundary={builderBoundary} templateLinks={templateLinks} setTemplateLinks={setTemplateLinks} updateNode={updateNodeWithPreview} removeNode={removeBuilderNode} addNestedNode={addNestedElement} isDocumentTemplate={isDocumentTemplate} pricePreviewMode={pricePreviewMode} setPricePreviewMode={setPricePreviewMode} retentionPreviewOpen={retentionPreviewOpen} onPreviewRetention={() => { setPreviewMode("editable"); setRetentionPreview((current) => current?.templateId === templates[appliedTemplate]?.id ? null : { templateId: templates[appliedTemplate]?.id }); }} /></aside>
         </div>
         <div className="builder-footer"><button className="secondary unknown-action" onClick={() => markUnknown(builderBoundary)}>Discard</button><button className="primary" onClick={() => setModal({ kind: appliedTemplate !== null ? "template-requirements" : "builder-save" })}>Save</button></div>
@@ -1569,7 +1570,7 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
       <WorkspaceHeader selected={selected} setView={setView} duplicate={duplicate} setModal={setModal} markUnknown={markUnknown} />
       <div className="detail-tabs"><button className="active">General</button><button onClick={() => setView("builder")}>Builder & Generator</button></div>
       <div className="detail-layout">
-        <div className="form-card detail-form"><h2>General</h2><Field label="Paywall name"><input defaultValue={selected.name} /></Field><Field label="Products">{observedProductRows.slice(0, selected.products).map((row, index) => <ProductRow key={row.product} product={`${row.product} / ${row.period}`} offer={row.offer} index={index} markUnknown={markUnknown} readOnly />)}{transientProducts.map((row) => <ProductRow key={row.product} product={`${row.product} / ${row.period}`} offer={row.offer} markUnknown={markUnknown} readOnly />)}{selected.state === "Draft" && <div className="product-add-wrap"><button className="secondary" onClick={() => setProductPickerOpen((open) => !open)}><Plus size={16} /> Add product</button>{productPickerOpen && <div className="product-add-menu"><button onClick={() => { setTransientProducts((items) => [...items, { product: "月度会员", period: "Monthly", offer: "springsale" }]); setProductPickerOpen(false); }}>月度会员</button><button onClick={() => { setTransientProducts((items) => [...items, { product: "Japanese ai", period: "3 months", offer: "No offers for this product" }]); setProductPickerOpen(false); }}>Japanese ai</button></div>}</div>}{selected.state === "Live" && <><button className="secondary" disabled><Plus size={16} /> Add product</button><p className="locked">Products are locked after the first transaction. Duplicate to change products.</p></>}</Field></div>
+        <div className="form-card detail-form"><h2>General</h2><Field label="Paywall name"><input defaultValue={selected.name} /></Field><Field label="Products">{Array.isArray(selected.config?.offerRows) ? selected.config.offerRows.map((row) => <div className="product-sku-summary" key={row.key ?? row.id}><span>{row.name}</span><span>SKU：{row.id}</span>{selected.config.defaultProductId === row.id && <strong>默认选中</strong>}</div>) : <>{observedProductRows.slice(0, selected.products).map((row, index) => <ProductRow key={row.product} product={`${row.product} / ${row.period}`} offer={row.offer} index={index} markUnknown={markUnknown} readOnly />)}{transientProducts.map((row) => <ProductRow key={row.product} product={`${row.product} / ${row.period}`} offer={row.offer} markUnknown={markUnknown} readOnly />)}{selected.state === "Draft" && <div className="product-add-wrap"><button className="secondary" onClick={() => setProductPickerOpen((open) => !open)}><Plus size={16} /> Add product</button>{productPickerOpen && <div className="product-add-menu"><button onClick={() => { setTransientProducts((items) => [...items, { product: "月度会员", period: "Monthly", offer: "springsale" }]); setProductPickerOpen(false); }}>月度会员</button><button onClick={() => { setTransientProducts((items) => [...items, { product: "Japanese ai", period: "3 months", offer: "No offers for this product" }]); setProductPickerOpen(false); }}>Japanese ai</button></div>}</div>}{selected.state === "Live" && <><button className="secondary" disabled><Plus size={16} /> Add product</button><p className="locked">Products are locked after the first transaction. Duplicate to change products.</p></>}</>}</Field></div>
         <aside className="detail-aside"><div><span className="eyebrow">State</span><StateBadge state={selected.state} /></div><div><span className="eyebrow">Products</span><strong>{selected.products}</strong></div><div><span className="eyebrow">Started at</span><strong>{selected.startedAt}</strong></div><button className="secondary full" onClick={() => setView("builder")}><Blocks size={16} /> Open Builder</button></aside>
       </div>
       <div className="builder-footer"><button className="secondary unknown-action" onClick={() => markUnknown(missingItems.find((item) => item.id === "M-01"))}>Discard</button>{selected.state === "Live" ? <button className="primary" onClick={() => setModal({ kind: "builder-save" })}>Save & publish</button> : <button className={transientProducts.length ? "primary unknown-action" : "primary"} onClick={() => transientProducts.length ? markUnknown({ id: "P-01", feature: "Draft product Save persistence", known: "当前页新增产品后可立即出现 Japanese ai / 3 months / No offers for this product。点击 Save 后仍为 Draft；本次账户试验重载后该新增项没有保留。", unknown: "保存未保留的服务端原因及可复现条件未实测。" }) : notify("Draft remains Draft; no publishing confirmation was observed.")}>Save</button>}</div>
@@ -2044,7 +2045,7 @@ function CarouselContent({ active, updateNode, addNestedNode, allowAdd = true })
 
 function ProductsContent({ active, updateNode, pricePreviewMode }) {
   const config = active.config ?? {};
-  if (config.productColors || config.bluePrivilege) {
+  if (config.productColors || config.bluePrivilege || config.linkedProducts) {
     const variant = config.productTemplate ?? (config.bluePrivilege ? "blue-privilege" : active.content?.includes("¥1198") ? "sku-sheet" : active.content?.includes("新用户立省") ? "payment-recovery" : "membership-plans");
     const rows = productPackageRows(active, variant);
     const updateRows = (nextRows, patch = {}) => updateNode(active.id, { config: { ...config, productTemplate: variant, packageRows: nextRows, ...patch } });
@@ -2053,6 +2054,7 @@ function ProductsContent({ active, updateNode, pricePreviewMode }) {
       const available = Boolean(row[valueKey]);
       return <div className="product-optional-field" key={valueKey}><label className="switch-row"><input type="checkbox" aria-label={`套餐 ${index + 1} 展示${label}`} checked={available && row[visibilityKey] === true} disabled={!available} onChange={(event) => updateRow(index, { [visibilityKey]: event.target.checked })} /><span>{!available ? "无文案" : row[visibilityKey] ? "开启" : "关闭"}</span><strong>{label}</strong></label></div>;
     };
+    const linked = config.linkedProducts === true;
     const removeRow = (index) => {
       if (rows.length <= 1) return;
       const selected = config.defaultSelected ?? (config.bluePrivilege ? 1 : 0);
@@ -2061,14 +2063,14 @@ function ProductsContent({ active, updateNode, pricePreviewMode }) {
     };
     const missing = rows.map((row, index) => resolveProductPrice(row, pricePreviewMode).missing ? index + 1 : null).filter(Boolean);
     return <>
-      <Field label="默认选中商品"><select value={String(Math.min(config.defaultSelected ?? (config.bluePrivilege ? 1 : 0), Math.max(0, rows.length - 1)))} onChange={(event) => updateRows(rows, { defaultSelected: Number(event.target.value) })}>{rows.map((row, index) => <option key={index} value={index}>{row.name || `套餐 ${index + 1}`}</option>)}</select></Field>
+      {linked ? <p className="product-price-warning">商品、顺序及默认选中由基础设置统一控制；这里配置套餐样式。</p> : <Field label="默认选中商品"><select value={String(Math.min(config.defaultSelected ?? (config.bluePrivilege ? 1 : 0), Math.max(0, rows.length - 1)))} onChange={(event) => updateRows(rows, { defaultSelected: Number(event.target.value) })}>{rows.map((row, index) => <option key={index} value={index}>{row.name || `套餐 ${index + 1}`}</option>)}</select></Field>}
       {missing.length > 0 && <p className="product-price-warning">套餐 {missing.join("、")} 未关联有效 SKU；请先选择 SKU ID。</p>}
       <div className="product-package-list">{rows.map((row, index) => {
         const fields = productPriceFields(row);
         const months = billingMonths(row);
         return <section className="product-row-editor" key={index}>
-          <header><strong>套餐 {index + 1}</strong><button type="button" className="icon" title={rows.length <= 1 ? "至少保留一个套餐" : "删除套餐"} aria-label={`删除套餐 ${index + 1}`} disabled={rows.length <= 1} onClick={() => removeRow(index)}><X size={15} /></button></header>
-          <div className="split-fields"><Field label="展示名称"><input aria-label={`套餐 ${index + 1} 名称`} value={row.name} onChange={(event) => updateRow(index, { name: event.target.value })} /></Field><Field label="SKU ID（演示映射）"><select aria-label={`套餐 ${index + 1} SKU ID`} value={row.skuId ?? ""} onChange={(event) => { const previous = skuById(row.skuId); const next = skuById(event.target.value); updateRow(index, { skuId: event.target.value, name: !row.name || row.name === previous?.displayName ? next?.displayName ?? row.name : row.name }); }}><option value="">请选择 SKU</option>{DEMO_SKUS.map((sku) => <option key={sku.id} value={sku.id}>{sku.id} · {sku.label}</option>)}</select></Field></div>
+          <header><strong>套餐 {index + 1}</strong>{!linked && <button type="button" className="icon" title={rows.length <= 1 ? "至少保留一个套餐" : "删除套餐"} aria-label={`删除套餐 ${index + 1}`} disabled={rows.length <= 1} onClick={() => removeRow(index)}><X size={15} /></button>}</header>
+          {linked ? <div className="product-sku-summary"><span>{row.name}</span><span>SKU：{row.skuId}</span></div> : <div className="split-fields"><Field label="展示名称"><input aria-label={`套餐 ${index + 1} 名称`} value={row.name} onChange={(event) => updateRow(index, { name: event.target.value })} /></Field><Field label="SKU ID（演示映射）"><select aria-label={`套餐 ${index + 1} SKU ID`} value={row.skuId ?? ""} onChange={(event) => { const previous = skuById(row.skuId); const next = skuById(event.target.value); updateRow(index, { skuId: event.target.value, name: !row.name || row.name === previous?.displayName ? next?.displayName ?? row.name : row.name }); }}><option value="">请选择 SKU</option>{DEMO_SKUS.map((sku) => <option key={sku.id} value={sku.id}>{sku.id} · {sku.label}</option>)}</select></Field></div>}
           <div className="product-sku-summary" aria-label={`套餐 ${index + 1} SKU 商品信息`}><span>周期：{months === 0 ? "终身" : months ? `${months} 个月` : "未关联"}</span><span>总价：{fields.total || "未关联"}</span>{months !== 0 && <span>月均价：{fields.monthly || "未关联"}</span>}{fields.referenceTotal && <span>参考价：{fields.referenceTotal}</span>}</div>
           {skuById(row.skuId)?.referenceTotal && <label className="switch-row"><input type="checkbox" aria-label={`套餐 ${index + 1} 展示参考总价`} checked={row.showReferencePrice !== false} onChange={(event) => updateRow(index, { showReferencePrice: event.target.checked })} /><span>{row.showReferencePrice !== false ? "开启" : "关闭"}</span><strong>展示参考价</strong></label>}
           {optionalField(row, index, "supportingCopy", "showSupportingCopy", "辅助文案")}
@@ -2077,7 +2079,7 @@ function ProductsContent({ active, updateNode, pricePreviewMode }) {
           {optionalField(row, index, "badgeText", "showBadge", "商品角标")}
         </section>;
       })}</div>
-      <button type="button" className="text-action" onClick={() => updateRows([...rows, { name: "新套餐", skuId: "", supportingCopy: "", savingCopy: "", saveCopy: "", badgeText: "", showSupportingCopy: false, showReferencePrice: false, showSavingCopy: false, showSaveCopy: false, showBadge: false }])}><Plus size={15} /> 添加套餐</button>
+      {!linked && <button type="button" className="text-action" onClick={() => updateRows([...rows, { name: "新套餐", skuId: "", supportingCopy: "", savingCopy: "", saveCopy: "", badgeText: "", showSupportingCopy: false, showReferencePrice: false, showSavingCopy: false, showSaveCopy: false, showBadge: false }])}><Plus size={15} /> 添加套餐</button>}
     </>;
   }
   const products = (active.content ?? "").split("\n").filter(Boolean);
@@ -2767,8 +2769,8 @@ function PreviewCarousel({ content, config = {} }) {
 }
 
 function PreviewProducts({ content, config = {} }) {
-  const rows = (content || "").split("\n").filter(Boolean).map((row) => { const [name, caption, price] = row.split("|"); return { name, caption, price: price ?? caption }; });
-  const defaultChoice = Math.min(Math.max(0, Number(config.defaultSelected) || 0), Math.max(0, rows.length - 1));
+  const rows = config.linkedProducts ? (config.packageRows ?? []).map((row) => ({ name: row.name, caption: "", price: productPriceFields(row).total || "未关联 SKU" })) : (content || "").split("\n").filter(Boolean).map((row) => { const [name, caption, price] = row.split("|"); return { name, caption, price: price ?? caption }; });
+  const defaultChoice = config.linkedProducts && config.defaultSelected === -1 ? -1 : Math.min(Math.max(0, Number(config.defaultSelected) || 0), Math.max(0, rows.length - 1));
   const [chosen, setChosen] = useState(defaultChoice);
   useEffect(() => setChosen(defaultChoice), [defaultChoice]);
   return <div className="preview-products">{rows.map((row, index) => <button className={index === chosen ? "chosen" : ""} style={{ borderColor: index === chosen ? config.accentColor : undefined, backgroundColor: index === chosen ? config.selectedBackground : undefined, borderRadius: config.radius === undefined ? undefined : `${config.radius}px` }} onClick={(event) => { event.stopPropagation(); setChosen(index); }} key={`${row.name}-${index}`}><span><strong>{row.name}</strong>{row.caption && row.price !== row.caption && <small>{row.caption}</small>}</span><em>{row.price}</em></button>)}</div>;
