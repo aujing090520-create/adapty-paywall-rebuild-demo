@@ -6,7 +6,6 @@ import {
   Archive,
   ArrowLeft,
   BarChart3,
-  Bell,
   Blocks,
   Clock3,
   Check,
@@ -896,18 +895,10 @@ const localeLabels = {
   ja: "Japanese",
 };
 
-const appCategories = [
-  "Entertainment", "Weather", "Medical", "Productivity", "Travel", "Music",
-  "Reference", "Health & fitness", "Stickers", "Finance", "Developer tools",
-  "Social networking", "Business", "Education", "Graphics & design", "Games",
-  "Sports", "Books", "Lifestyle", "Shopping", "Utilities", "Food & drink",
-  "Magazines & newspapers", "Photo & Video",
-];
-
 const zhCopy = {
-  "Paywalls": "付费墙", "Test": "测试", "Help": "帮助", "App settings": "应用设置", "Account": "账户",
-  "Add a new app": "新建应用", "Evidence & gaps": "已验证与缺口", "Only observed behavior is reproduced. These routes are deliberately not invented.": "仅复刻已观察到的行为；未验证的结果不会被编造。",
-  "Create paywall": "创建付费墙", "Create as draft": "创建草稿", "General": "基础设置", "Products": "商品套餐",
+  "Paywalls": "付费墙", "Test": "测试",
+  "Evidence & gaps": "已验证与缺口", "Only observed behavior is reproduced. These routes are deliberately not invented.": "仅复刻已观察到的行为；未验证的结果不会被编造。",
+  "Create paywall": "创建付费墙", "General": "基础设置", "Products": "商品套餐",
   "Paywall name": "付费墙名称", "Paywall screenshot": "付费墙截图", "Upload screenshot": "上传截图",
   "Build no-code paywall": "使用无代码构建器", "Choose a template": "选择模板", "Generate Paywall with AI": "使用 AI 生成付费墙",
   "Copy a Design from Your Apps": "从其他应用复制设计", "Builder & Generator": "构建器与生成器", "Choose how to start": "选择创建方式",
@@ -1079,7 +1070,6 @@ function App() {
   const [placementDraft, setPlacementDraft] = useState([]);
   const [placementMenuOpen, setPlacementMenuOpen] = useState(false);
   const [rowMenuId, setRowMenuId] = useState(null);
-  const [appMenuOpen, setAppMenuOpen] = useState(false);
   const [locale, setLocale] = useState("zh-CN");
 
   useEffect(() => {
@@ -1112,17 +1102,6 @@ function App() {
   useEffect(() => {
     if (view === "create") setBuilderOrigin("create");
   }, [view]);
-
-  const createDraft = () => {
-    if (!draft.name.trim() || !draft.offerRows?.length || draft.offerRows.some((row) => !row.id)) return;
-    const id = `research-${Date.now()}`;
-    const created = { id, name: draft.name || "Untitled paywall", state: "Draft", products: draft.offerRows.length, startedAt: "20 Aug 2026", icon: false, config: { businessType: draft.businessType, businessScene: draft.businessScene, publicAccount: draft.publicAccount, note: draft.note, defaultProductId: draft.defaultProductId, offerRows: draft.offerRows } };
-    setPaywalls((current) => [...current, created]);
-    setSelectedId(id);
-    setBuilderOrigin("existing");
-    setView("general");
-    notify("Draft created.");
-  };
 
   const duplicate = (source = selected) => {
     setDraft((current) => ({ ...current, name: `${source.name} (Copy)`, products: productOptions.slice(0, source.products) }));
@@ -1177,16 +1156,8 @@ function App() {
 
       <main className="main">
         <header className="topbar">
-          <div className="app-switcher-wrap">
-            <button className="app-switcher" onClick={() => setAppMenuOpen((open) => !open)}><b>T</b> Test <ChevronDown size={15} /></button>
-            {appMenuOpen && (
-              <div className="app-menu">
-                <button className="app-menu-current"><b>T</b><span>Test</span><Check size={15} /></button>
-                <button onClick={() => { setAppMenuOpen(false); setModal({ kind: "add-app" }); }}><Plus size={16} /> Add a new app</button>
-              </div>
-            )}
-          </div>
-          <div className="top-actions"><div className="language-console" data-no-translate><span>{locale === "zh-CN" ? "界面语言" : "Interface language"}</span><button className={locale === "en" ? "active" : ""} onClick={() => setLocale("en")}>EN</button><button className={locale === "zh-CN" ? "active" : ""} onClick={() => setLocale("zh-CN")}>中文</button></div><Bell size={20} /><span>Help</span><span>App settings</span><span>Account</span></div>
+          <div className="app-switcher"><b>T</b> Test</div>
+          <div className="top-actions"><div className="language-console" data-no-translate><span>{locale === "zh-CN" ? "界面语言" : "Interface language"}</span><button className={locale === "en" ? "active" : ""} onClick={() => setLocale("en")}>EN</button><button className={locale === "zh-CN" ? "active" : ""} onClick={() => setLocale("zh-CN")}>中文</button></div></div>
         </header>
 
         <div className="content">
@@ -1218,7 +1189,6 @@ function App() {
               setDraft={setDraft}
               setView={setView}
               setModal={setModal}
-              createDraft={createDraft}
               markUnknown={markUnknown}
             />
           )}
@@ -1248,7 +1218,7 @@ function App() {
           )}
           {view === "builder" && (
             <PaywallWorkspace
-              selected={builderOrigin === "create" ? { ...selected, name: draft.name, state: "Draft" } : selected}
+              selected={builderOrigin === "create" ? { ...selected, name: draft.name } : selected}
               isNew={builderOrigin === "create"}
               draft={draft}
               setDraft={setDraft}
@@ -1329,7 +1299,6 @@ function App() {
           markUnknown={markUnknown}
         />
       )}
-      {modal?.kind === "add-app" && <AddAppModal onClose={() => setModal(null)} markUnknown={markUnknown} />}
       {modal?.kind === "unknown" && <UnknownModal item={modal.item} onClose={() => setModal(null)} />}
     </div>
   );
@@ -1417,7 +1386,7 @@ function PaywallList({
   );
 }
 
-function CreatePaywall({ draft, setDraft, setView, setModal, createDraft }) {
+function CreatePaywall({ draft, setDraft, setView, setModal }) {
   const rows = draft.offerRows ?? [];
   const [labelPicker, setLabelPicker] = useState(null);
   const [labelQuery, setLabelQuery] = useState("");
@@ -1433,7 +1402,7 @@ function CreatePaywall({ draft, setDraft, setView, setModal, createDraft }) {
   return (
     <section className="create">
       <button className="back" onClick={() => setView("list")}><ArrowLeft size={18} /> Paywalls</button>
-      <div className="create-header"><div><h1>Create paywall</h1><p>配置业务信息与商品后创建草稿。</p></div><button className="primary" disabled={!draft.name.trim() || !rows.length || rows.some((row) => !row.id)} onClick={createDraft}>Create as draft</button></div>
+      <div className="create-header"><div><h1>Create paywall</h1><p>配置业务信息与商品，选择模板后进入构建器。</p></div></div>
       <div className="start-card">
         <span className="eyebrow">Builder & Generator</span><h2>Choose how to start</h2>
         <button onClick={() => setView("builder")}><Blocks size={22} /><span><strong>Build no-code paywall</strong><small>Start with the visual Builder.</small></span><ChevronRight size={18} /></button>
@@ -1655,7 +1624,7 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
     };
     return (
       <section className="builder-page">
-        {isNew ? <><button className="back" onClick={() => setView("create")}><ArrowLeft size={18} /> 创建付费墙</button><div className="workspace-heading"><div><span className="eyebrow">新建草稿</span><h1>{selected.name}</h1></div></div></> : <WorkspaceHeader selected={selected} setView={setView} duplicate={duplicate} setModal={setModal} markUnknown={markUnknown} />}
+        {isNew ? <><button className="back" onClick={() => setView("create")}><ArrowLeft size={18} /> 创建付费墙</button><div className="workspace-heading"><div><span className="eyebrow">新建付费墙</span><h1>{selected.name}</h1></div></div></> : <WorkspaceHeader selected={selected} setView={setView} duplicate={duplicate} setModal={setModal} markUnknown={markUnknown} />}
         <div className="detail-tabs"><button onClick={() => setView(isNew ? "create" : "general")}>General</button><button className="active">Builder & Generator</button></div>
         {appliedTemplate !== null && <div className={`template-context ${isEditableTemplate(templates[appliedTemplate]) ? "observed-tree" : "preview-only"}`}><span>Template</span><strong>{templates[appliedTemplate].title}</strong><small>{isEditableTemplate(templates[appliedTemplate]) ? templateEditableStatus(templates[appliedTemplate]) : "源端已采集预览内容；精确节点树待采集"}</small><button className="secondary" onClick={() => setModal({ kind: "templates" })}><LayoutTemplate size={15} /> Change template</button></div>}
         <div className="builder">
@@ -1756,7 +1725,7 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
   }
 
   if (type === "Agreement") {
-    return <div className="property-scroll"><h3>同意协议</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}{tab === "content" && <AgreementContent active={active} updateNode={updateNode} />}{tab === "style" && <AgreementStyle active={active} updateNode={updateNode} />}{tab === "layout" && <><Field label="外边距"><ConfigInsets active={active} updateNode={updateNode} /></Field><ConfigNumberField label="垂直偏移" active={active} updateNode={updateNode} name="offsetY" fallback={0} min={-120} max={120} suffix="px" /></>}</div>;
+    return <div className="property-scroll"><h3>同意协议</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}{tab === "content" && <AgreementContent active={active} updateNode={updateNode} />}{tab === "style" && <AgreementStyle active={active} updateNode={updateNode} />}{tab === "layout" && <><Field label="对齐方式"><div className="segmented">{[["left", "居左"], ["center", "居中"], ["right", "居右"]].map(([value, label]) => <button type="button" key={value} className={(active.config?.align ?? "left") === value ? "active" : ""} onClick={() => updateNodeConfig(active, updateNode, { align: value })}>{label}</button>)}</div></Field><Field label="外边距"><ConfigInsets active={active} updateNode={updateNode} /></Field><ConfigNumberField label="垂直偏移" active={active} updateNode={updateNode} name="offsetY" fallback={0} min={-120} max={120} suffix="px" /></>}</div>;
   }
 
   if (active?.id === "hero-image") {
@@ -2439,25 +2408,6 @@ function MigrationModal({ onClose, markUnknown }) {
   return <Modal title="Migrate paywall's design" onClose={onClose}><p className="modal-copy">Copy only the visual Builder configuration. Products and other paywall configuration are not copied.</p><label className="form-field"><span>1. Select application</span><select disabled><option>No source application available</option></select></label><label className="form-field"><span>2. Select a Builder paywall</span><select disabled><option>Select a Builder paywall</option></select></label><div className="migration-warning"><CircleHelp size={18} /> Remember to test custom fonts on a device, as they may not display correctly.</div><p className="unknown-rule"><CircleHelp size={16} /> The observed account had no other application design candidate, so this Demo does not invent one.</p><div className="modal-actions"><button className="secondary" onClick={onClose}>Cancel</button><button className="primary unknown-action" disabled onClick={() => markUnknown(missingItems[3])}>Copy Selected Paywall</button></div></Modal>;
 }
 
-function AddAppModal({ onClose, markUnknown }) {
-  const [name, setName] = useState("");
-  const [category, setCategory] = useState("");
-  const appBoundary = {
-    id: "G-01",
-    feature: "Create a new app",
-    known: "顶部应用切换菜单包含 Test 与 Add a new app。新增表单含必填 App name、必填 Category、App icon 上传入口、Cancel、Add a new app；Category 共 24 项。",
-    unknown: "提交创建后的校验、应用创建结果、切换后的数据刷新、权限与异常处理未实测。",
-  };
-  return (
-    <Modal title="Add a new app" onClose={onClose}>
-      <Field label="App name"><input value={name} placeholder="Enter your app name" onChange={(event) => setName(event.target.value)} /></Field>
-      <Field label="Category"><select value={category} onChange={(event) => setCategory(event.target.value)}><option value="">Select a category</option>{appCategories.map((item) => <option key={item}>{item}</option>)}</select></Field>
-      <Field label="App icon"><button className="upload unknown-action" onClick={() => markUnknown(appBoundary)}><Upload size={18} /> Choose File <small>PNG, JPG, max size 2MB.</small></button></Field>
-      <div className="modal-actions"><button className="secondary" onClick={onClose}>Cancel</button><button className="primary unknown-action" disabled={!name || !category} onClick={() => markUnknown(appBoundary)}>Add a new app</button></div>
-    </Modal>
-  );
-}
-
 function UnknownModal({ item, onClose }) {
   return <Modal title={`${item.id} · Known boundary`} onClose={onClose}><div className="unknown"><span className="eyebrow">Observed</span><p>{item.known}</p><span className="eyebrow">Not reproduced</span><p>{item.unknown}</p><div className="unknown-rule"><CircleHelp size={18} /> This demo keeps the entry point but does not invent its result.</div></div><div className="modal-actions"><button className="primary" onClick={onClose}>Close</button></div></Modal>;
 }
@@ -2799,7 +2749,7 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onButtonA
     };
     return <div {...dragProps} className={`${nodeClass(entry.id, "ht-agreement")} ${dragProps?.className ?? ""}`} style={{ ...styleFor(entry.id), "--agreement-link-color": config.linkColor ?? "#3069d3", "--agreement-check-color": config.checkColor ?? "#1677ff" }} onClick={select(entry.id)}>
       {reorderHandle}
-      <div className={`ht-agreement-line ${config.showCheckbox === false ? "no-checkbox" : ""}`}>{config.showCheckbox !== false && <input type="checkbox" id={`ht-agreement-${entry.id}`} aria-label="同意服务条款与隐私政策" checked={agreementChecked} disabled={!interactive} onChange={(event) => { setAgreementChecked(event.target.checked); setAgreementMessage(""); }} />}<span className="ht-agreement-copy"><label htmlFor={config.showCheckbox !== false ? `ht-agreement-${entry.id}` : undefined} data-inspector-area="copy">{entry.content || "我已阅读并同意"}</label> <button type="button" data-inspector-area="links" disabled={!interactive} onClick={(event) => openAgreementLink(event, "服务条款", config.termsUrl)}>{config.termsLabel ?? "服务条款"}</button><span>和</span><button type="button" data-inspector-area="links" disabled={!interactive} onClick={(event) => openAgreementLink(event, "隐私政策", config.privacyUrl)}>{config.privacyLabel ?? "隐私政策"}</button></span></div>
+      <div className={`ht-agreement-line agreement-align-${config.align ?? "left"} ${config.showCheckbox === false ? "no-checkbox" : ""}`}>{config.showCheckbox !== false && <input type="checkbox" id={`ht-agreement-${entry.id}`} aria-label="同意服务条款与隐私政策" checked={agreementChecked} disabled={!interactive} onChange={(event) => { setAgreementChecked(event.target.checked); setAgreementMessage(""); }} />}<span className="ht-agreement-copy"><label htmlFor={config.showCheckbox !== false ? `ht-agreement-${entry.id}` : undefined} data-inspector-area="copy">{entry.content || "我已阅读并同意"}</label> <button type="button" data-inspector-area="links" disabled={!interactive} onClick={(event) => openAgreementLink(event, "服务条款", config.termsUrl)}>{config.termsLabel ?? "服务条款"}</button><span>和</span><button type="button" data-inspector-area="links" disabled={!interactive} onClick={(event) => openAgreementLink(event, "隐私政策", config.privacyUrl)}>{config.privacyLabel ?? "隐私政策"}</button></span></div>
       {agreementMessage && <p className="ht-agreement-message" role="alert">{agreementMessage}</p>}
     </div>;
   };
