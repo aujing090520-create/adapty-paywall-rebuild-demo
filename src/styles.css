@@ -932,8 +932,23 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-sku-caption em { color: #ee3981; font-style: normal; }
 .ht-sku-paywall .ht-sku-sheet > .ht-legal { min-height: 0; }
 
+.builder { height: clamp(800px, calc(100dvh - 220px), 1050px); }
 .property-panel { display: flex; flex-direction: column; }
 .property-panel .property-scroll { flex: 1; min-height: 0; height: auto; }
+.property-scroll > h3 { position: sticky; z-index: 4; top: -16px; margin: -16px -16px 0; padding: 16px 16px 10px; background: #fff; border-bottom: 1px solid #eeeef2; }
+.property-scroll > .property-tabs { position: sticky; z-index: 3; top: 31px; margin-top: 0; background: #fff; }
+.property-scroll > .property-tabs button { min-width: 0; }
+.property-scroll :is(input, select, textarea, button):focus-visible { outline: 2px solid #7341e8; outline-offset: 2px; }
+.node:focus-visible, .add-element:focus-visible { outline: 2px solid #7341e8; outline-offset: -2px; }
+.create-offers-scroll { max-height: min(560px, 65vh); overflow: auto; scrollbar-gutter: stable; }
+.create-offers thead th { position: sticky; z-index: 2; top: 0; box-shadow: inset 0 -1px #e3e3e9; }
+.create-offers th:first-child, .create-offers td:first-child { position: sticky; left: 0; z-index: 1; background: #fff; box-shadow: inset -1px 0 #e7e7eb; }
+.create-offers thead th:first-child { z-index: 3; background: #fafafa; }
+.create-offers tbody tr:hover td { background: #f8f6ff; }
+.create-offers tbody tr:focus-within td { background: #f4efff; }
+.create-offers td { white-space: nowrap; }
+.create-offers td > :is(select, .create-gift-controls, .create-label-picker) { max-width: 100%; }
+.create-offers td button:focus-visible { outline: 2px solid #7341e8; outline-offset: 2px; }
 .component-library-toolbar { display: flex; align-items: center; justify-content: space-between; flex: none; min-height: 48px; padding: 0 16px; border-bottom: 1px solid #e8e8ec; color: #555561; font-size: 12px; font-weight: 700; }
 .component-library-toolbar > div { display: flex; gap: 6px; }
 .component-library-toolbar .icon { width: 31px; height: 31px; display: grid; place-items: center; border: 1px solid #dddde5; border-radius: 6px; background: #fff; color: #6231d7; cursor: pointer; }

@@ -1644,6 +1644,12 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
 function BuilderProperties({ active, previewFocus, markUnknown, boundary, templateLinks, setTemplateLinks, updateNode, removeNode, addNestedNode, isDocumentTemplate, pricePreviewMode, setPricePreviewMode, retentionPreviewOpen, onPreviewRetention }) {
   const [tab, setTab] = useState("content");
   useEffect(() => {
+    if (previewFocus?.id !== active?.id) {
+      const panel = document.querySelector(".property-panel .property-scroll");
+      if (panel) panel.scrollTop = 0;
+    }
+  }, [active?.id]);
+  useEffect(() => {
     const panel = document.querySelector(".property-panel .property-scroll");
     panel?.querySelectorAll(".preview-field-focus").forEach((item) => item.classList.remove("preview-field-focus"));
     if (!panel || previewFocus?.id !== active?.id) return;
@@ -1679,7 +1685,7 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
     target.classList.add("preview-field-focus");
     const targetBox = target.getBoundingClientRect();
     const panelBox = panel.getBoundingClientRect();
-    if (targetBox.top < panelBox.top + 12 || targetBox.bottom > panelBox.bottom - 12) panel.scrollTop += targetBox.top - panelBox.top - 12;
+    if (targetBox.top < panelBox.top + 88 || targetBox.bottom > panelBox.bottom - 12) panel.scrollTop += targetBox.top - panelBox.top - 88;
     return () => target.classList.remove("preview-field-focus");
   }, [active?.id, previewFocus, tab]);
   const type = active?.type ?? "Elements";
