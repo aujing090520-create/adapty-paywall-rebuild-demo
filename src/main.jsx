@@ -1650,6 +1650,10 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
     const carousel = active.type === "Carousel" && Array.isArray(active.config?.slides);
     const area = carousel && previewFocus.area === "component" ? "media" : previewFocus.area;
     const slide = carousel && tab === "content" ? panel.querySelectorAll(".carousel-slide-list .product-row-editor")[previewFocus.slideIndex ?? Number(active.config.initialSlide ?? 0)] : null;
+    const products = active.type === "Products";
+    const productRow = products && tab === "content" ? panel.querySelectorAll(".product-package-list .product-row-editor")[previewFocus.slideIndex ?? 0] : null;
+    const productStyle = products && tab === "style" ? exactField(previewFocus.area === "badge" ? ["商品标签颜色", "商品角标颜色", "角标字号"] : previewFocus.area === "price" ? ["通用价格字号", "总价字号", "主价字号"] : ["商品选中框颜色", "名称字号"]) : null;
+    const productLayout = products && tab === "layout" ? exactField(["套餐间距", "套餐最小高度", "布局类型"]) : null;
     const carouselContentLabels = { media: ["图片"], headline: ["标题"], caption: ["说明文案"], dots: ["初始展示"] };
     const carouselSection = carousel && tab !== "content" ? panel.querySelector(`[data-inspector-section="${area}"]`) : null;
     const hints = {
@@ -1659,6 +1663,9 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
     };
     const target = carouselSection
       ?? (slide && exactField(carouselContentLabels[area] ?? [], slide))
+      ?? productRow
+      ?? productStyle
+      ?? productLayout
       ?? exactField(hints[tab]?.[area] ?? [])
       ?? panel.querySelector(".rich-text-run, .form-field, .product-row-editor, .property-tabs");
     if (!target) return;
@@ -2619,6 +2626,7 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onButtonA
     onPointerCancel: () => { heroOverlayDrag.current = null; },
   } : {};
   const nodeClass = (id, name = "") => `ht-node ${activeNode === id ? "selected" : ""} ${name}`;
+  const planClass = (index, name) => `ht-node ${activeNode === "products" && index === selectedPlan ? "selected" : ""} ${name}`;
   const Plan = ({ plan, index }) => {
     const config = configFor("products");
     if (plan.emptySlot) return <div className={`${config.bluePrivilege && config.packageLayout === "vertical" ? "ht-vertical-plan" : nodeClass("products", "ht-plan")} ht-plan-empty ${config.bluePrivilege && config.packageLayout !== "vertical" ? "ht-blue-plan" : ""}`} aria-label={`套餐 ${index + 1} 空坑位`} key={`empty-plan-${index}`} />;
@@ -2648,14 +2656,14 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onButtonA
       const fields = verticalProductPriceFields(plan);
       const total = fields.total;
       const monthly = fields.monthly;
-      return <div className={`ht-vertical-plan ${index === selectedPlan ? "chosen" : ""}`} style={planStyle} role={interactive ? "button" : undefined} tabIndex={interactive ? 0 : undefined} onClick={(event) => { if (!interactive) return; event.stopPropagation(); setSelectedPlan(index); onSelect?.("products", previewClickArea(event)); }} key={`${name}-${index}`}>
+      return <div className={`${planClass(index, "ht-vertical-plan")} ${index === selectedPlan ? "chosen" : ""}`} style={planStyle} role={interactive ? "button" : undefined} tabIndex={interactive ? 0 : undefined} onClick={(event) => { if (!interactive) return; event.stopPropagation(); setSelectedPlan(index); onSelect?.("products", previewClickArea(event), index); }} key={`${name}-${index}`}>
         {hasBadge && <b data-inspector-area="badge" className="ht-vertical-badge" style={config.badgeFontSize ? { fontSize: `${config.badgeFontSize}px` } : undefined}>{plan.badgeText}</b>}
         <div className="ht-vertical-main"><strong style={config.nameFontSize ? { fontSize: `${config.nameFontSize}px` } : undefined}>{name}</strong><div className="ht-vertical-price-line" data-inspector-area="price"><span className="ht-vertical-total" style={priceStyle}>{total}</span>{fields.months !== 0 && fields.referenceTotal && <del style={strikeStyle}>{fields.referenceTotal}</del>}{fields.saving && <small className="ht-vertical-saving">{fields.saving}</small>}</div></div>
         <div className="ht-vertical-side">{monthly && <span>{monthly}</span>}{fields.months === 0 && fields.referenceTotal && <del style={strikeStyle}>{fields.referenceTotal}</del>}</div>
       </div>;
     }
     const priceNode = <em data-inspector-area="price" className="ht-plan-main-price" style={priceStyle}>{price}</em>;
-    return <div className={`${nodeClass("products", "ht-plan")} ${index === selectedPlan ? "chosen" : ""} ${config.bluePrivilege ? "ht-blue-plan" : ""} ${original ? "has-original" : ""} ${priceView.prominent ? "price-prominent" : ""} ${priceView.missing ? "price-missing" : ""} ${extraSave ? "has-custom-save" : ""}`} style={planStyle} role={interactive ? "button" : undefined} tabIndex={interactive ? 0 : undefined} onClick={(event) => { if (!interactive) return; event.stopPropagation(); setSelectedPlan(index); onSelect?.("products", previewClickArea(event)); }} key={`${name}-${index}`}><span>{hasBadge && variant !== "payment-recovery" && <b data-inspector-area="badge" style={config.badgeFontSize ? { fontSize: `${config.badgeFontSize}px` } : undefined}>{plan.badgeText}</b>}<strong style={config.nameFontSize ? { fontSize: `${config.nameFontSize}px` } : undefined}>{name}</strong>{original && <del data-inspector-area="price" style={strikeStyle}>{original}</del>}{hasBadge && variant === "payment-recovery" && <small data-inspector-area="badge" style={{ ...(config.accentColor ? { background: config.accentColor } : {}), ...(config.badgeFontSize ? { fontSize: `${config.badgeFontSize}px` } : {}) }}>{plan.badgeText}</small>}</span>{extraReference ? <div data-inspector-area="price" className="ht-plan-price-stack"><del className="ht-plan-extra-reference" style={strikeStyle}>{extraReference}</del>{priceNode}</div> : priceNode}{saving && <small className="ht-plan-saving">{saving}</small>}{primaryDetail && <i className={isSaveCopy ? "ht-plan-save-copy" : ""} style={config.detailFontSize ? { fontSize: `${config.detailFontSize}px` } : undefined}>{primaryDetail}</i>}{extraSave && <small className="ht-plan-custom-save">{extraSave}</small>}</div>;
+    return <div className={`${planClass(index, "ht-plan")} ${index === selectedPlan ? "chosen" : ""} ${config.bluePrivilege ? "ht-blue-plan" : ""} ${original ? "has-original" : ""} ${priceView.prominent ? "price-prominent" : ""} ${priceView.missing ? "price-missing" : ""} ${extraSave ? "has-custom-save" : ""}`} style={planStyle} role={interactive ? "button" : undefined} tabIndex={interactive ? 0 : undefined} onClick={(event) => { if (!interactive) return; event.stopPropagation(); setSelectedPlan(index); onSelect?.("products", previewClickArea(event), index); }} key={`${name}-${index}`}><span>{hasBadge && variant !== "payment-recovery" && <b data-inspector-area="badge" style={config.badgeFontSize ? { fontSize: `${config.badgeFontSize}px` } : undefined}>{plan.badgeText}</b>}<strong style={config.nameFontSize ? { fontSize: `${config.nameFontSize}px` } : undefined}>{name}</strong>{original && <del data-inspector-area="price" style={strikeStyle}>{original}</del>}{hasBadge && variant === "payment-recovery" && <small data-inspector-area="badge" style={{ ...(config.accentColor ? { background: config.accentColor } : {}), ...(config.badgeFontSize ? { fontSize: `${config.badgeFontSize}px` } : {}) }}>{plan.badgeText}</small>}</span>{extraReference ? <div data-inspector-area="price" className="ht-plan-price-stack"><del className="ht-plan-extra-reference" style={strikeStyle}>{extraReference}</del>{priceNode}</div> : priceNode}{saving && <small className="ht-plan-saving">{saving}</small>}{primaryDetail && <i className={isSaveCopy ? "ht-plan-save-copy" : ""} style={config.detailFontSize ? { fontSize: `${config.detailFontSize}px` } : undefined}>{primaryDetail}</i>}{extraSave && <small className="ht-plan-custom-save">{extraSave}</small>}</div>;
   };
   const Status = () => <div className="ht-status"><b>{variant === "sku-sheet" ? "4:52" : variant === "blue-privilege" ? "15:48" : "16:48"}</b><span>••• ◔ ▰</span></div>;
   const Timer = () => {
