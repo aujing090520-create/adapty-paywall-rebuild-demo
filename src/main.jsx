@@ -217,6 +217,10 @@ function moveBuilderNode(nodes, sourceId, targetId, position) {
   return [...remaining.slice(0, insertAt), ...moving, ...remaining.slice(insertAt)];
 }
 
+function PreviewReorderHandle({ onDragStart, onDragEnd }) {
+  return <span className="preview-reorder-handle" draggable title="拖动调整组件顺序" aria-label="拖动调整组件顺序" onClick={(event) => event.stopPropagation()} onDragStart={onDragStart} onDragEnd={onDragEnd}><GripVertical size={15} /></span>;
+}
+
 const documentProductColors = {
   productColors: true,
   badgeGradient: ["#003bec", "#3ed6ea", "#bbff62"],
@@ -1489,6 +1493,8 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
   const [previewFocus, setPreviewFocus] = useState(null);
   const retentionPreviewOpen = retentionPreview?.templateId === templates[appliedTemplate]?.id;
   const [dragState, setDragState] = useState(null);
+  const previewDragSource = useRef(null);
+  const previewDropMarker = useRef(null);
   const linkedOfferRows = isNew ? draft.offerRows : selected.config?.offerRows;
   const linkedDefaultProductId = isNew ? draft.defaultProductId : selected.config?.defaultProductId;
   const linkedNodes = builderNodes.map((item) => item.type === "Products" ? linkedPackageNode(item, linkedOfferRows, linkedDefaultProductId, item.config?.productTemplate ?? (item.config?.bluePrivilege ? "blue-privilege" : templates[appliedTemplate]?.documentTemplate)) : item);
@@ -1607,6 +1613,46 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
       }
       setDragState(null);
     };
+    const previewReorder = {
+      start: (id, event) => {
+        previewDragSource.current = id;
+        event.dataTransfer.effectAllowed = "move";
+        event.dataTransfer.setData("text/plain", id);
+        const component = event.currentTarget.parentElement;
+        if (component) event.dataTransfer.setDragImage(component, 12, 12);
+      },
+      over: (id, event) => {
+        const sourceId = previewDragSource.current;
+        if (!sourceId || !canMoveBuilderNode(builderNodes, sourceId, id)) return;
+        event.preventDefault();
+        event.stopPropagation();
+        event.dataTransfer.dropEffect = "move";
+        const { top, height } = event.currentTarget.getBoundingClientRect();
+        const marker = event.clientY < top + height / 2 ? "preview-drop-before" : "preview-drop-after";
+        if (previewDropMarker.current?.element === event.currentTarget && previewDropMarker.current?.className === marker) return;
+        if (previewDropMarker.current) previewDropMarker.current.element.classList.remove(previewDropMarker.current.className);
+        event.currentTarget.classList.add(marker);
+        previewDropMarker.current = { element: event.currentTarget, className: marker };
+      },
+      drop: (id, event) => {
+        const sourceId = previewDragSource.current;
+        if (!sourceId || !canMoveBuilderNode(builderNodes, sourceId, id)) return;
+        event.preventDefault();
+        event.stopPropagation();
+        const { top, height } = event.currentTarget.getBoundingClientRect();
+        const position = event.clientY < top + height / 2 ? "before" : "after";
+        setBuilderNodes((current) => moveBuilderNode(current, sourceId, id, position));
+        setActiveNode(sourceId);
+        previewDragSource.current = null;
+        if (previewDropMarker.current) previewDropMarker.current.element.classList.remove(previewDropMarker.current.className);
+        previewDropMarker.current = null;
+      },
+      end: () => {
+        previewDragSource.current = null;
+        if (previewDropMarker.current) previewDropMarker.current.element.classList.remove(previewDropMarker.current.className);
+        previewDropMarker.current = null;
+      },
+    };
     return (
       <section className="builder-page">
         {isNew ? <><button className="back" onClick={() => setView("create")}><ArrowLeft size={18} /> 创建付费墙</button><div className="workspace-heading"><div><span className="eyebrow">新建草稿</span><h1>{selected.name}</h1></div></div></> : <WorkspaceHeader selected={selected} setView={setView} duplicate={duplicate} setModal={setModal} markUnknown={markUnknown} />}
@@ -1622,7 +1668,7 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
               return <button type="button" data-node-id={node.id} style={{ paddingLeft: `${7 + (node.depth ?? 0) * 15}px` }} className={`node ${activeNode === node.id ? "selected" : ""} ${isDragging ? "dragging" : ""} ${dropClass}`} onPointerDown={(event) => beginNodeDrag(event, node.id)} onPointerMove={updateNodeDropTarget} onPointerUp={dropNode} onPointerCancel={() => setDragState(null)} onClick={() => { setActiveNode(node.id); setPreviewFocus(null); }} key={node.id} aria-grabbed={isDragging}><span className="drag-handle" aria-hidden="true"><GripVertical size={14} /></span><i><BuilderNodeIcon type={node.type} /></i><strong>{node.config?.retention ? "挽留弹窗" : isTextNodeType(node.type) ? "Text" : node.type === "Agreement" ? zhCopy[node.type] : node.type}</strong><small>{node.config?.retention ? "" : node.label}</small></button>;
             })}</div>
           </aside>
-          <div className="canvas-area"><div className="device-controls"><button className="unknown-action" onClick={() => markUnknown(builderBoundary)}><Smartphone size={16} /> iPhone 15 Pro <ChevronDown size={14} /></button>{appliedTemplate !== null && <div className="preview-mode" aria-label="Preview mode"><button className={previewMode === "source" ? "active" : ""} onClick={() => setPreviewMode("source")}>{templates[appliedTemplate].documentTemplate ? "文档样式" : "Source visual"}</button><button className={previewMode === "editable" ? "active" : ""} disabled={!isEditableTemplate(templates[appliedTemplate])} onClick={() => setPreviewMode("editable")}>Editable structure</button></div>}<button className="icon unknown-action" title="Preview orientation" onClick={() => markUnknown(builderBoundary)}><RotateCw size={15} /></button><button className="icon unknown-action" title="Preview visibility" onClick={() => markUnknown(builderBoundary)}><Eye size={15} /></button></div><PaywallPreview nodes={linkedNodes} template={appliedTemplate !== null ? templates[appliedTemplate] : null} mode={previewMode} pricePreviewMode={pricePreviewMode} activeNode={activeNode} onSelect={selectPreviewNode} onUpdateHeroPosition={updateHeroCopyPosition} retentionPreviewOpen={retentionPreviewOpen} onOpenRetention={() => setRetentionPreview({ templateId: templates[appliedTemplate]?.id })} onCloseRetention={() => setRetentionPreview(null)} />{appliedTemplate !== null && previewMode === "source" && <p className="source-preview-note">{templates[appliedTemplate].documentTemplate ? "飞书文档中的 Paywall 样式参考，与模板库卡片一一对应。" : "源端模板画面，与模板库卡片一一对应。"}</p>}{appliedTemplate !== null && previewMode === "editable" && <p className="source-preview-note">{isEditableTemplate(templates[appliedTemplate]) ? "已采集样式与核心字段的本地可编辑复现。" : "精确节点树仍在采集。"}</p>}<p className="preview-disclaimer">All prices, titles, and offers displayed are placeholders. The actual data from App Store and Google Play will be shown in the app.</p></div>
+          <div className="canvas-area"><div className="device-controls"><button className="unknown-action" onClick={() => markUnknown(builderBoundary)}><Smartphone size={16} /> iPhone 15 Pro <ChevronDown size={14} /></button>{appliedTemplate !== null && <div className="preview-mode" aria-label="Preview mode"><button className={previewMode === "source" ? "active" : ""} onClick={() => setPreviewMode("source")}>{templates[appliedTemplate].documentTemplate ? "文档样式" : "Source visual"}</button><button className={previewMode === "editable" ? "active" : ""} disabled={!isEditableTemplate(templates[appliedTemplate])} onClick={() => setPreviewMode("editable")}>Editable structure</button></div>}<button className="icon unknown-action" title="Preview orientation" onClick={() => markUnknown(builderBoundary)}><RotateCw size={15} /></button><button className="icon unknown-action" title="Preview visibility" onClick={() => markUnknown(builderBoundary)}><Eye size={15} /></button></div><PaywallPreview nodes={linkedNodes} template={appliedTemplate !== null ? templates[appliedTemplate] : null} mode={previewMode} pricePreviewMode={pricePreviewMode} activeNode={activeNode} onSelect={selectPreviewNode} onUpdateHeroPosition={updateHeroCopyPosition} onReorder={previewMode === "editable" ? previewReorder : null} retentionPreviewOpen={retentionPreviewOpen} onOpenRetention={() => setRetentionPreview({ templateId: templates[appliedTemplate]?.id })} onCloseRetention={() => setRetentionPreview(null)} />{appliedTemplate !== null && previewMode === "source" && <p className="source-preview-note">{templates[appliedTemplate].documentTemplate ? "飞书文档中的 Paywall 样式参考，与模板库卡片一一对应。" : "源端模板画面，与模板库卡片一一对应。"}</p>}{appliedTemplate !== null && previewMode === "editable" && <p className="source-preview-note">{isEditableTemplate(templates[appliedTemplate]) ? "已采集样式与核心字段的本地可编辑复现。" : "精确节点树仍在采集。"}</p>}<p className="preview-disclaimer">All prices, titles, and offers displayed are placeholders. The actual data from App Store and Google Play will be shown in the app.</p></div>
           <aside className="property-panel"><div className="component-library-toolbar"><span>组件库</span><div><button type="button" className="icon" title="保存当前组件" aria-label="保存当前组件" disabled={!rawActive} onClick={() => { setLibraryName(""); setLibraryError(""); setLibraryMode("save"); }}><Save size={17} /></button><button type="button" className="icon" title="读取已保存组件" aria-label="读取已保存组件" disabled={!rawActive} onClick={() => { setLibrarySearch(""); setLibraryError(""); setLibraryMode("load"); }}><FolderOpen size={17} /></button></div></div><BuilderProperties active={active} previewFocus={previewFocus} markUnknown={markUnknown} boundary={builderBoundary} templateLinks={templateLinks} setTemplateLinks={setTemplateLinks} updateNode={updateNodeWithPreview} removeNode={removeBuilderNode} addNestedNode={addNestedElement} isDocumentTemplate={isDocumentTemplate} pricePreviewMode={pricePreviewMode} setPricePreviewMode={setPricePreviewMode} retentionPreviewOpen={retentionPreviewOpen} onPreviewRetention={() => { setPreviewMode("editable"); setRetentionPreview((current) => current?.templateId === templates[appliedTemplate]?.id ? null : { templateId: templates[appliedTemplate]?.id }); }} /></aside>
         </div>
         <div className="builder-footer"><button className="secondary unknown-action" onClick={() => markUnknown(builderBoundary)}>Discard</button><button className="primary" onClick={() => setModal({ kind: appliedTemplate !== null ? "template-requirements" : "builder-save" })}>Save</button></div>
@@ -2496,7 +2542,7 @@ function carouselSlideStyles(config = {}) {
   };
 }
 
-function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onButtonAction, onUpdateHeroPosition, retentionPreviewOpen = false, onOpenRetention, onCloseRetention, pricePreviewMode = "1", interactive = false }) {
+function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onButtonAction, onUpdateHeroPosition, onReorder, retentionPreviewOpen = false, onOpenRetention, onCloseRetention, pricePreviewMode = "1", interactive = false }) {
   const heroCopyDrag = useRef(null);
   const heroOverlayDrag = useRef(null);
   const defaults = helloTalkTemplateDefaults[variant];
@@ -2713,7 +2759,7 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onButtonA
     </div>;
   };
   const Status = () => <div className="ht-status"><b>{variant === "sku-sheet" ? "4:52" : variant === "blue-privilege" ? "15:48" : "16:48"}</b><span>••• ◔ ▰</span></div>;
-  const Timer = () => {
+  const Timer = ({ dragProps, reorderHandle } = {}) => {
     const startValue = timerSeconds(timer);
     const [remaining, setRemaining] = useState(startValue);
     useEffect(() => {
@@ -2733,13 +2779,13 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onButtonA
     const opacity = Math.max(0, Math.min(100, Number(timerConfig.digitBackgroundOpacity ?? 100) || 0));
     const background = digitBackground ? `color-mix(in srgb, ${digitBackground} ${opacity}%, transparent)` : "transparent";
     const timerStyle = { ...styleFor("timer"), background: "transparent", "--timer-digit-background": background, "--timer-digit-color": digitColor ?? "currentColor" };
-    return <div className={nodeClass("timer", "ht-timer")} style={timerStyle} onClick={select("timer")}>{prefix && <strong style={{ ...(timerConfig.prefixFontSize ? { fontSize: `${timerConfig.prefixFontSize}px` } : {}), ...(prefixColor ? { color: prefixColor } : {}) }}>{prefix}</strong>}<span className={segmentedTimer ? "ht-timer-digits" : ""} style={{ ...(timerConfig.fontSize ? { fontSize: `${timerConfig.fontSize}px` } : {}), ...(digitColor ? { color: digitColor } : {}), ...(!segmentedTimer && digitBackground ? { backgroundColor: background } : {}) }}>{segmentedTimer ? formatted.split(":").map((part, index, parts) => <React.Fragment key={`${part}-${index}`}><b>{part}</b>{index < parts.length - 1 && <i>:</i>}</React.Fragment>) : formatted}</span>{suffix && <small style={timerConfig.suffixFontSize ? { fontSize: `${timerConfig.suffixFontSize}px` } : undefined}>{suffix}</small>}</div>;
+    return <div {...dragProps} className={`${nodeClass("timer", "ht-timer")} ${dragProps?.className ?? ""}`} style={timerStyle} onClick={select("timer")}>{reorderHandle}{prefix && <strong style={{ ...(timerConfig.prefixFontSize ? { fontSize: `${timerConfig.prefixFontSize}px` } : {}), ...(prefixColor ? { color: prefixColor } : {}) }}>{prefix}</strong>}<span className={segmentedTimer ? "ht-timer-digits" : ""} style={{ ...(timerConfig.fontSize ? { fontSize: `${timerConfig.fontSize}px` } : {}), ...(digitColor ? { color: digitColor } : {}), ...(!segmentedTimer && digitBackground ? { backgroundColor: background } : {}) }}>{segmentedTimer ? formatted.split(":").map((part, index, parts) => <React.Fragment key={`${part}-${index}`}><b>{part}</b>{index < parts.length - 1 && <i>:</i>}</React.Fragment>) : formatted}</span>{suffix && <small style={timerConfig.suffixFontSize ? { fontSize: `${timerConfig.suffixFontSize}px` } : undefined}>{suffix}</small>}</div>;
   };
   const productColorsEnabled = productConfig.bluePrivilege || productConfig.productColors;
   const actionStyle = productColorsEnabled ? { ...styleFor("purchase"), background: productGradient(productConfig.purchaseBackgroundGradient, ["#ff8707", "#ffb000", "#ffd10b"]) } : styleFor("purchase");
   const actionCopy = productColorsEnabled ? <span className="ht-action-gradient-text" style={{ backgroundImage: productGradient(productConfig.purchaseTextGradient, ["#ffffff", "#ffffff", "#ffffff"]) }}>{action}</span> : action;
-  const Action = () => interactive ? <button className={nodeClass("purchase", "ht-action")} style={actionStyle} onClick={(event) => { select("purchase")(event); if (nodeById("purchase")?.config?.action === "Purchase" && agreementNode?.config?.required !== false && agreementNode && !agreementChecked) { setAgreementMessage("请先勾选同意协议"); return; } onButtonAction?.(nodeById("purchase"), visiblePlans[selectedPlan]); }}>{actionCopy}</button> : <div className="ht-action" style={actionStyle}>{actionCopy}</div>;
-  const Agreement = ({ entry }) => {
+  const Action = ({ dragProps, reorderHandle } = {}) => interactive ? <button {...dragProps} className={`${nodeClass("purchase", "ht-action")} ${dragProps?.className ?? ""}`} style={actionStyle} onClick={(event) => { select("purchase")(event); if (nodeById("purchase")?.config?.action === "Purchase" && agreementNode?.config?.required !== false && agreementNode && !agreementChecked) { setAgreementMessage("请先勾选同意协议"); return; } onButtonAction?.(nodeById("purchase"), visiblePlans[selectedPlan]); }}>{reorderHandle}{actionCopy}</button> : <div className="ht-action" style={actionStyle}>{actionCopy}</div>;
+  const Agreement = ({ entry, dragProps, reorderHandle }) => {
     const config = entry.config ?? {};
     const openAgreementLink = (event, label, value) => {
       event.stopPropagation();
@@ -2749,18 +2795,31 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onButtonA
       if (url) window.open(url, "_blank", "noopener,noreferrer");
       else setAgreementMessage(`请先配置${label}链接`);
     };
-    return <div className={nodeClass(entry.id, "ht-agreement")} style={{ ...styleFor(entry.id), "--agreement-link-color": config.linkColor ?? "#3069d3", "--agreement-check-color": config.checkColor ?? "#1677ff" }} onClick={select(entry.id)}>
+    return <div {...dragProps} className={`${nodeClass(entry.id, "ht-agreement")} ${dragProps?.className ?? ""}`} style={{ ...styleFor(entry.id), "--agreement-link-color": config.linkColor ?? "#3069d3", "--agreement-check-color": config.checkColor ?? "#1677ff" }} onClick={select(entry.id)}>
+      {reorderHandle}
       <div className="ht-agreement-line"><input type="checkbox" id={`ht-agreement-${entry.id}`} aria-label="同意服务条款与隐私政策" checked={agreementChecked} disabled={!interactive} onChange={(event) => { setAgreementChecked(event.target.checked); setAgreementMessage(""); }} /><span className="ht-agreement-copy"><label htmlFor={`ht-agreement-${entry.id}`} data-inspector-area="copy">{entry.content || "我已阅读并同意"}</label> <button type="button" data-inspector-area="links" disabled={!interactive} onClick={(event) => openAgreementLink(event, "服务条款", config.termsUrl)}>{config.termsLabel ?? "服务条款"}</button><span>和</span><button type="button" data-inspector-area="links" disabled={!interactive} onClick={(event) => openAgreementLink(event, "隐私政策", config.privacyUrl)}>{config.privacyLabel ?? "隐私政策"}</button></span></div>
       {agreementMessage && <p className="ht-agreement-message" role="alert">{agreementMessage}</p>}
     </div>;
   };
-  const Legal = () => <p className={nodeClass("legal", "ht-legal")} style={styleFor("legal")} onClick={select("legal")}><RichText node={nodeById("legal")} fallback={legal} interactive={interactive} /></p>;
-  const Links = () => <p className={nodeClass("links", "ht-links")} style={styleFor("links")} onClick={select("links")}>{links}</p>;
+  const Legal = ({ dragProps, reorderHandle } = {}) => <p {...dragProps} className={`${nodeClass("legal", "ht-legal")} ${dragProps?.className ?? ""}`} style={styleFor("legal")} onClick={select("legal")}>{reorderHandle}<RichText node={nodeById("legal")} fallback={legal} interactive={interactive} /></p>;
+  const Links = ({ dragProps, reorderHandle } = {}) => <p {...dragProps} className={`${nodeClass("links", "ht-links")} ${dragProps?.className ?? ""}`} style={styleFor("links")} onClick={select("links")}>{reorderHandle}{links}</p>;
   const SoccerBall = () => <span className="ht-soccer-ball"><i /><i /><i /></span>;
 
+  const reorderable = (entry) => {
+    const element = renderModule(entry);
+    if (!onReorder || !React.isValidElement(element)) return element;
+    const dragProps = {
+      className: `${element.props.className ?? ""} preview-reorderable`.trim(),
+      onDragOver: (event) => onReorder.over(entry.id, event),
+      onDrop: (event) => onReorder.drop(entry.id, event),
+    };
+    const reorderHandle = <PreviewReorderHandle onDragStart={(event) => onReorder.start(entry.id, event)} onDragEnd={onReorder.end} />;
+    if (typeof element.type === "function") return React.cloneElement(element, { dragProps, reorderHandle });
+    return React.cloneElement(element, dragProps, reorderHandle, element.props.children);
+  };
   const renderChildren = (parentId) => renderedNodes.map((entry, index) =>
     nodeParentId(renderedNodes, index) === parentId
-      ? <React.Fragment key={entry.id}>{renderModule(entry)}</React.Fragment>
+      ? <React.Fragment key={entry.id}>{reorderable(entry)}</React.Fragment>
       : null
   );
   const skuHeroIndex = renderedNodes.findIndex((entry) => entry.id === "hero-image");
@@ -2831,7 +2890,7 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onButtonA
   if (variant === "payment-recovery") return <div className="ht-paywall ht-recovery-paywall"><div className="ht-recovery-backdrop"><Status /><b>‹</b><strong>我的访问</strong></div>{renderChildren(null)}</div>;
   return <div className="ht-paywall ht-sku-paywall"><div className="ht-chat-scene"><Status /><b>‹</b><strong>huangzefeng</strong><small>上午4:52</small><span>Hi</span></div>{renderChildren(null)}</div>;
 }
-function PaywallPreview({ nodes, template, mode, pricePreviewMode, activeNode, onSelect, onUpdateHeroPosition, retentionPreviewOpen, onOpenRetention, onCloseRetention }) {
+function PaywallPreview({ nodes, template, mode, pricePreviewMode, activeNode, onSelect, onUpdateHeroPosition, onReorder, retentionPreviewOpen, onOpenRetention, onCloseRetention }) {
   const [actionPreview, setActionPreview] = useState(null);
   const runButtonAction = (node, product) => {
     if (!node) return;
@@ -2849,7 +2908,7 @@ function PaywallPreview({ nodes, template, mode, pricePreviewMode, activeNode, o
   };
   const overlay = actionPreview && <ButtonActionOverlay preview={actionPreview} onClose={() => setActionPreview(null)} />;
   if (template?.documentTemplate) {
-    const paywall = <HelloTalkPaywall variant={template.documentTemplate} nodes={nodes} activeNode={activeNode} onSelect={onSelect} onButtonAction={runButtonAction} onUpdateHeroPosition={onUpdateHeroPosition} retentionPreviewOpen={retentionPreviewOpen} onOpenRetention={onOpenRetention} onCloseRetention={onCloseRetention} pricePreviewMode={pricePreviewMode} interactive={mode === "editable"} />;
+    const paywall = <HelloTalkPaywall variant={template.documentTemplate} nodes={nodes} activeNode={activeNode} onSelect={onSelect} onButtonAction={runButtonAction} onUpdateHeroPosition={onUpdateHeroPosition} onReorder={onReorder} retentionPreviewOpen={retentionPreviewOpen} onOpenRetention={onOpenRetention} onCloseRetention={onCloseRetention} pricePreviewMode={pricePreviewMode} interactive={mode === "editable"} />;
     return <div className="phone source-template-phone"><div className="ht-template-scroll" tabIndex={0} aria-label="付费墙页面预览">{paywall}</div><button className="close-phone" aria-label="Close preview">×</button>{overlay}</div>;
   }
   if (template && mode === "source") return <div className="phone source-template-phone"><SourceTemplateMedia template={template} /><button className="close-phone" aria-label="Close preview">×</button></div>;
@@ -2867,7 +2926,7 @@ function PaywallPreview({ nodes, template, mode, pricePreviewMode, activeNode, o
     latestAtDepth[depth] = node.id;
     latestAtDepth.length = depth + 1;
   });
-  return <div className={`phone template-${hero?.theme ?? "lavender"}`}><button className="close-phone" aria-label="Close preview">×</button><div className="phone-content"><span className="phone-kicker">PREMIUM ACCESS</span>{nodes.filter((node) => !parents.has(node.id)).map((node) => <PreviewElement key={node.id} node={node} children={children.get(node.id) ?? []} getChildren={(childId) => children.get(childId) ?? []} active={node.id === activeNode} activeNode={activeNode} onSelect={onSelect} onButtonAction={runButtonAction} />)}</div>{overlay}</div>;
+  return <div className={`phone template-${hero?.theme ?? "lavender"}`}><button className="close-phone" aria-label="Close preview">×</button><div className="phone-content"><span className="phone-kicker">PREMIUM ACCESS</span>{nodes.filter((node) => !parents.has(node.id)).map((node) => <PreviewElement key={node.id} node={node} children={children.get(node.id) ?? []} getChildren={(childId) => children.get(childId) ?? []} active={node.id === activeNode} activeNode={activeNode} onSelect={onSelect} onButtonAction={runButtonAction} onReorder={onReorder} />)}</div>{overlay}</div>;
 }
 
 function ButtonActionOverlay({ preview, onClose }) {
@@ -2886,7 +2945,7 @@ function previewClickArea(event) {
   return "component";
 }
 
-function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, children = [], getChildren = () => [] }) {
+function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, onReorder, dragProps, reorderHandle, children = [], getChildren = () => [] }) {
   const select = (event) => {
     const indexed = event?.target instanceof Element ? event.target.closest("[data-inspector-slide], [data-inspector-row]") : null;
     const slideValue = indexed?.getAttribute(indexed.hasAttribute("data-inspector-row") ? "data-inspector-row" : "data-inspector-slide");
@@ -2908,11 +2967,13 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, ch
     ...(config.offsetY ? { transform: `translateY(${config.offsetY}px)` } : {}),
     ...(Object.keys(config).some((key) => key.startsWith("margin")) ? { margin: ["Top", "Right", "Bottom", "Left"].map((edge) => `${config[`margin${edge}`] ?? 0}px`).join(" ") } : {}),
   };
-  const wrap = (content, className = "") => <div className={`preview-node ${active ? "selected" : ""} ${className}`} style={nodeStyle} onClick={select}>{content}</div>;
+  const reorderProps = dragProps ?? (onReorder ? { onDragOver: (event) => onReorder.over(node.id, event), onDrop: (event) => onReorder.drop(node.id, event) } : {});
+  const handle = reorderHandle ?? (onReorder ? <PreviewReorderHandle onDragStart={(event) => onReorder.start(node.id, event)} onDragEnd={onReorder.end} /> : null);
+  const wrap = (content, className = "") => <div {...reorderProps} className={`preview-node ${active ? "selected" : ""} ${className} ${onReorder || dragProps ? "preview-reorderable" : ""}`} style={nodeStyle} onClick={select}>{handle}{content}</div>;
   const textStyle = { color: config.color, fontSize: config.fontSize ? `${config.fontSize}px` : undefined, fontWeight: config.fontWeight, textAlign: config.textAlign };
   const buttonStyle = { backgroundColor: config.backgroundColor, color: config.color, borderRadius: config.radius === undefined ? undefined : `${config.radius}px` };
   const cardStyle = { backgroundColor: config.backgroundColor, borderRadius: config.radius === undefined ? undefined : `${config.radius}px`, boxShadow: config.shadow ? `0 ${Math.max(2, Math.round(config.shadow / 2))}px ${config.shadow}px #17172833` : undefined };
-  const renderChildren = () => children.map((child) => <PreviewElement key={child.id} node={child} children={getChildren(child.id)} getChildren={getChildren} active={child.id === activeNode} activeNode={activeNode} onSelect={onSelect} onButtonAction={onButtonAction} />);
+  const renderChildren = () => children.map((child) => <PreviewElement key={child.id} node={child} children={getChildren(child.id)} getChildren={getChildren} active={child.id === activeNode} activeNode={activeNode} onSelect={onSelect} onButtonAction={onButtonAction} onReorder={onReorder} />);
   const isTextLayer = isTextNodeType(node.type);
   const isListLayer = ["List", "Feature list", "Features"].includes(node.type) || /^List \d+$/.test(node.type);
   const isListItemLayer = node.type === "List item" || node.type === "Today" || /^Item \d+$/.test(node.type) || /^Day \d+$/.test(node.type);
