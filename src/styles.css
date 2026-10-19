@@ -234,6 +234,7 @@ textarea { min-height: 80px; resize: vertical; }
 .button-action-sheet strong { display: block; margin-bottom: 12px; font-size: 22px; }
 .button-action-sheet small { color: #777; }
 .button-action-close { position: absolute; top: 16px; right: 14px; display: grid; place-items: center; border: 0; background: transparent; }
+.property-scroll .preview-field-focus { outline: 2px solid #7445ed; outline-offset: 4px; border-radius: 4px; background-color: #f5f0ff; transition: outline-color .15s, background-color .15s; }
 .ht-template-scroll > .ht-paywall { width: 100%; height: auto; margin: 0; overflow: visible; }
 .ht-custom-elements { min-height: 40px; padding: 14px 18px 24px; background: #fff; color: #171717; }
 .ht-custom-elements .preview-copy p { font-size: 14px; line-height: 1.4; }
