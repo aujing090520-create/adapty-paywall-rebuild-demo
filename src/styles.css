@@ -97,6 +97,7 @@ td:first-child { display: flex; align-items: center; gap: 8px; }
 .create-grid { display: grid; grid-template-columns: minmax(480px, 1.2fr) minmax(360px, .8fr); gap: 22px; }
 .form-card, .start-card, .detail-aside { padding: 22px; border: 1px solid #e3e3e7; border-radius: 8px; background: #fff; }
 .form-card h2, .start-card h2 { margin-bottom: 22px; font-size: 18px; }.form-field { display: block; margin-bottom: 19px; }.form-field > span { display: block; margin-bottom: 8px; color: #404049; font-size: 12px; font-weight: 700; }
+.form-field.required > span::before, .rich-text-run-head > strong::before, .privilege-row-name > span::before, .create-offers th:first-child::before { color: #e33b45; content: "*"; margin-right: 4px; }
 input, select, textarea { width: 100%; min-height: 37px; padding: 8px 10px; border: 1px solid #d5d5da; border-radius: 6px; outline-color: #8c65f6; background: #fff; color: #34343b; font-size: 13px; }
 textarea { min-height: 80px; resize: vertical; }
 .product-row { display: grid; grid-template-columns: 1.4fr 1fr 34px; gap: 7px; margin-bottom: 8px; }.product-row .icon { border: 1px solid #d8d8dc; }.form-card .secondary { margin-top: 2px; }
@@ -393,6 +394,9 @@ textarea { min-height: 80px; resize: vertical; }
 .privilege-row input { min-width: 0; min-height: 32px; padding: 5px 6px; font-size: 10px; }
 .privilege-row-wrap { padding: 6px 0; border-bottom: 1px solid #ececf0; }
 .privilege-row { grid-template-columns: 24px minmax(0, 1fr) 28px; }
+.privilege-row-name { min-width: 0; color: #696977; font-size: 10px; }
+.privilege-row-name > span { display: block; margin-bottom: 4px; }
+.privilege-row-name > input { width: 100%; }
 .privilege-row .privilege-drag { width: 24px; height: 32px; padding: 3px; border: 0; background: transparent; color: #777783; cursor: grab; touch-action: none; }
 .privilege-row .privilege-drag:active { cursor: grabbing; }
 .privilege-values { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; margin: 5px 0 0 24px; }

@@ -1122,12 +1122,20 @@ function App() {
 
   const updateBuilderNode = (id, patch) => setBuilderNodes((current) => current.map((node) => node.id === id ? { ...node, ...patch } : node));
   const removeBuilderNode = (id) => {
-    setBuilderNodes((current) => {
-      const removed = new Set([id]);
-      for (const node of current) if (removed.has(node.parentId)) removed.add(node.id);
-      return current.filter((node) => !removed.has(node.id));
-    });
-    setActiveNode((current) => current === id ? "headline" : current);
+    const removed = new Set([id]);
+    let changed = true;
+    while (changed) {
+      changed = false;
+      builderNodes.forEach((node, index) => {
+        if (!removed.has(node.id) && removed.has(nodeParentId(builderNodes, index))) {
+          removed.add(node.id);
+          changed = true;
+        }
+      });
+    }
+    const remaining = builderNodes.filter((node) => !removed.has(node.id));
+    setBuilderNodes(remaining);
+    setActiveNode((current) => removed.has(current) ? (remaining[0]?.id ?? null) : current);
   };
   const applyTemplate = (templateIndex) => {
     const template = templates[templateIndex];
@@ -1416,7 +1424,7 @@ function CreatePaywall({ draft, setDraft, setView, setModal }) {
             <Field label="公众号 *"><select value={draft.publicAccount ?? ""} onChange={(event) => patch({ publicAccount: event.target.value })}>{paywallPublicAccounts.map((value) => <option key={value}>{value}</option>)}</select></Field>
             <Field label="业务场景 *"><select value={draft.businessScene ?? ""} onChange={(event) => patch({ businessScene: event.target.value })}>{(paywallScenesByBusinessType[draft.businessType] ?? []).map((value) => <option key={value}>{value}</option>)}</select></Field>
             <Field label="Paywall 名称 *"><input value={draft.name} onChange={(event) => patch({ name: event.target.value })} /></Field>
-            <Field label="描述"><textarea value={draft.note ?? ""} onChange={(event) => patch({ note: event.target.value })} /></Field>
+            <Field label="描述" optional><textarea value={draft.note ?? ""} onChange={(event) => patch({ note: event.target.value })} /></Field>
           </div>
           <div className="create-offers">
             <div className="create-offers-heading"><h3>商品信息：</h3><button type="button" onClick={addProduct}>+ 添加商品</button></div>
@@ -1527,6 +1535,11 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
     };
     const builderBoundary = missingItems.find((item) => item.id === "B-01");
     const isDocumentTemplate = appliedTemplate !== null && Boolean(templates[appliedTemplate]?.documentTemplate);
+    const deleteElement = (id) => {
+      removeBuilderNode(id);
+      setPreviewFocus(null);
+      if (appliedTemplate !== null && isEditableTemplate(templates[appliedTemplate])) setPreviewMode("editable");
+    };
     const addElement = (type) => {
       const next = createComponentNode(type, builderNodes.filter((node) => node.id.startsWith("added-")).length + 1);
       setBuilderNodes((current) => [...current, next]);
@@ -1638,7 +1651,7 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
             })}</div>
           </aside>
           <div className="canvas-area"><div className="device-controls"><button className="unknown-action" onClick={() => markUnknown(builderBoundary)}><Smartphone size={16} /> iPhone 15 Pro <ChevronDown size={14} /></button>{appliedTemplate !== null && <div className="preview-mode" aria-label="Preview mode"><button className={previewMode === "source" ? "active" : ""} onClick={() => setPreviewMode("source")}>{templates[appliedTemplate].documentTemplate ? "文档样式" : "Source visual"}</button><button className={previewMode === "editable" ? "active" : ""} disabled={!isEditableTemplate(templates[appliedTemplate])} onClick={() => setPreviewMode("editable")}>Editable structure</button></div>}<button className="icon unknown-action" title="Preview orientation" onClick={() => markUnknown(builderBoundary)}><RotateCw size={15} /></button><button className="icon unknown-action" title="Preview visibility" onClick={() => markUnknown(builderBoundary)}><Eye size={15} /></button></div><PaywallPreview nodes={linkedNodes} template={appliedTemplate !== null ? templates[appliedTemplate] : null} mode={previewMode} pricePreviewMode={pricePreviewMode} activeNode={activeNode} onSelect={selectPreviewNode} onUpdateHeroPosition={updateHeroCopyPosition} onReorder={previewMode === "editable" ? previewReorder : null} retentionPreviewOpen={retentionPreviewOpen} onOpenRetention={() => setRetentionPreview({ templateId: templates[appliedTemplate]?.id })} onCloseRetention={() => setRetentionPreview(null)} />{appliedTemplate !== null && previewMode === "source" && <p className="source-preview-note">{templates[appliedTemplate].documentTemplate ? "飞书文档中的 Paywall 样式参考，与模板库卡片一一对应。" : "源端模板画面，与模板库卡片一一对应。"}</p>}{appliedTemplate !== null && previewMode === "editable" && <p className="source-preview-note">{isEditableTemplate(templates[appliedTemplate]) ? "已采集样式与核心字段的本地可编辑复现。" : "精确节点树仍在采集。"}</p>}<p className="preview-disclaimer">All prices, titles, and offers displayed are placeholders. The actual data from App Store and Google Play will be shown in the app.</p></div>
-          <aside className="property-panel"><div className="component-library-toolbar"><span>组件库</span><div><button type="button" className="icon" title="保存当前组件" aria-label="保存当前组件" disabled={!rawActive} onClick={() => { setLibraryName(""); setLibraryError(""); setLibraryMode("save"); }}><Save size={17} /></button><button type="button" className="icon" title="读取已保存组件" aria-label="读取已保存组件" disabled={!rawActive} onClick={() => { setLibrarySearch(""); setLibraryError(""); setLibraryMode("load"); }}><FolderOpen size={17} /></button></div></div><BuilderProperties active={active} previewFocus={previewFocus} markUnknown={markUnknown} boundary={builderBoundary} templateLinks={templateLinks} setTemplateLinks={setTemplateLinks} updateNode={updateNodeWithPreview} removeNode={removeBuilderNode} addNestedNode={addNestedElement} isDocumentTemplate={isDocumentTemplate} pricePreviewMode={pricePreviewMode} setPricePreviewMode={setPricePreviewMode} retentionPreviewOpen={retentionPreviewOpen} onPreviewRetention={() => { setPreviewMode("editable"); setRetentionPreview((current) => current?.templateId === templates[appliedTemplate]?.id ? null : { templateId: templates[appliedTemplate]?.id }); }} /></aside>
+          <aside className="property-panel"><div className="component-library-toolbar"><span>组件库</span><div><button type="button" className="icon" title="保存当前组件" aria-label="保存当前组件" disabled={!rawActive} onClick={() => { setLibraryName(""); setLibraryError(""); setLibraryMode("save"); }}><Save size={17} /></button><button type="button" className="icon" title="读取已保存组件" aria-label="读取已保存组件" disabled={!rawActive} onClick={() => { setLibrarySearch(""); setLibraryError(""); setLibraryMode("load"); }}><FolderOpen size={17} /></button></div></div><BuilderProperties active={active} previewFocus={previewFocus} markUnknown={markUnknown} boundary={builderBoundary} templateLinks={templateLinks} setTemplateLinks={setTemplateLinks} updateNode={updateNodeWithPreview} removeNode={deleteElement} addNestedNode={addNestedElement} isDocumentTemplate={isDocumentTemplate} pricePreviewMode={pricePreviewMode} setPricePreviewMode={setPricePreviewMode} retentionPreviewOpen={retentionPreviewOpen} onPreviewRetention={() => { setPreviewMode("editable"); setRetentionPreview((current) => current?.templateId === templates[appliedTemplate]?.id ? null : { templateId: templates[appliedTemplate]?.id }); }} /></aside>
         </div>
         <div className="builder-footer"><button className="secondary unknown-action" onClick={() => markUnknown(builderBoundary)}>Discard</button><button className="primary" onClick={() => setModal({ kind: appliedTemplate !== null ? "template-requirements" : "builder-save" })}>Save</button></div>
         {libraryMode && <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setLibraryMode(null); }}><section className="modal component-library-modal" role="dialog" aria-modal="true" aria-label={libraryMode === "save" ? "保存组件" : "读取组件"}><header><h2>{libraryMode === "save" ? "保存组件" : "读取组件"}</h2><button type="button" className="icon" title="关闭" aria-label="关闭" onClick={() => setLibraryMode(null)}><X size={19} /></button></header><div className="component-library-body"><p className="component-library-note">仅保存在当前浏览器中，不会同步到账号或其他设备。{rawActive?.type === "Products" && "商品套餐只保存样式配置，不保存 SKU、商品坑位和价格。"}</p>{libraryMode === "save" ? <Field label="组件名称"><input autoFocus maxLength={41} value={libraryName} placeholder="例如：蓝色特权页主视觉" onChange={(event) => { setLibraryName(event.target.value); setLibraryError(""); }} onKeyDown={(event) => { if (event.key === "Enter") saveCurrentComponent(); }} /></Field> : <><div className="component-library-search"><Search size={17} /><input autoFocus value={librarySearch} placeholder="搜索已保存组件" aria-label="搜索已保存组件" onChange={(event) => setLibrarySearch(event.target.value)} /></div><div className="component-library-list">{matchingRecords.length ? matchingRecords.map((record) => <button type="button" key={record.id} className="component-library-item" onClick={() => loadComponent(record)}><span><strong>{record.name}</strong><small>{new Date(record.createdAt).toLocaleString("zh-CN")}</small></span><ChevronRight size={17} /></button>) : <p className="component-library-empty">没有可用于当前组件的记录</p>}</div></>}{libraryError && <p className="component-library-error" role="alert">{libraryError}</p>}</div><div className="modal-actions"><button type="button" className="secondary" onClick={() => setLibraryMode(null)}>取消</button>{libraryMode === "save" && <button type="button" className="primary" onClick={saveCurrentComponent}>保存</button>}</div></section></div>}
@@ -1670,7 +1683,7 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
   useEffect(() => {
     const panel = document.querySelector(".property-panel .property-scroll");
     panel?.querySelectorAll(".preview-field-focus").forEach((item) => item.classList.remove("preview-field-focus"));
-    if (!panel || previewFocus?.id !== active?.id) return;
+    if (!panel || !active || !previewFocus || previewFocus.id !== active.id) return;
     const fields = [...panel.querySelectorAll(".form-field")];
     const exactField = (labels, root = panel) => labels.map((label) => fields.find((field) => root.contains(field) && field.querySelector(":scope > span")?.textContent?.trim() === label)).find(Boolean);
     const carousel = active.type === "Carousel" && Array.isArray(active.config?.slides);
@@ -1683,7 +1696,7 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
     const timerField = active.type === "Timer" ? exactField(tab === "content" ? ["Start value"] : tab === "style" ? ["时间字体颜色"] : ["Vertical offset"]) : null;
     const productStyle = products && tab === "style" ? exactField(previewFocus.area === "badge" ? ["商品标签颜色", "商品角标颜色", "角标字号"] : previewFocus.area === "price" ? ["通用价格字号", "总价字号", "主价字号"] : ["商品选中框颜色", "名称字号"]) : null;
     const productLayout = products && tab === "layout" ? exactField(["套餐间距", "套餐最小高度", "布局类型"]) : null;
-    const agreementField = active.type === "Agreement" ? exactField(tab === "content" ? previewFocus.area === "links" ? ["服务条款文案"] : previewFocus.area === "copy" ? ["引导文案"] : ["购买前必须勾选"] : tab === "style" ? previewFocus.area === "links" ? ["链接颜色"] : ["文字颜色"] : ["外边距"]) : null;
+    const agreementField = active.type === "Agreement" ? exactField(tab === "content" ? previewFocus.area === "links" ? ["服务条款文案"] : previewFocus.area === "copy" ? ["引导文案"] : ["购买前必须勾选"] : tab === "style" ? previewFocus.area === "links" ? ["链接颜色"] : ["文字颜色"] : ["对齐方式"]) : null;
     const carouselContentLabels = { media: ["图片"], headline: ["标题"], caption: ["说明文案"], dots: ["初始展示"] };
     const carouselSection = carousel && tab !== "content" ? panel.querySelector(`[data-inspector-section="${area}"]`) : null;
     const hints = {
@@ -1717,7 +1730,7 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
   };
 
   const tabBar = <div className="property-tabs"><button className={tab === "content" ? "active" : ""} onClick={() => setTab("content")}>Content</button><button className={tab === "style" ? "active" : ""} onClick={() => setTab("style")}>Style</button><button className={tab === "layout" ? "active" : ""} onClick={() => setTab("layout")}>Layout</button></div>;
-  const canEditStructure = !isDocumentTemplate || active?.id?.startsWith("added-") || active?.type === "Agreement";
+  const canEditStructure = Boolean(active);
   const nodeEditor = <EditableNodeControls active={active} updateNode={updateNode} removeNode={removeNode} canRemove={canEditStructure} />;
 
   if (type === "Links") {
@@ -1729,7 +1742,7 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
   }
 
   if (active?.id === "hero-image") {
-    return <div className="property-scroll"><h3>Hero Image</h3>{!isDocumentTemplate && nodeEditor}{tabBar}{tab === "content" && <HeroMediaContent active={active} updateNode={updateNode} />}{tab === "style" && <HeroStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <HeroLayoutEditor active={active} updateNode={updateNode} />}</div>;
+    return <div className="property-scroll"><h3>Hero Image</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}{tab === "content" && <HeroMediaContent active={active} updateNode={updateNode} />}{tab === "style" && <HeroStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <HeroLayoutEditor active={active} updateNode={updateNode} />}</div>;
   }
 
   if (type === "List item" || type === "Today" || /^Item \d+$/.test(type) || /^Day \d+$/.test(type)) {
@@ -1761,7 +1774,7 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
   }
 
   if (type === "Card") {
-    if (active?.config?.retention) return <div className="property-scroll"><h3>挽留弹窗</h3>{tabBar}{tab === "content" && <RetentionContent active={active} updateNode={updateNode} previewOpen={retentionPreviewOpen} onPreview={onPreviewRetention} />}{tab === "style" && <RetentionStyle active={active} updateNode={updateNode} />}{tab === "layout" && <p className="property-copy">弹窗尺寸和各区域高度按 HT 基准图固定，内容变化不撑开页面。</p>}</div>;
+    if (active?.config?.retention) return <div className="property-scroll"><h3>挽留弹窗</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}{tab === "content" && <RetentionContent active={active} updateNode={updateNode} previewOpen={retentionPreviewOpen} onPreview={onPreviewRetention} />}{tab === "style" && <RetentionStyle active={active} updateNode={updateNode} />}{tab === "layout" && <p className="property-copy">弹窗尺寸和各区域高度按 HT 基准图固定，内容变化不撑开页面。</p>}</div>;
     return <div className="property-scroll"><h3>Card</h3>{canEditStructure && nodeEditor}{tabBar}{tab === "content" && <CardContent active={active} addNestedNode={addNestedNode} />}{tab === "style" && <CardStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
   }
 
@@ -1775,11 +1788,11 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
   }
 
   if (type === "Toggle") {
-    return <div className="property-scroll"><h3>Toggle</h3><ToggleContent node={active} updateNode={updateNode} boundary={componentBoundary} markUnknown={markUnknown} /></div>;
+    return <div className="property-scroll"><h3>Toggle</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}<ToggleContent node={active} updateNode={updateNode} boundary={componentBoundary} markUnknown={markUnknown} /></div>;
   }
 
   if (["Toggle On", "Toggle Off"].includes(type)) {
-    return <div className="property-scroll"><h3>{type}</h3><p className="property-copy">This is a source-observed toggle state layer.</p><InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="The state layer exists in the source tree. Its detailed fields have not been opened, so this demo does not invent them." /></div>;
+    return <div className="property-scroll"><h3>{type}</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}<p className="property-copy">This is a source-observed toggle state layer.</p><InspectorBoundary boundary={componentBoundary} markUnknown={markUnknown} message="The state layer exists in the source tree. Its detailed fields have not been opened, so this demo does not invent them." /></div>;
   }
 
   if (type === "Source reference") {
@@ -1815,7 +1828,7 @@ function heroTitleParts(config) {
   };
 }
 
-function MediaUploadFields({ active, updateNode, label = "Media file" }) {
+function MediaUploadFields({ active, updateNode, label = "Media file", required = false }) {
   const inputRef = useRef(null);
   const config = active.config ?? {};
   const handleFile = (event) => {
@@ -1825,7 +1838,7 @@ function MediaUploadFields({ active, updateNode, label = "Media file" }) {
     reader.onload = () => updateNodeConfig(active, updateNode, { mediaState: "custom", mediaSrc: reader.result, mediaName: file.name, mediaType: file.type.startsWith("video/") ? "Video" : "Image" });
     reader.readAsDataURL(file);
   };
-  return <><Field label={label}><input ref={inputRef} className="visually-hidden" type="file" accept="image/*,video/*" onChange={handleFile} /><button className="upload" type="button" onClick={() => inputRef.current?.click()}><Upload size={18} /> {config.mediaName ? `Replace ${config.mediaName}` : "Upload image or video"}<small>PNG, JPG, WebP, MP4, max size 10MB.</small></button></Field>{config.mediaState !== "removed" && <div className="media-actions"><span>{config.mediaName || "Source media"}</span><button type="button" className="secondary" onClick={() => updateNodeConfig(active, updateNode, { mediaState: "removed", mediaSrc: "", mediaName: "" })}>Remove media</button>{config.mediaState === "custom" && <button type="button" className="text-action" onClick={() => updateNodeConfig(active, updateNode, { mediaState: "source", mediaSrc: "", mediaName: "" })}>Restore source</button>}</div>}{config.mediaState === "removed" && <div className="media-actions"><span>No media</span><button type="button" className="text-action" onClick={() => updateNodeConfig(active, updateNode, { mediaState: "source", mediaSrc: "", mediaName: "" })}>Restore source</button></div>}</>;
+  return <><Field label={label} required={required}><input ref={inputRef} className="visually-hidden" type="file" accept="image/*,video/*" onChange={handleFile} /><button className="upload" type="button" onClick={() => inputRef.current?.click()}><Upload size={18} /> {config.mediaName ? `Replace ${config.mediaName}` : "Upload image or video"}<small>PNG, JPG, WebP, MP4, max size 10MB.</small></button></Field>{config.mediaState !== "removed" && <div className="media-actions"><span>{config.mediaName || "Source media"}</span><button type="button" className="secondary" onClick={() => updateNodeConfig(active, updateNode, { mediaState: "removed", mediaSrc: "", mediaName: "" })}>Remove media</button>{config.mediaState === "custom" && <button type="button" className="text-action" onClick={() => updateNodeConfig(active, updateNode, { mediaState: "source", mediaSrc: "", mediaName: "" })}>Restore source</button>}</div>}{config.mediaState === "removed" && <div className="media-actions"><span>No media</span><button type="button" className="text-action" onClick={() => updateNodeConfig(active, updateNode, { mediaState: "source", mediaSrc: "", mediaName: "" })}>Restore source</button></div>}</>;
 }
 
 function HeroMediaContent({ active, updateNode }) {
@@ -1874,7 +1887,7 @@ function TextContent({ active, updateNode }) {
 }
 
 function ImageContent({ active, updateNode }) {
-  return <MediaUploadFields active={active} updateNode={updateNode} label="Image file" />;
+  return <MediaUploadFields active={active} updateNode={updateNode} label="Image file" required />;
 }
 
 function ConfigColorField({ label, active, updateNode, name, fallback }) {
@@ -2037,7 +2050,7 @@ function CardContent({ active, addNestedNode, allowAdd = true }) {
 function TimerContent({ active, updateNode }) {
   const config = active.config ?? {};
   const updateConfig = (patch) => updateNode(active.id, { config: { ...config, ...patch } });
-  return <><label className="switch-row"><input type="checkbox" checked={config.enabled !== false} onChange={(event) => updateConfig({ enabled: event.target.checked })} /><span>{config.enabled !== false ? "On" : "Off"}</span><strong>Show timer</strong></label><h4>Time format</h4><div className="split-fields"><Field label="Format"><select value={config.format ?? "hh:mm:ss"} onChange={(event) => updateConfig({ format: event.target.value })}><option value="hh:mm:ss">hh:mm:ss</option><option value="mm:ss">mm:ss</option></select></Field><Field label="Time separator"><select value={config.separator ?? ":"} onChange={(event) => updateConfig({ separator: event.target.value })}><option value=":">Colon</option><option value="·">Dot</option><option value=" ">Space</option></select></Field></div><h4>Timer text</h4><Field label="Start value"><input value={active.content ?? "04:59:59"} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><div className="split-fields"><Field label="Text before"><ConfigInput active={active} updateNode={updateNode} name="prefix" fallback="" placeholder="Enter text here" /></Field><Field label="Text after"><ConfigInput active={active} updateNode={updateNode} name="suffix" fallback="" placeholder="Enter text here" /></Field></div><h4>Timer mode</h4><Field label=""><select value={config.resetMode ?? "Reset timer on every paywall view"} onChange={(event) => updateConfig({ resetMode: event.target.value })}><option>Reset timer on every paywall view</option></select></Field></>;
+  return <><label className="switch-row"><input type="checkbox" checked={config.enabled !== false} onChange={(event) => updateConfig({ enabled: event.target.checked })} /><span>{config.enabled !== false ? "On" : "Off"}</span><strong>Show timer</strong></label><h4>Time format</h4><div className="split-fields"><Field label="Format"><select value={config.format ?? "hh:mm:ss"} onChange={(event) => updateConfig({ format: event.target.value })}><option value="hh:mm:ss">hh:mm:ss</option><option value="mm:ss">mm:ss</option></select></Field><Field label="Time separator"><select value={config.separator ?? ":"} onChange={(event) => updateConfig({ separator: event.target.value })}><option value=":">Colon</option><option value="·">Dot</option><option value=" ">Space</option></select></Field></div><h4>Timer text</h4><Field label="Start value" required><input value={active.content ?? "04:59:59"} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><div className="split-fields"><Field label="Text before"><ConfigInput active={active} updateNode={updateNode} name="prefix" fallback="" placeholder="Enter text here" /></Field><Field label="Text after"><ConfigInput active={active} updateNode={updateNode} name="suffix" fallback="" placeholder="Enter text here" /></Field></div><h4>Timer mode</h4><Field label=""><select value={config.resetMode ?? "Reset timer on every paywall view"} onChange={(event) => updateConfig({ resetMode: event.target.value })}><option>Reset timer on every paywall view</option></select></Field></>;
 }
 
 function ToggleContent({ node, updateNode, boundary, markUnknown }) {
@@ -2046,7 +2059,7 @@ function ToggleContent({ node, updateNode, boundary, markUnknown }) {
   const updateCopy = (nextTitle, nextSecondary) => updateNode(node.id, { content: `${nextTitle}|${nextSecondary}` });
   return <>
     <Field label="Default toggle state"><div className="segmented"><button className={defaultState === "Off" ? "active" : ""} onClick={() => updateNode(node.id, { defaultState: "Off" })}>Off</button><button className={defaultState === "On" ? "active" : ""} onClick={() => updateNode(node.id, { defaultState: "On" })}>On</button></div></Field>
-    <Field label="Title text"><textarea value={title} onChange={(event) => updateCopy(event.target.value, secondary)} /></Field><Field label="Secondary text"><textarea value={secondary} onChange={(event) => updateCopy(title, event.target.value)} /></Field><InspectorBoundary boundary={boundary} markUnknown={markUnknown} message="开关的颜色、边框与布局字段尚未接入预览，不显示为可编辑字段。" />
+    <Field label="Title text" required><textarea value={title} onChange={(event) => updateCopy(event.target.value, secondary)} /></Field><Field label="Secondary text"><textarea value={secondary} onChange={(event) => updateCopy(title, event.target.value)} /></Field><InspectorBoundary boundary={boundary} markUnknown={markUnknown} message="开关的颜色、边框与布局字段尚未接入预览，不显示为可编辑字段。" />
   </>;
 }
 
@@ -2062,7 +2075,7 @@ function ButtonContent({ active, updateNode }) {
   const action = active.config?.action ?? (active.type === "Purchase Button" ? "Purchase" : "None");
   const url = active.config?.actionUrl ?? "";
   const validUrl = !url || safeButtonUrl(url);
-  return <><Field label="按钮文案"><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><Field label="点击后"><select value={action} onChange={(event) => updateNodeConfig(active, updateNode, { action: event.target.value })}><option value="None">无动作</option><option value="Purchase">唤起支付</option><option value="OpenPage">打开内置页面</option><option value="OpenURL">打开链接</option></select></Field>{action === "OpenPage" && <Field label="目标页面"><select value={active.config?.actionPage ?? "ht-blue-privilege"} onChange={(event) => updateNodeConfig(active, updateNode, { actionPage: event.target.value })}>{templates.filter((item) => item.documentTemplate).map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></Field>}{action === "OpenURL" && <><Field label="目标链接"><input type="url" placeholder="https://" value={url} onChange={(event) => updateNodeConfig(active, updateNode, { actionUrl: event.target.value })} aria-invalid={!validUrl} /></Field>{!validUrl && <p className="property-copy" role="alert">请输入以 https:// 或 http:// 开头的有效链接</p>}</>}{action === "Purchase" && <p className="property-copy">预览将展示所选商品的支付确认页，不会发起真实支付。</p>}</>;
+  return <><Field label="按钮文案" required><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><Field label="点击后"><select value={action} onChange={(event) => updateNodeConfig(active, updateNode, { action: event.target.value })}><option value="None">无动作</option><option value="Purchase">唤起支付</option><option value="OpenPage">打开内置页面</option><option value="OpenURL">打开链接</option></select></Field>{action === "OpenPage" && <Field label="目标页面" required><select value={active.config?.actionPage ?? "ht-blue-privilege"} onChange={(event) => updateNodeConfig(active, updateNode, { actionPage: event.target.value })}>{templates.filter((item) => item.documentTemplate).map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></Field>}{action === "OpenURL" && <><Field label="目标链接" required><input type="url" placeholder="https://" value={url} onChange={(event) => updateNodeConfig(active, updateNode, { actionUrl: event.target.value })} aria-invalid={!validUrl} /></Field>{!validUrl && <p className="property-copy" role="alert">请输入以 https:// 或 http:// 开头的有效链接</p>}</>}{action === "Purchase" && <p className="property-copy">预览将展示所选商品的支付确认页，不会发起真实支付。</p>}</>;
 }
 
 function WebButtonContent({ active, updateNode }) {
@@ -2074,14 +2087,14 @@ function safeButtonUrl(value) {
 }
 
 function LinksContent({ active, updateNode, templateLinks, setTemplateLinks }) {
-  return <><Field label="Visible link labels"><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><p className="property-copy">服务条款、隐私政策与恢复购买的跳转逻辑未在当前预览中执行；链接 URL 不显示为无反馈输入。</p></>;
+  return <><Field label="Visible link labels" required><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><p className="property-copy">服务条款、隐私政策与恢复购买的跳转逻辑未在当前预览中执行；链接 URL 不显示为无反馈输入。</p></>;
 }
 
 function AgreementContent({ active, updateNode }) {
   const config = active.config ?? {};
-  const urlField = (label, name) => <Field label={label}><input type="url" placeholder="https://" value={config[name] ?? ""} aria-invalid={Boolean(config[name] && !safeButtonUrl(config[name]))} onChange={(event) => updateNodeConfig(active, updateNode, { [name]: event.target.value })} /></Field>;
+  const urlField = (label, name) => <Field label={label} required><input type="url" placeholder="https://" value={config[name] ?? ""} aria-invalid={Boolean(config[name] && !safeButtonUrl(config[name]))} onChange={(event) => updateNodeConfig(active, updateNode, { [name]: event.target.value })} /></Field>;
   const showCheckbox = config.showCheckbox !== false;
-  return <><Field label="引导文案"><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><Field label="服务条款文案"><input value={config.termsLabel ?? "服务条款"} onChange={(event) => updateNodeConfig(active, updateNode, { termsLabel: event.target.value })} /></Field>{urlField("服务条款链接", "termsUrl")}<Field label="隐私政策文案"><input value={config.privacyLabel ?? "隐私政策"} onChange={(event) => updateNodeConfig(active, updateNode, { privacyLabel: event.target.value })} /></Field>{urlField("隐私政策链接", "privacyUrl")}<label className="switch-row"><strong>显示勾选框</strong><input type="checkbox" checked={showCheckbox} onChange={(event) => updateNodeConfig(active, updateNode, { showCheckbox: event.target.checked, ...(!event.target.checked ? { required: false } : {}) })} /><span>{showCheckbox ? "开启" : "关闭"}</span></label><label className="switch-row"><strong>勾选后才能点击按钮</strong><input type="checkbox" checked={showCheckbox && config.required !== false} disabled={!showCheckbox} onChange={(event) => updateNodeConfig(active, updateNode, { required: event.target.checked })} /><span>{showCheckbox && config.required !== false ? "开启" : "关闭"}</span></label></>;
+  return <><Field label="引导文案" required><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><Field label="服务条款文案" required><input value={config.termsLabel ?? "服务条款"} onChange={(event) => updateNodeConfig(active, updateNode, { termsLabel: event.target.value })} /></Field>{urlField("服务条款链接", "termsUrl")}<Field label="隐私政策文案" required><input value={config.privacyLabel ?? "隐私政策"} onChange={(event) => updateNodeConfig(active, updateNode, { privacyLabel: event.target.value })} /></Field>{urlField("隐私政策链接", "privacyUrl")}<label className="switch-row"><strong>显示勾选框</strong><input type="checkbox" checked={showCheckbox} onChange={(event) => updateNodeConfig(active, updateNode, { showCheckbox: event.target.checked, ...(!event.target.checked ? { required: false } : {}) })} /><span>{showCheckbox ? "开启" : "关闭"}</span></label><label className="switch-row"><strong>勾选后才能点击按钮</strong><input type="checkbox" checked={showCheckbox && config.required !== false} disabled={!showCheckbox} onChange={(event) => updateNodeConfig(active, updateNode, { required: event.target.checked })} /><span>{showCheckbox && config.required !== false ? "开启" : "关闭"}</span></label></>;
 }
 
 function AgreementStyle({ active, updateNode }) {
@@ -2134,7 +2147,7 @@ function PrivilegeComparisonEditor({ active, updateNode }) {
     <Field label="对比样式"><select aria-label="特权对比样式" value={active.config?.comparisonMode ?? "standard-vip"} onChange={(event) => updateNodeConfig(active, updateNode, { comparisonMode: event.target.value })}><option value="standard-vip">非会员 / VIP</option><option value="standard-plus">非会员 / Plus</option><option value="vip-plus">VIP / Plus</option></select></Field>
     <Field label="显示行数"><input type="number" min="1" max={rows.length} value={active.config?.maxVisibleRows ?? 5} onChange={(event) => updateNodeConfig(active, updateNode, { maxVisibleRows: Math.max(1, Math.min(rows.length, Number(event.target.value) || 1)) })} /></Field>
     {rows.map((row, index) => <div className="privilege-row-wrap" key={row.id} onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); moveRow(draggedId.current, row.id); draggedId.current = null; }}>
-      <div className="privilege-row"><button type="button" className="privilege-drag" aria-label={"拖动排序 " + row.name} title="拖动排序" draggable onDragStart={(event) => { draggedId.current = row.id; event.dataTransfer.effectAllowed = "move"; event.dataTransfer.setData("text/plain", row.id); }} onDragEnd={() => { draggedId.current = null; }}><GripVertical size={16} /></button><input aria-label={"特权 " + (index + 1)} value={row.name} onChange={(event) => patchRow(row.id, { name: event.target.value })} /><button type="button" className="row-remove" aria-label={"删除特权 " + row.name} onClick={() => commit(rows.filter((item) => item.id !== row.id))}><X size={14} /></button></div>
+      <div className="privilege-row"><button type="button" className="privilege-drag" aria-label={"拖动排序 " + row.name} title="拖动排序" draggable onDragStart={(event) => { draggedId.current = row.id; event.dataTransfer.effectAllowed = "move"; event.dataTransfer.setData("text/plain", row.id); }} onDragEnd={() => { draggedId.current = null; }}><GripVertical size={16} /></button><label className="privilege-row-name"><span>特权名称</span><input aria-label={"特权 " + (index + 1)} value={row.name} onChange={(event) => patchRow(row.id, { name: event.target.value })} /></label><button type="button" className="row-remove" aria-label={"删除特权 " + row.name} onClick={() => commit(rows.filter((item) => item.id !== row.id))}><X size={14} /></button></div>
       <div className="privilege-values">{columns.map(([field, label]) => <React.Fragment key={field}>{valueEditor(row, field, label)}</React.Fragment>)}</div>
       <div className="privilege-row-management"><label>特权页管理<select aria-label={"特权页管理 " + row.name} value={row.pageId ?? ""} onChange={(event) => patchRow(row.id, { pageId: event.target.value })}><option value="">未绑定</option><option value="detail">当前特权详情页</option></select></label><button type="button" aria-label={"编辑特权 " + row.name} title="编辑特权" onClick={() => openEditor(row)}><Pencil size={15} /></button></div>
     </div>)}
@@ -2159,7 +2172,7 @@ function PrivilegeComparisonEditor({ active, updateNode }) {
 function ListItemContent({ active, updateNode }) {
   const [title = "", caption = ""] = (active.content ?? "").split("|");
   const updateCopy = (nextTitle, nextCaption) => updateNode(active.id, { content: `${nextTitle}|${nextCaption}` });
-  return <><Field label="Title"><textarea value={title} onChange={(event) => updateCopy(event.target.value, caption)} /></Field><Field label="Caption"><textarea value={caption} onChange={(event) => updateCopy(title, event.target.value)} /></Field><p className="property-copy">自定义图标与连接线样式尚未接入预览，不显示为可编辑字段。</p></>;
+  return <><Field label="Title" required><textarea value={title} onChange={(event) => updateCopy(event.target.value, caption)} /></Field><Field label="Caption"><textarea value={caption} onChange={(event) => updateCopy(title, event.target.value)} /></Field><p className="property-copy">自定义图标与连接线样式尚未接入预览，不显示为可编辑字段。</p></>;
 }
 
 function ListItemStyle() {
@@ -2259,7 +2272,7 @@ function RetentionImageField({ active, updateNode, name, label, fallback }) {
 
 function RetentionContent({ active, updateNode, previewOpen, onPreview }) {
   const config = active.config ?? {};
-  const field = (name, label, fallback = "") => <Field label={label} key={name}><input value={config[name] ?? fallback} onChange={(event) => updateNodeConfig(active, updateNode, { [name]: event.target.value })} /></Field>;
+  const field = (name, label, fallback = "") => <Field label={label} key={name} required={["title", "buttonText", "cancelText"].includes(name)}><input value={config[name] ?? fallback} onChange={(event) => updateNodeConfig(active, updateNode, { [name]: event.target.value })} /></Field>;
   return <><button type="button" className="secondary retention-preview-button" onClick={onPreview}>{previewOpen ? <EyeOff size={16} /> : <Eye size={16} />}{previewOpen ? "关闭预览" : "预览弹窗"}</button>{field("title", "标题", "错过这次，就要多花 30%😱")}<RetentionImageField active={active} updateNode={updateNode} name="backgroundImage" label="弹窗背景图片" fallback="" /><RetentionImageField active={active} updateNode={updateNode} name="imageSrc" label="主视觉图片" fallback="/ht-retention-gift.png" />{field("timerLabel", "倒计时文案", "倒计时")}{field("timerStart", "倒计时初始值", "71:22:22")}{field("buttonText", "主按钮文案", "立享优惠")}{field("cancelText", "取消按钮文案", "忍痛取消")}</>;
 }
 
@@ -2425,7 +2438,12 @@ function Modal({ title, onClose, children, wide = false }) {
   }, []);
   return <div className="modal-backdrop"><section className={`modal ${wide ? "wide" : ""}`}><header><h2>{title}</h2><button className="icon" onClick={onClose}><X size={19} /></button></header>{children}</section></div>;
 }
-function Field({ label, children }) { return <label className="form-field"><span>{label}</span>{children}</label>; }
+function Field({ label, children, required = false, optional = false }) {
+  const requiredLabels = ["标题", "描述", "图片", "行首文字", "图标字符", "SKU ID（演示映射）", "Plans", "组件名称", "Terms of Service URL", "Privacy Policy URL"];
+  const isRequired = !optional && (required || label?.endsWith(" *") || requiredLabels.includes(label));
+  const displayLabel = label?.endsWith(" *") ? label.slice(0, -2) : label;
+  return <label className={`form-field${isRequired ? " required" : ""}`}><span aria-label={isRequired ? `${displayLabel}，必填` : undefined}>{displayLabel}</span>{children}</label>;
+}
 function StateBadge({ state }) { return <span className={`state ${state.toLowerCase()}`}><i /> {state}</span>; }
 function Sort() { return <span className="sort">↕</span>; }
 function Help() { return <CircleHelp size={15} className="help" />; }
@@ -2493,11 +2511,11 @@ function carouselSlideStyles(config = {}) {
   };
 }
 
-function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onButtonAction, onUpdateHeroPosition, onReorder, retentionPreviewOpen = false, onOpenRetention, onCloseRetention, pricePreviewMode = "1", interactive = false }) {
+function HelloTalkPaywall({ variant, nodes, activeNode, onSelect, onButtonAction, onUpdateHeroPosition, onReorder, retentionPreviewOpen = false, onOpenRetention, onCloseRetention, pricePreviewMode = "1", interactive = false }) {
   const heroCopyDrag = useRef(null);
   const heroOverlayDrag = useRef(null);
   const defaults = helloTalkTemplateDefaults[variant];
-  const renderedNodes = nodes.length ? nodes : createBuilderNodes(templates.find((item) => item.documentTemplate === variant));
+  const renderedNodes = nodes ?? createBuilderNodes(templates.find((item) => item.documentTemplate === variant));
   const nodeById = (id) => renderedNodes.find((item) => item.id === id);
   const value = (id, fallback) => nodeById(id)?.content ?? fallback;
   const configFor = (id) => nodeById(id)?.config ?? {};
