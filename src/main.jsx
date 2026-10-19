@@ -894,7 +894,7 @@ const appCategories = [
 const zhCopy = {
   "Paywalls": "付费墙", "Test": "测试", "Help": "帮助", "App settings": "应用设置", "Account": "账户",
   "Add a new app": "新建应用", "Evidence & gaps": "已验证与缺口", "Only observed behavior is reproduced. These routes are deliberately not invented.": "仅复刻已观察到的行为；未验证的结果不会被编造。",
-  "Create paywall": "创建付费墙", "Create as draft": "创建草稿", "General": "基础设置", "Products": "产品套餐",
+  "Create paywall": "创建付费墙", "Create as draft": "创建草稿", "General": "基础设置", "Products": "商品套餐",
   "Paywall name": "付费墙名称", "Paywall screenshot": "付费墙截图", "Upload screenshot": "上传截图",
   "Build no-code paywall": "使用无代码构建器", "Choose a template": "选择模板", "Generate Paywall with AI": "使用 AI 生成付费墙",
   "Copy a Design from Your Apps": "从其他应用复制设计", "Builder & Generator": "构建器与生成器", "Choose how to start": "选择创建方式",
@@ -903,16 +903,16 @@ const zhCopy = {
   "Metrics": "指标", "View in analytics": "在分析中查看", "Duplicate": "复制", "Test on Device": "在设备上测试", "Archive": "归档",
   "State": "状态", "Started at": "创建时间", "Open Builder": "打开构建器",
   "Discard": "放弃更改", "Save": "保存", "Save & publish": "保存并发布", "Add product": "添加产品",
-  "Template": "模板", "Change template": "更换模板", "Layout settings": "布局设置", "Elements": "元素", "Show on device": "在设备上展示",
+  "Template": "模板", "Change template": "更换模板", "Layout settings": "布局设置", "Elements": "组件", "Show on device": "在设备上展示",
   "Source visual": "源端画面", "Editable structure": "可编辑结构", "Source reference": "源端参考画面",
   "Source preview": "源端画面", "Structure pending": "结构待采集",
   "This template has a captured source visual, but its exact Builder layer tree has not been verified. Editing is intentionally unavailable until the source structure is collected.": "该模板已采集源端画面，但精确的构建器图层树尚未验证；在采集完成前，不开放伪造的编辑能力。",
   "The matching source visual is shown in the device preview. No generic editable nodes are substituted for this template.": "设备预览显示与模板卡一致的源端画面；不会用通用可编辑节点替代该模板。",
-  "On": "开启", "Add element": "添加元素", "Localization": "本地化", "English": "英语", "French": "法语", "Simplified Chinese": "简体中文",
+  "On": "开启", "Add element": "添加组件", "Localization": "本地化", "English": "英语", "French": "法语", "Simplified Chinese": "简体中文",
   "Add locale": "添加语言", "Content": "内容", "Style": "样式", "Layout": "布局", "Text": "文本", "Image": "图片", "Card": "卡片",
-  "Web Paywall Button": "网页付费按钮", "Button": "按钮", "List": "列表", "Links": "链接", "Timer": "倒计时", "Carousel": "轮播图",
+  "Web Paywall Button": "网页付费按钮", "Button": "按钮", "List": "特权列表", "Links": "链接", "Timer": "倒计时", "Carousel": "轮播图",
   "Toggle": "试用开关", "Toggle On": "开关开启状态", "Toggle Off": "开关关闭状态", "Default toggle state": "默认开关状态", "Active": "已开启",
-  "Hero Image": "主视觉图片", "Header": "标题", "Headline": "主标题", "Subhead": "副标题", "Caption": "说明文案", "Legal": "法律说明", "Top Text": "顶部文案", "Feature list": "权益列表", "List item": "列表项", "Product": "产品", "Purchase Button": "购买按钮", "Stars": "星级", "Black Friday Image": "黑色星期五图片", "Footer": "底部区域", "Purchase": "购买", "Continue": "继续", "Terms of service": "服务条款",
+  "Hero Image": "主视觉图片", "Header": "标题", "Headline": "主标题", "Subhead": "副标题", "Caption": "说明文案", "Legal": "法律说明", "Top Text": "顶部文案", "Feature list": "特权列表", "List item": "特权项", "Product": "产品", "Purchase Button": "购买按钮", "Stars": "星级", "Black Friday Image": "黑色星期五图片", "Footer": "底部区域", "Purchase": "购买", "Continue": "继续", "Terms of service": "服务条款",
   "Privacy policy": "隐私政策", "Restore": "恢复购买", "Close": "关闭", "Cancel": "取消", "Accept": "确认",
   "Paywall publishing confirmation": "付费墙发布确认", "Archive paywall": "归档付费墙", "Filters": "筛选",
   "Number of products": "产品数量", "Image / video": "图片 / 视频", "Components": "组件", "Length": "内容长度", "Background theme": "背景主题",
@@ -934,7 +934,7 @@ const zhCopy = {
   "Personal wellness plan": "个人健康计划", "Explore your profile": "探索你的个人档案", "Try it free for seven days": "免费体验七天",
   "Premium wallpaper collection": "高级壁纸合集", "Unlock premium forecasting": "解锁高级天气预报", "Experience guided meditations": "体验引导式冥想",
   "A plan built for today": "为今天定制的计划", "Halloween offer now on": "万圣节优惠正在进行", "Limited holiday discount": "限时节日优惠",
-  "Element content": "元素内容", "Delete element": "删除元素", "Preview orientation": "预览方向", "Preview visibility": "预览可见性",
+  "Element content": "组件内容", "Delete element": "删除组件", "Preview orientation": "预览方向", "Preview visibility": "预览可见性",
   "No locally reconstructed templates match this filter combination.": "没有本地还原模板符合当前筛选组合。", "All paywalls": "全部付费墙", "Popular": "热门", "Seasonal": "季节活动",
   "No locally captured Adapty templates match this filter combination.": "没有已采集的 Adapty 真实模板符合当前筛选组合。",
   "Don't have a design? Our AI will create a unique paywall for you from scratch.": "还没有设计？AI 会从零为你生成一张独特的付费墙。",
@@ -973,7 +973,7 @@ const zhCopy = {
   "All prices, titles, and offers displayed are placeholders. The actual data from App Store and Google Play will be shown in the app.": "预览中的价格、标题和优惠均为占位内容；应用内会显示 App Store 与 Google Play 的实际数据。",
   "iPhone 15 Pro": "iPhone 15 Pro", "System (SF Pro, Roboto) Regular": "系统字体（SF Pro、Roboto）常规", "Top button 1": "顶部按钮 1", "Top button 2": "顶部按钮 2",
   "Default font": "默认字体", "Purchase flow": "购买流程", "Products as list + purchase button": "产品列表 + 购买按钮", "Background color": "背景颜色",
-  "Enable Dark mode": "启用深色模式", "Content layout": "内容布局", "Default child margin": "子元素默认边距", "Spacing": "间距", "Add max width": "添加最大宽度",
+  "Enable Dark mode": "启用深色模式", "Content layout": "内容布局", "Default child margin": "子组件默认边距", "Spacing": "间距", "Add max width": "添加最大宽度",
   "Show after delay": "延迟显示", "Fill color": "填充颜色", "Border color": "边框颜色", "Border thickness": "边框粗细", "Icon color": "图标颜色",
   "Upload image": "上传图片", "Upload video": "上传视频", "Choose a file from your computer": "从电脑中选择文件", "Enter custom media ID": "输入自定义媒体 ID",
   "Media": "媒体", "Video": "视频", "Display": "展示方式", "Overlay": "叠加", "Transparent": "透明", "Flat": "平铺", "Tint": "色调",
@@ -981,7 +981,7 @@ const zhCopy = {
   "Terms of Service": "服务条款", "Privacy Policy": "隐私政策",
   "Read the docs": "查看文档", "All placements": "全部展示位置", "States (3)": "状态（3）", "Live": "已发布", "Draft": "草稿", "Inactive": "未启用",
   "Search by paywall name": "按付费墙名称搜索", "Proceeds": "实收款项", "Net proceeds": "净实收款项", "1 - 2 of 2": "第 1 - 2 项，共 2 项",
-  "Create a draft and configure it with products and a no-code builder.": "创建草稿，并在产品套餐与无代码构建器中完成设置。",
+  "Create a draft and configure it with products and a no-code builder.": "创建草稿，并在商品套餐与无代码构建器中完成设置。",
   "Actions for test": "test 的操作", "Actions for test 2": "test 2 的操作", "Edit": "编辑",
   "No switch (all products are visible)": "不切换（展示所有产品）", "Selected product": "选中的产品", "Products grouping": "产品分组",
   "Custom media ID": "自定义媒体 ID", "Background image": "背景图片", "Fill": "填充", "Border": "边框", "Corner radius": "圆角",
@@ -998,9 +998,9 @@ const zhCopy = {
   "Hero media": "主视觉媒体", "Top banner": "顶部横幅", "Show banner": "展示横幅", "Language": "语言", "Audience": "用户类型", "Banner deep link": "横幅跳转链接",
   "Copy embedded in this visual": "主视觉内嵌文案", "Supporting copy": "辅助文案", "The headline and supporting copy are composited in the hero image layer, not independent text components. Show banner directly maps to its visibility in the preview.": "主标题与辅助文案属于主视觉图层，不作为独立文本组件；展示横幅会直接同步预览可见性。",
   "Privilege rows": "特权行", "Add privilege": "添加特权", "Visible rows": "显示行数", "Privilege": "特权", "Non-member": "非会员", "Each row maps directly to the three columns in the current paywall preview. You can add or remove a privilege without converting the component into free-form text.": "每一行都会直接映射到当前付费墙预览的三列，可独立新增或删除，不会退化为自由文本。",
-  "Product packages": "产品套餐", "Visible packages": "显示套餐数", "Default selected": "默认选中", "Show selected package badge": "展示已选套餐角标", "Package": "套餐", "Price": "价格", "Add package": "添加套餐", "Remove package": "删除套餐",
+  "Product packages": "商品套餐", "Visible packages": "显示套餐数", "Default selected": "默认选中", "Show selected package badge": "展示已选套餐角标", "Package": "套餐", "Price": "价格", "Add package": "添加套餐", "Remove package": "删除套餐",
   "List background": "列表背景", "Header background": "表头背景", "VIP column background": "VIP 列背景", "Non-member text": "非会员文字", "VIP text": "VIP 文字", "Product area background": "套餐区域背景", "Selected background": "选中背景", "Selected border": "选中边框", "Badge background": "角标背景", "Badge text": "角标文字",
-  "Page behavior": "页面行为", "Confirm before closing": "关闭前二次确认", "This is a page-exit rule, so it is stored with the template but does not alter the resting device preview. Module order is changed directly by dragging items in the Elements panel.": "这是离开页面时生效的规则，会保存到模板中；静态设备预览不会伪造弹窗。模块顺序可在元素面板中直接拖动调整。",
+  "Page behavior": "页面行为", "Confirm before closing": "关闭前二次确认", "This is a page-exit rule, so it is stored with the template but does not alter the resting device preview. Module order is changed directly by dragging items in the Elements panel.": "这是离开页面时生效的规则，会保存到模板中；静态设备预览不会伪造弹窗。组件顺序可在组件面板中直接拖动调整。",
   "Replace": "替换", "Remove media": "删除媒体", "Restore source": "恢复源素材", "Upload image or video": "上传图片或视频", "PNG, JPG, WebP, MP4, max size 10MB.": "支持 PNG、JPG、WebP、MP4，最大 10MB。",
   "Source media": "源素材", "Français": "法语", "System": "系统", "Serif": "衬线", "Monospace": "等宽", "Colon": "冒号", "Dot": "圆点", "Space": "空格",
   "Limited": "受限", "Included": "已包含", "New privilege": "新增特权", "New package": "新增套餐",
@@ -1012,7 +1012,7 @@ const zhCopy = {
   "1 - ": "第 1 - ", " of ": "，共 "
 };
 
-const enCopy = Object.fromEntries(Object.entries(zhCopy).map(([english, chinese]) => [chinese, english]));
+const enCopy = { ...Object.fromEntries(Object.entries(zhCopy).map(([english, chinese]) => [chinese, english])), "特权列表": "List", "商品套餐": "Products" };
 
 function localizeInterface(root, locale) {
   if (!root) return;
@@ -1534,7 +1534,7 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
       setActiveNode(next.id);
       setAddElementOpen(false);
       if (appliedTemplate !== null && isEditableTemplate(templates[appliedTemplate])) setPreviewMode("editable");
-      notify(`${type} 已添加到构建器，并可在右侧继续编辑。`);
+      notify(`${zhCopy[type] ?? type} 组件已添加到构建器，并可在右侧继续编辑。`);
     };
     const addNestedElement = (parentId, type) => {
       const nextId = `added-${type.toLowerCase().replace(/[^a-z]+/g, "-")}-${builderNodes.filter((node) => node.id.startsWith("added-")).length + 1}`;
@@ -1550,7 +1550,7 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
       setActiveNode(nextId);
       if (appliedTemplate !== null && isEditableTemplate(templates[appliedTemplate])) setPreviewMode("editable");
       const parent = builderNodes.find((node) => node.id === parentId);
-      notify(`${type} 已作为 ${parent?.type ?? "容器"} 子元素添加。`);
+      notify(`${zhCopy[type] ?? type} 已作为 ${zhCopy[parent?.type] ?? "容器"} 子组件添加。`);
     };
     const getNodeDropTarget = (clientX, clientY, sourceId) => {
       const target = document.elementFromPoint(clientX, clientY)?.closest("[data-node-id]");
@@ -1941,7 +1941,7 @@ function ImageLayout() {
 function CardContent({ active, addNestedNode, allowAdd = true }) {
   const [open, setOpen] = useState(false);
   const allowed = ["List", "Button", "Image", "Text", "Timer"];
-  return allowAdd ? <><h4>Card items</h4><div className="nested-add-wrap"><button className="text-action" onClick={() => setOpen((value) => !value)}><Plus size={15} /> Add element</button>{open && <div className="nested-add-menu">{allowed.map((type) => <button key={type} onClick={() => { addNestedNode(active.id, type); setOpen(false); }}>{type}</button>)}</div>}</div></> : <p className="property-copy">当前模板的卡片结构由已采集的固定画面组成；任意新增子元素尚未形成可回写的预览规则。</p>;
+  return allowAdd ? <><h4>Card items</h4><div className="nested-add-wrap"><button className="text-action" onClick={() => setOpen((value) => !value)}><Plus size={15} /> Add element</button>{open && <div className="nested-add-menu">{allowed.map((type) => <button key={type} onClick={() => { addNestedNode(active.id, type); setOpen(false); }}>{type}</button>)}</div>}</div></> : <p className="property-copy">当前模板的卡片结构由已采集的固定画面组成；任意新增子组件尚未形成可回写的预览规则。</p>;
 }
 
 function TimerContent({ active, updateNode }) {
@@ -1981,12 +1981,12 @@ function LinksContent({ active, updateNode, templateLinks, setTemplateLinks }) {
 }
 
 function ListContent({ active, updateNode, addNestedNode, allowAdd = true }) {
-  if (active.id === "benefits" && active.config?.bluePrivilege) return <><PrivilegeComparisonEditor active={active} updateNode={updateNode} />{allowAdd && <button type="button" className="text-action" onClick={() => addNestedNode(active.id, "List item")}><Plus size={15} /> 添加独立子元素</button>}</>;
+  if (active.id === "benefits" && active.config?.bluePrivilege) return <><PrivilegeComparisonEditor active={active} updateNode={updateNode} />{allowAdd && <button type="button" className="text-action" onClick={() => addNestedNode(active.id, "List item")}><Plus size={15} /> 添加独立子组件</button>}</>;
   const rows = listRowsFor(active);
   const commit = (nextRows) => updateNodeConfig(active, updateNode, { listRows: nextRows });
   const patchRow = (index, patch) => commit(rows.map((row, position) => position === index ? { ...row, ...patch } : row));
   const move = (index, direction) => { const next = [...rows]; const other = index + direction; if (other < 0 || other >= next.length) return; [next[index], next[other]] = [next[other], next[index]]; commit(next); };
-  return <><h4>列表行</h4>{rows.map((row, index) => <section className="product-row-editor" key={index}><header><strong>第 {index + 1} 行</strong><div><button type="button" title="上移" disabled={index === 0} onClick={() => move(index, -1)}>↑</button><button type="button" title="下移" disabled={index === rows.length - 1} onClick={() => move(index, 1)}>↓</button><button type="button" title="删除" onClick={() => commit(rows.filter((_, position) => position !== index))}><X size={15} /></button></div></header><Field label="标题"><input value={row.title} onChange={(event) => patchRow(index, { title: event.target.value })} /></Field><label className="switch-row"><input type="checkbox" checked={row.showCaption !== false} onChange={(event) => patchRow(index, { showCaption: event.target.checked })} /><strong>显示描述</strong></label>{row.showCaption !== false && <Field label="描述"><input value={row.caption} onChange={(event) => patchRow(index, { caption: event.target.value })} /></Field>}<Field label="行首内容"><select value={row.leadingMode ?? "icon"} onChange={(event) => patchRow(index, { leadingMode: event.target.value })}><option value="icon">图标</option><option value="text">文字</option><option value="none">不显示</option></select></Field>{row.leadingMode !== "none" && <Field label={row.leadingMode === "text" ? "行首文字" : "图标字符"}><input value={row.leading ?? "✓"} onChange={(event) => patchRow(index, { leading: event.target.value })} /></Field>}</section>)}<button type="button" className="text-action" onClick={() => commit([...rows, { title: "", caption: "", leadingMode: "icon", leading: "✓", showCaption: true }])}><Plus size={15} /> 添加列表行</button>{allowAdd && <button type="button" className="text-action" onClick={() => addNestedNode(active.id, "List item")}><Plus size={15} /> 添加独立子元素</button>}</>;
+  return <><h4>特权行</h4>{rows.map((row, index) => <section className="product-row-editor" key={index}><header><strong>第 {index + 1} 行</strong><div><button type="button" title="上移" disabled={index === 0} onClick={() => move(index, -1)}>↑</button><button type="button" title="下移" disabled={index === rows.length - 1} onClick={() => move(index, 1)}>↓</button><button type="button" title="删除" onClick={() => commit(rows.filter((_, position) => position !== index))}><X size={15} /></button></div></header><Field label="标题"><input value={row.title} onChange={(event) => patchRow(index, { title: event.target.value })} /></Field><label className="switch-row"><input type="checkbox" checked={row.showCaption !== false} onChange={(event) => patchRow(index, { showCaption: event.target.checked })} /><strong>显示描述</strong></label>{row.showCaption !== false && <Field label="描述"><input value={row.caption} onChange={(event) => patchRow(index, { caption: event.target.value })} /></Field>}<Field label="行首内容"><select value={row.leadingMode ?? "icon"} onChange={(event) => patchRow(index, { leadingMode: event.target.value })}><option value="icon">图标</option><option value="text">文字</option><option value="none">不显示</option></select></Field>{row.leadingMode !== "none" && <Field label={row.leadingMode === "text" ? "行首文字" : "图标字符"}><input value={row.leading ?? "✓"} onChange={(event) => patchRow(index, { leading: event.target.value })} /></Field>}</section>)}<button type="button" className="text-action" onClick={() => commit([...rows, { title: "", caption: "", leadingMode: "icon", leading: "✓", showCaption: true }])}><Plus size={15} /> 添加特权行</button>{allowAdd && <button type="button" className="text-action" onClick={() => addNestedNode(active.id, "List item")}><Plus size={15} /> 添加独立子组件</button>}</>;
 }
 
 function listRowsFor(node) {
@@ -2085,7 +2085,7 @@ function CarouselContent({ active, updateNode, addNestedNode, allowAdd = true })
     };
     return <><Field label="初始展示"><select value={Math.min(config.initialSlide ?? 0, slides.length - 1)} onChange={(event) => updateConfig({ initialSlide: Number(event.target.value) })}>{slides.map((slide, index) => <option key={slide.id} value={index}>第 {index + 1} 页</option>)}</select></Field><div className="carousel-slide-list">{slides.map((slide, index) => <section className="product-row-editor" key={slide.id}><header><strong>第 {index + 1} 页</strong><div><button type="button" title="上移" disabled={index === 0} onClick={() => moveSlide(index, -1)}>↑</button><button type="button" title="下移" disabled={index === slides.length - 1} onClick={() => moveSlide(index, 1)}>↓</button><button type="button" title="删除此页" disabled={slides.length === 1} onClick={() => updateSlides(slides.filter((_, position) => position !== index), (config.initialSlide ?? 0) > index ? (config.initialSlide ?? 0) - 1 : config.initialSlide)}><X size={15} /></button></div></header><Field label="图片"><input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => uploadSlide(index, event.target.files?.[0])} />{slide.image && <img className="carousel-slide-thumbnail" src={slide.image} alt={`第 ${index + 1} 页图片`} />}</Field><Field label="标题"><input value={slide.title ?? ""} onChange={(event) => updateSlide(index, { title: event.target.value })} /></Field><Field label="说明文案"><textarea value={slide.caption ?? ""} onChange={(event) => updateSlide(index, { caption: event.target.value })} /></Field></section>)}</div><button type="button" className="text-action" onClick={() => updateSlides([...slides, { id: `slide-${Date.now()}`, image: "", title: "", caption: "" }])}><Plus size={15} /> 添加一页</button></>;
   }
-  return <><h4>轮播设置</h4><div className="split-fields"><Field label="轮播页数"><input type="number" min="1" max="10" value={config.itemCount ?? active.content ?? 1} onChange={(event) => updateConfig({ itemCount: Math.max(1, Math.min(10, Number(event.target.value) || 1)) })} /></Field><Field label="初始展示页"><input type="number" min="0" max={Math.max(0, (config.itemCount ?? active.content ?? 1) - 1)} value={config.initialSlide ?? 0} onChange={(event) => updateConfig({ initialSlide: Math.max(0, Number(event.target.value) || 0) })} /></Field></div>{allowAdd && <><h4>轮播内容</h4><button className="text-action" onClick={() => addNestedNode(active.id, "Card")}><Plus size={15} /> 添加元素</button></>}</>;
+  return <><h4>轮播设置</h4><div className="split-fields"><Field label="轮播页数"><input type="number" min="1" max="10" value={config.itemCount ?? active.content ?? 1} onChange={(event) => updateConfig({ itemCount: Math.max(1, Math.min(10, Number(event.target.value) || 1)) })} /></Field><Field label="初始展示页"><input type="number" min="0" max={Math.max(0, (config.itemCount ?? active.content ?? 1) - 1)} value={config.initialSlide ?? 0} onChange={(event) => updateConfig({ initialSlide: Math.max(0, Number(event.target.value) || 0) })} /></Field></div>{allowAdd && <><h4>轮播内容</h4><button className="text-action" onClick={() => addNestedNode(active.id, "Card")}><Plus size={15} /> 添加组件</button></>}</>;
 }
 
 function ProductsContent({ active, updateNode, pricePreviewMode }) {
