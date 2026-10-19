@@ -50,6 +50,12 @@ const initialPrivilegeOrder = ["无限翻译&字幕", "解锁谁看了我", "搜
 const referencePrivilegeIcon = "https://ali-global-cdn.hellotalk8.com/testing/vip-manage/8d364b655008356c68732afdcdcd1543.png";
 const initialPrivilegeRows = initialPrivilegeOrder.map((name, index) => ({ id: `privilege-${index}`, name: name === "无限翻译&字幕" ? "无限 AI 翻译&字幕" : name === "增加曝光机会" ? "9倍曝光助推" : name, type: name, standard: knownPrivilegeValues[name]?.[0] ?? "", vip: knownPrivilegeValues[name]?.[1] ?? "", standardMode: knownPrivilegeValues[name]?.[0] === "受限" ? "icon" : "text", standardIcon: "lock", vipMode: knownPrivilegeValues[name]?.[1] === "✓" ? "icon" : "text", vipIcon: "check", pageId: "", detail: { positions: ["蓝色特权页"], title: name === "解锁谁看了我" ? "中秋月夜 | 谁看了我" : name, iconSrc: name === "解锁谁看了我" ? referencePrivilegeIcon : "", images: name === "解锁谁看了我" ? [{ locale: "English", src: "" }, { locale: "Chinese", src: referencePrivilegeIcon }] : [{ locale: "Chinese", src: "" }], titleColor: "#F6C85F", copyKey: name === "解锁谁看了我" ? "Unlock_Visitors_page" : "", descriptionColor: "#FFF8E7", descriptionKey: name === "解锁谁看了我" ? "Unlock_Visitors_page_desc" : "" } }));
 const privilegeRowsFor = (node) => node?.config?.privilegeRows ?? initialPrivilegeRows;
+const privilegeComparisons = {
+  "standard-vip": [["standard", "非会员"], ["vip", "VIP"]],
+  "standard-plus": [["standard", "非会员"], ["plus", "Plus"]],
+  "vip-plus": [["vip", "VIP"], ["plus", "Plus"]],
+};
+const privilegeColumnsFor = (config) => privilegeComparisons[config?.comparisonMode] ?? privilegeComparisons["standard-vip"];
 
 const originalPaywalls = [
   { id: "test", name: "test", state: "Live", products: 3, startedAt: "3 Apr 2026", icon: false },
@@ -1866,7 +1872,7 @@ function LinkStyleEditor({ active, updateNode }) {
 }
 
 function ListStyleEditor({ active, updateNode }) {
-  if (active.config?.bluePrivilege) return <><ConfigColorField label="List background" active={active} updateNode={updateNode} name="backgroundColor" fallback="#f5f5f5" /><div className="split-fields"><ConfigColorField label="Header background" active={active} updateNode={updateNode} name="headerBackground" fallback="#f1f1f1" /><ConfigColorField label="VIP column background" active={active} updateNode={updateNode} name="vipColumnBackground" fallback="#ffffff" /></div><div className="split-fields"><ConfigColorField label="Non-member text" active={active} updateNode={updateNode} name="secondaryColor" fallback="#bdbdbd" /><ConfigColorField label="VIP text" active={active} updateNode={updateNode} name="accentColor" fallback="#ffb40d" /></div></>;
+  if (active.config?.bluePrivilege) return <><ConfigColorField label="列表背景" active={active} updateNode={updateNode} name="backgroundColor" fallback="#f5f5f5" /><ConfigColorField label="表头背景" active={active} updateNode={updateNode} name="headerBackground" fallback="#f1f1f1" /><div className="split-fields"><ConfigColorField label="VIP 列背景" active={active} updateNode={updateNode} name="vipColumnBackground" fallback="#ffffff" /><ConfigColorField label="VIP 文字" active={active} updateNode={updateNode} name="accentColor" fallback="#ffb40d" /></div><div className="split-fields"><ConfigColorField label="Plus 列背景" active={active} updateNode={updateNode} name="plusColumnBackground" fallback="#fff6d9" /><ConfigColorField label="Plus 文字" active={active} updateNode={updateNode} name="plusColor" fallback="#9b6b1f" /></div><div className="split-fields"><ConfigColorField label="非会员文字" active={active} updateNode={updateNode} name="secondaryColor" fallback="#bdbdbd" /><ConfigColorField label="Plus 勾选" active={active} updateNode={updateNode} name="plusCheckColor" fallback="#00c5aa" /></div></>;
   return <><ConfigColorField label="Background" active={active} updateNode={updateNode} name="backgroundColor" fallback="#f5f5f5" /><div className="split-fields"><ConfigColorField label="Standard color" active={active} updateNode={updateNode} name="secondaryColor" fallback="#bdbdbd" /><ConfigColorField label="VIP color" active={active} updateNode={updateNode} name="accentColor" fallback="#ffb40d" /></div></>;
 }
 
@@ -1996,6 +2002,7 @@ function listRowsFor(node) {
 
 function PrivilegeComparisonEditor({ active, updateNode }) {
   const rows = privilegeRowsFor(active);
+  const columns = privilegeColumnsFor(active.config);
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState(null);
   const [imageMenuOpen, setImageMenuOpen] = useState(false);
@@ -2018,14 +2025,15 @@ function PrivilegeComparisonEditor({ active, updateNode }) {
   const valueEditor = (row, field, label) => {
     const mode = row[field + "Mode"] ?? (row[field] === "受限" || row[field] === "✓" ? "icon" : "text");
     const icon = row[field + "Icon"] ?? (field === "standard" ? "lock" : "check");
-    return <label className="privilege-value-field"><span>{label}</span><select aria-label={label + "显示方式 " + row.name} value={mode} onChange={(event) => patchRow(row.id, { [field + "Mode"]: event.target.value })}><option value="text">文字</option><option value="icon">图标</option></select>{mode === "icon" ? <select aria-label={label + "图标 " + row.name} value={icon} onChange={(event) => patchRow(row.id, { [field + "Icon"]: event.target.value })}><option value="lock">锁定</option><option value="check">勾选</option></select> : <input aria-label={label + "文字 " + row.name} value={row[field]} onChange={(event) => patchRow(row.id, { [field]: event.target.value })} />}</label>;
+    return <label className="privilege-value-field"><span>{label}</span><select aria-label={label + "显示方式 " + row.name} value={mode} onChange={(event) => patchRow(row.id, { [field + "Mode"]: event.target.value })}><option value="text">文字</option><option value="icon">图标</option></select>{mode === "icon" ? <select aria-label={label + "图标 " + row.name} value={icon} onChange={(event) => patchRow(row.id, { [field + "Icon"]: event.target.value })}><option value="lock">锁定</option><option value="check">勾选</option></select> : <input aria-label={label + "文字 " + row.name} value={row[field] ?? ""} onChange={(event) => patchRow(row.id, { [field]: event.target.value })} />}</label>;
   };
   return <section className="privilege-editor">
-    <div className="privilege-editor-heading"><h4>特权行</h4><button type="button" className="text-action" onClick={() => commit([...rows, { id: "privilege-" + Date.now(), name: "新特权", type: "", standard: "", vip: "", standardMode: "text", vipMode: "text", pageId: "", detail: { positions: ["蓝色特权页"], title: "", iconSrc: "", images: [{ locale: "Chinese", src: "" }], titleColor: "#F6C85F", copyKey: "", descriptionColor: "#FFF8E7", descriptionKey: "" } }])}><Plus size={15} /> 添加特权</button></div>
+    <div className="privilege-editor-heading"><h4>特权行</h4><button type="button" className="text-action" onClick={() => commit([...rows, { id: "privilege-" + Date.now(), name: "新特权", type: "", standard: "", vip: "", plus: "", standardMode: "text", vipMode: "text", plusMode: "text", pageId: "", detail: { positions: ["蓝色特权页"], title: "", iconSrc: "", images: [{ locale: "Chinese", src: "" }], titleColor: "#F6C85F", copyKey: "", descriptionColor: "#FFF8E7", descriptionKey: "" } }])}><Plus size={15} /> 添加特权</button></div>
+    <Field label="对比样式"><select aria-label="特权对比样式" value={active.config?.comparisonMode ?? "standard-vip"} onChange={(event) => updateNodeConfig(active, updateNode, { comparisonMode: event.target.value })}><option value="standard-vip">非会员 / VIP</option><option value="standard-plus">非会员 / Plus</option><option value="vip-plus">VIP / Plus</option></select></Field>
     <Field label="显示行数"><input type="number" min="1" max={rows.length} value={active.config?.maxVisibleRows ?? 5} onChange={(event) => updateNodeConfig(active, updateNode, { maxVisibleRows: Math.max(1, Math.min(rows.length, Number(event.target.value) || 1)) })} /></Field>
     {rows.map((row, index) => <div className="privilege-row-wrap" key={row.id} onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); moveRow(draggedId.current, row.id); draggedId.current = null; }}>
       <div className="privilege-row"><button type="button" className="privilege-drag" aria-label={"拖动排序 " + row.name} title="拖动排序" draggable onDragStart={(event) => { draggedId.current = row.id; event.dataTransfer.effectAllowed = "move"; event.dataTransfer.setData("text/plain", row.id); }} onDragEnd={() => { draggedId.current = null; }}><GripVertical size={16} /></button><input aria-label={"特权 " + (index + 1)} value={row.name} onChange={(event) => patchRow(row.id, { name: event.target.value })} /><button type="button" className="row-remove" aria-label={"删除特权 " + row.name} onClick={() => commit(rows.filter((item) => item.id !== row.id))}><X size={14} /></button></div>
-      <div className="privilege-values">{valueEditor(row, "standard", "非会员")}{valueEditor(row, "vip", "VIP")}</div>
+      <div className="privilege-values">{columns.map(([field, label]) => <React.Fragment key={field}>{valueEditor(row, field, label)}</React.Fragment>)}</div>
       <div className="privilege-row-management"><label>特权页管理<select aria-label={"特权页管理 " + row.name} value={row.pageId ?? ""} onChange={(event) => patchRow(row.id, { pageId: event.target.value })}><option value="">未绑定</option><option value="detail">当前特权详情页</option></select></label><button type="button" aria-label={"编辑特权 " + row.name} title="编辑特权" onClick={() => openEditor(row)}><Pencil size={15} /></button></div>
     </div>)}
     {editingId && draft && <div className="ht-admin-overlay" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) closeEditor(); }}><div className="ht-admin-dialog" role="dialog" aria-modal="true" aria-label="编辑特权配置" data-no-translate>
@@ -2476,11 +2484,12 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
   const links = value("links", "服务条款 · 隐私政策");
   const visiblePlans = productPackageRows(nodeById("products"), variant);
   const benefitConfig = configFor("benefits");
+  const benefitColumns = privilegeColumnsFor(benefitConfig);
   const renderedBenefits = benefitConfig.bluePrivilege ? privilegeRowsFor(nodeById("benefits")) : value("benefits", "").split("\n").filter(Boolean).map((row, index) => { const [name, standard, vip] = row.split("|"); return { id: `generic-${index}`, name, standard, vip }; });
   const visibleBenefits = benefitConfig.bluePrivilege ? renderedBenefits.slice(0, Math.max(1, Math.min(renderedBenefits.length, Number(benefitConfig.maxVisibleRows ?? renderedBenefits.length) || 1))) : renderedBenefits;
   const renderBenefitValue = (row, field) => {
     const mode = row[field + "Mode"] ?? (row[field] === "受限" || row[field] === "✓" ? "icon" : "text");
-    if (mode !== "icon") return row[field];
+    if (mode !== "icon") return row[field] ?? "";
     const icon = row[field + "Icon"] ?? (field === "standard" ? "lock" : "check");
     return icon === "lock" ? <LockKeyhole size="1em" strokeWidth={2.4} aria-label="锁定" /> : <span className="ht-vip-check" aria-label="勾选">✓</span>;
   };
@@ -2674,7 +2683,15 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
       return <div className={nodeClass(id, "ht-member-carousel")} style={{ ...styleFor(id), gap: String(carouselConfig.gap ?? 8) + "px" }} onClick={select(id)}>{Array.from({ length: carouselCount }, (_, index) => <i style={{ color: index === carouselActive ? carouselConfig.accentColor : carouselConfig.secondaryColor }} key={index}>{index === carouselActive ? "●" : "○"}</i>)}{renderChildren(id)}</div>;
     }
     if (entry.type === "Carousel" && Array.isArray(entry.config?.slides)) return <section className={nodeClass(id, "ht-added-carousel")} style={styleFor(id)} onClick={select(id)}><PreviewSlideCarousel slides={entry.config.slides} initialSlide={entry.config.initialSlide ?? 0} config={entry.config} /></section>;
-    if (id === "benefits") return <section className={nodeClass(id, "ht-privilege-table")} style={{ ...styleFor(id), "--privilege-header-background": benefitConfig.headerBackground, "--privilege-vip-background": benefitConfig.vipColumnBackground }} onClick={select(id)}><header><strong>特权名称</strong><strong>非会员</strong><b style={benefitConfig.accentColor ? { color: benefitConfig.accentColor } : undefined}>VIP</b></header>{visibleBenefits.map((row) => <div key={row.id} className={row.pageId ? "has-detail-page" : ""} onClick={(event) => { if (!interactive || !row.pageId) return; event.stopPropagation(); setOpenPrivilegeId(row.id); }}><span>{row.name}⌄</span><em style={benefitConfig.secondaryColor ? { color: benefitConfig.secondaryColor } : undefined}>{renderBenefitValue(row, "standard")}</em><b style={benefitConfig.accentColor ? { color: benefitConfig.accentColor } : undefined}>{renderBenefitValue(row, "vip")}</b></div>)}{renderChildren(id)}</section>;
+    if (id === "benefits") {
+      const columnColor = (field) => field === "standard" ? benefitConfig.secondaryColor ?? "#bdbdbd" : field === "plus" ? benefitConfig.plusColor ?? "#9b6b1f" : benefitConfig.accentColor ?? "#ffb40d";
+      const [left, right] = benefitColumns;
+      return <section className={nodeClass(id, "ht-privilege-table") + (right[0] === "plus" ? " is-plus-right" : "")} style={{ ...styleFor(id), "--privilege-header-background": benefitConfig.headerBackground, "--privilege-vip-background": right[0] === "plus" ? benefitConfig.plusColumnBackground ?? "#fff6d9" : benefitConfig.vipColumnBackground, "--privilege-plus-check": benefitConfig.plusCheckColor ?? "#00c5aa" }} onClick={select(id)}>
+        <header><strong>特权名称</strong><strong style={left[0] === "vip" ? { color: columnColor(left[0]) } : undefined}>{left[1]}</strong><b style={{ color: columnColor(right[0]) }}>{right[1]}</b></header>
+        {visibleBenefits.map((row) => <div key={row.id} className={row.pageId ? "has-detail-page" : ""} onClick={(event) => { if (!interactive || !row.pageId) return; event.stopPropagation(); setOpenPrivilegeId(row.id); }}><span>{row.name}⌄</span><em style={{ color: columnColor(left[0]) }}>{renderBenefitValue(row, left[0])}</em><b style={{ color: columnColor(right[0]) }}>{renderBenefitValue(row, right[0])}</b></div>)}
+        {renderChildren(id)}
+      </section>;
+    }
     if (id === "products") {
       const plans = <>{visiblePlans.map((plan, index) => <Plan plan={plan} index={index} key={index} />)}</>;
       const shellStyle = { ...styleFor("products"), ...(productConfig.planGap !== undefined && productConfig.planGap !== "" ? { gap: `${productConfig.planGap}px` } : {}) };
