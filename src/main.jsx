@@ -1510,7 +1510,9 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
   useEffect(() => {
     document.querySelectorAll(".phone .preview-subzone-selected").forEach((item) => item.classList.remove("preview-subzone-selected"));
     if (!previewFocus || previewFocus.area === "component") return;
-    const selected = document.querySelector(".phone .ht-node.selected, .phone .preview-node.selected");
+    const selected = previewFocus.id === "products"
+      ? document.querySelector(".phone .ht-plan.selected, .phone .ht-vertical-plan.selected")
+      : document.querySelector(".phone .ht-node.selected, .phone .preview-node.selected");
     const zone = selected?.querySelector(`[data-inspector-area="${previewFocus.area}"]`);
     zone?.classList.add("preview-subzone-selected");
     return () => zone?.classList.remove("preview-subzone-selected");
@@ -1652,6 +1654,9 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
     const slide = carousel && tab === "content" ? panel.querySelectorAll(".carousel-slide-list .product-row-editor")[previewFocus.slideIndex ?? Number(active.config.initialSlide ?? 0)] : null;
     const products = active.type === "Products";
     const productRow = products && tab === "content" ? panel.querySelectorAll(".product-package-list .product-row-editor")[previewFocus.slideIndex ?? 0] : null;
+    const list = active.type === "List" || /^List \d+$/.test(active.type) || ["Feature list", "Features"].includes(active.type);
+    const listRow = list && tab === "content" && previewFocus.slideIndex != null ? (active.id === "benefits" && active.config?.bluePrivilege ? panel.querySelectorAll(".privilege-row-wrap")[previewFocus.slideIndex] : panel.querySelectorAll(".product-row-editor")[previewFocus.slideIndex]) : null;
+    const timerField = active.type === "Timer" ? exactField(tab === "content" ? ["Start value"] : tab === "style" ? ["时间字体颜色"] : ["Vertical offset"]) : null;
     const productStyle = products && tab === "style" ? exactField(previewFocus.area === "badge" ? ["商品标签颜色", "商品角标颜色", "角标字号"] : previewFocus.area === "price" ? ["通用价格字号", "总价字号", "主价字号"] : ["商品选中框颜色", "名称字号"]) : null;
     const productLayout = products && tab === "layout" ? exactField(["套餐间距", "套餐最小高度", "布局类型"]) : null;
     const carouselContentLabels = { media: ["图片"], headline: ["标题"], caption: ["说明文案"], dots: ["初始展示"] };
@@ -1664,10 +1669,12 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
     const target = carouselSection
       ?? (slide && exactField(carouselContentLabels[area] ?? [], slide))
       ?? productRow
+      ?? listRow
+      ?? timerField
       ?? productStyle
       ?? productLayout
       ?? exactField(hints[tab]?.[area] ?? [])
-      ?? panel.querySelector(".rich-text-run, .form-field, .product-row-editor, .property-tabs");
+      ?? panel.querySelector(".rich-text-run, .form-field, .product-row-editor, .privilege-row-wrap");
     if (!target) return;
     target.classList.add("preview-field-focus");
     const targetBox = target.getBoundingClientRect();
@@ -2558,7 +2565,8 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onButtonA
   const select = (id) => (event) => {
     if (!interactive) return;
     event?.stopPropagation();
-    const slideValue = event?.target instanceof Element ? event.target.closest("[data-inspector-slide]")?.getAttribute("data-inspector-slide") : null;
+    const indexed = event?.target instanceof Element ? event.target.closest("[data-inspector-slide], [data-inspector-row]") : null;
+    const slideValue = indexed?.getAttribute(indexed.hasAttribute("data-inspector-row") ? "data-inspector-row" : "data-inspector-slide");
     onSelect?.(id, previewClickArea(event), slideValue == null ? null : Number(slideValue));
   };
   const canDragHeroCopy = interactive && variant === "blue-privilege" && Boolean(onUpdateHeroPosition);
@@ -2744,7 +2752,7 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onButtonA
       const [left, right] = benefitColumns;
       return <section className={nodeClass(id, "ht-privilege-table") + (right[0] === "plus" ? " is-plus-right" : "")} style={{ ...styleFor(id), "--privilege-header-background": benefitConfig.headerBackground, "--privilege-vip-background": right[0] === "plus" ? benefitConfig.plusColumnBackground ?? "#fff6d9" : benefitConfig.vipColumnBackground, "--privilege-plus-check": benefitConfig.plusCheckColor ?? "#00c5aa" }} onClick={select(id)}>
         <header><strong>特权名称</strong><strong style={left[0] === "vip" ? { color: columnColor(left[0]) } : undefined}>{left[1]}</strong><b style={{ color: columnColor(right[0]) }}>{right[1]}</b></header>
-        {visibleBenefits.map((row) => <div key={row.id} className={row.pageId ? "has-detail-page" : ""} onClick={(event) => { if (!interactive || !row.pageId) return; event.stopPropagation(); setOpenPrivilegeId(row.id); }}><span>{row.name}⌄</span><em style={{ color: columnColor(left[0]) }}>{renderBenefitValue(row, left[0])}</em><b style={{ color: columnColor(right[0]) }}>{renderBenefitValue(row, right[0])}</b></div>)}
+        {visibleBenefits.map((row, index) => <div key={row.id} data-inspector-row={index} className={row.pageId ? "has-detail-page" : ""} onClick={(event) => { if (!interactive || !row.pageId) return; event.stopPropagation(); setOpenPrivilegeId(row.id); }}><span>{row.name}⌄</span><em style={{ color: columnColor(left[0]) }}>{renderBenefitValue(row, left[0])}</em><b style={{ color: columnColor(right[0]) }}>{renderBenefitValue(row, right[0])}</b></div>)}
         {renderChildren(id)}
       </section>;
     }
@@ -2752,7 +2760,7 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onButtonA
       const plans = <>{visiblePlans.map((plan, index) => <Plan plan={plan} index={index} key={index} />)}</>;
       const shellStyle = { ...styleFor("products"), ...(productConfig.planGap !== undefined && productConfig.planGap !== "" ? { gap: `${productConfig.planGap}px` } : {}) };
       if (variant === "membership-plans") return <div className="ht-member-products"><header className="ht-plan-heading"><b>选择套餐</b><span>特权对比 ›</span></header><section className="ht-plan-shell" style={shellStyle}>{plans}</section></div>;
-      if (variant === "blue-privilege" && productConfig.packageLayout === "vertical") return <section className={nodeClass("products", "ht-vertical-products")} style={shellStyle} onClick={select("products")}><h3>选择套餐</h3>{plans}</section>;
+      if (variant === "blue-privilege" && productConfig.packageLayout === "vertical") return <section className="ht-vertical-products" style={shellStyle} onClick={select("products")}><h3>选择套餐</h3>{plans}</section>;
       return <section className={variant === "payment-recovery" ? "ht-recovery-plans" : variant === "sku-sheet" ? "ht-sku-plans" : "ht-plan-shell"} style={shellStyle}>{plans}</section>;
     }
     if (id === "timer") return <Timer />;
@@ -2825,7 +2833,8 @@ function previewClickArea(event) {
 
 function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, children = [], getChildren = () => [] }) {
   const select = (event) => {
-    const slideValue = event?.target instanceof Element ? event.target.closest("[data-inspector-slide]")?.getAttribute("data-inspector-slide") : null;
+    const indexed = event?.target instanceof Element ? event.target.closest("[data-inspector-slide], [data-inspector-row]") : null;
+    const slideValue = indexed?.getAttribute(indexed.hasAttribute("data-inspector-row") ? "data-inspector-row" : "data-inspector-slide");
     onSelect(node.id, previewClickArea(event), slideValue == null ? null : Number(slideValue));
   };
   const config = node.config ?? {};
@@ -2870,7 +2879,7 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, ch
   if (isListLayer) {
     const rows = listRowsFor(node);
     if (!rows.length && !children.length) return wrap(<div className="preview-list-anchor">List</div>, "preview-list-anchor-wrap");
-    return wrap(<div className="preview-benefits" style={{ background: node.config?.backgroundColor }}><ul className="preview-benefits">{rows.map((row, index) => <li key={index} className={row.leadingMode === "none" ? "no-leading" : ""}><i style={{ color: node.config?.accentColor }}>{row.leadingMode !== "none" ? row.leading || "✓" : ""}</i><span><strong>{row.title}</strong>{row.showCaption !== false && row.caption && <small>{row.caption}</small>}</span></li>)}</ul>{renderChildren()}</div>, "preview-list");
+    return wrap(<div className="preview-benefits" style={{ background: node.config?.backgroundColor }}><ul className="preview-benefits">{rows.map((row, index) => <li key={index} data-inspector-row={index} className={row.leadingMode === "none" ? "no-leading" : ""}><i style={{ color: node.config?.accentColor }}>{row.leadingMode !== "none" ? row.leading || "✓" : ""}</i><span><strong>{row.title}</strong>{row.showCaption !== false && row.caption && <small>{row.caption}</small>}</span></li>)}</ul>{renderChildren()}</div>, "preview-list");
   }
   if (isListItemLayer) { const [title, caption] = (node.content ?? "").split("|"); return wrap(<div className="preview-list-item" style={textStyle}><i>●</i><span><strong style={textStyle}>{title}</strong>{caption && <small style={textStyle}>{caption}</small>}</span></div>, "preview-list-item-wrap"); }
   if (node.type === "Card") return children.length ? wrap(<div className="preview-card" style={cardStyle}>{renderChildren()}</div>, "preview-card-wrap") : !node.content ? wrap(<div className="preview-card-anchor" style={cardStyle} />, "preview-card-anchor-wrap") : wrap(<div className="preview-card" style={cardStyle}>{node.content.split("\n").map((row) => { const [title, copy] = row.split("|"); return <div key={row}><strong>{title}</strong>{copy && <small>{copy}</small>}</div>; })}</div>, "preview-card-wrap");
