@@ -1020,3 +1020,22 @@ textarea { min-height: 80px; resize: vertical; }
 .component-library-item small { color: #85858e; font-size: 11px; }
 .component-library-empty { padding: 17px 4px; color: #85858e; text-align: center; font-size: 12px; }
 .component-library-error { color: #c93242; font-size: 12px; }
+/* Product copy occupies named areas so pricing modes cannot create implicit grid rows. */
+.ht-plan.ht-structured-plan { display: grid; grid-template-rows: minmax(0, auto) minmax(0, 1fr) auto; align-content: stretch; gap: .7cqw; }
+.ht-structured-plan .ht-structured-name { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ht-structured-plan .ht-structured-price { min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .5cqw; }
+.ht-structured-plan .ht-structured-price .ht-plan-main-price { min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ht-structured-plan .ht-structured-detail { min-width: 0; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: .4cqw; }
+.ht-structured-plan .ht-structured-detail > * { max-width: 100%; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.1; }
+.ht-structured-plan .ht-structured-badge { position: absolute; z-index: 1; top: 0; left: 50%; transform: translate(-50%, -45%); max-width: 95%; padding: .6cqw 1.5cqw; border-radius: 1cqw; background: var(--badge-background, linear-gradient(90deg, #ff8409, #ffc906)); color: #fff; font-size: 3cqw; font-weight: 800; white-space: nowrap; }
+.ht-membership-paywall .ht-structured-plan { padding-top: 2.5cqw; }
+.ht-membership-paywall .ht-structured-plan:has(.ht-structured-badge) { padding-top: 5cqw; }
+.ht-membership-paywall .ht-structured-plan .ht-structured-price .ht-plan-main-price { font-size: 5.7cqw; }
+.ht-recovery-paywall .ht-recovery-plans .ht-structured-plan { grid-template-columns: minmax(0, 1fr) minmax(0, auto); grid-template-rows: auto auto; column-gap: 1cqw; row-gap: .5cqw; align-content: center; padding: 2cqw 3cqw; }
+.ht-recovery-paywall .ht-recovery-plans .ht-structured-name { grid-column: 1; grid-row: 1; }
+.ht-recovery-paywall .ht-recovery-plans .ht-structured-price { grid-column: 2; grid-row: 1 / 3; align-items: flex-end; }
+.ht-recovery-paywall .ht-recovery-plans .ht-structured-detail { grid-column: 1; grid-row: 2; align-items: flex-start; }
+.ht-recovery-paywall .ht-recovery-plans .ht-structured-badge { top: 0; right: 2cqw; left: auto; transform: translateY(-35%); }
+.ht-recovery-paywall .ht-recovery-plans .ht-structured-detail small { position: static; padding: 0; border-radius: 0; background: transparent; color: #ff8912; font-size: 2.8cqw; font-weight: 500; }
+.ht-sku-paywall .ht-sku-plans .ht-structured-plan { padding: 2.5cqw 1cqw 1.5cqw; }
+.ht-sku-paywall .ht-sku-plans .ht-structured-plan:has(.ht-structured-badge) { padding-top: 4cqw; }
