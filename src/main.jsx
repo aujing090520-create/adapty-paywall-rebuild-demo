@@ -1975,11 +1975,18 @@ function TextLayout() {
 }
 
 function ButtonContent({ active, updateNode }) {
-  return <><Field label="Text"><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><p className="property-copy">购买、关闭和自定义动作的执行结果尚未在当前模板预览中采集，因此不显示为可配置字段。</p></>;
+  const action = active.config?.action ?? (active.type === "Purchase Button" ? "Purchase" : "None");
+  const url = active.config?.actionUrl ?? "";
+  const validUrl = !url || safeButtonUrl(url);
+  return <><Field label="按钮文案"><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><Field label="点击后"><select value={action} onChange={(event) => updateNodeConfig(active, updateNode, { action: event.target.value })}><option value="None">无动作</option><option value="Purchase">唤起支付</option><option value="OpenPage">打开内置页面</option><option value="OpenURL">打开链接</option></select></Field>{action === "OpenPage" && <Field label="目标页面"><select value={active.config?.actionPage ?? "ht-blue-privilege"} onChange={(event) => updateNodeConfig(active, updateNode, { actionPage: event.target.value })}>{templates.filter((item) => item.documentTemplate).map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></Field>}{action === "OpenURL" && <><Field label="目标链接"><input type="url" placeholder="https://" value={url} onChange={(event) => updateNodeConfig(active, updateNode, { actionUrl: event.target.value })} aria-invalid={!validUrl} /></Field>{!validUrl && <p className="property-copy" role="alert">请输入以 https:// 或 http:// 开头的有效链接</p>}</>}{action === "Purchase" && <p className="property-copy">预览将展示所选商品的支付确认页，不会发起真实支付。</p>}</>;
 }
 
 function WebButtonContent({ active, updateNode }) {
-  return <><Field label="Button text"><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><p className="property-copy">浏览器打开方式、Offer 与辅助文案的预览映射尚未采集，不显示为可编辑字段。</p></>;
+  return <ButtonContent active={active} updateNode={updateNode} />;
+}
+
+function safeButtonUrl(value) {
+  try { const url = new URL(value); return ["https:", "http:"].includes(url.protocol) ? url.href : null; } catch { return null; }
 }
 
 function LinksContent({ active, updateNode, templateLinks, setTemplateLinks }) {
@@ -2410,7 +2417,7 @@ function carouselSlideStyles(config = {}) {
   };
 }
 
-function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateHeroPosition, retentionPreviewOpen = false, onOpenRetention, onCloseRetention, pricePreviewMode = "1", interactive = false }) {
+function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onButtonAction, onUpdateHeroPosition, retentionPreviewOpen = false, onOpenRetention, onCloseRetention, pricePreviewMode = "1", interactive = false }) {
   const heroCopyDrag = useRef(null);
   const heroOverlayDrag = useRef(null);
   const defaults = helloTalkTemplateDefaults[variant];
@@ -2635,7 +2642,7 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
   const productColorsEnabled = productConfig.bluePrivilege || productConfig.productColors;
   const actionStyle = productColorsEnabled ? { ...styleFor("purchase"), background: productGradient(productConfig.purchaseBackgroundGradient, ["#ff8707", "#ffb000", "#ffd10b"]) } : styleFor("purchase");
   const actionCopy = productColorsEnabled ? <span className="ht-action-gradient-text" style={{ backgroundImage: productGradient(productConfig.purchaseTextGradient, ["#ffffff", "#ffffff", "#ffffff"]) }}>{action}</span> : action;
-  const Action = () => interactive ? <button className={nodeClass("purchase", "ht-action")} style={actionStyle} onClick={select("purchase")}>{actionCopy}</button> : <div className="ht-action" style={actionStyle}>{actionCopy}</div>;
+  const Action = () => interactive ? <button className={nodeClass("purchase", "ht-action")} style={actionStyle} onClick={(event) => { select("purchase")(event); onButtonAction?.(nodeById("purchase"), visiblePlans[selectedPlan]); }}>{actionCopy}</button> : <div className="ht-action" style={actionStyle}>{actionCopy}</div>;
   const Legal = () => <p className={nodeClass("legal", "ht-legal")} style={styleFor("legal")} onClick={select("legal")}><RichText node={nodeById("legal")} fallback={legal} interactive={interactive} /></p>;
   const Links = () => <p className={nodeClass("links", "ht-links")} style={styleFor("links")} onClick={select("links")}>{links}</p>;
   const SoccerBall = () => <span className="ht-soccer-ball"><i /><i /><i /></span>;
@@ -2713,9 +2720,25 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onUpdateH
   return <div className="ht-paywall ht-sku-paywall"><div className="ht-chat-scene"><Status /><b>‹</b><strong>huangzefeng</strong><small>上午4:52</small><span>Hi</span></div>{renderChildren(null)}</div>;
 }
 function PaywallPreview({ nodes, template, mode, pricePreviewMode, activeNode, onSelect, onUpdateHeroPosition, retentionPreviewOpen, onOpenRetention, onCloseRetention }) {
+  const [actionPreview, setActionPreview] = useState(null);
+  const runButtonAction = (node, product) => {
+    if (!node) return;
+    const action = node.config?.action ?? (node.type === "Purchase Button" ? "Purchase" : "None");
+    if (action === "Purchase") setActionPreview({ kind: "payment", product });
+    if (action === "OpenPage") {
+      const target = templates.find((item) => item.id === (node.config?.actionPage ?? "ht-blue-privilege") && item.documentTemplate);
+      setActionPreview(target ? { kind: "page", target } : { kind: "error", message: "目标页面不可用" });
+    }
+    if (action === "OpenURL") {
+      const url = safeButtonUrl(node.config?.actionUrl ?? "");
+      if (url) window.open(url, "_blank", "noopener,noreferrer");
+      else setActionPreview({ kind: "error", message: "请先配置有效的目标链接" });
+    }
+  };
+  const overlay = actionPreview && <ButtonActionOverlay preview={actionPreview} onClose={() => setActionPreview(null)} />;
   if (template?.documentTemplate) {
-    const paywall = <HelloTalkPaywall variant={template.documentTemplate} nodes={nodes} activeNode={activeNode} onSelect={onSelect} onUpdateHeroPosition={onUpdateHeroPosition} retentionPreviewOpen={retentionPreviewOpen} onOpenRetention={onOpenRetention} onCloseRetention={onCloseRetention} pricePreviewMode={pricePreviewMode} interactive={mode === "editable"} />;
-    return <div className="phone source-template-phone"><div className="ht-template-scroll" tabIndex={0} aria-label="付费墙页面预览">{paywall}</div><button className="close-phone" aria-label="Close preview">×</button></div>;
+    const paywall = <HelloTalkPaywall variant={template.documentTemplate} nodes={nodes} activeNode={activeNode} onSelect={onSelect} onButtonAction={runButtonAction} onUpdateHeroPosition={onUpdateHeroPosition} retentionPreviewOpen={retentionPreviewOpen} onOpenRetention={onOpenRetention} onCloseRetention={onCloseRetention} pricePreviewMode={pricePreviewMode} interactive={mode === "editable"} />;
+    return <div className="phone source-template-phone"><div className="ht-template-scroll" tabIndex={0} aria-label="付费墙页面预览">{paywall}</div><button className="close-phone" aria-label="Close preview">×</button>{overlay}</div>;
   }
   if (template && mode === "source") return <div className="phone source-template-phone"><SourceTemplateMedia template={template} /><button className="close-phone" aria-label="Close preview">×</button></div>;
   const hero = nodes.find((node) => node.type === "Hero Image");
@@ -2732,10 +2755,14 @@ function PaywallPreview({ nodes, template, mode, pricePreviewMode, activeNode, o
     latestAtDepth[depth] = node.id;
     latestAtDepth.length = depth + 1;
   });
-  return <div className={`phone template-${hero?.theme ?? "lavender"}`}><button className="close-phone" aria-label="Close preview">×</button><div className="phone-content"><span className="phone-kicker">PREMIUM ACCESS</span>{nodes.filter((node) => !parents.has(node.id)).map((node) => <PreviewElement key={node.id} node={node} children={children.get(node.id) ?? []} getChildren={(childId) => children.get(childId) ?? []} active={node.id === activeNode} activeNode={activeNode} onSelect={onSelect} />)}</div></div>;
+  return <div className={`phone template-${hero?.theme ?? "lavender"}`}><button className="close-phone" aria-label="Close preview">×</button><div className="phone-content"><span className="phone-kicker">PREMIUM ACCESS</span>{nodes.filter((node) => !parents.has(node.id)).map((node) => <PreviewElement key={node.id} node={node} children={children.get(node.id) ?? []} getChildren={(childId) => children.get(childId) ?? []} active={node.id === activeNode} activeNode={activeNode} onSelect={onSelect} onButtonAction={runButtonAction} />)}</div>{overlay}</div>;
 }
 
-function PreviewElement({ node, active, activeNode, onSelect, children = [], getChildren = () => [] }) {
+function ButtonActionOverlay({ preview, onClose }) {
+  return <div className={`button-action-overlay ${preview.kind === "page" ? "page" : "sheet"}`} role="dialog" aria-modal="true" aria-label={preview.kind === "payment" ? "支付预览" : "页面预览"}>{preview.kind === "page" ? <><div className="button-action-page"><HelloTalkPaywall variant={preview.target.documentTemplate} /></div><button type="button" className="button-action-back" onClick={onClose} aria-label="返回编辑预览"><ArrowLeft size={18} /> 返回</button></> : <><button type="button" className="button-action-scrim" onClick={onClose} aria-label="关闭预览" /><div className="button-action-sheet"><button type="button" className="button-action-close" onClick={onClose} aria-label="关闭预览"><X size={18} /></button><h3>{preview.kind === "payment" ? "支付预览" : "无法打开"}</h3>{preview.kind === "payment" ? <><p>{preview.product?.name || "未选择商品"}</p><strong>{preview.product?.price || ""}</strong><small>仅预览，不会发起真实支付</small></> : <p role="alert">{preview.message}</p>}</div></>}</div>;
+}
+
+function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, children = [], getChildren = () => [] }) {
   const select = () => onSelect(node.id);
   const config = node.config ?? {};
   const nodeStyle = {
@@ -2757,7 +2784,7 @@ function PreviewElement({ node, active, activeNode, onSelect, children = [], get
   const textStyle = { color: config.color, fontSize: config.fontSize ? `${config.fontSize}px` : undefined, fontWeight: config.fontWeight, textAlign: config.textAlign };
   const buttonStyle = { backgroundColor: config.backgroundColor, color: config.color, borderRadius: config.radius === undefined ? undefined : `${config.radius}px` };
   const cardStyle = { backgroundColor: config.backgroundColor, borderRadius: config.radius === undefined ? undefined : `${config.radius}px`, boxShadow: config.shadow ? `0 ${Math.max(2, Math.round(config.shadow / 2))}px ${config.shadow}px #17172833` : undefined };
-  const renderChildren = () => children.map((child) => <PreviewElement key={child.id} node={child} children={getChildren(child.id)} getChildren={getChildren} active={child.id === activeNode} activeNode={activeNode} onSelect={onSelect} />);
+  const renderChildren = () => children.map((child) => <PreviewElement key={child.id} node={child} children={getChildren(child.id)} getChildren={getChildren} active={child.id === activeNode} activeNode={activeNode} onSelect={onSelect} onButtonAction={onButtonAction} />);
   const isTextLayer = isTextNodeType(node.type);
   const isListLayer = ["List", "Feature list", "Features"].includes(node.type) || /^List \d+$/.test(node.type);
   const isListItemLayer = node.type === "List item" || node.type === "Today" || /^Item \d+$/.test(node.type) || /^Day \d+$/.test(node.type);
@@ -2805,7 +2832,7 @@ function PreviewElement({ node, active, activeNode, onSelect, children = [], get
   if (["Toggle On", "Toggle Off"].includes(node.type)) return wrap(<div className="preview-toggle-anchor" />, "preview-toggle-anchor-wrap");
   if (node.type === "Footer Top Part") return wrap(<div className="preview-card-anchor" />, "preview-card-anchor-wrap");
   if (node.type === "Button and Links") { const [cta, links] = (node.content ?? "GET FULL ACCESS|Terms · Privacy · Restore").split("|"); return wrap(<><button className="preview-cta" style={buttonStyle}>{cta}</button><small className="preview-links" style={textStyle}>{links}</small></>, "preview-button"); }
-  if (node.type === "Button" || node.type === "Web Paywall Button" || node.type === "Purchase Button") return wrap(<button className="preview-cta" style={buttonStyle}>{node.content ?? (node.type === "Web Paywall Button" ? "Pay on web" : node.type === "Button" ? "button text" : "Continue")}</button>, "preview-button");
+  if (node.type === "Button" || node.type === "Web Paywall Button" || node.type === "Purchase Button") return wrap(<button className="preview-cta" style={buttonStyle} onClick={(event) => { event.stopPropagation(); select(); onButtonAction?.(node); }}>{node.content ?? (node.type === "Web Paywall Button" ? "Pay on web" : node.type === "Button" ? "button text" : "Continue")}</button>, "preview-button");
   if (node.type === "Links") return wrap(<small className="preview-links" style={textStyle}>{node.content ?? "Terms · Privacy · Restore · Login"}</small>);
   if (node.type === "Footer") return wrap(<small className="preview-footer">{node.content}</small>);
   return wrap(<p>{node.content || node.type}</p>);
