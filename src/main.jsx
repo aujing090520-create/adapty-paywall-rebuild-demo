@@ -155,7 +155,7 @@ const templates = [
   { id: "ht-sku-sheet", title: "HelloTalk SKU 半窗", subtitle: "横版促销视觉与套餐选择", tags: ["2 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-sku", visual: "ht-sku", documentTemplate: "sku-sheet", prdScreenshot: "/ht-prd-screenshots/sku-sheet.jpg" },
 ];
 
-const componentCatalog = ["Text", "Image", "Card", "Web Paywall Button", "Button", "List", "Links", "Timer", "Carousel", "Products"];
+const componentCatalog = ["Text", "Image", "Card", "Web Paywall Button", "Button", "List", "Links", "Agreement", "Timer", "Carousel", "Products"];
 
 const sourceTreeObserved = new Set(["knowledge", "trial", "connection", "family", "premium-access", "document", "yoga", "black-friday", "black-friday-timer", "christmas", "halloween", "new-year", "report", "avatar", "mindfulness", "trial-white", "trial-blue", "fitness-trial", "access", "weather", "workout", "audiobooks", "herbs", "video-access", "design-life", "full-app", "item-placeholder", "item-placeholder-dark", "fantasy-access", "editing-plan", "training"]);
 const documentStyleTemplateIds = new Set(["ht-blue-privilege", "ht-membership-plans", "ht-payment-recovery", "ht-sku-sheet"]);
@@ -761,6 +761,7 @@ function createBuilderNodes(templateId = "knowledge") {
       node("benefits", "List", "", 0, { label: "特权对比", config: { bluePrivilege: true, privilegeRows: initialPrivilegeRows, maxVisibleRows: 5, headerBackground: "#f1f1f1", vipColumnBackground: "#ffffff", backgroundColor: "#f5f5f5", secondaryColor: "#bdbdbd", accentColor: "#ffb40d" } }),
       node("products", "Products", "", 0, { config: { bluePrivilege: true, badgeGradient: ["#003bec", "#3ed6ea", "#bbff62"], selectedBorderGradient: ["#003bec", "#3ed6ea", "#bbff62"], selectedBackground: "#ffffff", saveTextColor: "#2e89ff", purchaseTextGradient: ["#ffffff", "#ffffff", "#ffffff"], purchaseBackgroundGradient: ["#6783d8", "#bbff62", "#bbff62"] } }),
       node("timer", "Timer", "18:32:25", 0, { config: { bluePrivilege: true, enabled: true, format: "hh:mm:ss", separator: ":", prefix: "倒计时", suffix: "", resetMode: "Reset timer on every paywall view", locale: "English", prefixColor: "#303487", digitColor: "#303487", digitBackgroundColor: "#8ced75" } }),
+      node("agreement", "Agreement", "我已阅读并同意", 0, { config: { required: true, termsLabel: "服务条款", termsUrl: "", privacyLabel: "隐私政策", privacyUrl: "" } }),
       node("purchase", "Button", "立即领取优惠", 0, { config: { action: "Purchase" } }),
       node("retention", "Card", "", 0, { label: "挽留弹窗", config: { retention: true, title: "错过这次，就要多花 30%😱", timerLabel: "倒计时", timerStart: "71:22:22", buttonText: "立享优惠", cancelText: "忍痛取消", backgroundColor: "#f7f7f7", buttonStartColor: "#ff8600", buttonEndColor: "#ffcd00", buttonTextColor: "#ffffff", titleColor: "#111111", timerColor: "#11bf42", imageSrc: "/ht-retention-gift.png", backgroundImage: "" } }),
       node("legal", "Text", "如果当前缴费期前 24 小时没有取消续订，系统会自动续订，费用将从你的 iTunes 账户收取，你可随时前往 iTunes 商店的设置界面管理自己的订阅设定。有关详细信息，请访问我们的服务条款 · 隐私政策", 0, { label: "续订说明", variant: "legal", textRuns: [
@@ -820,13 +821,14 @@ function createBuilderNodes(templateId = "knowledge") {
 
 function createComponentNode(type, index) {
   const contentByType = {
-    Text: "text", Image: "", Card: "", "Web Paywall Button": "Pay on web", Button: "button text", List: "", "List item": "title|caption", Links: "Terms · Privacy · Restore · Login", Timer: "04:59:59", Carousel: "", Products: "",
+    Text: "text", Image: "", Card: "", "Web Paywall Button": "Pay on web", Button: "button text", List: "", "List item": "title|caption", Links: "Terms · Privacy · Restore · Login", Agreement: "我已阅读并同意", Timer: "04:59:59", Carousel: "", Products: "",
   };
   const configByType = {
     Timer: { enabled: true, format: "hh:mm:ss", separator: ":", prefix: "", suffix: "", resetMode: "Reset timer on every paywall view" },
     Carousel: { initialSlide: 0, slides: [{ id: `slide-${index}-1`, image: "", title: "", caption: "" }] },
     Products: { defaultSelected: 0, showOfferBadge: true },
     Button: { action: "Purchase" },
+    Agreement: { required: true, termsLabel: "服务条款", termsUrl: "", privacyLabel: "隐私政策", privacyUrl: "" },
   };
   return { id: `added-${type.toLowerCase().replace(/[^a-z]+/g, "-")}-${index}`, type, label: "", depth: 0, content: contentByType[type] ?? "", config: configByType[type] };
 }
@@ -839,6 +841,7 @@ function BuilderNodeIcon({ type }) {
   const Icon = type === "Timer" ? Clock3
     : type === "Products" ? Package
       : type === "Links" ? Link2
+        : type === "Agreement" ? Check
         : type === "Carousel" ? GalleryHorizontal
           : type === "Card" ? RectangleHorizontal
             : ["Button", "Purchase Button", "Web Paywall Button"].includes(type) ? MousePointerClick
@@ -916,7 +919,7 @@ const zhCopy = {
   "The matching source visual is shown in the device preview. No generic editable nodes are substituted for this template.": "设备预览显示与模板卡一致的源端画面；不会用通用可编辑节点替代该模板。",
   "On": "开启", "Add element": "添加组件", "Localization": "本地化", "English": "英语", "French": "法语", "Simplified Chinese": "简体中文",
   "Add locale": "添加语言", "Content": "内容", "Style": "样式", "Layout": "布局", "Text": "文本", "Image": "图片", "Card": "卡片",
-  "Web Paywall Button": "网页付费按钮", "Button": "按钮", "List": "特权列表", "Links": "链接", "Timer": "倒计时", "Carousel": "轮播图",
+  "Web Paywall Button": "网页付费按钮", "Button": "按钮", "List": "特权列表", "Links": "链接", "Agreement": "同意协议", "Timer": "倒计时", "Carousel": "轮播图",
   "Toggle": "试用开关", "Toggle On": "开关开启状态", "Toggle Off": "开关关闭状态", "Default toggle state": "默认开关状态", "Active": "已开启",
   "Hero Image": "主视觉图片", "Header": "标题", "Headline": "主标题", "Subhead": "副标题", "Caption": "说明文案", "Legal": "法律说明", "Top Text": "顶部文案", "Feature list": "特权列表", "List item": "特权项", "Product": "产品", "Purchase Button": "购买按钮", "Stars": "星级", "Black Friday Image": "黑色星期五图片", "Footer": "底部区域", "Purchase": "购买", "Continue": "继续", "Terms of service": "服务条款",
   "Privacy policy": "隐私政策", "Restore": "恢复购买", "Close": "关闭", "Cancel": "取消", "Accept": "确认",
@@ -1612,11 +1615,11 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
         <div className="builder">
           <aside className="node-panel">
             <label className="device-toggle unknown-action"><strong>在设备上展示</strong><input type="checkbox" defaultChecked onChange={() => markUnknown(builderBoundary)} /><span>启用</span></label>
-            <div className="add-element-wrap"><button className="add-element" onClick={() => setAddElementOpen((open) => !open)}><Plus size={17} /> Add element</button>{addElementOpen && <div className="add-element-menu">{componentCatalog.map((item) => <button key={item} onClick={() => addElement(item)}>{item}</button>)}</div>}</div>
+            <div className="add-element-wrap"><button className="add-element" onClick={() => setAddElementOpen((open) => !open)}><Plus size={17} /> Add element</button>{addElementOpen && <div className="add-element-menu">{componentCatalog.filter((item) => item !== "Agreement" || (isDocumentTemplate && !builderNodes.some((entry) => entry.type === "Agreement"))).map((item) => <button key={item} onClick={() => addElement(item)}>{item === "Agreement" ? zhCopy(item) : item}</button>)}</div>}</div>
             <div className="node-list">{builderNodes.map((node) => {
               const isDragging = dragState?.id === node.id;
               const dropClass = dragState?.targetId === node.id ? `drop-${dragState.position}` : "";
-              return <button type="button" data-node-id={node.id} style={{ paddingLeft: `${7 + (node.depth ?? 0) * 15}px` }} className={`node ${activeNode === node.id ? "selected" : ""} ${isDragging ? "dragging" : ""} ${dropClass}`} onPointerDown={(event) => beginNodeDrag(event, node.id)} onPointerMove={updateNodeDropTarget} onPointerUp={dropNode} onPointerCancel={() => setDragState(null)} onClick={() => { setActiveNode(node.id); setPreviewFocus(null); }} key={node.id} aria-grabbed={isDragging}><span className="drag-handle" aria-hidden="true"><GripVertical size={14} /></span><i><BuilderNodeIcon type={node.type} /></i><strong>{node.config?.retention ? "挽留弹窗" : isTextNodeType(node.type) ? "Text" : node.type}</strong><small>{node.config?.retention ? "" : node.label}</small></button>;
+              return <button type="button" data-node-id={node.id} style={{ paddingLeft: `${7 + (node.depth ?? 0) * 15}px` }} className={`node ${activeNode === node.id ? "selected" : ""} ${isDragging ? "dragging" : ""} ${dropClass}`} onPointerDown={(event) => beginNodeDrag(event, node.id)} onPointerMove={updateNodeDropTarget} onPointerUp={dropNode} onPointerCancel={() => setDragState(null)} onClick={() => { setActiveNode(node.id); setPreviewFocus(null); }} key={node.id} aria-grabbed={isDragging}><span className="drag-handle" aria-hidden="true"><GripVertical size={14} /></span><i><BuilderNodeIcon type={node.type} /></i><strong>{node.config?.retention ? "挽留弹窗" : isTextNodeType(node.type) ? "Text" : node.type === "Agreement" ? zhCopy(node.type) : node.type}</strong><small>{node.config?.retention ? "" : node.label}</small></button>;
             })}</div>
           </aside>
           <div className="canvas-area"><div className="device-controls"><button className="unknown-action" onClick={() => markUnknown(builderBoundary)}><Smartphone size={16} /> iPhone 15 Pro <ChevronDown size={14} /></button>{appliedTemplate !== null && <div className="preview-mode" aria-label="Preview mode"><button className={previewMode === "source" ? "active" : ""} onClick={() => setPreviewMode("source")}>{templates[appliedTemplate].documentTemplate ? "文档样式" : "Source visual"}</button><button className={previewMode === "editable" ? "active" : ""} disabled={!isEditableTemplate(templates[appliedTemplate])} onClick={() => setPreviewMode("editable")}>Editable structure</button></div>}<button className="icon unknown-action" title="Preview orientation" onClick={() => markUnknown(builderBoundary)}><RotateCw size={15} /></button><button className="icon unknown-action" title="Preview visibility" onClick={() => markUnknown(builderBoundary)}><Eye size={15} /></button></div><PaywallPreview nodes={linkedNodes} template={appliedTemplate !== null ? templates[appliedTemplate] : null} mode={previewMode} pricePreviewMode={pricePreviewMode} activeNode={activeNode} onSelect={selectPreviewNode} onUpdateHeroPosition={updateHeroCopyPosition} retentionPreviewOpen={retentionPreviewOpen} onOpenRetention={() => setRetentionPreview({ templateId: templates[appliedTemplate]?.id })} onCloseRetention={() => setRetentionPreview(null)} />{appliedTemplate !== null && previewMode === "source" && <p className="source-preview-note">{templates[appliedTemplate].documentTemplate ? "飞书文档中的 Paywall 样式参考，与模板库卡片一一对应。" : "源端模板画面，与模板库卡片一一对应。"}</p>}{appliedTemplate !== null && previewMode === "editable" && <p className="source-preview-note">{isEditableTemplate(templates[appliedTemplate]) ? "已采集样式与核心字段的本地可编辑复现。" : "精确节点树仍在采集。"}</p>}<p className="preview-disclaimer">All prices, titles, and offers displayed are placeholders. The actual data from App Store and Google Play will be shown in the app.</p></div>
@@ -1665,6 +1668,7 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
     const timerField = active.type === "Timer" ? exactField(tab === "content" ? ["Start value"] : tab === "style" ? ["时间字体颜色"] : ["Vertical offset"]) : null;
     const productStyle = products && tab === "style" ? exactField(previewFocus.area === "badge" ? ["商品标签颜色", "商品角标颜色", "角标字号"] : previewFocus.area === "price" ? ["通用价格字号", "总价字号", "主价字号"] : ["商品选中框颜色", "名称字号"]) : null;
     const productLayout = products && tab === "layout" ? exactField(["套餐间距", "套餐最小高度", "布局类型"]) : null;
+    const agreementField = active.type === "Agreement" ? exactField(tab === "content" ? previewFocus.area === "links" ? ["服务条款文案"] : previewFocus.area === "copy" ? ["引导文案"] : ["购买前必须勾选"] : tab === "style" ? previewFocus.area === "links" ? ["链接颜色"] : ["文字颜色"] : ["外边距"]) : null;
     const carouselContentLabels = { media: ["图片"], headline: ["标题"], caption: ["说明文案"], dots: ["初始展示"] };
     const carouselSection = carousel && tab !== "content" ? panel.querySelector(`[data-inspector-section="${area}"]`) : null;
     const hints = {
@@ -1679,6 +1683,7 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
       ?? timerField
       ?? productStyle
       ?? productLayout
+      ?? agreementField
       ?? exactField(hints[tab]?.[area] ?? [])
       ?? panel.querySelector(".rich-text-run, .form-field, .product-row-editor, .privilege-row-wrap");
     if (!target) return;
@@ -1697,11 +1702,15 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
   };
 
   const tabBar = <div className="property-tabs"><button className={tab === "content" ? "active" : ""} onClick={() => setTab("content")}>Content</button><button className={tab === "style" ? "active" : ""} onClick={() => setTab("style")}>Style</button><button className={tab === "layout" ? "active" : ""} onClick={() => setTab("layout")}>Layout</button></div>;
-  const canEditStructure = !isDocumentTemplate || active?.id?.startsWith("added-");
+  const canEditStructure = !isDocumentTemplate || active?.id?.startsWith("added-") || active?.type === "Agreement";
   const nodeEditor = <EditableNodeControls active={active} updateNode={updateNode} removeNode={removeNode} canRemove={canEditStructure} />;
 
   if (type === "Links") {
     return <div className="property-scroll"><h3>Links</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}{tab === "content" && <LinksContent active={active} updateNode={updateNode} templateLinks={templateLinks} setTemplateLinks={setTemplateLinks} />}{tab === "style" && <LinkStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
+  }
+
+  if (type === "Agreement") {
+    return <div className="property-scroll"><h3>同意协议</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}{tab === "content" && <AgreementContent active={active} updateNode={updateNode} />}{tab === "style" && <AgreementStyle active={active} updateNode={updateNode} />}{tab === "layout" && <><Field label="外边距"><ConfigInsets active={active} updateNode={updateNode} /></Field><ConfigNumberField label="垂直偏移" active={active} updateNode={updateNode} name="offsetY" fallback={0} min={-120} max={120} suffix="px" /></>}</div>;
   }
 
   if (active?.id === "hero-image") {
@@ -2051,6 +2060,16 @@ function safeButtonUrl(value) {
 
 function LinksContent({ active, updateNode, templateLinks, setTemplateLinks }) {
   return <><Field label="Visible link labels"><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><p className="property-copy">服务条款、隐私政策与恢复购买的跳转逻辑未在当前预览中执行；链接 URL 不显示为无反馈输入。</p></>;
+}
+
+function AgreementContent({ active, updateNode }) {
+  const config = active.config ?? {};
+  const urlField = (label, name) => <Field label={label}><input type="url" placeholder="https://" value={config[name] ?? ""} aria-invalid={Boolean(config[name] && !safeButtonUrl(config[name]))} onChange={(event) => updateNodeConfig(active, updateNode, { [name]: event.target.value })} /></Field>;
+  return <><Field label="引导文案"><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><Field label="服务条款文案"><input value={config.termsLabel ?? "服务条款"} onChange={(event) => updateNodeConfig(active, updateNode, { termsLabel: event.target.value })} /></Field>{urlField("服务条款链接", "termsUrl")}<Field label="隐私政策文案"><input value={config.privacyLabel ?? "隐私政策"} onChange={(event) => updateNodeConfig(active, updateNode, { privacyLabel: event.target.value })} /></Field>{urlField("隐私政策链接", "privacyUrl")}<label className="switch-row"><strong>购买前必须勾选</strong><input type="checkbox" checked={config.required !== false} onChange={(event) => updateNodeConfig(active, updateNode, { required: event.target.checked })} /><span>{config.required !== false ? "开启" : "关闭"}</span></label><p className="property-copy">预览默认不勾选；协议链接未配置时，点击会提示补充链接。</p></>;
+}
+
+function AgreementStyle({ active, updateNode }) {
+  return <><ConfigColorField label="文字颜色" active={active} updateNode={updateNode} name="color" fallback="#777777" /><ConfigColorField label="链接颜色" active={active} updateNode={updateNode} name="linkColor" fallback="#3069d3" /><ConfigColorField label="勾选颜色" active={active} updateNode={updateNode} name="checkColor" fallback="#1677ff" /><ConfigNumberField label="字号" active={active} updateNode={updateNode} name="fontSize" fallback={12} min={9} max={24} suffix="px" /></>;
 }
 
 function ListContent({ active, updateNode, addNestedNode, allowAdd = true }) {
@@ -2533,6 +2552,10 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onButtonA
     return state === "custom" ? "media-custom" : state === "removed" ? "media-removed" : "";
   };
   const productConfig = nodeById("products")?.config ?? {};
+  const agreementNode = renderedNodes.find((entry) => entry.type === "Agreement");
+  const [agreementChecked, setAgreementChecked] = useState(false);
+  const [agreementMessage, setAgreementMessage] = useState("");
+  useEffect(() => { setAgreementChecked(false); setAgreementMessage(""); }, [variant, agreementNode?.id]);
   const defaultSelectedPlan = Number.isInteger(productConfig.defaultSelected) ? productConfig.defaultSelected : variant === "blue-privilege" ? defaults.selectedProductIndex : (["payment-recovery", "sku-sheet"].includes(variant) ? 0 : 1);
   const [selectedPlan, setSelectedPlan] = useState(defaultSelectedPlan);
   const [openPrivilegeId, setOpenPrivilegeId] = useState(null);
@@ -2715,7 +2738,22 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onButtonA
   const productColorsEnabled = productConfig.bluePrivilege || productConfig.productColors;
   const actionStyle = productColorsEnabled ? { ...styleFor("purchase"), background: productGradient(productConfig.purchaseBackgroundGradient, ["#ff8707", "#ffb000", "#ffd10b"]) } : styleFor("purchase");
   const actionCopy = productColorsEnabled ? <span className="ht-action-gradient-text" style={{ backgroundImage: productGradient(productConfig.purchaseTextGradient, ["#ffffff", "#ffffff", "#ffffff"]) }}>{action}</span> : action;
-  const Action = () => interactive ? <button className={nodeClass("purchase", "ht-action")} style={actionStyle} onClick={(event) => { select("purchase")(event); onButtonAction?.(nodeById("purchase"), visiblePlans[selectedPlan]); }}>{actionCopy}</button> : <div className="ht-action" style={actionStyle}>{actionCopy}</div>;
+  const Action = () => interactive ? <button className={nodeClass("purchase", "ht-action")} style={actionStyle} onClick={(event) => { select("purchase")(event); if (nodeById("purchase")?.config?.action === "Purchase" && agreementNode?.config?.required !== false && agreementNode && !agreementChecked) { setAgreementMessage("请先勾选同意协议"); return; } onButtonAction?.(nodeById("purchase"), visiblePlans[selectedPlan]); }}>{actionCopy}</button> : <div className="ht-action" style={actionStyle}>{actionCopy}</div>;
+  const Agreement = ({ entry }) => {
+    const config = entry.config ?? {};
+    const openAgreementLink = (event, label, value) => {
+      event.stopPropagation();
+      if (!interactive) return;
+      onSelect?.(entry.id, "links");
+      const url = safeButtonUrl(value ?? "");
+      if (url) window.open(url, "_blank", "noopener,noreferrer");
+      else setAgreementMessage(`请先配置${label}链接`);
+    };
+    return <div className={nodeClass(entry.id, "ht-agreement")} style={{ ...styleFor(entry.id), "--agreement-link-color": config.linkColor ?? "#3069d3", "--agreement-check-color": config.checkColor ?? "#1677ff" }} onClick={select(entry.id)}>
+      <div className="ht-agreement-line"><input type="checkbox" id={`ht-agreement-${entry.id}`} aria-label="同意服务条款与隐私政策" checked={agreementChecked} disabled={!interactive} onChange={(event) => { setAgreementChecked(event.target.checked); setAgreementMessage(""); }} /><span className="ht-agreement-copy"><label htmlFor={`ht-agreement-${entry.id}`} data-inspector-area="copy">{entry.content || "我已阅读并同意"}</label> <button type="button" data-inspector-area="links" disabled={!interactive} onClick={(event) => openAgreementLink(event, "服务条款", config.termsUrl)}>{config.termsLabel ?? "服务条款"}</button><span>和</span><button type="button" data-inspector-area="links" disabled={!interactive} onClick={(event) => openAgreementLink(event, "隐私政策", config.privacyUrl)}>{config.privacyLabel ?? "隐私政策"}</button></span></div>
+      {agreementMessage && <p className="ht-agreement-message" role="alert">{agreementMessage}</p>}
+    </div>;
+  };
   const Legal = () => <p className={nodeClass("legal", "ht-legal")} style={styleFor("legal")} onClick={select("legal")}><RichText node={nodeById("legal")} fallback={legal} interactive={interactive} /></p>;
   const Links = () => <p className={nodeClass("links", "ht-links")} style={styleFor("links")} onClick={select("links")}>{links}</p>;
   const SoccerBall = () => <span className="ht-soccer-ball"><i /><i /><i /></span>;
@@ -2780,6 +2818,7 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onButtonA
       return <section className={variant === "payment-recovery" ? "ht-recovery-plans" : variant === "sku-sheet" ? "ht-sku-plans" : "ht-plan-shell"} style={shellStyle}>{plans}</section>;
     }
     if (id === "timer") return <Timer />;
+    if (entry.type === "Agreement") return <Agreement entry={entry} />;
     if (id === "purchase") return variant === "blue-privilege" ? <div className="ht-action-wrap"><Action /></div> : <Action />;
     if (id === "legal") return <Legal />;
     if (id === "links") return <Links />;
