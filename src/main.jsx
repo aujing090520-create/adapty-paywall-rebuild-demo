@@ -1503,10 +1503,18 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
     if (appliedTemplate !== null && isEditableTemplate(templates[appliedTemplate])) setPreviewMode("editable");
   };
   const updateHeroCopyPosition = (position) => setBuilderNodes((current) => current.map((node) => node.id === "hero-image" ? { ...node, config: { ...node.config, ...position } } : node));
-  const selectPreviewNode = (id, area = "component") => {
+  const selectPreviewNode = (id, area = "component", slideIndex = null) => {
     setActiveNode(id);
-    setPreviewFocus({ id, area, key: Date.now() + Math.random() });
+    setPreviewFocus({ id, area, slideIndex, key: Date.now() + Math.random() });
   };
+  useEffect(() => {
+    document.querySelectorAll(".phone .preview-subzone-selected").forEach((item) => item.classList.remove("preview-subzone-selected"));
+    if (!previewFocus || previewFocus.area === "component") return;
+    const selected = document.querySelector(".phone .ht-node.selected, .phone .preview-node.selected");
+    const zone = selected?.querySelector(`[data-inspector-area="${previewFocus.area}"]`);
+    zone?.classList.add("preview-subzone-selected");
+    return () => zone?.classList.remove("preview-subzone-selected");
+  }, [previewFocus, builderNodes]);
   useEffect(() => setPreviewMode(Array.isArray(linkedOfferRows) || (appliedTemplate !== null && templates[appliedTemplate]?.documentTemplate) ? "editable" : "source"), [appliedTemplate, Boolean(linkedOfferRows)]);
   useEffect(() => {
     if (!activeNode?.startsWith("added-")) return;
@@ -1637,20 +1645,27 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
     const panel = document.querySelector(".property-panel .property-scroll");
     panel?.querySelectorAll(".preview-field-focus").forEach((item) => item.classList.remove("preview-field-focus"));
     if (!panel || previewFocus?.id !== active?.id) return;
-    const area = previewFocus.area;
+    const fields = [...panel.querySelectorAll(".form-field")];
+    const exactField = (labels, root = panel) => labels.map((label) => fields.find((field) => root.contains(field) && field.querySelector(":scope > span")?.textContent?.trim() === label)).find(Boolean);
+    const carousel = active.type === "Carousel" && Array.isArray(active.config?.slides);
+    const area = carousel && previewFocus.area === "component" ? "media" : previewFocus.area;
+    const slide = carousel && tab === "content" ? panel.querySelectorAll(".carousel-slide-list .product-row-editor")[previewFocus.slideIndex ?? Number(active.config.initialSlide ?? 0)] : null;
+    const carouselContentLabels = { media: ["图片"], headline: ["标题"], caption: ["说明文案"], dots: ["初始展示"] };
+    const carouselSection = carousel && tab !== "content" ? panel.querySelector(`[data-inspector-section="${area}"]`) : null;
     const hints = {
-      content: { media: ["主视觉媒体", "上传", "Media file"], overlay: ["叠加图片", "图片"], headline: ["标题前缀", "标题", "文本片段"], caption: ["辅助文案", "描述", "文本片段"], price: ["商品", "套餐", "价格"], badge: ["角标", "标签"], action: ["点击后", "按钮文案"] },
-      style: { media: ["Image fit", "Background color"], overlay: ["图片", "Background color"], headline: ["Title", "Font size", "文字", "Color"], caption: ["Text color", "Font size", "文字"], price: ["价格", "Price", "商品"], badge: ["角标", "标签"], action: ["Fill color", "按钮", "背景"] },
-      layout: { media: ["Image height", "Media height", "图片高度"], overlay: ["叠加图片位置", "距左侧"], headline: ["文案位置", "Vertical offset", "Margin"], caption: ["文案位置", "Vertical offset", "Margin"], price: ["套餐间距", "间距", "Margin"], badge: ["Margin", "间距"], action: ["Margin", "Vertical offset"] },
+      content: { media: ["主视觉媒体", "Media file", "图片"], overlay: ["叠加图片"], headline: ["标题前缀", "标题"], caption: ["辅助文案", "说明文案", "描述"], price: ["商品", "展示名称"], badge: ["角标", "标签"], action: ["点击后", "按钮文案"] },
+      style: { media: ["Image fit", "填充方式", "Background color"], overlay: ["图片背景"], headline: ["标题颜色", "文字颜色", "Title prefix color", "Font size"], caption: ["说明颜色", "Text color", "文字颜色"], price: ["价格颜色", "Price color"], badge: ["角标颜色", "标签颜色"], action: ["Fill color", "背景颜色"] },
+      layout: { media: ["图片高度", "Image height", "Media height"], overlay: ["距左侧"], headline: ["标题上方间距", "距左侧", "Vertical offset", "Margin"], caption: ["标题与说明间距", "Vertical offset", "Margin"], price: ["套餐间距", "Margin"], badge: ["Margin"], action: ["Margin", "Vertical offset"] },
     };
-    const groups = [...panel.querySelectorAll(".form-field, .rich-text-run, .product-row-editor, .embedded-copy-editor, .switch-row")];
-    const preferred = hints[tab]?.[area] ?? [];
-    const target = preferred.map((hint) => groups.find((item) => item.textContent?.includes(hint))).find(Boolean)
-      ?? groups.find((item) => item.querySelector("input, textarea, select, button"))
-      ?? panel.querySelector(".property-tabs");
+    const target = carouselSection
+      ?? (slide && exactField(carouselContentLabels[area] ?? [], slide))
+      ?? exactField(hints[tab]?.[area] ?? [])
+      ?? panel.querySelector(".rich-text-run, .form-field, .product-row-editor, .property-tabs");
     if (!target) return;
     target.classList.add("preview-field-focus");
-    target.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    const targetBox = target.getBoundingClientRect();
+    const panelBox = panel.getBoundingClientRect();
+    if (targetBox.top < panelBox.top + 12 || targetBox.bottom > panelBox.bottom - 12) panel.scrollTop += targetBox.top - panelBox.top - 12;
     return () => target.classList.remove("preview-field-focus");
   }, [active?.id, previewFocus, tab]);
   const type = active?.type ?? "Elements";
@@ -1912,12 +1927,12 @@ function TimerStyleEditor({ active, updateNode }) {
 function CarouselStyleEditor({ active, updateNode }) {
   const config = active.config ?? {};
   const updateConfig = (patch) => updateNodeConfig(active, updateNode, patch);
-  return <>{Array.isArray(config.slides) && <><h4>图片</h4><Field label="填充方式"><div className="segmented">{[["fill", "拉伸"], ["cover", "铺满"], ["contain", "完整显示"]].map(([value, label]) => <button type="button" key={value} className={(config.imageFit ?? "fill") === value ? "active" : ""} onClick={() => updateConfig({ imageFit: value })}>{label}</button>)}</div></Field><ConfigColorField label="图片背景" active={active} updateNode={updateNode} name="imageBackground" fallback="#e5f1ff" /><ConfigNumberField label="图片圆角" active={active} updateNode={updateNode} name="imageRadius" fallback={0} min={0} max={48} suffix="px" /><h4>标题</h4><div className="split-fields"><ConfigColorField label="标题颜色" active={active} updateNode={updateNode} name="titleColor" fallback="#f68920" /><ConfigNumberField label="标题字号" active={active} updateNode={updateNode} name="titleFontSize" fallback={29} min={10} max={72} suffix="px" /></div><Field label="标题字重"><select value={config.titleWeight ?? "700"} onChange={(event) => updateConfig({ titleWeight: event.target.value })}><option value="400">常规</option><option value="500">中等</option><option value="700">加粗</option><option value="900">特粗</option></select></Field><h4>说明文案</h4><div className="split-fields"><ConfigColorField label="说明颜色" active={active} updateNode={updateNode} name="captionColor" fallback="#a4a4a4" /><ConfigNumberField label="说明字号" active={active} updateNode={updateNode} name="captionFontSize" fallback={18} min={10} max={48} suffix="px" /></div><Field label="说明字重"><select value={config.captionWeight ?? "400"} onChange={(event) => updateConfig({ captionWeight: event.target.value })}><option value="400">常规</option><option value="500">中等</option><option value="700">加粗</option></select></Field></>}<h4>进度点</h4><div className="split-fields"><ConfigColorField label="当前页圆点" active={active} updateNode={updateNode} name="accentColor" fallback="#111111" /><ConfigColorField label="其他页圆点" active={active} updateNode={updateNode} name="secondaryColor" fallback="#dedede" /></div><ConfigNumberField label="圆点大小" active={active} updateNode={updateNode} name="dotSize" fallback={10} min={4} max={32} suffix="px" /></>;
+  return <>{Array.isArray(config.slides) && <><section className="inspector-section" data-inspector-section="media"><h4>图片</h4><Field label="填充方式"><div className="segmented">{[["fill", "拉伸"], ["cover", "铺满"], ["contain", "完整显示"]].map(([value, label]) => <button type="button" key={value} className={(config.imageFit ?? "fill") === value ? "active" : ""} onClick={() => updateConfig({ imageFit: value })}>{label}</button>)}</div></Field><ConfigColorField label="图片背景" active={active} updateNode={updateNode} name="imageBackground" fallback="#e5f1ff" /><ConfigNumberField label="图片圆角" active={active} updateNode={updateNode} name="imageRadius" fallback={0} min={0} max={48} suffix="px" /></section><section className="inspector-section" data-inspector-section="headline"><h4>标题</h4><div className="split-fields"><ConfigColorField label="标题颜色" active={active} updateNode={updateNode} name="titleColor" fallback="#f68920" /><ConfigNumberField label="标题字号" active={active} updateNode={updateNode} name="titleFontSize" fallback={29} min={10} max={72} suffix="px" /></div><Field label="标题字重"><select value={config.titleWeight ?? "700"} onChange={(event) => updateConfig({ titleWeight: event.target.value })}><option value="400">常规</option><option value="500">中等</option><option value="700">加粗</option><option value="900">特粗</option></select></Field></section><section className="inspector-section" data-inspector-section="caption"><h4>说明文案</h4><div className="split-fields"><ConfigColorField label="说明颜色" active={active} updateNode={updateNode} name="captionColor" fallback="#a4a4a4" /><ConfigNumberField label="说明字号" active={active} updateNode={updateNode} name="captionFontSize" fallback={18} min={10} max={48} suffix="px" /></div><Field label="说明字重"><select value={config.captionWeight ?? "400"} onChange={(event) => updateConfig({ captionWeight: event.target.value })}><option value="400">常规</option><option value="500">中等</option><option value="700">加粗</option></select></Field></section></>}<section className="inspector-section" data-inspector-section="dots"><h4>进度点</h4><div className="split-fields"><ConfigColorField label="当前页圆点" active={active} updateNode={updateNode} name="accentColor" fallback="#111111" /><ConfigColorField label="其他页圆点" active={active} updateNode={updateNode} name="secondaryColor" fallback="#dedede" /></div><ConfigNumberField label="圆点大小" active={active} updateNode={updateNode} name="dotSize" fallback={10} min={4} max={32} suffix="px" /></section></>;
 }
 
 function CarouselLayoutEditor({ active, updateNode }) {
   const config = active.config ?? {};
-  return <><h4>图片</h4><ConfigNumberField label="图片高度" active={active} updateNode={updateNode} name="imageHeight" fallback={100} min={30} max={200} suffix="%" /><Field label="图片四侧留白"><ConfigInsets active={active} updateNode={updateNode} prefix="imagePadding" /></Field><h4>文字</h4><Field label="对齐方式"><div className="segmented">{[["left", "居左"], ["center", "居中"], ["right", "居右"]].map(([value, label]) => <button type="button" key={value} className={(config.copyAlign ?? "center") === value ? "active" : ""} onClick={() => updateNodeConfig(active, updateNode, { copyAlign: value })}>{label}</button>)}</div></Field><ConfigNumberField label="文字左右留白" active={active} updateNode={updateNode} name="copyPaddingX" fallback={19} min={0} max={100} suffix="px" /><ConfigNumberField label="图片与标题间距" active={active} updateNode={updateNode} name="titleTopGap" fallback={10} min={0} max={100} suffix="px" /><ConfigNumberField label="标题与说明间距" active={active} updateNode={updateNode} name="captionTopGap" fallback={7} min={0} max={100} suffix="px" /><h4>进度点</h4><div className="split-fields"><ConfigNumberField label="圆点间距" active={active} updateNode={updateNode} name="gap" fallback={8} min={0} max={48} suffix="px" /><ConfigNumberField label="说明与圆点间距" active={active} updateNode={updateNode} name="dotTopGap" fallback={11} min={0} max={100} suffix="px" /></div><ConfigNumberField label="圆点下方留白" active={active} updateNode={updateNode} name="dotBottomGap" fallback={6} min={0} max={100} suffix="px" /><h4>组件位置</h4><Field label="外边距"><ConfigInsets active={active} updateNode={updateNode} /></Field><ConfigNumberField label="垂直偏移" active={active} updateNode={updateNode} name="offsetY" fallback={0} min={-120} max={120} suffix="px" /></>;
+  return <><section className="inspector-section" data-inspector-section="media"><h4>图片</h4><ConfigNumberField label="图片高度" active={active} updateNode={updateNode} name="imageHeight" fallback={100} min={30} max={200} suffix="%" /><Field label="图片四侧留白"><ConfigInsets active={active} updateNode={updateNode} prefix="imagePadding" /></Field></section><section className="inspector-section" data-inspector-section="headline"><h4>文字</h4><Field label="对齐方式"><div className="segmented">{[["left", "居左"], ["center", "居中"], ["right", "居右"]].map(([value, label]) => <button type="button" key={value} className={(config.copyAlign ?? "center") === value ? "active" : ""} onClick={() => updateNodeConfig(active, updateNode, { copyAlign: value })}>{label}</button>)}</div></Field><ConfigNumberField label="文字左右留白" active={active} updateNode={updateNode} name="copyPaddingX" fallback={19} min={0} max={100} suffix="px" /><ConfigNumberField label="图片与标题间距" active={active} updateNode={updateNode} name="titleTopGap" fallback={10} min={0} max={100} suffix="px" /></section><section className="inspector-section" data-inspector-section="caption"><h4>说明文案</h4><ConfigNumberField label="标题与说明间距" active={active} updateNode={updateNode} name="captionTopGap" fallback={7} min={0} max={100} suffix="px" /></section><section className="inspector-section" data-inspector-section="dots"><h4>进度点</h4><div className="split-fields"><ConfigNumberField label="圆点间距" active={active} updateNode={updateNode} name="gap" fallback={8} min={0} max={48} suffix="px" /><ConfigNumberField label="说明与圆点间距" active={active} updateNode={updateNode} name="dotTopGap" fallback={11} min={0} max={100} suffix="px" /></div><ConfigNumberField label="圆点下方留白" active={active} updateNode={updateNode} name="dotBottomGap" fallback={6} min={0} max={100} suffix="px" /></section><section className="inspector-section" data-inspector-section="component"><h4>组件位置</h4><Field label="外边距"><ConfigInsets active={active} updateNode={updateNode} /></Field><ConfigNumberField label="垂直偏移" active={active} updateNode={updateNode} name="offsetY" fallback={0} min={-120} max={120} suffix="px" /></section></>;
 }
 
 function ProductPriceModeStyleEditor({ active, updateNode, pricePreviewMode }) {
@@ -2536,7 +2551,8 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onButtonA
   const select = (id) => (event) => {
     if (!interactive) return;
     event?.stopPropagation();
-    onSelect?.(id, previewClickArea(event));
+    const slideValue = event?.target instanceof Element ? event.target.closest("[data-inspector-slide]")?.getAttribute("data-inspector-slide") : null;
+    onSelect?.(id, previewClickArea(event), slideValue == null ? null : Number(slideValue));
   };
   const canDragHeroCopy = interactive && variant === "blue-privilege" && Boolean(onUpdateHeroPosition);
   const heroCopyPointerDown = (event) => {
@@ -2711,10 +2727,10 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onButtonA
     }
     if (id === "carousel") {
       const slide = carouselSlides[carouselActive];
-      if (variant === "membership-plans" && slide) return <div className={nodeClass(id, "ht-member-slide")} style={styleFor(id)} onClick={select(id)}><div className="ht-member-hero" style={carouselStyles.hero}><div className="ht-source-art" style={{ ...carouselStyles.image, backgroundImage: slide.image ? `url(${JSON.stringify(slide.image)})` : "none" }} /></div><h1 className="ht-member-headline" style={carouselStyles.title}>{slide.title}</h1><p className="ht-member-caption" style={carouselStyles.caption}>{slide.caption}</p><div className="ht-member-carousel" style={carouselStyles.dots}>{carouselSlides.map((item, index) => <button type="button" key={item.id} aria-label={`查看第 ${index + 1} 页`} aria-current={index === carouselActive ? "true" : undefined} style={{ color: index === carouselActive ? carouselConfig.accentColor : carouselConfig.secondaryColor }} onClick={(event) => { event.stopPropagation(); setActiveCarouselSlide(index); if (interactive) onSelect?.(id); }}>{index === carouselActive ? "●" : "○"}</button>)}</div>{renderChildren(id)}</div>;
+      if (variant === "membership-plans" && slide) return <div className={nodeClass(id, "ht-member-slide")} data-inspector-slide={carouselActive} style={styleFor(id)} onClick={select(id)}><div data-inspector-area="media" className="ht-member-hero" style={carouselStyles.hero}><div className="ht-source-art" style={{ ...carouselStyles.image, backgroundImage: slide.image ? `url(${JSON.stringify(slide.image)})` : "none" }} /></div><h1 data-inspector-area="headline" className="ht-member-headline" style={carouselStyles.title}>{slide.title}</h1><p data-inspector-area="caption" className="ht-member-caption" style={carouselStyles.caption}>{slide.caption}</p><div data-inspector-area="dots" className="ht-member-carousel" style={carouselStyles.dots}>{carouselSlides.map((item, index) => <button type="button" key={item.id} aria-label={`查看第 ${index + 1} 页`} aria-current={index === carouselActive ? "true" : undefined} style={{ color: index === carouselActive ? carouselConfig.accentColor : carouselConfig.secondaryColor }} onClick={(event) => { event.stopPropagation(); setActiveCarouselSlide(index); if (interactive) onSelect?.(id, "dots", index); }}>{index === carouselActive ? "●" : "○"}</button>)}</div>{renderChildren(id)}</div>;
       return <div className={nodeClass(id, "ht-member-carousel")} style={{ ...styleFor(id), gap: String(carouselConfig.gap ?? 8) + "px" }} onClick={select(id)}>{Array.from({ length: carouselCount }, (_, index) => <i style={{ color: index === carouselActive ? carouselConfig.accentColor : carouselConfig.secondaryColor }} key={index}>{index === carouselActive ? "●" : "○"}</i>)}{renderChildren(id)}</div>;
     }
-    if (entry.type === "Carousel" && Array.isArray(entry.config?.slides)) return <section className={nodeClass(id, "ht-added-carousel")} style={styleFor(id)} onClick={select(id)}><PreviewSlideCarousel slides={entry.config.slides} initialSlide={entry.config.initialSlide ?? 0} config={entry.config} /></section>;
+    if (entry.type === "Carousel" && Array.isArray(entry.config?.slides)) return <section className={nodeClass(id, "ht-added-carousel")} style={styleFor(id)} onClick={select(id)}><PreviewSlideCarousel slides={entry.config.slides} initialSlide={entry.config.initialSlide ?? 0} config={entry.config} onDotSelect={(index) => onSelect?.(id, "dots", index)} /></section>;
     if (id === "benefits") {
       const columnColor = (field) => field === "standard" ? benefitConfig.secondaryColor ?? "#bdbdbd" : field === "plus" ? benefitConfig.plusColor ?? "#9b6b1f" : benefitConfig.accentColor ?? "#ffb40d";
       const [left, right] = benefitColumns;
@@ -2800,7 +2816,10 @@ function previewClickArea(event) {
 }
 
 function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, children = [], getChildren = () => [] }) {
-  const select = (event) => onSelect(node.id, previewClickArea(event));
+  const select = (event) => {
+    const slideValue = event?.target instanceof Element ? event.target.closest("[data-inspector-slide]")?.getAttribute("data-inspector-slide") : null;
+    onSelect(node.id, previewClickArea(event), slideValue == null ? null : Number(slideValue));
+  };
   const config = node.config ?? {};
   const nodeStyle = {
     ...(config.color ? { color: config.color } : {}),
@@ -2855,7 +2874,7 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, ch
     const height = Number.isFinite(scale) && scale > 0 ? `${92 * scale / 100}px` : undefined;
     return wrap(<div className="preview-image" style={{ height, background: config.mediaBackgroundColor, borderRadius: config.rounded ? `${config.radius ?? 8}px` : undefined, padding: ["Top", "Right", "Bottom", "Left"].map((edge) => `${Math.max(0, Number(config[`padding${edge}`]) || 0)}px`).join(" "), transform: config.offsetY ? `translateY(${config.offsetY}px)` : undefined }}>{config.mediaState !== "removed" && (config.mediaSrc ? <img src={config.mediaSrc} alt={node.label || ""} style={{ objectFit: config.mediaFit ?? "cover" }} /> : node.type === "Black Friday Image" ? "BLACK FRIDAY" : node.content)}</div>, "preview-image-wrap");
   }
-  if (node.type === "Carousel") return Array.isArray(config.slides) ? wrap(<PreviewSlideCarousel slides={config.slides} initialSlide={config.initialSlide ?? 0} config={config} />, "preview-carousel-wrap") : children.length ? wrap(<div className="preview-carousel">{renderChildren()}</div>, "preview-carousel-wrap") : !node.content ? wrap(<div className="preview-card-anchor" />, "preview-carousel-wrap") : wrap(<PreviewCarousel content={node.content} config={node.config} />, "preview-carousel-wrap");
+  if (node.type === "Carousel") return Array.isArray(config.slides) ? wrap(<PreviewSlideCarousel slides={config.slides} initialSlide={config.initialSlide ?? 0} config={config} onDotSelect={(index) => onSelect(node.id, "dots", index)} />, "preview-carousel-wrap") : children.length ? wrap(<div className="preview-carousel">{renderChildren()}</div>, "preview-carousel-wrap") : !node.content ? wrap(<div className="preview-card-anchor" />, "preview-carousel-wrap") : wrap(<PreviewCarousel content={node.content} config={node.config} />, "preview-carousel-wrap");
   if (node.type === "Timer") return node.config?.enabled === false ? null : wrap(<PreviewTimer content={node.content} config={node.config} />);
   if (node.type === "Products") {
     if (node.variant === "purchase") {
@@ -2889,13 +2908,13 @@ function PreviewTimer({ content, config = {} }) {
   return <div className="preview-timer" style={{ color: config.color, borderRadius: config.radius === undefined ? undefined : `${config.radius}px` }}>{config.prefix && <strong style={{ color: config.prefixColor, fontSize: config.prefixFontSize ? `${config.prefixFontSize}px` : undefined }}>{config.prefix} </strong>}<span style={{ color: config.digitColor, backgroundColor: digitBackground, fontSize: config.fontSize ? `${config.fontSize}px` : undefined }}>{formatTimer(remaining, config.format ?? "hh:mm:ss", config.separator ?? ":")}</span>{config.suffix && <small style={config.suffixFontSize ? { fontSize: `${config.suffixFontSize}px` } : undefined}> {config.suffix}</small>}</div>;
 }
 
-function PreviewSlideCarousel({ slides, initialSlide, config = {} }) {
+function PreviewSlideCarousel({ slides, initialSlide, config = {}, onDotSelect }) {
   const [active, setActive] = useState(initialSlide);
   useEffect(() => setActive(Math.min(slides.length - 1, Math.max(0, initialSlide))), [initialSlide, slides.length]);
   const slide = slides[Math.min(active, slides.length - 1)];
   if (!slide) return null;
   const styles = carouselSlideStyles(config);
-  return <div className="preview-slide-carousel"><div className="preview-slide-media" style={{ ...styles.hero, height: `${160 * (Number(config.imageHeight) || 100) / 100}px`, aspectRatio: "auto", boxSizing: "border-box", backgroundColor: config.imageBackground ?? "#e5f1ff", padding: ["Top", "Right", "Bottom", "Left"].map((edge) => `${Math.max(0, Number(config[`imagePadding${edge}`]) || 0)}px`).join(" ") }}>{slide.image && <img src={slide.image} alt="" style={{ objectFit: config.imageFit === "fill" ? "fill" : config.imageFit ?? "fill" }} />}</div>{slide.title && <strong style={styles.title}>{slide.title}</strong>}{slide.caption && <p style={styles.caption}>{slide.caption}</p>}<div className="preview-slide-dots" style={styles.dots}>{slides.map((item, index) => <button type="button" key={item.id} aria-label={`查看第 ${index + 1} 页`} aria-current={index === active ? "true" : undefined} style={{ color: index === active ? config.accentColor : config.secondaryColor }} onClick={(event) => { event.stopPropagation(); setActive(index); }}>{index === active ? "●" : "○"}</button>)}</div></div>;
+  return <div className="preview-slide-carousel" data-inspector-slide={active}><div data-inspector-area="media" className="preview-slide-media" style={{ ...styles.hero, height: `${160 * (Number(config.imageHeight) || 100) / 100}px`, aspectRatio: "auto", boxSizing: "border-box", backgroundColor: config.imageBackground ?? "#e5f1ff", padding: ["Top", "Right", "Bottom", "Left"].map((edge) => `${Math.max(0, Number(config[`imagePadding${edge}`]) || 0)}px`).join(" ") }}>{slide.image && <img src={slide.image} alt="" style={{ objectFit: config.imageFit === "fill" ? "fill" : config.imageFit ?? "fill" }} />}</div>{slide.title && <strong data-inspector-area="headline" style={styles.title}>{slide.title}</strong>}{slide.caption && <p data-inspector-area="caption" style={styles.caption}>{slide.caption}</p>}<div data-inspector-area="dots" className="preview-slide-dots" style={styles.dots}>{slides.map((item, index) => <button type="button" key={item.id} aria-label={`查看第 ${index + 1} 页`} aria-current={index === active ? "true" : undefined} style={{ color: index === active ? config.accentColor : config.secondaryColor }} onClick={(event) => { event.stopPropagation(); setActive(index); onDotSelect?.(index); }}>{index === active ? "●" : "○"}</button>)}</div></div>;
 }
 
 function PreviewCarousel({ content, config = {} }) {
