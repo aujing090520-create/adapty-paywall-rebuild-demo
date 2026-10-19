@@ -1042,13 +1042,16 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-sku-paywall .ht-sku-plans .ht-structured-plan:has(.ht-structured-badge) { padding-top: 4cqw; }
 
 .ht-agreement { flex: none; min-width: 0; margin: 1cqw 4.5cqw 0; color: #777; font-size: 3.2cqw; line-height: 1.4; }
-.ht-agreement-line { display: grid; grid-template-columns: 4.5cqw minmax(0, 1fr); align-items: start; gap: 1.8cqw; }
-.ht-agreement input[type="checkbox"] { width: 4.2cqw; height: 4.2cqw; margin: .2cqw 0 0; accent-color: var(--agreement-check-color, #1677ff); cursor: pointer; }
+.ht-agreement-line { display: grid; grid-template-columns: 4.5cqw minmax(0, 1fr); align-items: center; gap: 1.8cqw; }
+.ht-agreement-line.no-checkbox { grid-template-columns: minmax(0, 1fr); }
+.ht-agreement input[type="checkbox"] { width: 4.2cqw; min-width: 0; height: 4.2cqw; min-height: 0; padding: 0; margin: 0; accent-color: var(--agreement-check-color, #1677ff); cursor: pointer; }
 .ht-agreement input[type="checkbox"]:focus-visible, .ht-agreement-copy button:focus-visible { outline: 2px solid #6936e9; outline-offset: 2px; }
 .ht-agreement-copy { min-width: 0; overflow-wrap: anywhere; }
 .ht-agreement-copy label { cursor: pointer; }
 .ht-agreement-copy button { display: inline; padding: 0; border: 0; background: transparent; color: var(--agreement-link-color, #3069d3); text-decoration: underline; text-underline-offset: .4cqw; }
 .ht-agreement-message { margin: .8cqw 0 0 6.3cqw; color: #d54535; font-size: 2.8cqw; }
+.ht-agreement-line.no-checkbox + .ht-agreement-message { margin-left: 0; }
+.ht-action-gated { opacity: .58; cursor: not-allowed !important; }
 
 .preview-reorderable { position: relative; }
 .preview-reorder-handle { position: absolute; z-index: 10; top: 2px; right: 2px; width: 26px; height: 26px; display: grid; place-items: center; border: 1px solid #d6cafa; border-radius: 4px; background: #fff; color: #6936e9; opacity: 0; pointer-events: none; cursor: grab; user-select: none; touch-action: none; }

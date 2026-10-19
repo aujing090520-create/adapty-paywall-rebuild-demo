@@ -765,7 +765,7 @@ function createBuilderNodes(templateId = "knowledge") {
       node("benefits", "List", "", 0, { label: "特权对比", config: { bluePrivilege: true, privilegeRows: initialPrivilegeRows, maxVisibleRows: 5, headerBackground: "#f1f1f1", vipColumnBackground: "#ffffff", backgroundColor: "#f5f5f5", secondaryColor: "#bdbdbd", accentColor: "#ffb40d" } }),
       node("products", "Products", "", 0, { config: { bluePrivilege: true, badgeGradient: ["#003bec", "#3ed6ea", "#bbff62"], selectedBorderGradient: ["#003bec", "#3ed6ea", "#bbff62"], selectedBackground: "#ffffff", saveTextColor: "#2e89ff", purchaseTextGradient: ["#ffffff", "#ffffff", "#ffffff"], purchaseBackgroundGradient: ["#6783d8", "#bbff62", "#bbff62"] } }),
       node("timer", "Timer", "18:32:25", 0, { config: { bluePrivilege: true, enabled: true, format: "hh:mm:ss", separator: ":", prefix: "倒计时", suffix: "", resetMode: "Reset timer on every paywall view", locale: "English", prefixColor: "#303487", digitColor: "#303487", digitBackgroundColor: "#8ced75" } }),
-      node("agreement", "Agreement", "我已阅读并同意", 0, { config: { required: true, termsLabel: "服务条款", termsUrl: "", privacyLabel: "隐私政策", privacyUrl: "" } }),
+      node("agreement", "Agreement", "我已阅读并同意", 0, { config: { showCheckbox: true, required: true, termsLabel: "服务条款", termsUrl: "", privacyLabel: "隐私政策", privacyUrl: "" } }),
       node("purchase", "Button", "立即领取优惠", 0, { config: { action: "Purchase" } }),
       node("retention", "Card", "", 0, { label: "挽留弹窗", config: { retention: true, title: "错过这次，就要多花 30%😱", timerLabel: "倒计时", timerStart: "71:22:22", buttonText: "立享优惠", cancelText: "忍痛取消", backgroundColor: "#f7f7f7", buttonStartColor: "#ff8600", buttonEndColor: "#ffcd00", buttonTextColor: "#ffffff", titleColor: "#111111", timerColor: "#11bf42", imageSrc: "/ht-retention-gift.png", backgroundImage: "" } }),
       node("legal", "Text", "如果当前缴费期前 24 小时没有取消续订，系统会自动续订，费用将从你的 iTunes 账户收取，你可随时前往 iTunes 商店的设置界面管理自己的订阅设定。有关详细信息，请访问我们的服务条款 · 隐私政策", 0, { label: "续订说明", variant: "legal", textRuns: [
@@ -832,7 +832,7 @@ function createComponentNode(type, index) {
     Carousel: { initialSlide: 0, slides: [{ id: `slide-${index}-1`, image: "", title: "", caption: "" }] },
     Products: { defaultSelected: 0, showOfferBadge: true },
     Button: { action: "Purchase" },
-    Agreement: { required: true, termsLabel: "服务条款", termsUrl: "", privacyLabel: "隐私政策", privacyUrl: "" },
+    Agreement: { showCheckbox: true, required: true, termsLabel: "服务条款", termsUrl: "", privacyLabel: "隐私政策", privacyUrl: "" },
   };
   return { id: `added-${type.toLowerCase().replace(/[^a-z]+/g, "-")}-${index}`, type, label: "", depth: 0, content: contentByType[type] ?? "", config: configByType[type] };
 }
@@ -2111,7 +2111,8 @@ function LinksContent({ active, updateNode, templateLinks, setTemplateLinks }) {
 function AgreementContent({ active, updateNode }) {
   const config = active.config ?? {};
   const urlField = (label, name) => <Field label={label}><input type="url" placeholder="https://" value={config[name] ?? ""} aria-invalid={Boolean(config[name] && !safeButtonUrl(config[name]))} onChange={(event) => updateNodeConfig(active, updateNode, { [name]: event.target.value })} /></Field>;
-  return <><Field label="引导文案"><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><Field label="服务条款文案"><input value={config.termsLabel ?? "服务条款"} onChange={(event) => updateNodeConfig(active, updateNode, { termsLabel: event.target.value })} /></Field>{urlField("服务条款链接", "termsUrl")}<Field label="隐私政策文案"><input value={config.privacyLabel ?? "隐私政策"} onChange={(event) => updateNodeConfig(active, updateNode, { privacyLabel: event.target.value })} /></Field>{urlField("隐私政策链接", "privacyUrl")}<label className="switch-row"><strong>购买前必须勾选</strong><input type="checkbox" checked={config.required !== false} onChange={(event) => updateNodeConfig(active, updateNode, { required: event.target.checked })} /><span>{config.required !== false ? "开启" : "关闭"}</span></label><p className="property-copy">预览默认不勾选；协议链接未配置时，点击会提示补充链接。</p></>;
+  const showCheckbox = config.showCheckbox !== false;
+  return <><Field label="引导文案"><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><Field label="服务条款文案"><input value={config.termsLabel ?? "服务条款"} onChange={(event) => updateNodeConfig(active, updateNode, { termsLabel: event.target.value })} /></Field>{urlField("服务条款链接", "termsUrl")}<Field label="隐私政策文案"><input value={config.privacyLabel ?? "隐私政策"} onChange={(event) => updateNodeConfig(active, updateNode, { privacyLabel: event.target.value })} /></Field>{urlField("隐私政策链接", "privacyUrl")}<label className="switch-row"><strong>显示勾选框</strong><input type="checkbox" checked={showCheckbox} onChange={(event) => updateNodeConfig(active, updateNode, { showCheckbox: event.target.checked, ...(!event.target.checked ? { required: false } : {}) })} /><span>{showCheckbox ? "开启" : "关闭"}</span></label><label className="switch-row"><strong>勾选后才能点击按钮</strong><input type="checkbox" checked={showCheckbox && config.required !== false} disabled={!showCheckbox} onChange={(event) => updateNodeConfig(active, updateNode, { required: event.target.checked })} /><span>{showCheckbox && config.required !== false ? "开启" : "关闭"}</span></label></>;
 }
 
 function AgreementStyle({ active, updateNode }) {
@@ -2601,7 +2602,7 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onButtonA
   const agreementNode = renderedNodes.find((entry) => entry.type === "Agreement");
   const [agreementChecked, setAgreementChecked] = useState(false);
   const [agreementMessage, setAgreementMessage] = useState("");
-  useEffect(() => { setAgreementChecked(false); setAgreementMessage(""); }, [variant, agreementNode?.id]);
+  useEffect(() => { setAgreementChecked(false); setAgreementMessage(""); }, [variant, agreementNode?.id, agreementNode?.config?.showCheckbox]);
   const defaultSelectedPlan = Number.isInteger(productConfig.defaultSelected) ? productConfig.defaultSelected : variant === "blue-privilege" ? defaults.selectedProductIndex : (["payment-recovery", "sku-sheet"].includes(variant) ? 0 : 1);
   const [selectedPlan, setSelectedPlan] = useState(defaultSelectedPlan);
   const [openPrivilegeId, setOpenPrivilegeId] = useState(null);
@@ -2784,7 +2785,8 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onButtonA
   const productColorsEnabled = productConfig.bluePrivilege || productConfig.productColors;
   const actionStyle = productColorsEnabled ? { ...styleFor("purchase"), background: productGradient(productConfig.purchaseBackgroundGradient, ["#ff8707", "#ffb000", "#ffd10b"]) } : styleFor("purchase");
   const actionCopy = productColorsEnabled ? <span className="ht-action-gradient-text" style={{ backgroundImage: productGradient(productConfig.purchaseTextGradient, ["#ffffff", "#ffffff", "#ffffff"]) }}>{action}</span> : action;
-  const Action = ({ dragProps, reorderHandle } = {}) => interactive ? <button {...dragProps} className={`${nodeClass("purchase", "ht-action")} ${dragProps?.className ?? ""}`} style={actionStyle} onClick={(event) => { select("purchase")(event); if (nodeById("purchase")?.config?.action === "Purchase" && agreementNode?.config?.required !== false && agreementNode && !agreementChecked) { setAgreementMessage("请先勾选同意协议"); return; } onButtonAction?.(nodeById("purchase"), visiblePlans[selectedPlan]); }}>{reorderHandle}{actionCopy}</button> : <div className="ht-action" style={actionStyle}>{actionCopy}</div>;
+  const actionNeedsAgreement = Boolean(agreementNode) && agreementNode.config?.showCheckbox !== false && agreementNode.config?.required !== false && !agreementChecked;
+  const Action = ({ dragProps, reorderHandle } = {}) => interactive ? <button {...dragProps} className={`${nodeClass("purchase", "ht-action")} ${actionNeedsAgreement ? "ht-action-gated" : ""} ${dragProps?.className ?? ""}`} aria-disabled={actionNeedsAgreement} style={actionStyle} onClick={(event) => { select("purchase")(event); if (actionNeedsAgreement) { setAgreementMessage("请先勾选同意协议"); return; } onButtonAction?.(nodeById("purchase"), visiblePlans[selectedPlan]); }}>{reorderHandle}{actionCopy}</button> : <div className="ht-action" style={actionStyle}>{actionCopy}</div>;
   const Agreement = ({ entry, dragProps, reorderHandle }) => {
     const config = entry.config ?? {};
     const openAgreementLink = (event, label, value) => {
@@ -2797,7 +2799,7 @@ function HelloTalkPaywall({ variant, nodes = [], activeNode, onSelect, onButtonA
     };
     return <div {...dragProps} className={`${nodeClass(entry.id, "ht-agreement")} ${dragProps?.className ?? ""}`} style={{ ...styleFor(entry.id), "--agreement-link-color": config.linkColor ?? "#3069d3", "--agreement-check-color": config.checkColor ?? "#1677ff" }} onClick={select(entry.id)}>
       {reorderHandle}
-      <div className="ht-agreement-line"><input type="checkbox" id={`ht-agreement-${entry.id}`} aria-label="同意服务条款与隐私政策" checked={agreementChecked} disabled={!interactive} onChange={(event) => { setAgreementChecked(event.target.checked); setAgreementMessage(""); }} /><span className="ht-agreement-copy"><label htmlFor={`ht-agreement-${entry.id}`} data-inspector-area="copy">{entry.content || "我已阅读并同意"}</label> <button type="button" data-inspector-area="links" disabled={!interactive} onClick={(event) => openAgreementLink(event, "服务条款", config.termsUrl)}>{config.termsLabel ?? "服务条款"}</button><span>和</span><button type="button" data-inspector-area="links" disabled={!interactive} onClick={(event) => openAgreementLink(event, "隐私政策", config.privacyUrl)}>{config.privacyLabel ?? "隐私政策"}</button></span></div>
+      <div className={`ht-agreement-line ${config.showCheckbox === false ? "no-checkbox" : ""}`}>{config.showCheckbox !== false && <input type="checkbox" id={`ht-agreement-${entry.id}`} aria-label="同意服务条款与隐私政策" checked={agreementChecked} disabled={!interactive} onChange={(event) => { setAgreementChecked(event.target.checked); setAgreementMessage(""); }} />}<span className="ht-agreement-copy"><label htmlFor={config.showCheckbox !== false ? `ht-agreement-${entry.id}` : undefined} data-inspector-area="copy">{entry.content || "我已阅读并同意"}</label> <button type="button" data-inspector-area="links" disabled={!interactive} onClick={(event) => openAgreementLink(event, "服务条款", config.termsUrl)}>{config.termsLabel ?? "服务条款"}</button><span>和</span><button type="button" data-inspector-area="links" disabled={!interactive} onClick={(event) => openAgreementLink(event, "隐私政策", config.privacyUrl)}>{config.privacyLabel ?? "隐私政策"}</button></span></div>
       {agreementMessage && <p className="ht-agreement-message" role="alert">{agreementMessage}</p>}
     </div>;
   };
