@@ -1086,3 +1086,69 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-blue-paywall .ht-blue-hero > .preview-reorder-handle { top: auto; right: 8px; bottom: 8px; width: 32px; height: 32px; }
 .preview-drop-before { box-shadow: inset 0 3px #6936e9 !important; }
 .preview-drop-after { box-shadow: inset 0 -3px #6936e9 !important; }
+
+/* The package layout belongs to the Products node, not to its parent template. */
+.ht-paywall .product-layout-horizontal { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); min-height: 35cqw; background: #f5f5f5; }
+.ht-paywall .product-layout-horizontal .ht-blue-plan { display: grid; grid-template-rows: minmax(0, 1fr) auto minmax(0, 1fr); justify-items: center; gap: 0; min-width: 0; padding: 5cqw .6cqw 2cqw; }
+.ht-paywall .product-layout-horizontal .ht-blue-plan > span { align-self: start; width: 100%; min-width: 0; }
+.ht-paywall .product-layout-horizontal .ht-blue-plan > span strong { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ht-paywall .product-layout-horizontal .ht-blue-price { align-self: center; display: flex; flex-direction: column; align-items: center; gap: 1cqw; min-width: 0; line-height: 1; }
+.ht-paywall .product-layout-horizontal .ht-blue-price del { color: #999; font-size: 3cqw; white-space: nowrap; }
+.ht-paywall .product-layout-horizontal .ht-blue-price em { max-width: 100%; overflow: hidden; color: #171717; font-size: 6cqw; font-style: normal; font-weight: 900; text-overflow: ellipsis; white-space: nowrap; }
+.ht-paywall .product-layout-horizontal .ht-blue-detail { align-self: end; display: grid; justify-items: center; gap: .6cqw; min-width: 0; text-align: center; }
+.ht-paywall .product-layout-horizontal .ht-blue-detail > * { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ht-paywall .product-layout-horizontal .ht-blue-plan span b { left: 0; right: 0; }
+.ht-paywall .product-layout-vertical { display: grid; gap: 4cqw; margin: 4cqw 4.5cqw; padding: 0; background: transparent; }
+.ht-paywall .product-layout-vertical h3 { margin: 0 0 -1cqw; font-size: 5cqw; }
+.ht-paywall .product-layout-vertical .ht-vertical-plan { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2cqw; min-width: 0; min-height: 22cqw; padding: 4cqw 5cqw; border: 1px solid #dedee2; border-radius: 5cqw; background: #fff; color: #1b1b1b; }
+.ht-paywall .product-layout-vertical .ht-vertical-plan.chosen { border-color: var(--package-selected-color, #ff8707); background: var(--package-selected-background, #fff8f1); }
+.ht-paywall .product-layout-vertical .ht-vertical-main, .ht-paywall .product-layout-vertical .ht-vertical-side { display: flex; flex-direction: column; gap: 1.5cqw; min-width: 0; }
+.ht-paywall .product-layout-vertical .ht-vertical-main strong { font-size: 5.4cqw; }
+.ht-paywall .product-layout-vertical .ht-vertical-price-line { display: flex; align-items: baseline; flex-wrap: wrap; gap: 1.2cqw; min-width: 0; }
+.ht-paywall .product-layout-vertical .ht-vertical-total { font-size: 4.8cqw; font-weight: 800; }
+.ht-paywall .product-layout-vertical .ht-vertical-price-line del { color: #aaa; font-size: 3.2cqw; font-weight: 400; }
+.ht-paywall .product-layout-vertical .ht-vertical-saving, .ht-paywall .product-layout-vertical .ht-vertical-detail { color: var(--save-text-color, #ff8207); font-size: 2.7cqw; font-weight: 500; }
+.ht-paywall .product-layout-vertical .ht-vertical-detail { display: flex; gap: 1.2cqw; flex-wrap: wrap; }
+.ht-paywall .product-layout-vertical .ht-plan-save-copy { padding: .2cqw .5cqw; background: var(--save-background-color, transparent); }
+.ht-paywall .product-layout-vertical .ht-vertical-side { align-items: flex-end; color: #777; font-size: 4cqw; white-space: nowrap; }
+.ht-paywall .product-layout-vertical .ht-vertical-side del { color: #aaa; }
+.ht-paywall .product-layout-vertical .ht-vertical-badge { position: absolute; z-index: 1; top: -2.5cqw; right: 0; max-width: 80%; padding: .7cqw 2.5cqw; border-radius: 2cqw 2cqw 0 2cqw; overflow: hidden; background: var(--badge-background, #ff910a); color: #fff; font-size: 3.5cqw; text-overflow: ellipsis; white-space: nowrap; }
+.ht-paywall .product-layout-compact { display: grid; gap: 3.2cqw; min-height: 0; }
+.ht-paywall .product-layout-compact .ht-plan { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, auto); grid-template-rows: auto auto; column-gap: 1cqw; row-gap: .5cqw; align-content: center; min-height: 16cqw; padding: 2.6cqw 3cqw; border-radius: 5.5cqw; background: #f3f3f3; color: #1b1b1b; text-align: left; }
+.ht-paywall .product-layout-compact .ht-structured-name { grid-column: 1; grid-row: 1; }
+.ht-paywall .product-layout-compact .ht-structured-price { grid-column: 2; grid-row: 1 / 3; align-items: flex-end; }
+.ht-paywall .product-layout-compact .ht-structured-detail { grid-column: 1; grid-row: 2; align-items: flex-start; }
+.ht-paywall .product-layout-compact .ht-structured-badge { top: 0; right: 2cqw; left: auto; transform: translateY(-35%); }
+.ht-paywall .product-layout-standard { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
+.ht-recovery-paywall .product-layout-horizontal, .ht-recovery-paywall .product-layout-standard, .ht-sku-paywall .product-layout-horizontal, .ht-sku-paywall .product-layout-standard { height: auto; min-height: 22cqw; margin: 0; }
+.ht-recovery-paywall .product-layout-vertical, .ht-sku-paywall .product-layout-vertical { margin-inline: 0; }
+.ht-blue-paywall .product-layout-compact, .ht-membership-paywall .product-layout-compact { margin: 2cqw 4.5cqw; }
+.ht-blue-paywall .product-layout-standard { min-height: 35cqw; }
+.ht-paywall .product-layout-compact .ht-plan, .ht-paywall .product-layout-vertical .ht-vertical-plan { height: auto; }
+.preview-products { container-type: inline-size; min-width: 0; }
+.preview-products.product-layout-horizontal, .preview-products.product-layout-standard { grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 0; }
+.preview-products.product-layout-horizontal { min-height: 30cqw; background: #f5f5f5; }
+.preview-products.product-layout-compact, .preview-products.product-layout-vertical { display: grid; gap: 3cqw; }
+.preview-products > .ht-plan, .preview-products > .ht-vertical-plan { position: relative; box-sizing: border-box; min-width: 0; min-height: 18cqw; padding: 2cqw; border: 1px solid #ddd; border-radius: 2cqw; color: #222; font-size: 4cqw; }
+.preview-products > .ht-plan.chosen, .preview-products > .ht-vertical-plan.chosen { border: 2px solid #ff860a; }
+.preview-products .ht-plan strong, .preview-products .ht-vertical-plan strong { min-width: 0; font-size: 4cqw; }
+.preview-products .ht-plan em { font-size: 5cqw; font-style: normal; font-weight: 800; }
+.preview-products .ht-plan i, .preview-products .ht-plan small, .preview-products .ht-vertical-plan small { font-size: 3cqw; font-style: normal; }
+.preview-products .ht-structured-plan { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; text-align: center; }
+.preview-products .ht-structured-price { display: flex; flex-direction: column; justify-content: center; align-items: center; }
+.preview-products .ht-structured-detail { display: flex; flex-direction: column; align-items: center; }
+.preview-products .ht-structured-badge, .preview-products .ht-blue-plan b, .preview-products .ht-vertical-badge { position: absolute; top: -1.4cqw; right: 0; padding: .3cqw 1cqw; border-radius: 1cqw; background: var(--badge-background, #ff860a); color: #fff; font-size: 3cqw; }
+.preview-products .ht-blue-plan { display: grid; grid-template-rows: minmax(0, 1fr) auto minmax(0, 1fr); justify-items: center; text-align: center; }
+.preview-products .ht-blue-price { display: flex; flex-direction: column; align-items: center; }
+.preview-products .ht-blue-detail { display: grid; justify-items: center; align-content: end; }
+.preview-products .ht-blue-plan strong, .preview-products .ht-structured-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.preview-products .ht-blue-price del, .preview-products .ht-structured-price del, .preview-products .ht-vertical-plan del { color: #999; font-size: 3cqw; }
+.preview-products.product-layout-compact .ht-structured-plan { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto; min-height: 17cqw; align-content: center; text-align: left; }
+.preview-products.product-layout-compact .ht-structured-name { grid-column: 1; grid-row: 1; }
+.preview-products.product-layout-compact .ht-structured-price { grid-column: 2; grid-row: 1 / 3; align-items: flex-end; }
+.preview-products.product-layout-compact .ht-structured-detail { grid-column: 1; grid-row: 2; align-items: flex-start; }
+.preview-products.product-layout-vertical .ht-vertical-plan { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2cqw; min-height: 18cqw; padding: 3cqw; }
+.preview-products .ht-vertical-main { display: grid; gap: 1cqw; }
+.preview-products .ht-vertical-price-line, .preview-products .ht-vertical-detail { display: flex; flex-wrap: wrap; gap: 1cqw; align-items: baseline; }
+.preview-products .ht-vertical-total { font-size: 5cqw; font-weight: 800; }
+.preview-products .ht-vertical-side { color: #777; font-size: 3.5cqw; text-align: right; }
