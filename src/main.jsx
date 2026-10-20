@@ -2530,12 +2530,69 @@ function mediaDimensions(config = {}) {
   return { width, height, imageScaleWidth, imageScaleHeight, imageWidth: `${imageScaleWidth * 100 / width}%`, imageHeight: `${imageScaleHeight * 100 / height}%` };
 }
 
+function ScrollImage({ src, alt, dimensions }) {
+  const imageRef = useRef(null);
+  const [size, setSize] = useState(null);
+
+  useEffect(() => {
+    const image = imageRef.current;
+    const frame = image?.parentElement;
+    if (!image || !frame) return undefined;
+    const measure = () => {
+      if (!image.naturalWidth || !image.naturalHeight) return;
+      const style = getComputedStyle(frame);
+      const contentWidth = frame.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+      const contentHeight = frame.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+      const minWidth = contentWidth * dimensions.imageScaleWidth / dimensions.width;
+      const minHeight = contentHeight * dimensions.imageScaleHeight / dimensions.height;
+      const scale = Math.max(minWidth / image.naturalWidth, minHeight / image.naturalHeight);
+      const width = Math.round(image.naturalWidth * scale * 100) / 100;
+      const height = Math.round(image.naturalHeight * scale * 100) / 100;
+      setSize((previous) => previous?.width === width && previous?.height === height ? previous : { width, height });
+    };
+    const observer = new ResizeObserver(measure);
+    observer.observe(frame);
+    image.addEventListener("load", measure);
+    measure();
+
+    let drag = null;
+    const pointerDown = (event) => {
+      if (event.pointerType !== "mouse" || event.button !== 0 || (frame.scrollWidth <= frame.clientWidth && frame.scrollHeight <= frame.clientHeight)) return;
+      drag = { x: event.clientX, y: event.clientY, left: frame.scrollLeft, top: frame.scrollTop };
+      frame.setPointerCapture(event.pointerId);
+    };
+    const pointerMove = (event) => {
+      if (!drag) return;
+      frame.scrollLeft = drag.left - (event.clientX - drag.x);
+      frame.scrollTop = drag.top - (event.clientY - drag.y);
+    };
+    const pointerEnd = (event) => {
+      drag = null;
+      if (frame.hasPointerCapture(event.pointerId)) frame.releasePointerCapture(event.pointerId);
+    };
+    frame.addEventListener("pointerdown", pointerDown);
+    frame.addEventListener("pointermove", pointerMove);
+    frame.addEventListener("pointerup", pointerEnd);
+    frame.addEventListener("pointercancel", pointerEnd);
+    return () => {
+      observer.disconnect();
+      image.removeEventListener("load", measure);
+      frame.removeEventListener("pointerdown", pointerDown);
+      frame.removeEventListener("pointermove", pointerMove);
+      frame.removeEventListener("pointerup", pointerEnd);
+      frame.removeEventListener("pointercancel", pointerEnd);
+    };
+  }, [src, dimensions.width, dimensions.height, dimensions.imageScaleWidth, dimensions.imageScaleHeight]);
+
+  return <img ref={imageRef} src={src} alt={alt} draggable={false} style={size ? { width: `${size.width}px`, height: `${size.height}px` } : { width: dimensions.imageWidth, height: dimensions.imageHeight }} />;
+}
+
 function HeroMediaLayer({ config = {}, sourceSrc = "" }) {
   const scrollable = config.mediaOverflow === "scroll" && config.mediaType !== "Video";
   const src = config.mediaState === "removed" ? "" : config.mediaState === "custom" ? config.mediaSrc : sourceSrc;
   const dimensions = mediaDimensions(config);
   const resized = dimensions.width !== 100 || dimensions.height !== 100 || dimensions.imageScaleWidth !== 100 || dimensions.imageScaleHeight !== 100;
-  if ((scrollable || resized) && src && config.mediaType !== "Video") return <div className={`ht-hero-media ht-hero-media-frame${scrollable ? " ht-hero-media-scroll" : ""}`} data-inspector-area="media" style={{ backgroundColor: config.mediaBackgroundColor ?? "#f5f5f5" }}><img src={src} alt="" style={{ width: dimensions.imageWidth, height: dimensions.imageHeight, objectFit: config.mediaFit ?? "cover" }} /></div>;
+  if ((scrollable || resized) && src && config.mediaType !== "Video") return <div className={`ht-hero-media ht-hero-media-frame${scrollable ? " ht-hero-media-scroll" : ""}`} data-inspector-area="media" style={{ backgroundColor: config.mediaBackgroundColor ?? "#f5f5f5" }}>{scrollable ? <ScrollImage src={src} alt="" dimensions={dimensions} /> : <img src={src} alt="" style={{ width: dimensions.imageWidth, height: dimensions.imageHeight, objectFit: config.mediaFit ?? "cover" }} />}</div>;
   if (config.mediaState !== "custom" || !config.mediaSrc) return null;
   if (config.mediaType === "Video") return <video className="ht-hero-media" src={config.mediaSrc} autoPlay loop muted playsInline style={{ objectFit: config.mediaFit ?? "cover" }} />;
   return <img className="ht-hero-media" src={config.mediaSrc} alt="" style={{ objectFit: config.mediaFit ?? "cover" }} />;
@@ -3020,7 +3077,7 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, on
     const padding = insets.map((value) => `${value}px`).join(" ");
     const height = 104 * dimensions.height / 100;
     const media = config.mediaState === "removed" ? null : config.mediaSrc
-      ? config.mediaType === "Video" ? <video src={config.mediaSrc} autoPlay loop muted playsInline style={{ objectFit: config.mediaFit ?? "cover" }} /> : <img src={config.mediaSrc} alt={node.label || ""} style={{ width: dimensions.imageWidth, height: dimensions.imageHeight, objectFit: config.mediaFit ?? "cover" }} />
+      ? config.mediaType === "Video" ? <video src={config.mediaSrc} autoPlay loop muted playsInline style={{ objectFit: config.mediaFit ?? "cover" }} /> : config.mediaOverflow === "scroll" ? <ScrollImage src={config.mediaSrc} alt={node.label || ""} dimensions={dimensions} /> : <img src={config.mediaSrc} alt={node.label || ""} style={{ width: dimensions.imageWidth, height: dimensions.imageHeight, objectFit: config.mediaFit ?? "cover" }} />
       : <span>{node.type === "Hero Video" || config.mediaType === "Video" ? "VIDEO" : node.content === "knowledge" ? "✦" : ""}</span>;
     return wrap(<div className={`preview-media visual-${node.content}`} style={{ width: `${dimensions.width}%`, marginInline: "auto", height: `${height}px`, padding, transform: config.offsetY ? `translateY(${config.offsetY}px)` : undefined, borderRadius: config.rounded ? `${config.radius ?? 0}px` : undefined, backgroundColor: config.mediaBackgroundColor ?? "#f5f5f5" }}><div className={`preview-media-art${config.mediaSrc ? " has-media" : ""}${config.mediaOverflow === "scroll" && config.mediaType !== "Video" ? " media-scroll" : ""}`}>{media}</div></div>, "preview-hero");
   }
@@ -3040,7 +3097,7 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, on
     const config = node.config ?? {};
     const dimensions = mediaDimensions(config);
     const height = `${92 * dimensions.height / 100}px`;
-    return wrap(<div className={`preview-image${config.mediaSrc ? " has-media" : ""}${config.mediaOverflow === "scroll" && config.mediaType !== "Video" ? " media-scroll" : ""}`} style={{ width: `${dimensions.width}%`, marginInline: "auto", height, background: config.mediaBackgroundColor, borderRadius: config.rounded ? `${config.radius ?? 8}px` : undefined, padding: ["Top", "Right", "Bottom", "Left"].map((edge) => `${Math.max(0, Number(config[`padding${edge}`]) || 0)}px`).join(" "), transform: config.offsetY ? `translateY(${config.offsetY}px)` : undefined }}>{config.mediaState !== "removed" && (config.mediaSrc ? <img src={config.mediaSrc} alt={node.label || ""} style={{ width: dimensions.imageWidth, height: dimensions.imageHeight, objectFit: config.mediaFit ?? "cover" }} /> : node.type === "Black Friday Image" ? "BLACK FRIDAY" : node.content)}</div>, "preview-image-wrap");
+    return wrap(<div className={`preview-image${config.mediaSrc ? " has-media" : ""}${config.mediaOverflow === "scroll" && config.mediaType !== "Video" ? " media-scroll" : ""}`} style={{ width: `${dimensions.width}%`, marginInline: "auto", height, background: config.mediaBackgroundColor, borderRadius: config.rounded ? `${config.radius ?? 8}px` : undefined, padding: ["Top", "Right", "Bottom", "Left"].map((edge) => `${Math.max(0, Number(config[`padding${edge}`]) || 0)}px`).join(" "), transform: config.offsetY ? `translateY(${config.offsetY}px)` : undefined }}>{config.mediaState !== "removed" && (config.mediaSrc ? config.mediaOverflow === "scroll" ? <ScrollImage src={config.mediaSrc} alt={node.label || ""} dimensions={dimensions} /> : <img src={config.mediaSrc} alt={node.label || ""} style={{ width: dimensions.imageWidth, height: dimensions.imageHeight, objectFit: config.mediaFit ?? "cover" }} /> : node.type === "Black Friday Image" ? "BLACK FRIDAY" : node.content)}</div>, "preview-image-wrap");
   }
   if (node.type === "Carousel") return Array.isArray(config.slides) ? wrap(<PreviewSlideCarousel slides={config.slides} initialSlide={config.initialSlide ?? 0} config={config} onDotSelect={(index) => onSelect(node.id, "dots", index)} />, "preview-carousel-wrap") : children.length ? wrap(<div className="preview-carousel">{renderChildren()}</div>, "preview-carousel-wrap") : !node.content ? wrap(<div className="preview-card-anchor" />, "preview-carousel-wrap") : wrap(<PreviewCarousel content={node.content} config={node.config} />, "preview-carousel-wrap");
   if (node.type === "Timer") return node.config?.enabled === false ? null : wrap(<PreviewTimer content={node.content} config={node.config} />);
