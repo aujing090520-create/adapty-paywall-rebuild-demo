@@ -907,7 +907,7 @@ const zhCopy = {
   "Metrics": "指标", "View in analytics": "在分析中查看", "Duplicate": "复制", "Test on Device": "在设备上测试", "Archive": "归档",
   "State": "状态", "Started at": "创建时间", "Open Builder": "打开构建器",
   "Discard": "放弃更改", "Save": "保存", "Save & publish": "保存并发布", "Add product": "添加产品",
-  "Template": "模板", "Change template": "更换模板", "Layout settings": "布局设置", "Elements": "组件", "Show on device": "在设备上展示",
+  "Template": "模板", "Change template": "更换模板", "Layout settings": "布局设置", "Elements": "组件",
   "Source visual": "源端画面", "Editable structure": "可编辑结构", "Source reference": "源端参考画面",
   "Source preview": "源端画面", "Structure pending": "结构待采集",
   "This template has a captured source visual, but its exact Builder layer tree has not been verified. Editing is intentionally unavailable until the source structure is collected.": "该模板已采集源端画面，但精确的构建器图层树尚未验证；在采集完成前，不开放伪造的编辑能力。",
@@ -1642,7 +1642,6 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
         {appliedTemplate !== null && <div className={`template-context ${isEditableTemplate(templates[appliedTemplate]) ? "observed-tree" : "preview-only"}`}><span>Template</span><strong>{templates[appliedTemplate].title}</strong><small>{isEditableTemplate(templates[appliedTemplate]) ? templateEditableStatus(templates[appliedTemplate]) : "源端已采集预览内容；精确节点树待采集"}</small><button className="secondary" onClick={() => setModal({ kind: "templates" })}><LayoutTemplate size={15} /> Change template</button></div>}
         <div className="builder">
           <aside className="node-panel">
-            <label className="device-toggle unknown-action"><strong>在设备上展示</strong><input type="checkbox" defaultChecked onChange={() => markUnknown(builderBoundary)} /><span>启用</span></label>
             <div className="add-element-wrap"><button className="add-element" onClick={() => setAddElementOpen((open) => !open)}><Plus size={17} /> Add element</button>{addElementOpen && <div className="add-element-menu">{componentCatalog.filter((item) => item !== "Agreement" || (isDocumentTemplate && !builderNodes.some((entry) => entry.type === "Agreement"))).map((item) => <button key={item} onClick={() => addElement(item)}>{item === "Agreement" ? zhCopy[item] : item}</button>)}</div>}</div>
             <div className="node-list">{builderNodes.map((node) => {
               const isDragging = dragState?.id === node.id;
@@ -1957,7 +1956,7 @@ function MediaOverflowEditor({ active, updateNode }) {
   const config = active.config ?? {};
   if (config.mediaType === "Video") return null;
   const scrollable = config.mediaOverflow === "scroll";
-  return <><Field label="图片超出组件时"><div className="segmented">{[["clip", "隐藏超出部分"], ["scroll", "组件内滑动"]].map(([value, label]) => <button type="button" key={value} className={(config.mediaOverflow ?? "clip") === value ? "active" : ""} onClick={() => updateNodeConfig(active, updateNode, { mediaOverflow: value })}>{label}</button>)}</div></Field>{scrollable && <ConfigNumberField label="滑动图片宽度" active={active} updateNode={updateNode} name="mediaScrollWidth" fallback={100} min={100} max={300} suffix="%" />}</>;
+  return <><Field label="图片超出组件时"><div className="segmented">{[["clip", "隐藏超出部分"], ["scroll", "组件内滑动"]].map(([value, label]) => <button type="button" key={value} className={(config.mediaOverflow ?? "clip") === value ? "active" : ""} onClick={() => updateNodeConfig(active, updateNode, { mediaOverflow: value })}>{label}</button>)}</div></Field>{scrollable && <ConfigNumberField label="滑动图片宽度" active={active} updateNode={updateNode} name="mediaScrollWidth" fallback={100} min={10} max={300} suffix="%" />}</>;
 }
 
 function MediaComponentSizeEditor({ active, updateNode }) {
@@ -2522,7 +2521,7 @@ function formatTimer(seconds, format = "hh:mm:ss", separator = ":") {
 function mediaDimensions(config = {}) {
   const width = Math.max(20, Math.min(200, Number(config.mediaWidth) || 100));
   const height = Math.max(20, Math.min(200, Number(config.mediaHeight) || 100));
-  const scrollWidth = Math.max(100, Math.min(300, Number(config.mediaScrollWidth) || 100));
+  const scrollWidth = Math.max(10, Math.min(300, Number(config.mediaScrollWidth) || 100));
   return { width, height, imageWidth: `${10000 / width}%`, imageHeight: `${10000 / height}%`, scrollImageWidth: `${scrollWidth * 100 / width}%` };
 }
 
