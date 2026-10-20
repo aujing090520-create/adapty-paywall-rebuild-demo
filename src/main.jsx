@@ -2563,8 +2563,8 @@ function ScrollImage({ src, alt, dimensions }) {
     };
     const pointerMove = (event) => {
       if (!drag) return;
-      frame.scrollLeft = drag.left - (event.clientX - drag.x);
-      frame.scrollTop = drag.top - (event.clientY - drag.y);
+      frame.scrollLeft = Math.max(0, Math.min(frame.scrollWidth - frame.clientWidth, drag.left - (event.clientX - drag.x)));
+      frame.scrollTop = Math.max(0, Math.min(frame.scrollHeight - frame.clientHeight, drag.top - (event.clientY - drag.y)));
     };
     const pointerEnd = (event) => {
       drag = null;
