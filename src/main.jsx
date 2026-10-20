@@ -1696,7 +1696,8 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
     const timerField = active.type === "Timer" ? exactField(tab === "content" ? ["Start value"] : tab === "style" ? ["时间字体颜色"] : ["Vertical offset"]) : null;
     const productStyle = products && tab === "style" ? exactField(previewFocus.area === "badge" ? ["商品标签颜色", "商品角标颜色", "角标字号"] : previewFocus.area === "price" ? ["通用价格字号", "总价字号", "主价字号"] : ["商品选中框颜色", "名称字号"]) : null;
     const productLayout = products && tab === "layout" ? exactField(["套餐间距", "套餐最小高度", "布局类型"]) : null;
-    const agreementField = active.type === "Agreement" ? exactField(tab === "content" ? previewFocus.area === "links" ? ["服务条款文案"] : previewFocus.area === "copy" ? ["引导文案"] : ["购买前必须勾选"] : tab === "style" ? previewFocus.area === "links" ? ["链接颜色"] : ["文字颜色"] : ["对齐方式"]) : null;
+    const agreementRow = active.type === "Agreement" && tab === "content" && previewFocus.slideIndex != null ? panel.querySelectorAll(".agreement-segment-editor")[previewFocus.slideIndex] : null;
+    const agreementField = active.type === "Agreement" ? tab === "content" ? [...panel.querySelectorAll(".switch-row")].find((field) => field.querySelector("strong")?.textContent?.trim() === "勾选后才能点击按钮") : exactField(tab === "style" ? previewFocus.area === "links" ? ["链接颜色"] : ["文字颜色"] : ["对齐方式"]) : null;
     const carouselContentLabels = { media: ["图片"], headline: ["标题"], caption: ["说明文案"], dots: ["初始展示"] };
     const carouselSection = carousel && tab !== "content" ? panel.querySelector(`[data-inspector-section="${area}"]`) : null;
     const hints = {
@@ -1711,6 +1712,7 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
       ?? timerField
       ?? productStyle
       ?? productLayout
+      ?? agreementRow
       ?? agreementField
       ?? exactField(hints[tab]?.[area] ?? [])
       ?? panel.querySelector(".rich-text-run, .form-field, .product-row-editor, .privilege-row-wrap");
@@ -2090,11 +2092,40 @@ function LinksContent({ active, updateNode, templateLinks, setTemplateLinks }) {
   return <><Field label="Visible link labels" required><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><p className="property-copy">服务条款、隐私政策与恢复购买的跳转逻辑未在当前预览中执行；链接 URL 不显示为无反馈输入。</p></>;
 }
 
+function agreementSegmentsFor(node) {
+  if (Array.isArray(node.config?.segments)) return node.config.segments;
+  return [
+    { id: "intro", type: "text", text: `${node.content || "我已阅读并同意"} ` },
+    { id: "terms", type: "link", text: node.config?.termsLabel ?? "服务条款", url: node.config?.termsUrl ?? "" },
+    { id: "separator", type: "text", text: "和" },
+    { id: "privacy", type: "link", text: node.config?.privacyLabel ?? "隐私政策", url: node.config?.privacyUrl ?? "" },
+  ];
+}
+
 function AgreementContent({ active, updateNode }) {
   const config = active.config ?? {};
-  const urlField = (label, name) => <Field label={label} required><input type="url" placeholder="https://" value={config[name] ?? ""} aria-invalid={Boolean(config[name] && !safeButtonUrl(config[name]))} onChange={(event) => updateNodeConfig(active, updateNode, { [name]: event.target.value })} /></Field>;
+  const segments = agreementSegmentsFor(active);
+  const commit = (next) => updateNodeConfig(active, updateNode, { segments: next });
+  const patch = (index, change) => commit(segments.map((segment, position) => position === index ? { ...segment, ...change } : segment));
+  const move = (index, direction) => { const next = [...segments]; const other = index + direction; [next[index], next[other]] = [next[other], next[index]]; commit(next); };
+  const add = (type) => commit([...segments, { id: crypto.randomUUID(), type, text: "", ...(type === "link" ? { url: "" } : {}) }]);
   const showCheckbox = config.showCheckbox !== false;
-  return <><Field label="引导文案" required><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><Field label="服务条款文案" required><input value={config.termsLabel ?? "服务条款"} onChange={(event) => updateNodeConfig(active, updateNode, { termsLabel: event.target.value })} /></Field>{urlField("服务条款链接", "termsUrl")}<Field label="隐私政策文案" required><input value={config.privacyLabel ?? "隐私政策"} onChange={(event) => updateNodeConfig(active, updateNode, { privacyLabel: event.target.value })} /></Field>{urlField("隐私政策链接", "privacyUrl")}<label className="switch-row"><strong>显示勾选框</strong><input type="checkbox" checked={showCheckbox} onChange={(event) => updateNodeConfig(active, updateNode, { showCheckbox: event.target.checked, ...(!event.target.checked ? { required: false } : {}) })} /><span>{showCheckbox ? "开启" : "关闭"}</span></label><label className="switch-row"><strong>勾选后才能点击按钮</strong><input type="checkbox" checked={showCheckbox && config.required !== false} disabled={!showCheckbox} onChange={(event) => updateNodeConfig(active, updateNode, { required: event.target.checked })} /><span>{showCheckbox && config.required !== false ? "开启" : "关闭"}</span></label></>;
+  return <>
+    <h4>协议文案片段</h4>
+    <div className="agreement-segment-list">{segments.map((segment, index) => <section className="agreement-segment-editor" key={segment.id}>
+      <header><strong>第 {index + 1} 段 · {segment.type === "link" ? "链接" : "普通文字"}</strong><div>
+        <button type="button" title="上移" aria-label={`上移第 ${index + 1} 段`} disabled={index === 0} onClick={() => move(index, -1)}>↑</button>
+        <button type="button" title="下移" aria-label={`下移第 ${index + 1} 段`} disabled={index === segments.length - 1} onClick={() => move(index, 1)}>↓</button>
+        <button type="button" title="删除" aria-label={`删除第 ${index + 1} 段`} disabled={segments.length === 1} onClick={() => commit(segments.filter((_, position) => position !== index))}><X size={15} /></button>
+      </div></header>
+      <Field label="片段类型"><select value={segment.type} onChange={(event) => patch(index, { type: event.target.value })}><option value="text">普通文字</option><option value="link">可点击链接</option></select></Field>
+      <Field label="显示文案" required><input value={segment.text} onChange={(event) => patch(index, { text: event.target.value })} /></Field>
+      {segment.type === "link" && <Field label="跳转链接" required><input type="url" placeholder="https://" value={segment.url ?? ""} aria-invalid={Boolean(segment.url && !safeButtonUrl(segment.url))} onChange={(event) => patch(index, { url: event.target.value })} /></Field>}
+    </section>)}</div>
+    <div className="agreement-segment-actions"><button type="button" className="text-action" onClick={() => add("text")}><Plus size={15} /> 添加文字</button><button type="button" className="text-action" onClick={() => add("link")}><Plus size={15} /> 添加链接</button></div>
+    <label className="switch-row"><strong>显示勾选框</strong><input type="checkbox" checked={showCheckbox} onChange={(event) => updateNodeConfig(active, updateNode, { showCheckbox: event.target.checked, ...(!event.target.checked ? { required: false } : {}) })} /><span>{showCheckbox ? "开启" : "关闭"}</span></label>
+    <label className="switch-row"><strong>勾选后才能点击按钮</strong><input type="checkbox" checked={showCheckbox && config.required !== false} disabled={!showCheckbox} onChange={(event) => updateNodeConfig(active, updateNode, { required: event.target.checked })} /><span>{showCheckbox && config.required !== false ? "开启" : "关闭"}</span></label>
+  </>;
 }
 
 function AgreementStyle({ active, updateNode }) {
@@ -2757,17 +2788,18 @@ function HelloTalkPaywall({ variant, nodes, activeNode, onSelect, onButtonAction
   const Action = ({ dragProps, reorderHandle } = {}) => interactive ? <button {...dragProps} className={`${nodeClass("purchase", "ht-action")} ${actionNeedsAgreement ? "ht-action-gated" : ""} ${dragProps?.className ?? ""}`} aria-disabled={actionNeedsAgreement} style={actionStyle} onClick={(event) => { select("purchase")(event); if (actionNeedsAgreement) { setAgreementMessage("请先勾选同意协议"); return; } onButtonAction?.(nodeById("purchase"), visiblePlans[selectedPlan]); }}>{reorderHandle}{actionCopy}</button> : <div className="ht-action" style={actionStyle}>{actionCopy}</div>;
   const Agreement = ({ entry, dragProps, reorderHandle }) => {
     const config = entry.config ?? {};
-    const openAgreementLink = (event, label, value) => {
+    const segments = agreementSegmentsFor(entry);
+    const openAgreementLink = (event, segment, index) => {
       event.stopPropagation();
       if (!interactive) return;
-      onSelect?.(entry.id, "links");
-      const url = safeButtonUrl(value ?? "");
+      onSelect?.(entry.id, "links", index);
+      const url = safeButtonUrl(segment.url ?? "");
       if (url) window.open(url, "_blank", "noopener,noreferrer");
-      else setAgreementMessage(`请先配置${label}链接`);
+      else setAgreementMessage(`请先配置${segment.text || "此处"}链接`);
     };
     return <div {...dragProps} className={`${nodeClass(entry.id, "ht-agreement")} ${dragProps?.className ?? ""}`} style={{ ...styleFor(entry.id), "--agreement-link-color": config.linkColor ?? "#3069d3", "--agreement-check-color": config.checkColor ?? "#1677ff" }} onClick={select(entry.id)}>
       {reorderHandle}
-      <div className={`ht-agreement-line agreement-align-${config.align ?? "left"} ${config.showCheckbox === false ? "no-checkbox" : ""}`}>{config.showCheckbox !== false && <input type="checkbox" id={`ht-agreement-${entry.id}`} aria-label="同意服务条款与隐私政策" checked={agreementChecked} disabled={!interactive} onChange={(event) => { setAgreementChecked(event.target.checked); setAgreementMessage(""); }} />}<span className="ht-agreement-copy"><label htmlFor={config.showCheckbox !== false ? `ht-agreement-${entry.id}` : undefined} data-inspector-area="copy">{entry.content || "我已阅读并同意"}</label> <button type="button" data-inspector-area="links" disabled={!interactive} onClick={(event) => openAgreementLink(event, "服务条款", config.termsUrl)}>{config.termsLabel ?? "服务条款"}</button><span>和</span><button type="button" data-inspector-area="links" disabled={!interactive} onClick={(event) => openAgreementLink(event, "隐私政策", config.privacyUrl)}>{config.privacyLabel ?? "隐私政策"}</button></span></div>
+      <div className={`ht-agreement-line agreement-align-${config.align ?? "left"} ${config.showCheckbox === false ? "no-checkbox" : ""}`}>{config.showCheckbox !== false && <input type="checkbox" id={`ht-agreement-${entry.id}`} aria-label="同意协议" checked={agreementChecked} disabled={!interactive} onChange={(event) => { setAgreementChecked(event.target.checked); setAgreementMessage(""); }} />}<span className="ht-agreement-copy">{segments.map((segment, index) => segment.type === "link" ? <button type="button" key={segment.id} data-inspector-area="links" data-inspector-row={index} disabled={!interactive} onClick={(event) => openAgreementLink(event, segment, index)}>{segment.text}</button> : <span key={segment.id} data-inspector-area="copy" data-inspector-row={index} onClick={(event) => { if (!interactive) return; event.stopPropagation(); onSelect?.(entry.id, "copy", index); }}>{segment.text}</span>)}</span></div>
       {agreementMessage && <p className="ht-agreement-message" role="alert">{agreementMessage}</p>}
     </div>;
   };

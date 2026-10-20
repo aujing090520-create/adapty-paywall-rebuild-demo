@@ -615,6 +615,15 @@ textarea { min-height: 80px; resize: vertical; }
 .product-row-editor > header .icon { width: 28px; height: 28px; }
 .product-row-editor .split-fields { gap: 8px; }
 .product-row-editor .split-fields > * { min-width: 0; }
+.agreement-segment-list { border-top: 1px solid #e5e5eb; }
+.agreement-segment-editor { padding: 12px 0; border-bottom: 1px solid #e5e5eb; }
+.agreement-segment-editor > header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; color: #34343d; font-size: 11px; }
+.agreement-segment-editor > header > div { display: flex; flex: none; gap: 3px; }
+.agreement-segment-editor > header button { width: 25px; height: 25px; display: grid; place-items: center; padding: 0; border: 1px solid #dedee5; border-radius: 4px; background: #fff; color: #5b5b66; cursor: pointer; }
+.agreement-segment-editor > header button:disabled { opacity: .38; cursor: default; }
+.agreement-segment-editor .form-field { min-width: 0; }
+.agreement-segment-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 16px; }
+.agreement-segment-actions .text-action { display: inline-flex; align-items: center; gap: 4px; }
 .product-optional-field { margin-top: 8px; }
 .product-optional-field .switch-row { margin-bottom: 6px; }
 .product-optional-field > input { width: 100%; }
@@ -1045,7 +1054,7 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-agreement-line.agreement-align-right { justify-content: flex-end; text-align: right; }
 .ht-agreement input[type="checkbox"] { width: 4.2cqw; min-width: 0; height: 4.2cqw; min-height: 0; padding: 0; margin: 0; accent-color: var(--agreement-check-color, #1677ff); cursor: pointer; }
 .ht-agreement input[type="checkbox"]:focus-visible, .ht-agreement-copy button:focus-visible { outline: 2px solid #6936e9; outline-offset: 2px; }
-.ht-agreement-copy { min-width: 0; overflow-wrap: anywhere; }
+.ht-agreement-copy { min-width: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
 .ht-agreement-copy label { cursor: pointer; }
 .ht-agreement-copy button { display: inline; padding: 0; border: 0; background: transparent; color: var(--agreement-link-color, #3069d3); text-decoration: underline; text-underline-offset: .4cqw; }
 .ht-agreement-message { margin: .8cqw 0 0 6.3cqw; color: #d54535; font-size: 2.8cqw; }
