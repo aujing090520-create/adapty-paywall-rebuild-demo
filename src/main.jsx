@@ -1961,7 +1961,7 @@ function MediaOverflowEditor({ active, updateNode }) {
 }
 
 function MediaComponentSizeEditor({ active, updateNode }) {
-  return <><h4>组件尺寸</h4><div className="split-fields"><ConfigNumberField label="组件宽度" active={active} updateNode={updateNode} name="mediaWidth" fallback={100} min={20} max={100} suffix="%" /><ConfigNumberField label="组件高度" active={active} updateNode={updateNode} name="mediaHeight" fallback={100} min={20} max={200} suffix="%" /></div></>;
+  return <><h4>组件尺寸</h4><div className="split-fields"><ConfigNumberField label="组件宽度" active={active} updateNode={updateNode} name="mediaWidth" fallback={100} min={20} max={200} suffix="%" /><ConfigNumberField label="组件高度" active={active} updateNode={updateNode} name="mediaHeight" fallback={100} min={20} max={200} suffix="%" /></div></>;
 }
 
 function ElementLayoutEditor({ active, updateNode, showHeight = false }) {
@@ -2519,10 +2519,19 @@ function formatTimer(seconds, format = "hh:mm:ss", separator = ":") {
   return `${String(hours).padStart(2, "0")}${separator}${String(minutes).padStart(2, "0")}${separator}${String(remainingSeconds).padStart(2, "0")}`;
 }
 
+function mediaDimensions(config = {}) {
+  const width = Math.max(20, Math.min(200, Number(config.mediaWidth) || 100));
+  const height = Math.max(20, Math.min(200, Number(config.mediaHeight) || 100));
+  const scrollWidth = Math.max(100, Math.min(300, Number(config.mediaScrollWidth) || 100));
+  return { width, height, imageWidth: `${10000 / width}%`, imageHeight: `${10000 / height}%`, scrollImageWidth: `${scrollWidth * 100 / width}%` };
+}
+
 function HeroMediaLayer({ config = {}, sourceSrc = "" }) {
   const scrollable = config.mediaOverflow === "scroll" && config.mediaType !== "Video";
   const src = config.mediaState === "removed" ? "" : config.mediaState === "custom" ? config.mediaSrc : sourceSrc;
-  if (scrollable && src) return <div className="ht-hero-media ht-hero-media-scroll" data-inspector-area="media"><img src={src} alt="" style={{ width: `${Math.max(100, Math.min(300, Number(config.mediaScrollWidth) || 100))}%` }} /></div>;
+  const dimensions = mediaDimensions(config);
+  const resized = dimensions.width !== 100 || dimensions.height !== 100;
+  if ((scrollable || resized) && src && config.mediaType !== "Video") return <div className={`ht-hero-media ht-hero-media-frame${scrollable ? " ht-hero-media-scroll" : ""}`} data-inspector-area="media" style={{ backgroundColor: config.mediaBackgroundColor ?? "#f5f5f5" }}><img src={src} alt="" style={scrollable ? { width: dimensions.scrollImageWidth, height: "auto" } : { width: dimensions.imageWidth, height: dimensions.imageHeight, objectFit: config.mediaFit ?? "cover" }} /></div>;
   if (config.mediaState !== "custom" || !config.mediaSrc) return null;
   if (config.mediaType === "Video") return <video className="ht-hero-media" src={config.mediaSrc} autoPlay loop muted playsInline style={{ objectFit: config.mediaFit ?? "cover" }} />;
   return <img className="ht-hero-media" src={config.mediaSrc} alt="" style={{ objectFit: config.mediaFit ?? "cover" }} />;
@@ -2588,8 +2597,9 @@ function HelloTalkPaywall({ variant, nodes, activeNode, onSelect, onButtonAction
   const heroStyleFor = (id) => {
     const config = configFor(id);
     const numeric = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
-    const heightScale = config.mediaHeight === "" ? 1 : numeric(config.mediaHeight, 100) / 100;
-    const width = Math.max(20, Math.min(100, Number(config.mediaWidth) || 100));
+    const dimensions = mediaDimensions(config);
+    const heightScale = dimensions.height / 100;
+    const width = dimensions.width;
     return {
       ...styleFor(id),
       ...(config.mediaWidth !== undefined ? { width: `${width}%`, alignSelf: "center" } : {}),
@@ -2599,8 +2609,8 @@ function HelloTalkPaywall({ variant, nodes, activeNode, onSelect, onButtonAction
       ...(config.rounded ? { borderRadius: `${config.radius ?? 0}px` } : {}),
       ...Object.fromEntries(["Top", "Right", "Bottom", "Left"].map((edge) => [`--media-inset-${edge.toLowerCase()}`, `${Math.max(0, numeric(config[`padding${edge}`], 0))}px`])),
       "--hero-height-scale": `${heightScale}`,
-      "--hero-copy-left": `${numeric(config.copyLeft, 12)}%`,
-      "--hero-copy-bottom": `${numeric(config.copyBottom, 15)}%`,
+      "--hero-copy-left": `${((width - 100) / 2 + numeric(config.copyLeft, 12)) * 100 / width}%`,
+      "--hero-copy-bottom": `${(heightScale * 100 - 100 + numeric(config.copyBottom, 15)) / heightScale}%`,
       "--hero-copy-align": config.copyAlign ?? "left",
       "--hero-title-color": config.copyTitleColor ?? "#ffc524",
       "--hero-title-prefix-color": config.copyPrefixColor ?? "#ffffff",
@@ -2610,8 +2620,10 @@ function HelloTalkPaywall({ variant, nodes, activeNode, onSelect, onButtonAction
     };
   };
   const mediaClass = (id) => {
-    const state = configFor(id).mediaState;
-    return `${state === "custom" ? "media-custom" : state === "removed" ? "media-removed" : ""} ${configFor(id).mediaOverflow === "scroll" && configFor(id).mediaType !== "Video" ? "media-scroll" : ""}`.trim();
+    const config = configFor(id);
+    const state = config.mediaState;
+    const dimensions = mediaDimensions(config);
+    return [state === "custom" ? "media-custom" : state === "removed" ? "media-removed" : "", config.mediaOverflow === "scroll" && config.mediaType !== "Video" ? "media-scroll" : "", config.mediaType !== "Video" && (dimensions.width !== 100 || dimensions.height !== 100) ? "media-resized" : ""].filter(Boolean).join(" ");
   };
   const productConfig = nodeById("products")?.config ?? {};
   const agreementNode = renderedNodes.find((entry) => entry.type === "Agreement");
@@ -2857,7 +2869,7 @@ function HelloTalkPaywall({ variant, nodes, activeNode, onSelect, onButtonAction
     if (id === "offer-card") return <section className={nodeClass(id, "ht-recovery-sheet")} style={styleFor(id)} onClick={select(id)}><span className="ht-sheet-close">×</span>{renderChildren(id)}</section>;
     if (id === "sku-card") return <section className={nodeClass(id, "ht-sku-sheet")} style={styleFor(id)} onClick={select(id)}><span className="ht-sheet-close">×</span>{renderChildren(id)}</section>;
     if (id === "hero-image") {
-      if (variant === "blue-privilege") return heroConfig.bannerEnabled !== false && <section className={nodeClass(id, "ht-blue-hero") + " " + mediaClass(id)} style={heroStyleFor(id)} onClick={select(id)}><HeroMediaLayer config={heroConfig} sourceSrc="/figma-paywall-assets/blue-banner.png" /><div className="ht-source-art" /><button className="ht-back" type="button" aria-label="返回" onClick={(event) => { event.stopPropagation(); if (hasRetention) onOpenRetention?.(); }}>‹</button>{heroConfig.overlayImageEnabled !== false && <img data-inspector-area="overlay" className={"ht-hero-overlay-image" + (canDragHeroCopy ? " can-drag" : "")} src={heroConfig.overlayImageSrc || "/ht-vip-badge.svg"} alt="VIP 标识" style={{ left: `${Number(heroConfig.overlayImageLeft ?? 8)}%`, top: `${Number(heroConfig.overlayImageTop ?? 27)}%`, width: `${Number(heroConfig.overlayImageWidth ?? 14)}%` }} {...heroOverlayProps} />}<div className={"ht-blue-copy " + (canDragHeroCopy ? "can-drag" : "")} {...heroCopyProps}><h1 data-inspector-area="headline">{titleParts.prefix && <b>{titleParts.prefix}</b>}{titleParts.suffix}</h1><p data-inspector-area="caption">{caption}</p></div></section>;
+      if (variant === "blue-privilege") { const dimensions = mediaDimensions(heroConfig); return heroConfig.bannerEnabled !== false && <section className={nodeClass(id, "ht-blue-hero") + " " + mediaClass(id)} style={heroStyleFor(id)} onClick={select(id)}><HeroMediaLayer config={heroConfig} sourceSrc="/figma-paywall-assets/blue-banner.png" /><div className="ht-source-art" /><button className="ht-back" type="button" aria-label="返回" onClick={(event) => { event.stopPropagation(); if (hasRetention) onOpenRetention?.(); }}>‹</button>{heroConfig.overlayImageEnabled !== false && <img data-inspector-area="overlay" className={"ht-hero-overlay-image" + (canDragHeroCopy ? " can-drag" : "")} src={heroConfig.overlayImageSrc || "/ht-vip-badge.svg"} alt="VIP 标识" style={{ left: `${((dimensions.width - 100) / 2 + Number(heroConfig.overlayImageLeft ?? 8)) * 100 / dimensions.width}%`, top: `${Number(heroConfig.overlayImageTop ?? 27) * 100 / dimensions.height}%`, width: `${Number(heroConfig.overlayImageWidth ?? 14) * 100 / dimensions.width}%` }} {...heroOverlayProps} />}<div className={"ht-blue-copy " + (canDragHeroCopy ? "can-drag" : "")} {...heroCopyProps}><h1 data-inspector-area="headline">{titleParts.prefix && <b>{titleParts.prefix}</b>}{titleParts.suffix}</h1><p data-inspector-area="caption">{caption}</p></div></section>; }
       if (variant === "membership-plans") return <section className={nodeClass(id, "ht-member-hero") + " " + mediaClass(id)} style={heroStyleFor(id)} onClick={select(id)}><HeroMediaLayer config={heroConfig} sourceSrc="/figma-paywall-assets/member-hero.png" /><div className="ht-source-art"><div className="ht-eye-particles"><i /><i /><i /><i /></div><div className="ht-phone-illustration"><b>Visit Info</b><span>Visitors　Visited　Liked</span><div className="ht-phone-rows">{["Peggie", "Nilson", "Cookie", "Hampton"].map((name) => <p key={name}><i /><strong>{name}</strong><small>is <b>1km</b> away from you</small><em>Say Hi</em></p>)}</div></div></div></section>;
       if (variant === "payment-recovery") return <div className={nodeClass(id, "ht-offer-bundle") + " " + mediaClass(id)} style={heroStyleFor(id)} onClick={select(id)}><HeroMediaLayer config={heroConfig} sourceSrc="/figma-paywall-assets/recovery-bg.png" /><div className="ht-source-art"><span>30%<br />OFF</span><SoccerBall /></div></div>;
       return <section className={nodeClass(id, "ht-sku-promo") + " " + mediaClass(id)} style={heroStyleFor(id)} onClick={select(id)}><HeroMediaLayer config={heroConfig} sourceSrc="/figma-paywall-assets/sku-art-alt.png" /><div className="ht-source-art"><i>セール</i><b>VIP</b></div>{skuOverlayIds.map((copyId) => <React.Fragment key={copyId}>{renderSkuCopy(copyId)}</React.Fragment>)}</section>;
@@ -2999,13 +3011,14 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, on
   if (node.sourcePending) return wrap(<p className="preview-boundary">Source layer confirmed; field content pending</p>, "preview-copy");
   if (["Hero Image", "Hero Video"].includes(node.type)) {
     const config = node.config ?? {};
+    const dimensions = mediaDimensions(config);
     const insets = ["Top", "Right", "Bottom", "Left"].map((edge) => Math.max(0, Number(config[`padding${edge}`]) || 0));
     const padding = insets.map((value) => `${value}px`).join(" ");
-    const height = 104 * Math.max(1, Number(config.mediaHeight) || 100) / 100;
+    const height = 104 * dimensions.height / 100;
     const media = config.mediaState === "removed" ? null : config.mediaSrc
-      ? config.mediaType === "Video" ? <video src={config.mediaSrc} autoPlay loop muted playsInline style={{ objectFit: config.mediaFit ?? "cover" }} /> : <img src={config.mediaSrc} alt={node.label || ""} style={config.mediaOverflow === "scroll" ? { width: `${Math.max(100, Math.min(300, Number(config.mediaScrollWidth) || 100))}%` } : { objectFit: config.mediaFit ?? "cover" }} />
+      ? config.mediaType === "Video" ? <video src={config.mediaSrc} autoPlay loop muted playsInline style={{ objectFit: config.mediaFit ?? "cover" }} /> : <img src={config.mediaSrc} alt={node.label || ""} style={config.mediaOverflow === "scroll" ? { width: dimensions.scrollImageWidth, height: "auto" } : { width: dimensions.imageWidth, height: dimensions.imageHeight, objectFit: config.mediaFit ?? "cover" }} />
       : <span>{node.type === "Hero Video" || config.mediaType === "Video" ? "VIDEO" : node.content === "knowledge" ? "✦" : ""}</span>;
-    return wrap(<div className={`preview-media visual-${node.content}`} style={{ width: `${Math.max(20, Math.min(100, Number(config.mediaWidth) || 100))}%`, marginInline: "auto", height: `${height}px`, padding, transform: config.offsetY ? `translateY(${config.offsetY}px)` : undefined, borderRadius: config.rounded ? `${config.radius ?? 0}px` : undefined, backgroundColor: config.mediaBackgroundColor ?? "#f5f5f5" }}><div className={`preview-media-art${config.mediaSrc ? " has-media" : ""}${config.mediaOverflow === "scroll" && config.mediaType !== "Video" ? " media-scroll" : ""}`}>{media}</div></div>, "preview-hero");
+    return wrap(<div className={`preview-media visual-${node.content}`} style={{ width: `${dimensions.width}%`, marginInline: "auto", height: `${height}px`, padding, transform: config.offsetY ? `translateY(${config.offsetY}px)` : undefined, borderRadius: config.rounded ? `${config.radius ?? 0}px` : undefined, backgroundColor: config.mediaBackgroundColor ?? "#f5f5f5" }}><div className={`preview-media-art${config.mediaSrc ? " has-media" : ""}${config.mediaOverflow === "scroll" && config.mediaType !== "Video" ? " media-scroll" : ""}`}>{media}</div></div>, "preview-hero");
   }
   if (node.type === "Stars") return wrap(<div className="preview-stars">{node.content || "★★★★★"}</div>);
   if (node.type === "Discount") return wrap(<h2>{node.content || "Discount"}</h2>, "preview-headline");
@@ -3021,9 +3034,9 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, on
   if (node.type === "App Icon") return wrap(<div className="preview-app-icon">✦</div>, "preview-app-icon-wrap");
   if (isImageLayer) {
     const config = node.config ?? {};
-    const scale = Number(config.mediaHeight);
-    const height = Number.isFinite(scale) && scale > 0 ? `${92 * scale / 100}px` : undefined;
-    return wrap(<div className={`preview-image${config.mediaOverflow === "scroll" && config.mediaType !== "Video" ? " media-scroll" : ""}`} style={{ width: `${Math.max(20, Math.min(100, Number(config.mediaWidth) || 100))}%`, marginInline: "auto", height, background: config.mediaBackgroundColor, borderRadius: config.rounded ? `${config.radius ?? 8}px` : undefined, padding: ["Top", "Right", "Bottom", "Left"].map((edge) => `${Math.max(0, Number(config[`padding${edge}`]) || 0)}px`).join(" "), transform: config.offsetY ? `translateY(${config.offsetY}px)` : undefined }}>{config.mediaState !== "removed" && (config.mediaSrc ? <img src={config.mediaSrc} alt={node.label || ""} style={config.mediaOverflow === "scroll" ? { width: `${Math.max(100, Math.min(300, Number(config.mediaScrollWidth) || 100))}%` } : { objectFit: config.mediaFit ?? "cover" }} /> : node.type === "Black Friday Image" ? "BLACK FRIDAY" : node.content)}</div>, "preview-image-wrap");
+    const dimensions = mediaDimensions(config);
+    const height = `${92 * dimensions.height / 100}px`;
+    return wrap(<div className={`preview-image${config.mediaSrc ? " has-media" : ""}${config.mediaOverflow === "scroll" && config.mediaType !== "Video" ? " media-scroll" : ""}`} style={{ width: `${dimensions.width}%`, marginInline: "auto", height, background: config.mediaBackgroundColor, borderRadius: config.rounded ? `${config.radius ?? 8}px` : undefined, padding: ["Top", "Right", "Bottom", "Left"].map((edge) => `${Math.max(0, Number(config[`padding${edge}`]) || 0)}px`).join(" "), transform: config.offsetY ? `translateY(${config.offsetY}px)` : undefined }}>{config.mediaState !== "removed" && (config.mediaSrc ? <img src={config.mediaSrc} alt={node.label || ""} style={config.mediaOverflow === "scroll" ? { width: dimensions.scrollImageWidth, height: "auto" } : { width: dimensions.imageWidth, height: dimensions.imageHeight, objectFit: config.mediaFit ?? "cover" }} /> : node.type === "Black Friday Image" ? "BLACK FRIDAY" : node.content)}</div>, "preview-image-wrap");
   }
   if (node.type === "Carousel") return Array.isArray(config.slides) ? wrap(<PreviewSlideCarousel slides={config.slides} initialSlide={config.initialSlide ?? 0} config={config} onDotSelect={(index) => onSelect(node.id, "dots", index)} />, "preview-carousel-wrap") : children.length ? wrap(<div className="preview-carousel">{renderChildren()}</div>, "preview-carousel-wrap") : !node.content ? wrap(<div className="preview-card-anchor" />, "preview-carousel-wrap") : wrap(<PreviewCarousel content={node.content} config={node.config} />, "preview-carousel-wrap");
   if (node.type === "Timer") return node.config?.enabled === false ? null : wrap(<PreviewTimer content={node.content} config={node.config} />);
