@@ -1955,21 +1955,25 @@ function HeroStyleEditor({ active, updateNode }) {
 function MediaOverflowEditor({ active, updateNode }) {
   const config = active.config ?? {};
   if (config.mediaType === "Video") return null;
-  const scrollable = config.mediaOverflow === "scroll";
-  return <><Field label="图片超出组件时"><div className="segmented">{[["clip", "隐藏超出部分"], ["scroll", "组件内滑动"]].map(([value, label]) => <button type="button" key={value} className={(config.mediaOverflow ?? "clip") === value ? "active" : ""} onClick={() => updateNodeConfig(active, updateNode, { mediaOverflow: value })}>{label}</button>)}</div></Field>{scrollable && <ConfigNumberField label="滑动图片宽度" active={active} updateNode={updateNode} name="mediaScrollWidth" fallback={100} min={10} max={300} suffix="%" />}</>;
+  return <Field label="图片超出组件时"><div className="segmented">{[["clip", "隐藏超出部分"], ["scroll", "组件内滑动"]].map(([value, label]) => <button type="button" key={value} className={(config.mediaOverflow ?? "clip") === value ? "active" : ""} onClick={() => updateNodeConfig(active, updateNode, { mediaOverflow: value })}>{label}</button>)}</div></Field>;
 }
 
 function MediaComponentSizeEditor({ active, updateNode }) {
   return <><h4>组件尺寸</h4><div className="split-fields"><ConfigNumberField label="组件宽度" active={active} updateNode={updateNode} name="mediaWidth" fallback={100} min={20} max={200} suffix="%" /><ConfigNumberField label="组件高度" active={active} updateNode={updateNode} name="mediaHeight" fallback={100} min={20} max={200} suffix="%" /></div></>;
 }
 
+function MediaImageSizeEditor({ active, updateNode }) {
+  if (active.config?.mediaType === "Video") return null;
+  return <><h4>图片尺寸</h4><div className="split-fields"><ConfigNumberField label="图片宽度" active={active} updateNode={updateNode} name="mediaImageWidth" fallback={active.config?.mediaScrollWidth ?? 100} min={10} max={1000} suffix="%" /><ConfigNumberField label="图片高度" active={active} updateNode={updateNode} name="mediaImageHeight" fallback={100} min={10} max={1000} suffix="%" /></div></>;
+}
+
 function ElementLayoutEditor({ active, updateNode, showHeight = false }) {
-  return <>{showHeight && <><MediaComponentSizeEditor active={active} updateNode={updateNode} /><MediaOverflowEditor active={active} updateNode={updateNode} /></>}<Field label="Margin"><ConfigInsets active={active} updateNode={updateNode} /></Field><ConfigNumberField label="Vertical offset" active={active} updateNode={updateNode} name="offsetY" fallback={0} min={-120} max={120} suffix="px" /></>;
+  return <>{showHeight && <><MediaComponentSizeEditor active={active} updateNode={updateNode} /><MediaImageSizeEditor active={active} updateNode={updateNode} /><MediaOverflowEditor active={active} updateNode={updateNode} /></>}<Field label="Margin"><ConfigInsets active={active} updateNode={updateNode} /></Field><ConfigNumberField label="Vertical offset" active={active} updateNode={updateNode} name="offsetY" fallback={0} min={-120} max={120} suffix="px" /></>;
 }
 
 function HeroLayoutEditor({ active, updateNode }) {
   const config = active.config ?? {};
-  return <><MediaComponentSizeEditor active={active} updateNode={updateNode} /><MediaOverflowEditor active={active} updateNode={updateNode} /><label className="switch-row"><input type="checkbox" checked={config.rounded === true} onChange={(event) => updateNodeConfig(active, updateNode, { rounded: event.target.checked })} /><span>{config.rounded ? "On" : "Off"}</span><strong>Rounded rectangle</strong></label>{config.rounded && <ConfigNumberField label="Corner radius" active={active} updateNode={updateNode} name="radius" fallback={0} min={0} max={64} suffix="px" />}<HeroInsetEditor active={active} updateNode={updateNode} /><HeroOffsetEditor active={active} updateNode={updateNode} />{(config.copyPrefix !== undefined || config.copySuffix !== undefined || config.copyTitle !== undefined) && <><section className="embedded-copy-editor"><h4>叠加图片位置</h4><div className="split-fields"><ConfigNumberField label="距左侧" active={active} updateNode={updateNode} name="overlayImageLeft" fallback={8} min={0} max={100} suffix="%" /><ConfigNumberField label="距顶部" active={active} updateNode={updateNode} name="overlayImageTop" fallback={27} min={0} max={100} suffix="%" /></div><ConfigNumberField label="图片宽度" active={active} updateNode={updateNode} name="overlayImageWidth" fallback={14} min={1} max={100} suffix="%" /></section><section className="embedded-copy-editor"><h4>文案位置</h4><div className="split-fields"><ConfigNumberField label="距左侧" active={active} updateNode={updateNode} name="copyLeft" fallback={12} min={0} max={100} suffix="%" /><ConfigNumberField label="距底部" active={active} updateNode={updateNode} name="copyBottom" fallback={15} min={0} max={100} suffix="%" /></div><Field label="Align"><select value={config.copyAlign ?? "left"} onChange={(event) => updateNodeConfig(active, updateNode, { copyAlign: event.target.value })}><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></Field></section></>}</>;
+  return <><MediaComponentSizeEditor active={active} updateNode={updateNode} /><MediaImageSizeEditor active={active} updateNode={updateNode} /><MediaOverflowEditor active={active} updateNode={updateNode} /><label className="switch-row"><input type="checkbox" checked={config.rounded === true} onChange={(event) => updateNodeConfig(active, updateNode, { rounded: event.target.checked })} /><span>{config.rounded ? "On" : "Off"}</span><strong>Rounded rectangle</strong></label>{config.rounded && <ConfigNumberField label="Corner radius" active={active} updateNode={updateNode} name="radius" fallback={0} min={0} max={64} suffix="px" />}<HeroInsetEditor active={active} updateNode={updateNode} /><HeroOffsetEditor active={active} updateNode={updateNode} />{(config.copyPrefix !== undefined || config.copySuffix !== undefined || config.copyTitle !== undefined) && <><section className="embedded-copy-editor"><h4>叠加图片位置</h4><div className="split-fields"><ConfigNumberField label="距左侧" active={active} updateNode={updateNode} name="overlayImageLeft" fallback={8} min={0} max={100} suffix="%" /><ConfigNumberField label="距顶部" active={active} updateNode={updateNode} name="overlayImageTop" fallback={27} min={0} max={100} suffix="%" /></div><ConfigNumberField label="图片宽度" active={active} updateNode={updateNode} name="overlayImageWidth" fallback={14} min={1} max={100} suffix="%" /></section><section className="embedded-copy-editor"><h4>文案位置</h4><div className="split-fields"><ConfigNumberField label="距左侧" active={active} updateNode={updateNode} name="copyLeft" fallback={12} min={0} max={100} suffix="%" /><ConfigNumberField label="距底部" active={active} updateNode={updateNode} name="copyBottom" fallback={15} min={0} max={100} suffix="%" /></div><Field label="Align"><select value={config.copyAlign ?? "left"} onChange={(event) => updateNodeConfig(active, updateNode, { copyAlign: event.target.value })}><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></Field></section></>}</>;
 }
 
 function ButtonStyleEditor({ active, updateNode, productOwnedColors = false }) {
@@ -2521,16 +2525,17 @@ function formatTimer(seconds, format = "hh:mm:ss", separator = ":") {
 function mediaDimensions(config = {}) {
   const width = Math.max(20, Math.min(200, Number(config.mediaWidth) || 100));
   const height = Math.max(20, Math.min(200, Number(config.mediaHeight) || 100));
-  const scrollWidth = Math.max(10, Math.min(300, Number(config.mediaScrollWidth) || 100));
-  return { width, height, imageWidth: `${10000 / width}%`, imageHeight: `${10000 / height}%`, scrollImageWidth: `${scrollWidth * 100 / width}%` };
+  const imageScaleWidth = Math.max(10, Number(config.mediaImageWidth ?? config.mediaScrollWidth) || 100);
+  const imageScaleHeight = Math.max(10, Number(config.mediaImageHeight) || 100);
+  return { width, height, imageScaleWidth, imageScaleHeight, imageWidth: `${imageScaleWidth * 100 / width}%`, imageHeight: `${imageScaleHeight * 100 / height}%` };
 }
 
 function HeroMediaLayer({ config = {}, sourceSrc = "" }) {
   const scrollable = config.mediaOverflow === "scroll" && config.mediaType !== "Video";
   const src = config.mediaState === "removed" ? "" : config.mediaState === "custom" ? config.mediaSrc : sourceSrc;
   const dimensions = mediaDimensions(config);
-  const resized = dimensions.width !== 100 || dimensions.height !== 100;
-  if ((scrollable || resized) && src && config.mediaType !== "Video") return <div className={`ht-hero-media ht-hero-media-frame${scrollable ? " ht-hero-media-scroll" : ""}`} data-inspector-area="media" style={{ backgroundColor: config.mediaBackgroundColor ?? "#f5f5f5" }}><img src={src} alt="" style={scrollable ? { width: dimensions.scrollImageWidth, height: "auto" } : { width: dimensions.imageWidth, height: dimensions.imageHeight, objectFit: config.mediaFit ?? "cover" }} /></div>;
+  const resized = dimensions.width !== 100 || dimensions.height !== 100 || dimensions.imageScaleWidth !== 100 || dimensions.imageScaleHeight !== 100;
+  if ((scrollable || resized) && src && config.mediaType !== "Video") return <div className={`ht-hero-media ht-hero-media-frame${scrollable ? " ht-hero-media-scroll" : ""}`} data-inspector-area="media" style={{ backgroundColor: config.mediaBackgroundColor ?? "#f5f5f5" }}><img src={src} alt="" style={{ width: dimensions.imageWidth, height: dimensions.imageHeight, objectFit: config.mediaFit ?? "cover" }} /></div>;
   if (config.mediaState !== "custom" || !config.mediaSrc) return null;
   if (config.mediaType === "Video") return <video className="ht-hero-media" src={config.mediaSrc} autoPlay loop muted playsInline style={{ objectFit: config.mediaFit ?? "cover" }} />;
   return <img className="ht-hero-media" src={config.mediaSrc} alt="" style={{ objectFit: config.mediaFit ?? "cover" }} />;
@@ -2622,7 +2627,7 @@ function HelloTalkPaywall({ variant, nodes, activeNode, onSelect, onButtonAction
     const config = configFor(id);
     const state = config.mediaState;
     const dimensions = mediaDimensions(config);
-    return [state === "custom" ? "media-custom" : state === "removed" ? "media-removed" : "", config.mediaOverflow === "scroll" && config.mediaType !== "Video" ? "media-scroll" : "", config.mediaType !== "Video" && (dimensions.width !== 100 || dimensions.height !== 100) ? "media-resized" : ""].filter(Boolean).join(" ");
+    return [state === "custom" ? "media-custom" : state === "removed" ? "media-removed" : "", config.mediaOverflow === "scroll" && config.mediaType !== "Video" ? "media-scroll" : "", config.mediaType !== "Video" && (dimensions.width !== 100 || dimensions.height !== 100 || dimensions.imageScaleWidth !== 100 || dimensions.imageScaleHeight !== 100) ? "media-resized" : ""].filter(Boolean).join(" ");
   };
   const productConfig = nodeById("products")?.config ?? {};
   const agreementNode = renderedNodes.find((entry) => entry.type === "Agreement");
@@ -3015,7 +3020,7 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, on
     const padding = insets.map((value) => `${value}px`).join(" ");
     const height = 104 * dimensions.height / 100;
     const media = config.mediaState === "removed" ? null : config.mediaSrc
-      ? config.mediaType === "Video" ? <video src={config.mediaSrc} autoPlay loop muted playsInline style={{ objectFit: config.mediaFit ?? "cover" }} /> : <img src={config.mediaSrc} alt={node.label || ""} style={config.mediaOverflow === "scroll" ? { width: dimensions.scrollImageWidth, height: "auto" } : { width: dimensions.imageWidth, height: dimensions.imageHeight, objectFit: config.mediaFit ?? "cover" }} />
+      ? config.mediaType === "Video" ? <video src={config.mediaSrc} autoPlay loop muted playsInline style={{ objectFit: config.mediaFit ?? "cover" }} /> : <img src={config.mediaSrc} alt={node.label || ""} style={{ width: dimensions.imageWidth, height: dimensions.imageHeight, objectFit: config.mediaFit ?? "cover" }} />
       : <span>{node.type === "Hero Video" || config.mediaType === "Video" ? "VIDEO" : node.content === "knowledge" ? "✦" : ""}</span>;
     return wrap(<div className={`preview-media visual-${node.content}`} style={{ width: `${dimensions.width}%`, marginInline: "auto", height: `${height}px`, padding, transform: config.offsetY ? `translateY(${config.offsetY}px)` : undefined, borderRadius: config.rounded ? `${config.radius ?? 0}px` : undefined, backgroundColor: config.mediaBackgroundColor ?? "#f5f5f5" }}><div className={`preview-media-art${config.mediaSrc ? " has-media" : ""}${config.mediaOverflow === "scroll" && config.mediaType !== "Video" ? " media-scroll" : ""}`}>{media}</div></div>, "preview-hero");
   }
@@ -3035,7 +3040,7 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, on
     const config = node.config ?? {};
     const dimensions = mediaDimensions(config);
     const height = `${92 * dimensions.height / 100}px`;
-    return wrap(<div className={`preview-image${config.mediaSrc ? " has-media" : ""}${config.mediaOverflow === "scroll" && config.mediaType !== "Video" ? " media-scroll" : ""}`} style={{ width: `${dimensions.width}%`, marginInline: "auto", height, background: config.mediaBackgroundColor, borderRadius: config.rounded ? `${config.radius ?? 8}px` : undefined, padding: ["Top", "Right", "Bottom", "Left"].map((edge) => `${Math.max(0, Number(config[`padding${edge}`]) || 0)}px`).join(" "), transform: config.offsetY ? `translateY(${config.offsetY}px)` : undefined }}>{config.mediaState !== "removed" && (config.mediaSrc ? <img src={config.mediaSrc} alt={node.label || ""} style={config.mediaOverflow === "scroll" ? { width: dimensions.scrollImageWidth, height: "auto" } : { width: dimensions.imageWidth, height: dimensions.imageHeight, objectFit: config.mediaFit ?? "cover" }} /> : node.type === "Black Friday Image" ? "BLACK FRIDAY" : node.content)}</div>, "preview-image-wrap");
+    return wrap(<div className={`preview-image${config.mediaSrc ? " has-media" : ""}${config.mediaOverflow === "scroll" && config.mediaType !== "Video" ? " media-scroll" : ""}`} style={{ width: `${dimensions.width}%`, marginInline: "auto", height, background: config.mediaBackgroundColor, borderRadius: config.rounded ? `${config.radius ?? 8}px` : undefined, padding: ["Top", "Right", "Bottom", "Left"].map((edge) => `${Math.max(0, Number(config[`padding${edge}`]) || 0)}px`).join(" "), transform: config.offsetY ? `translateY(${config.offsetY}px)` : undefined }}>{config.mediaState !== "removed" && (config.mediaSrc ? <img src={config.mediaSrc} alt={node.label || ""} style={{ width: dimensions.imageWidth, height: dimensions.imageHeight, objectFit: config.mediaFit ?? "cover" }} /> : node.type === "Black Friday Image" ? "BLACK FRIDAY" : node.content)}</div>, "preview-image-wrap");
   }
   if (node.type === "Carousel") return Array.isArray(config.slides) ? wrap(<PreviewSlideCarousel slides={config.slides} initialSlide={config.initialSlide ?? 0} config={config} onDotSelect={(index) => onSelect(node.id, "dots", index)} />, "preview-carousel-wrap") : children.length ? wrap(<div className="preview-carousel">{renderChildren()}</div>, "preview-carousel-wrap") : !node.content ? wrap(<div className="preview-card-anchor" />, "preview-carousel-wrap") : wrap(<PreviewCarousel content={node.content} config={node.config} />, "preview-carousel-wrap");
   if (node.type === "Timer") return node.config?.enabled === false ? null : wrap(<PreviewTimer content={node.content} config={node.config} />);
