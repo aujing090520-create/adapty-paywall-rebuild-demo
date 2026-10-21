@@ -1749,6 +1749,7 @@ textarea { min-height: 80px; resize: vertical; }
 .template-rc-source-40 .preview-products .ht-vertical-plan.chosen { border-color: #6870ea !important; background: linear-gradient(110deg,#4c62c0,#3b4ba3) !important; }
 .template-rc-source-40 .preview-products .ht-vertical-plan.chosen strong, .template-rc-source-40 .preview-products .ht-vertical-plan.chosen .ht-vertical-total, .template-rc-source-40 .preview-products .ht-vertical-plan.chosen small { color: #fff; }
 .template-rc-source-40 .preview-button { margin-top: 7px; }
+.template-rc-source-40 [data-node-id$="-action"] { overflow: hidden; border-radius: 99px; }
 .template-rc-source-40 .preview-cta { background: linear-gradient(90deg,#f5e970,#fffef3) !important; color: #111; border-radius: 99px !important; }
 .template-rc-source-41 [data-node-id$="-image"] { margin: -37px -13px 12px; }
 .template-rc-source-41 [data-node-id$="-image"] .preview-image { height: 305px !important; }
