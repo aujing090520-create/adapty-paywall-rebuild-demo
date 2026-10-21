@@ -167,6 +167,7 @@ test("observed package badges, subtitles, and bilingual labels stay with their p
     leftDecorationSrc: observedTemplate(19).assets[1], rightDecorationSrc: observedTemplate(19).assets[2],
   });
   assert.equal(tree(27).find((item) => item.type === "Feature Table").config.title, "WHAT'S INCLUDED");
+  assert.equal(tree(27).find((item) => item.type === "Feature Table").config.accentColor, "#25328d");
   assert.equal(tree(18).find((item) => item.id.endsWith("-action")).content, "続ける Continue");
   const devToolsTree = tree(24);
   assert.equal(devToolsTree.find((item) => item.type === "List")?.depth, 1);

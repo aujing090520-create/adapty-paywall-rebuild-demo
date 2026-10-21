@@ -1715,6 +1715,13 @@ textarea { min-height: 80px; resize: vertical; }
 .template-rc-source-27 .preview-headline h2 { max-width: 290px; margin: 2px auto 12px; font-size: 12px; font-weight: 500; }
 .template-rc-source-27 .preview-products.product-layout-vertical { gap: 0; padding: 2px 8px; border-radius: 9px; background: #fff; }
 .template-rc-source-27 .preview-products .ht-vertical-plan { border: 0; border-radius: 0; background: #fff; }
+.template-rc-source-27 .preview-products .ht-vertical-plan { min-height: 39px; padding: 5px 9px 5px 30px; }
+.template-rc-source-27 .preview-products .ht-vertical-plan::before { content: ""; position: absolute; left: 10px; top: 13px; width: 13px; height: 13px; border: 1px solid #c8c8cc; border-radius: 50%; }
+.template-rc-source-27 .preview-products .ht-vertical-plan.chosen::before { border-color: #6154d7; background: #6154d7; box-shadow: inset 0 0 0 3px #fff; }
+.template-rc-source-27 .preview-products .ht-vertical-main { grid-column: 1 / -1; grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+.template-rc-source-27 .preview-products .ht-vertical-main > strong { grid-column: 1; grid-row: 1; }
+.template-rc-source-27 .preview-products .ht-vertical-price-line { grid-column: 2; grid-row: 1 / span 2; justify-content: flex-end; }
+.template-rc-source-27 .preview-products .ht-vertical-detail { grid-column: 1; grid-row: 2; }
 .template-rc-source-27 .preview-products .ht-vertical-plan + .ht-vertical-plan { border-top: 1px solid #ddd; }
 .template-rc-source-27 .preview-products-wrap { margin-top: 15px; }
 .template-rc-source-27 .preview-feature-table-wrap { margin-top: 15px; }
@@ -1728,13 +1735,23 @@ textarea { min-height: 80px; resize: vertical; }
 .preview-feature-list small { color: #777; font-size: 9px; }
 .template-rc-source-27 .preview-button { margin-top: auto; }
 .template-rc-source-28 [data-node-id$="-image"] { margin: -37px -13px 5px; }
-.template-rc-source-28 [data-node-id$="-image"] .preview-image { height: 295px !important; }
+.template-rc-source-28 [data-node-id$="-image"] .preview-image { height: 370px !important; }
 .template-rc-source-28 [data-node-id$="-copy-0"] { position: absolute; z-index: 2; top: 16px; left: 50%; transform: translateX(-50%); padding: 2px 8px; border-radius: 12px; background: #161616cf; white-space: nowrap; }
 .template-rc-source-28 [data-node-id$="-copy-0"] p { margin: 0; color: #fff; font-size: 9px; font-weight: 700; }
 .template-rc-source-28 [data-node-id$="-copy-0"] p::before { content: "✦"; margin-right: 4px; color: #ffb145; }
-.template-rc-source-28 .preview-products-wrap { margin-top: auto; }
+.template-rc-source-28 .preview-products-wrap { margin-top: 12px; }
 .template-rc-source-28 .preview-products .ht-vertical-plan { background: #090909; color: #fff; }
-.template-rc-source-28 .preview-cta { background: #a33920 !important; border-radius: 24px; }
+.template-rc-source-28 .preview-products .ht-vertical-plan.chosen { border-color: #fff !important; background: #090909 !important; }
+.template-rc-source-28 .preview-products .ht-vertical-plan { min-height: 45px; padding: 7px 10px 7px 24px; }
+.template-rc-source-28 .preview-products .ht-vertical-plan::before { content: ""; position: absolute; left: 7px; top: 14px; width: 12px; height: 12px; border: 1px solid #7c7c7c; border-radius: 50%; }
+.template-rc-source-28 .preview-products .ht-vertical-plan.chosen::before { border-color: #fff; background: #fff; box-shadow: inset 0 0 0 3px #090909; }
+.template-rc-source-28 .preview-products .ht-vertical-main { grid-column: 1 / -1; grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+.template-rc-source-28 .preview-products .ht-vertical-main > strong { grid-column: 1; grid-row: 1; color: #fff; }
+.template-rc-source-28 .preview-products .ht-vertical-price-line { grid-column: 2; grid-row: 1 / span 2; justify-content: flex-end; }
+.template-rc-source-28 .preview-products .ht-vertical-detail { grid-column: 1; grid-row: 2; }
+.template-rc-source-28 .preview-products .ht-vertical-total { color: #fff; }
+.template-rc-source-28 .preview-button { width: 100%; }
+.template-rc-source-28 .preview-cta { background: #a33920 !important; border-radius: 24px !important; }
 .template-rc-source-29 [data-node-id$="-image"] .preview-image { height: 160px !important; }
 .template-rc-source-29 .phone-content { align-items: center; text-align: center; }
 .template-rc-source-29 .preview-feature-table-wrap { width: 100%; margin: 15px 0; }

@@ -333,7 +333,7 @@ export function createSourceTemplateNodes(template, node) {
   if (plan.table) {
     const tableLines = lines.slice(...plan.table);
     const pairedRows = order === 27 ? Array.from({ length: Math.floor(tableLines.length / 2) }, (_, index) => tableLines.slice(index * 2, index * 2 + 2)) : tableLines.map((line) => [line, ""]);
-    result.push(add("table", "Feature Table", "", { title: order === 27 ? at(7) : order === 29 ? at(1) : "", tableVariant: order === 27 ? "feature-list" : "comparison", columns: order === 29 ? [at(7), at(8)] : ["包含"], rows: pairedRows.map(([name, description], index) => ({ name, values: order === 29 ? [index === 0 ? "✓" : "—", "✓"] : [description] })) }));
+    result.push(add("table", "Feature Table", "", { title: order === 27 ? at(7) : order === 29 ? at(1) : "", tableVariant: order === 27 ? "feature-list" : "comparison", ...(order === 27 ? { accentColor: "#25328d", backgroundColor: "#ffffff" } : {}), columns: order === 29 ? [at(7), at(8)] : ["包含"], rows: pairedRows.map(([name, description], index) => ({ name, values: order === 29 ? [index === 0 ? "✓" : "—", "✓"] : [description] })) }));
   }
   if (plan.cta !== undefined) result.push(order === 18 ? add("action", "Button", `${at(18)} ${at(19)}`, { action: "Purchase", backgroundColor: template.accent }) : button("action", plan.cta));
   if (plan.webCta !== undefined) result.push(add("web-action", "Web Paywall Button", at(plan.webCta), { action: "WebCheckout", autoDismiss: true, backgroundColor: order === 13 ? "#b53231" : template.accent, ...(order === 13 ? { color: "#ffffff", radius: 99 } : {}) }));
