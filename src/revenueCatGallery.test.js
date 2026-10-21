@@ -53,6 +53,25 @@ test("source-specific commerce structures do not revert to generic packages", ()
   assert.equal(revenueCatGallery[28].productCount, 1);
 });
 
+test("offer-code templates retain their distinct source artwork and nested layouts", () => {
+  const node = (id, type, content, depth, options = {}) => ({ id, type, content, depth, ...options });
+  const first = createSourceTemplateNodes(revenueCatGallery[4], node);
+  const second = createSourceTemplateNodes(revenueCatGallery[5], node);
+  assert.match(revenueCatGallery[4].heroAsset, /1181742_1756111093\.webp$/);
+  assert.equal(first[0].type, "Stack");
+  assert.equal(first.find((item) => item.id.endsWith("-offer-card"))?.depth, 1);
+  assert.equal(first.find((item) => item.id.endsWith("-gift"))?.depth, 2);
+  assert.equal(second[0].id, "rc-source-6-dismiss");
+  assert.equal(second.find((item) => item.id.endsWith("-image"))?.config.mediaSrc, revenueCatGallery[5].heroAsset);
+  for (const tree of [first, second]) {
+    const product = tree.find((item) => item.type === "Products");
+    assert.equal(product.config.showCards, false);
+    assert.equal(product.config.priceSummary, true);
+    assert.equal(product.config.sourceCurrentPrice, "$44.99/yr");
+    assert.equal(tree.find((item) => item.type === "Button")?.config.action, "OfferCodeRedemption");
+  }
+});
+
 test("observed package badges, subtitles, and bilingual labels stay with their packages", () => {
   const node = (id, type, content, depth, options = {}) => ({ id, type, content, depth, ...options });
   const tree = (order) => createSourceTemplateNodes(revenueCatGallery[order - 1], node);

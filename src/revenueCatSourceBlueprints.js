@@ -130,7 +130,7 @@ export function createSourceTemplateNodes(template, node) {
   };
   const media = (part, depth = 0) => add(part, "Image", at(plan.heading), { mediaSrc: template.heroAsset, mediaFit: template.art === "icon" ? "contain" : "cover", mediaBackgroundColor: template.art === "dark" ? "#131421" : "#f6f6f8", mediaWidth: 100, mediaHeight: template.art === "icon" ? 80 : 140 }, depth);
   const header = (part, index, depth = 0) => node(id(part), "Header", at(index), depth, { variant: "headline", ...([13, 37].includes(order) ? { config: { textAlign: "left", fontSize: 19 } } : {}) });
-  const button = (part, index, depth = 0) => add(part, "Button", at(index), { action: [5, 6].includes(order) ? "OfferCodeRedemption" : "Purchase", backgroundColor: order === 13 ? "#f2f2f7" : template.accent, ...(order === 13 ? { color: "#111111", radius: 99 } : {}) }, depth);
+  const button = (part, index, depth = 0) => add(part, "Button", at(index), { action: [5, 6].includes(order) ? "OfferCodeRedemption" : "Purchase", backgroundColor: order === 13 ? "#f2f2f7" : template.accent, ...([5, 13].includes(order) ? { color: "#111111", radius: 99 } : {}) }, depth);
   const products = (depth = 0) => {
     const visibleRows = plan.products ?? [];
     return add("products", "Products", visibleRows.join("\n") || "绑定商品||", { defaultSelected: 0, packageLayout: visibleRows.length === 3 ? "horizontal" : "vertical", showOfferBadge: false, showCards: visibleRows.length > 0, sourcePackageCount: sourcePackageCount(order), purchasePerCard: order === 10, badgeGradient: [template.accent, template.accent, template.accent], selectedBorderGradient: [template.accent, template.accent, template.accent], ...(visibleRows.length ? { packageRows: sourceProductRows(order) } : {}) }, depth);
@@ -139,6 +139,34 @@ export function createSourceTemplateNodes(template, node) {
     const policyLines = lines.filter((line) => /^(Restore( Purchases| purchases)?|Terms( of Use| of service)?|Privacy( Policy| policy)?|Privacy policy)$/.test(line));
     return policyLines.length ? add("links", "Links", [...new Set(policyLines)].join(" · "), {}, depth) : null;
   };
+
+  if (order === 5 || order === 6) {
+    const price = add("products", "Products", "绑定商品||", {
+      showCards: false,
+      priceSummary: true,
+      sourceComparePrice: at(3),
+      sourceCurrentPrice: at(4),
+      sourcePackageCount: sourcePackageCount(order),
+    });
+    const dismiss = add("dismiss", "Text", "×", { color: "#ffffff" }, order === 5 ? 1 : 0);
+    const content = order === 5 ? [
+      add("offer-stage", "Stack", "", { axis: "vertical", gap: 0 }),
+      media("image", 1),
+      dismiss,
+      add("offer-card", "Card", "", { backgroundColor: "#080808", radius: 16 }, 1),
+      add("gift", "Icon", "", { iconName: "gift", iconSize: 20, color: "#101515" }, 2),
+      header("title", 0, 2),
+      add("subtitle", "Text", at(1), { color: "#b9b9b9" }, 2),
+      add("code", "Text", at(2), { color: "#111111", backgroundColor: "#f29da9" }, 2),
+    ] : [
+      dismiss,
+      header("title", 0),
+      add("subtitle", "Text", at(1), { color: "#aaaaaa" }),
+      add("code", "Text", at(2), { color: "#ffffff", backgroundColor: "#b64d36" }),
+      media("image"),
+    ];
+    return [...content, price, button("action", plan.cta), links()].filter(Boolean);
+  }
 
   if (plan.flow) {
     return [

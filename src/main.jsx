@@ -29,6 +29,7 @@ import {
   X,
   Download,
   FolderOpen,
+  Gift,
   Save,
   Eye,
   EyeOff,
@@ -180,7 +181,7 @@ const documentStyleTemplateIds = new Set(["ht-blue-privilege", "ht-membership-pl
 const curatedSourceTemplateIds = new Set(["knowledge", "trial", "family", "document", "mindfulness", "editing-plan", "black-friday-timer", "halloween"]);
 const catalogTemplates = templates.filter((template) => template.documentTemplate || template.isGallery);
 const isEditableTemplate = (template) => template.isNew || sourceTreeObserved.has(template.id) || documentStyleTemplateIds.has(template.id);
-const templateEditableStatus = (template) => template.isGallery ? template.editorVerified ? `Talkin RevenueCat 第 ${template.sourceOrder} 张：已核对源编辑器 Layers；本地为通用组件映射，字段细节仍以源端为准` : `Talkin RevenueCat 第 ${template.sourceOrder} 张：只有预览证据，源编辑器 Layers 尚未核实` : template.sourceProvider === "RevenueCat" ? `Talkin 项目中的 RevenueCat 模板画廊：${template.sourceTemplate}；本地可编辑复现` : template.isNew ? "本地组合模板；组件均可编辑" : documentStyleTemplateIds.has(template.id) ? "飞书交付文档已定义样式与字段；本地可编辑复现" : "源端已观察核心结构；本地可编辑复现";
+const templateEditableStatus = (template) => template.isGallery ? [5, 6].includes(template.sourceOrder) ? `Talkin RevenueCat 第 ${template.sourceOrder} 张：已按源画面重建并本地验收；价格仍为预览数据` : template.editorVerified ? `Talkin RevenueCat 第 ${template.sourceOrder} 张：源编辑器组件已核对；视觉仍待逐张对照验收` : `Talkin RevenueCat 第 ${template.sourceOrder} 张：只有预览证据，源编辑器与视觉尚未核实` : template.sourceProvider === "RevenueCat" ? `Talkin 项目中的 RevenueCat 模板画廊：${template.sourceTemplate}；本地可编辑复现` : template.isNew ? "本地组合模板；组件均可编辑" : documentStyleTemplateIds.has(template.id) ? "飞书交付文档已定义样式与字段；本地可编辑复现" : "源端已观察核心结构；本地可编辑复现";
 
 // Source-template filters reflect observed Builder trees; local combinations use their own component lists.
 const sourceVerifiedTemplateComponents = Object.freeze({
@@ -2587,6 +2588,7 @@ function ProductsContent({ active, updateNode, pricePreviewMode }) {
     };
     const missing = rows.map((row, index) => !row.emptySlot && resolveProductPrice(row, pricePreviewMode).missing ? index + 1 : null).filter(Boolean);
     return <>
+      {config.priceSummary && <><p className="property-copy">未绑定 SKU 时，价格预览沿用源模板；绑定后使用商品价格。</p><div className="split-fields"><Field label="源模板参考价"><input value={config.sourceComparePrice ?? ""} onChange={(event) => updateNodeConfig(active, updateNode, { sourceComparePrice: event.target.value })} /></Field><Field label="源模板现价"><input value={config.sourceCurrentPrice ?? ""} onChange={(event) => updateNodeConfig(active, updateNode, { sourceCurrentPrice: event.target.value })} /></Field></div></>}
       {linked ? <p className="product-price-warning">商品、顺序及默认选中由基础设置统一控制；这里配置套餐样式。</p> : <Field label="默认选中商品"><select value={String(Math.min(config.defaultSelected ?? (config.bluePrivilege ? 1 : 0), Math.max(0, rows.length - 1)))} onChange={(event) => updateRows(rows, { defaultSelected: Number(event.target.value) })}>{rows.map((row, index) => <option key={index} value={index}>{row.name || `套餐 ${index + 1}`}</option>)}</select></Field>}
       {missing.length > 0 && <p className="product-price-warning">套餐 {missing.join("、")} 未关联有效 SKU；请先选择 SKU ID。</p>}
       <div className="product-package-list">{rows.map((row, index) => {
@@ -3420,7 +3422,7 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, on
   };
   const reorderProps = dragProps ?? (onReorder ? { onDragOver: (event) => onReorder.over(node.id, event), onDrop: (event) => onReorder.drop(node.id, event) } : {});
   const handle = reorderHandle ?? (onReorder ? <PreviewReorderHandle onDragStart={(event) => onReorder.start(node.id, event)} onDragEnd={onReorder.end} /> : null);
-  const wrap = (content, className = "") => <div {...reorderProps} className={`preview-node ${active ? "selected" : ""} ${className} ${onReorder || dragProps ? "preview-reorderable" : ""}`} style={nodeStyle} onClick={select}>{handle}{content}</div>;
+  const wrap = (content, className = "") => <div {...reorderProps} data-node-id={node.id} className={`preview-node ${active ? "selected" : ""} ${className} ${onReorder || dragProps ? "preview-reorderable" : ""}`} style={nodeStyle} onClick={select}>{handle}{content}</div>;
   const textStyle = { color: config.color, fontSize: config.fontSize ? `${config.fontSize}px` : undefined, fontWeight: config.fontWeight, textAlign: config.textAlign };
   const buttonStyle = { backgroundColor: config.backgroundColor, color: config.color, borderRadius: config.radius === undefined ? undefined : `${config.radius}px` };
   const cardStyle = { backgroundColor: config.backgroundColor, borderRadius: config.radius === undefined ? undefined : `${config.radius}px`, boxShadow: config.shadow ? `0 ${Math.max(2, Math.round(config.shadow / 2))}px ${config.shadow}px #17172833` : undefined };
@@ -3461,7 +3463,7 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, on
   if (node.type === "Tabs") return wrap(<PreviewTabs tabs={config.tabs ?? []} defaultTab={config.defaultTab ?? 0} config={config} />, "preview-tabs-wrap");
   if (node.type === "Stack") return wrap(<div className="preview-stack" style={{ flexDirection: config.axis === "horizontal" ? "row" : "column", gap: `${config.gap ?? 8}px`, backgroundColor: config.backgroundColor }}>{renderChildren()}</div>, "preview-stack-wrap");
   if (node.type === "Icon") {
-    const Icon = { star: Star, heart: Heart, check: Check, shield: ShieldCheck, users: Users }[config.iconName] ?? Star;
+    const Icon = { star: Star, heart: Heart, check: Check, shield: ShieldCheck, users: Users, gift: Gift }[config.iconName] ?? Star;
     return wrap(<Icon size={Number(config.iconSize) || 24} color={config.color ?? "#6a31e9"} aria-label={config.iconName ?? "star"} />, "preview-icon-wrap");
   }
   if (isListItemLayer) { const [title, caption] = (node.content ?? "").split("|"); return wrap(<div className="preview-list-item" style={textStyle}><i>●</i><span><strong style={textStyle}>{title}</strong>{caption && <small style={textStyle}>{caption}</small>}</span></div>, "preview-list-item-wrap"); }
@@ -3484,6 +3486,12 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, on
     if (node.variant === "purchase") {
       const [label = "Continue", , price = ""] = node.content.split("|");
       return wrap(<button className="preview-cta"><span>{label}</span>{price && <small>{price}</small>}</button>, "preview-button");
+    }
+    if (config.showCards === false && config.priceSummary) {
+      const row = productPackageRows(node, config.productTemplate)[0];
+      const current = row?.skuId ? productPriceFields(row).total : config.sourceCurrentPrice;
+      const compare = row?.skuId ? productPriceFields(row).referenceTotal : config.sourceComparePrice;
+      return wrap(<div className="preview-price-summary">{compare && <s>{compare}</s>}<strong>{current || "未关联 SKU"}</strong></div>, "preview-products-wrap");
     }
     if (config.showCards === false) return null;
     const switched = Boolean(toggleStates[config.linkedToggleId]);
