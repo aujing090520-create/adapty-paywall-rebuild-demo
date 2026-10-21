@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { DEMO_SKUS, PRICE_DISPLAY_MODES, billingMonths, productPriceFields, resolveProductPrice, skuById, skuCopy, templateSkuId } from "./productPricing.js";
 import { applyComponent, captureComponent, componentKind, readComponentLibrary, writeComponentLibrary } from "./componentLibrary.js";
 import { protectedTemplateIds, readTemplateNodes, writeTemplateNodes } from "./templateStorage.js";
+import { revenueCatGallery } from "./revenueCatGallery.js";
 import {
   Archive,
   ArrowLeft,
@@ -164,6 +165,7 @@ const templates = [
   { id: "rc-feature-table", title: "权益说明表", subtitle: "RevenueCat · What's included table", tags: ["2 products", "Feature table"], productCount: 2, media: "none", components: ["Feature table"], category: "Popular", theme: "clean", visual: "rc-feature-table", previewTone: "purple", sourceProvider: "RevenueCat", sourceTemplate: "What's included table", isNew: true },
   { id: "rc-comparison-table", title: "权益对比表", subtitle: "RevenueCat · Comparison table", tags: ["1 product", "Feature table"], productCount: 1, media: "none", components: ["Feature table"], category: "Popular", theme: "clean", visual: "rc-comparison-table", previewTone: "blue", sourceProvider: "RevenueCat", sourceTemplate: "Comparison table", isNew: true },
   { id: "rc-review-list", title: "纵向评价列表", subtitle: "RevenueCat · Vertical list of reviews", tags: ["3 products", "Reviews", "Award"], productCount: 3, media: "none", components: ["Reviews", "Award"], category: "Popular", theme: "clean", visual: "rc-review-list", previewTone: "coral", sourceProvider: "RevenueCat", sourceTemplate: "Vertical list of reviews", isNew: true },
+  ...revenueCatGallery,
   { id: "ht-blue-privilege", title: "蓝色特权页", subtitle: "蓝色特权对比与商品套餐", tags: ["3 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-blue", visual: "ht-blue", documentTemplate: "blue-privilege", prdScreenshot: "/ht-prd-screenshots/blue-privilege.png" },
   { id: "ht-membership-plans", title: "HelloTalk 会员套餐页", subtitle: "会员订阅方案与访客示例轮播", tags: ["3 products", "Carousel", "Timer"], productCount: 2, media: "image", components: ["Carousel", "Timer"], category: "Popular", theme: "ht-plans", visual: "ht-plans", documentTemplate: "membership-plans", prdScreenshot: "/ht-prd-screenshots/membership-plans.jpg" },
   { id: "ht-payment-recovery", title: "HelloTalk 支付未完成页", subtitle: "支付恢复与倒计时优惠", tags: ["2 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-recovery", visual: "ht-recovery", documentTemplate: "payment-recovery", prdScreenshot: "/ht-prd-screenshots/payment-recovery.png" },
@@ -175,9 +177,9 @@ const componentCatalog = ["Text", "Header", "Image", "Video", "Icon", "Card", "S
 const sourceTreeObserved = new Set(["knowledge", "trial", "connection", "family", "premium-access", "document", "yoga", "black-friday", "black-friday-timer", "christmas", "halloween", "new-year", "report", "avatar", "mindfulness", "trial-white", "trial-blue", "fitness-trial", "access", "weather", "workout", "audiobooks", "herbs", "video-access", "design-life", "full-app", "item-placeholder", "item-placeholder-dark", "fantasy-access", "editing-plan", "training"]);
 const documentStyleTemplateIds = new Set(["ht-blue-privilege", "ht-membership-plans", "ht-payment-recovery", "ht-sku-sheet"]);
 const curatedSourceTemplateIds = new Set(["knowledge", "trial", "family", "document", "mindfulness", "editing-plan", "black-friday-timer", "halloween"]);
-const catalogTemplates = templates.filter((template) => template.documentTemplate || template.isNew || curatedSourceTemplateIds.has(template.id));
+const catalogTemplates = templates.filter((template) => template.documentTemplate || template.isGallery);
 const isEditableTemplate = (template) => template.isNew || sourceTreeObserved.has(template.id) || documentStyleTemplateIds.has(template.id);
-const templateEditableStatus = (template) => template.sourceProvider === "RevenueCat" ? `Talkin 项目中的 RevenueCat 模板画廊：${template.sourceTemplate}；本地可编辑复现` : template.isNew ? "本地组合模板；组件均可编辑" : documentStyleTemplateIds.has(template.id) ? "飞书交付文档已定义样式与字段；本地可编辑复现" : "源端已观察核心结构；本地可编辑复现";
+const templateEditableStatus = (template) => template.isGallery ? `Talkin RevenueCat 画廊第 ${template.sourceOrder} 张：${template.sourceTemplate}；本地可编辑结构` : template.sourceProvider === "RevenueCat" ? `Talkin 项目中的 RevenueCat 模板画廊：${template.sourceTemplate}；本地可编辑复现` : template.isNew ? "本地组合模板；组件均可编辑" : documentStyleTemplateIds.has(template.id) ? "飞书交付文档已定义样式与字段；本地可编辑复现" : "源端已观察核心结构；本地可编辑复现";
 
 // Source-template filters reflect observed Builder trees; local combinations use their own component lists.
 const sourceVerifiedTemplateComponents = Object.freeze({
@@ -355,6 +357,49 @@ function createBuilderNodes(templateId = "knowledge") {
   const template = templates.find((item) => item.id === templateId) ?? templates[0];
   const hero = (depth = 0) => node("hero-image", "Hero Image", template.visual, depth, { theme: template.theme });
   const pending = (id, type, depth = 0) => node(id, type, "", depth, { sourcePending: true });
+
+  if (template.isGallery) {
+    const id = (part) => `${template.id}-${part}`;
+    const accent = template.accent;
+    const count = template.productCount;
+    const plans = count === 1 ? "年度|$69.99/年|按年订阅" : count === 3 ? "月度|$9.99/月|按月订阅\n年度|$69.99/年|按年订阅\n终身|$119.99|一次购买" : count === 5 ? "25 点|$2.99|一次购买\n50 点|$9.99|一次购买\n100 点|$17.99|一次购买\n250 点|$24.99|一次购买\n500 点|$39.99|一次购买" : "月度|$9.99/月|按月订阅\n年度|$69.99/年|按年订阅";
+    const media = () => node(id("media"), "Image", template.headline, 0, { config: { mediaSrc: template.heroAsset, mediaFit: template.art === "icon" ? "contain" : "cover", mediaBackgroundColor: template.art === "dark" ? "#131421" : "#f6f6f8", mediaWidth: 100, mediaHeight: template.art === "icon" ? 80 : 140 } });
+    const title = () => node(id("title"), "Header", template.headline, 0, { variant: "headline", config: { color: ["full", "dark", "red"].includes(template.art) ? "#ffffff" : "#1c1c23" } });
+    if (template.profile === "steps") return [
+      node(id("flow"), "Screen Flow", "", 0, { config: { defaultStep: 0 } }),
+      node(id("screen-intro"), "Screen", "权益介绍", 1),
+      node(id("intro-media"), "Image", "冥想主视觉", 2, { config: { mediaSrc: template.heroAsset, mediaFit: "contain", mediaWidth: 100, mediaHeight: 120 } }),
+      node(id("intro-title"), "Header", template.headline, 2, { variant: "headline" }),
+      node(id("intro-list"), "List", "Sleep deeper|Finally quiet the mind before bed\nBe fully present|Because life keeps moving\nOwn your mornings|Start the day with intention", 2),
+      node(id("intro-next"), "Button", "Continue", 2, { config: { action: "NextScreen", backgroundColor: accent } }),
+      node(id("screen-proof"), "Screen", "口碑与体验", 1),
+      node(id("proof-title"), "Header", "Most People Feel Calmer After Just 3 Sessions", 2, { variant: "headline" }),
+      node(id("proof-social"), "Social Proof", "Small daily practice, real lasting change", 2, { config: { rating: 4.9, count: "示例数据", caption: "请替换为真实评价" } }),
+      node(id("proof-next"), "Button", "Continue", 2, { config: { action: "NextScreen", backgroundColor: accent } }),
+      node(id("screen-offer"), "Screen", "选择套餐", 1),
+      node(id("offer-title"), "Header", "People Who Meditate Daily Sleep 40% Better", 2, { variant: "headline" }),
+      node(id("offer-list"), "List", "Fall asleep faster|Guided sleep meditations\nMake it a daily habit|Streaks and reminders\nSee yourself change|Track your progress", 2),
+      node(id("products"), "Products", plans, 2, { config: { defaultSelected: 1, packageLayout: "vertical" } }),
+      node(id("action"), "Button", "Continue", 2, { config: { action: "Purchase", backgroundColor: accent } }),
+      node(id("links"), "Links", "恢复购买 · 服务条款 · 隐私政策", 2),
+    ];
+    const result = [];
+    if (template.heroAsset && ["top", "full", "center", "icon"].includes(template.art) && template.profile !== "offer") result.push(media());
+    result.push(title());
+    if (template.heroAsset && (template.profile === "offer" || !["top", "full", "center", "icon"].includes(template.art))) result.push(media());
+    if (["benefits", "web", "web-reviews", "tiers", "reviews-list", "comparison", "plans"].includes(template.profile)) result.push(node(id("benefits"), "List", template.featureLines.join("\n"), 0, { config: { accentColor: accent } }));
+    if (["timeline", "steps"].includes(template.profile)) result.push(node(id("timeline"), "Timeline", "", 0, { config: { accentColor: accent, listRows: [{ title: "现在", caption: "立即开始体验" }, { title: "下一步", caption: "解锁更多内容" }, { title: "持续使用", caption: "根据商品规则续订" }] } }));
+    if (["toggle"].includes(template.profile)) result.push(node(id("toggle"), "Toggle", template.sourceTemplate.includes("Family") ? "家庭套餐|查看家庭方案" : "开启免费试用|查看试用方案", 0, { config: { onColor: accent, linkedProductsId: id("products") } }));
+    if (["reviews", "web-reviews", "reviews-list"].includes(template.profile)) result.push(node(id("reviews"), template.profile === "reviews-list" ? "List" : "Carousel", "评价示例一|请替换为真实评价\n评价示例二|请替换为真实评价", 0));
+    if (["table", "comparison"].includes(template.profile)) result.push(node(id("table"), "Feature Table", "", 0, { config: { columns: template.profile === "comparison" ? ["免费", "Pro"] : ["会员"], rows: [{ name: "完整功能", values: template.profile === "comparison" ? ["受限", "✓"] : ["✓"] }, { name: "专属支持", values: template.profile === "comparison" ? ["—", "✓"] : ["✓"] }] } }));
+    if (template.profile === "tiers") result.push(node(id("tiers"), "Tabs", "", 0, { config: { tabs: [{ id: "standard", title: "标准", description: "基础权益" }, { id: "premium", title: "高级", description: "全部权益" }], defaultTab: 1 } }));
+    if (["offer", "code"].includes(template.profile)) result.push(node(id("offer"), "Text", template.profile === "code" ? "25OFFSUMMER" : "限时优惠", 0, { variant: "section", config: { color: accent } }));
+    result.push(node(id("products"), "Products", plans, 0, { config: { defaultSelected: count === 1 ? 0 : 1, packageLayout: count === 3 ? "horizontal" : "vertical", productTemplate: template.profile === "credits" ? "rc-credits-onetime" : undefined } }));
+    result.push(node(id("action"), "Button", template.profile === "code" ? "领取优惠" : template.profile === "credits" ? "购买点数" : "继续", 0, { config: { action: "Purchase", backgroundColor: accent } }));
+    if (template.profile.startsWith("web")) result.push(node(id("web"), "Web Paywall Button", "前往网页购买", 0, { config: { action: "OpenURL", actionUrl: "" } }));
+    result.push(node(id("links"), "Links", "恢复购买 · 服务条款 · 隐私政策", 0));
+    return result;
+  }
 
   if (template.id === "rc-gradient-timeline") {
     return [
@@ -1522,7 +1567,7 @@ function App() {
           selected={templateSelected}
           setSelected={setTemplateSelected}
           onClose={() => setModal(null)}
-          onOpenBuilder={(templateIndex) => { const template = templates[templateIndex]; applyTemplate(templateIndex); setModal(null); setView("builder"); notify(template.isNew ? "已应用本地组合模板。" : isEditableTemplate(template) ? (documentStyleTemplateIds.has(template.id) ? "已应用基于飞书 Paywall 规范的可编辑模板。" : "已应用基于源端核心结构的可编辑复现。") : "已应用源端预览内容；精确节点树仍在采集。"); }}
+          onOpenBuilder={(templateIndex) => { const template = templates[templateIndex]; applyTemplate(templateIndex); setModal(null); setView("builder"); notify(template.isGallery ? `已应用 RevenueCat 画廊第 ${template.sourceOrder} 张的本地可编辑结构。` : template.isNew ? "已应用本地组合模板。" : isEditableTemplate(template) ? (documentStyleTemplateIds.has(template.id) ? "已应用基于飞书 Paywall 规范的可编辑模板。" : "已应用基于源端核心结构的可编辑复现。") : "已应用源端预览内容；精确节点树仍在采集。"); }}
         />
       )}
       {modal?.kind === "ai" && <AiModal onClose={() => setModal(null)} markUnknown={markUnknown} />}
@@ -1887,7 +1932,7 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
             </div>
             <PaywallPreview nodes={linkedNodes} template={appliedTemplate !== null ? templates[appliedTemplate] : null} mode={previewMode} pricePreviewMode={pricePreviewMode} activeNode={activeNode} onSelect={selectPreviewNode} onUpdateHeroPosition={updateHeroCopyPosition} onReorder={previewMode === "editable" ? previewReorder : null} retentionPreviewOpen={retentionPreviewOpen} onOpenRetention={() => setRetentionPreview({ templateId: templates[appliedTemplate]?.id })} onCloseRetention={() => setRetentionPreview(null)} />
             {appliedTemplate !== null && !templates[appliedTemplate].isNew && previewMode === "source" && <p className="source-preview-note">{templates[appliedTemplate].documentTemplate ? "飞书文档中的 Paywall 样式参考，与模板库卡片一一对应。" : "源端模板画面，与模板库卡片一一对应。"}</p>}
-            {appliedTemplate !== null && previewMode === "editable" && <p className="source-preview-note">{templates[appliedTemplate].isNew ? "本地组合模板；组件和文案可在左侧选择后编辑。" : isEditableTemplate(templates[appliedTemplate]) ? "已采集样式与核心字段的本地可编辑复现。" : "精确节点树仍在采集。"}</p>}
+            {appliedTemplate !== null && previewMode === "editable" && <p className="source-preview-note">{templates[appliedTemplate].isGallery ? "按 RevenueCat 画廊模板重建的本地可编辑结构；并非源站画面原样。" : templates[appliedTemplate].isNew ? "本地组合模板；组件和文案可在左侧选择后编辑。" : isEditableTemplate(templates[appliedTemplate]) ? "已采集样式与核心字段的本地可编辑复现。" : "精确节点树仍在采集。"}</p>}
             <p className="preview-disclaimer">All prices, titles, and offers displayed are placeholders. The actual data from App Store and Google Play will be shown in the app.</p>
           </div>
           <aside className="property-panel"><div className="component-library-toolbar"><span>组件库</span><div><button type="button" className="icon" title="保存当前组件" aria-label="保存当前组件" disabled={!rawActive} onClick={() => { setLibraryName(""); setLibraryError(""); setLibraryMode("save"); }}><Save size={17} /></button><button type="button" className="icon" title="读取已保存组件" aria-label="读取已保存组件" disabled={!rawActive} onClick={() => { setLibrarySearch(""); setLibraryError(""); setLibraryMode("load"); }}><FolderOpen size={17} /></button></div></div><BuilderProperties active={active} previewFocus={previewFocus} markUnknown={markUnknown} boundary={builderBoundary} templateLinks={templateLinks} setTemplateLinks={setTemplateLinks} updateNode={updateNodeWithPreview} removeNode={deleteElement} addNestedNode={addNestedElement} isDocumentTemplate={isDocumentTemplate} pricePreviewMode={pricePreviewMode} setPricePreviewMode={setPricePreviewMode} retentionPreviewOpen={retentionPreviewOpen} onPreviewRetention={() => { setPreviewMode("editable"); setRetentionPreview((current) => current?.templateId === templates[appliedTemplate]?.id ? null : { templateId: templates[appliedTemplate]?.id }); }} /></aside>
@@ -2761,7 +2806,7 @@ function TemplatesModal({ selected, setSelected, onClose, onOpenBuilder }) {
       <div className="template-grid rich-template-grid">{prioritizedTemplates.map((template) => {
         const index = templates.indexOf(template);
         return <button aria-pressed={pendingSelected === index} className={`template template-${template.theme} ${pendingSelected === index ? "selected" : ""}`} onClick={() => setPendingSelected(index)} key={template.id}>
-          <div className="template-source-preview"><SourceTemplateMedia template={template} /></div><strong>{template.title}</strong>{template.sourceTemplate && <small className="template-origin">RevenueCat · {template.sourceTemplate}</small>}<small>{displayTags(template).join(" · ")}</small>
+          <div className="template-source-preview"><SourceTemplateMedia template={template} /></div><strong>{template.title}</strong>{template.isGallery ? <small className="template-origin">RevenueCat · #{template.sourceOrder}</small> : template.sourceTemplate && <small className="template-origin">RevenueCat · {template.sourceTemplate}</small>}<small>{displayTags(template).join(" · ")}</small>
         </button>;
       })}</div>
       {!filteredTemplates.length && <div className="template-empty">没有符合筛选条件的模板</div>}
@@ -2843,12 +2888,33 @@ function IntegratedTemplateMedia({ template }) {
   </div>;
 }
 function SourceTemplateMedia({ template }) {
+  if (template.isGallery) return <GalleryTemplateMedia template={template} />;
   if (template.isNew) return <IntegratedTemplateMedia template={template} />;
   if (template.prdScreenshot) return <img className="prd-template-screenshot" src={template.prdScreenshot} alt={`${template.title} PRD screenshot`} />;
   if (template.documentTemplate) return <HelloTalkPaywall variant={template.documentTemplate} interactive={false} />;
   const assets = template.assetParts ?? [template.asset];
   if (assets.length === 1) return <img src={assets[0]} alt={`Adapty template: ${template.title}`} />;
   return <div className="source-template-stack">{assets.map((asset) => <img src={asset} alt="" key={asset} />)}</div>;
+}
+
+function GalleryTemplateMedia({ template }) {
+  const profile = template.profile;
+  const dark = ["full", "dark", "red"].includes(template.art);
+  const features = template.featureLines;
+  return <div className={`rc-gallery-preview art-${template.art} profile-${profile}`} style={{ "--rc-accent": template.accent, "--rc-ink": dark ? "#fff" : "#1c1d23" }}>
+    <span className="rc-gallery-new">NEW</span>
+    {template.heroAsset && <div className="rc-gallery-art"><img src={template.heroAsset} alt="" loading="lazy" /></div>}
+    <div className="rc-gallery-content">
+      <strong>{template.headline}</strong>
+      {profile === "offer" && <b className="rc-gallery-offer">{template.sourceTemplate === "AstroApp Offer" ? "60% off" : "19% OFF"}</b>}
+      {profile === "toggle" && <span className="rc-gallery-toggle">{template.sourceTemplate.includes("Family") ? "Family Sharing" : "Free trial"}<i /></span>}
+      {profile === "reviews" && <span className="rc-gallery-review">“Great value and a thoughtful experience.”</span>}
+      {profile === "steps" && <span className="rc-gallery-steps">● ── ● ── ●</span>}
+      <div className="rc-gallery-features">{features.map((item) => <span key={item}><i />{item}</span>)}</div>
+      {profile !== "steps" && <div className={`rc-gallery-plans count-${Math.min(template.productCount, 3)}`}>{Array.from({ length: Math.min(template.productCount, 3) }, (_, index) => <span key={index}>{profile === "credits" ? `${[25, 50, 100][index]} credits` : template.productCount === 1 ? "Yearly" : ["Monthly", "Yearly", "Lifetime"][index]}<b>{profile === "credits" ? ["$2.99", "$9.99", "$17.99"][index] : template.productCount === 1 ? "$69.99" : ["$9.99", "$69.99", "$119.99"][index]}</b></span>)}</div>}
+      <div className="rc-gallery-cta">{profile === "code" ? "Redeem Offer" : profile === "credits" ? "Buy credits" : "Continue"}</div>
+    </div>
+  </div>;
 }
 
 const helloTalkTemplateDefaults = {
