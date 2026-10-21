@@ -153,6 +153,7 @@ const templates = [
   { id: "item-placeholder", title: "Item One", subtitle: "This is a brief description for the first placeholder item.", tags: ["1 product"], productCount: 1, media: "none", components: [], category: "All", theme: "clean", visual: "item-placeholder", asset: "/real-adapty-templates/item-placeholder.png" },
   { id: "item-placeholder-dark", title: "Item One", subtitle: "This is a brief description for the first placeholder item.", tags: ["1 product"], productCount: 1, media: "none", components: [], category: "All", theme: "black", visual: "item-placeholder-dark", asset: "/real-adapty-templates/item-placeholder-dark.png" },
   { id: "fantasy-access", title: "Transparent template #3", subtitle: "Advantageous offer", tags: ["1 product"], productCount: 1, media: "image", components: [], category: "All", theme: "midnight", visual: "fantasy-access", asset: "/real-adapty-templates/fantasy-access.png" },
+  { id: "subscription-guide", title: "订阅说明与权益", subtitle: "时间线、权益与商品套餐", tags: ["1 product", "Trial timeline"], productCount: 1, media: "none", components: ["Trial timeline"], category: "Popular", theme: "clean", visual: "subscription-guide", isNew: true },
   { id: "ht-blue-privilege", title: "蓝色特权页", subtitle: "蓝色特权对比与商品套餐", tags: ["3 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-blue", visual: "ht-blue", documentTemplate: "blue-privilege", prdScreenshot: "/ht-prd-screenshots/blue-privilege.png" },
   { id: "ht-membership-plans", title: "HelloTalk 会员套餐页", subtitle: "会员订阅方案与访客示例轮播", tags: ["3 products", "Carousel", "Timer"], productCount: 2, media: "image", components: ["Carousel", "Timer"], category: "Popular", theme: "ht-plans", visual: "ht-plans", documentTemplate: "membership-plans", prdScreenshot: "/ht-prd-screenshots/membership-plans.jpg" },
   { id: "ht-payment-recovery", title: "HelloTalk 支付未完成页", subtitle: "支付恢复与倒计时优惠", tags: ["2 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-recovery", visual: "ht-recovery", documentTemplate: "payment-recovery", prdScreenshot: "/ht-prd-screenshots/payment-recovery.png" },
@@ -163,8 +164,8 @@ const componentCatalog = ["Text", "Header", "Image", "Video", "Icon", "Card", "S
 
 const sourceTreeObserved = new Set(["knowledge", "trial", "connection", "family", "premium-access", "document", "yoga", "black-friday", "black-friday-timer", "christmas", "halloween", "new-year", "report", "avatar", "mindfulness", "trial-white", "trial-blue", "fitness-trial", "access", "weather", "workout", "audiobooks", "herbs", "video-access", "design-life", "full-app", "item-placeholder", "item-placeholder-dark", "fantasy-access", "editing-plan", "training"]);
 const documentStyleTemplateIds = new Set(["ht-blue-privilege", "ht-membership-plans", "ht-payment-recovery", "ht-sku-sheet"]);
-const isEditableTemplate = (template) => sourceTreeObserved.has(template.id) || documentStyleTemplateIds.has(template.id);
-const templateEditableStatus = (template) => documentStyleTemplateIds.has(template.id) ? "飞书交付文档已定义样式与字段；本地可编辑复现" : "源端已观察核心结构；本地可编辑复现";
+const isEditableTemplate = (template) => template.isNew || sourceTreeObserved.has(template.id) || documentStyleTemplateIds.has(template.id);
+const templateEditableStatus = (template) => template.isNew ? "本地组合模板；组件均可编辑" : documentStyleTemplateIds.has(template.id) ? "飞书交付文档已定义样式与字段；本地可编辑复现" : "源端已观察核心结构；本地可编辑复现";
 
 // Template-card filters must only rely on Builder trees observed in Adapty.
 const sourceVerifiedTemplateComponents = Object.freeze({
@@ -342,6 +343,19 @@ function createBuilderNodes(templateId = "knowledge") {
   const template = templates.find((item) => item.id === templateId) ?? templates[0];
   const hero = (depth = 0) => node("hero-image", "Hero Image", template.visual, depth, { theme: template.theme });
   const pending = (id, type, depth = 0) => node(id, type, "", depth, { sourcePending: true });
+
+  if (template.id === "subscription-guide") {
+    return [
+      node("guide-header", "Header", "开启完整会员体验", 0, { variant: "headline" }),
+      node("guide-caption", "Text", "解锁更多权益，随时管理订阅。", 0, { variant: "body" }),
+      node("guide-benefits", "List", "无限使用|畅享全部会员功能\n专属体验|获得持续更新的高级权益", 0),
+      node("guide-timeline", "Timeline", "", 0, { config: { listRows: [{ title: "今天", caption: "立即解锁会员权益" }, { title: "到期前", caption: "可在应用商店管理订阅" }, { title: "续订日", caption: "按所选套餐续订" }] } }),
+      node("guide-products", "Products", "月度|灵活订阅|¥78/月", 0),
+      node("guide-action", "Button", "继续", 0, { config: { action: "Purchase" } }),
+      node("guide-footer", "Footer", "可随时在应用商店管理订阅", 0),
+      node("guide-links", "Links", "服务条款 · 隐私政策", 0),
+    ];
+  }
 
   if (template.id === "knowledge") {
     return [
@@ -1210,6 +1224,7 @@ function App() {
     setTemplateSelected(templateIndex);
     setAppliedTemplate(templateIndex);
     setBuilderNodes(nextNodes);
+    if (template.isNew) setPreviewMode("editable");
     // Templates do not share a universal node id; select the first real layer.
     setActiveNode(nextNodes[0]?.id ?? "links");
   };
@@ -1373,7 +1388,7 @@ function App() {
           selected={templateSelected}
           setSelected={setTemplateSelected}
           onClose={() => setModal(null)}
-          onOpenBuilder={(templateIndex) => { const template = templates[templateIndex]; applyTemplate(templateIndex); setModal(null); setView("builder"); notify(isEditableTemplate(template) ? (documentStyleTemplateIds.has(template.id) ? "已应用基于飞书 Paywall 规范的可编辑模板。" : "已应用基于源端核心结构的可编辑复现。") : "已应用源端预览内容；精确节点树仍在采集。"); }}
+          onOpenBuilder={(templateIndex) => { const template = templates[templateIndex]; applyTemplate(templateIndex); setModal(null); setView("builder"); notify(template.isNew ? "已应用本地组合模板。" : isEditableTemplate(template) ? (documentStyleTemplateIds.has(template.id) ? "已应用基于飞书 Paywall 规范的可编辑模板。" : "已应用基于源端核心结构的可编辑复现。") : "已应用源端预览内容；精确节点树仍在采集。"); }}
         />
       )}
       {modal?.kind === "ai" && <AiModal onClose={() => setModal(null)} markUnknown={markUnknown} />}
@@ -2548,14 +2563,14 @@ function TemplatesModal({ selected, setSelected, onClose, onOpenBuilder }) {
   const filteredTemplates = templates.filter((template) => {
     const productMatch = !filters.products.length || filters.products.some((item) => template.productCount === (item === "1 product" ? 1 : 2));
     const mediaMatch = filters.media === "All" || (filters.media === "With Image or Video" ? ["image", "video"].includes(template.media) : template.media === "none");
-    const componentMatch = filters.components.every((item) => sourceVerifiedTemplateComponents[template.id]?.includes(item));
+    const componentMatch = filters.components.every((item) => (template.isNew ? template.components : sourceVerifiedTemplateComponents[template.id])?.includes(item));
     const lengthMatch = filters.length === "All" || (filters.length === "Short" ? template.title.length < 28 : template.title.length >= 28);
     const backgroundMatch = filters.background === "All" || (filters.background === "Dark" ? ["night", "black", "midnight", "ocean", "halloween"].includes(template.theme) : !["night", "black", "midnight", "ocean", "halloween"].includes(template.theme));
     const categoryMatch = filters.category === "All" || template.category === filters.category;
     return productMatch && mediaMatch && componentMatch && lengthMatch && backgroundMatch && categoryMatch;
   });
   const documentTemplates = filteredTemplates.filter((template) => template.documentTemplate);
-  const prioritizedTemplates = [...documentTemplates, ...filteredTemplates.filter((template) => !template.documentTemplate)];
+  const prioritizedTemplates = [...documentTemplates, ...filteredTemplates.filter((template) => template.isNew), ...filteredTemplates.filter((template) => !template.documentTemplate && !template.isNew)];
   return <Modal title="Choose a template" onClose={onClose} wide><div className="template-modal"><aside><div className="filter-heading"><strong>Filters</strong><span className="filter-count">{filteredTemplates.length}</span></div><p>Number of products</p><Filter group="products" value="1 product" list>1 product (31)</Filter><Filter group="products" value="More than 1 product" list>More than 1 product (56)</Filter><p>Image / video</p><Filter group="media" value="All">All</Filter><Filter group="media" value="With Image or Video">With Image or Video (77)</Filter><Filter group="media" value="No media">No media (3)</Filter><p>Components</p><Filter group="components" value="Free trial toggle" list>Free trial toggle (5)</Filter><Filter group="components" value="Trial timeline" list>Trial timeline (24)</Filter><Filter group="components" value="Reviews" list>Reviews (7)</Filter><Filter group="components" value="Timer" list>Timer (5)</Filter><p>Length</p><Filter group="length" value="All">All</Filter><Filter group="length" value="Short">Short</Filter><Filter group="length" value="Long">Long</Filter><p>Background theme</p><Filter group="background" value="All">All</Filter><Filter group="background" value="Light">Light</Filter><Filter group="background" value="Dark">Dark</Filter><p>Category</p><Filter group="category" value="All">All paywalls</Filter><Filter group="category" value="Popular">Popular</Filter><Filter group="category" value="Seasonal">Seasonal</Filter></aside><div className="template-content"><div className="template-scroll-content"><div className="template-selection-summary">{pendingTemplate ? <><span>Selected template</span><strong>{pendingTemplate.title}</strong><small>{displayTags(pendingTemplate).join(" · ")}</small></> : <span>No template selected</span>}</div><div className="template-grid rich-template-grid">{prioritizedTemplates.map((template) => { const index = templates.indexOf(template); return <button aria-pressed={pendingSelected === index} className={`template template-${template.theme} ${pendingSelected === index ? "selected" : ""}`} onClick={() => setPendingSelected(index)} key={template.id}><div className="template-source-preview"><SourceTemplateMedia template={template} /></div><strong>{template.title}</strong><small>{displayTags(template).join(" · ")}</small></button>; })}</div>{!filteredTemplates.length && <div className="template-empty">No locally captured Adapty templates match this filter combination.</div>}</div><div className="modal-actions template-modal-actions"><button className="secondary" onClick={onClose}>Cancel</button><button className="primary" disabled={pendingSelected === null} onClick={() => onOpenBuilder(pendingSelected)}>Open in Builder</button></div></div></div></Modal>;
 }
 
@@ -2603,6 +2618,7 @@ function StateBadge({ state }) { return <span className={`state ${state.toLowerC
 function Sort() { return <span className="sort">↕</span>; }
 function Help() { return <CircleHelp size={15} className="help" />; }
 function SourceTemplateMedia({ template }) {
+  if (template.isNew) return <div className="new-template-preview"><span className="new-template-badge">NEW</span><div className="new-template-preview-content"><strong>开启完整会员体验</strong><small>解锁更多权益，随时管理订阅。</small><div className="new-template-preview-benefits"><span>✓ 无限使用</span><span>✓ 专属体验</span></div><div className="new-template-preview-timeline"><span>今天</span><span>到期前</span><span>续订日</span></div><div className="new-template-preview-plan">月度套餐 <b>¥78/月</b></div><div className="new-template-preview-button">继续</div></div></div>;
   if (template.prdScreenshot) return <img className="prd-template-screenshot" src={template.prdScreenshot} alt={`${template.title} PRD screenshot`} />;
   if (template.documentTemplate) return <HelloTalkPaywall variant={template.documentTemplate} interactive={false} />;
   const assets = template.assetParts ?? [template.asset];
