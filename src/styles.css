@@ -1695,6 +1695,12 @@ textarea { min-height: 80px; resize: vertical; }
 .template-rc-source-24 .preview-button { width: 100%; margin-top: auto; }
 .template-rc-source-24 .preview-cta { background: #5ecb60 !important; color: #111; }
 .template-rc-source-25 .preview-benefits { padding: 10px; border-radius: 8px; background: #f5f5f5; }
+.template-rc-source-25 .phone-content { padding-top: 47px; }
+.template-rc-source-25 .preview-button { width: 100%; }
+.template-rc-source-25 .preview-products .ht-vertical-plan { padding-right: 25px; }
+.template-rc-source-25 .preview-products .ht-vertical-plan::after { content: ""; position: absolute; right: 8px; top: 13px; width: 14px; height: 14px; border: 1px solid #c7c7c7; border-radius: 50%; }
+.template-rc-source-25 .preview-products .ht-vertical-plan.chosen { background: #f5f2f8 !important; }
+.template-rc-source-25 .preview-products .ht-vertical-plan.chosen::after { border-color: #ad4bd6; background: #ad4bd6; box-shadow: inset 0 0 0 3px #fff; }
 .template-rc-source-26 [data-node-id$="-image"] { margin: -37px -13px 24px; }
 .template-rc-source-26 [data-node-id$="-image"] .preview-image { height: 148px !important; }
 .template-rc-source-26 .phone-content { text-align: center; }
