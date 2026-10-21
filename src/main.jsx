@@ -258,6 +258,7 @@ const PRODUCT_LAYOUTS = [
   { id: "standard", label: "标准卡片" },
   { id: "compact", label: "紧凑横行" },
   { id: "vertical", label: "纵向列表" },
+  { id: "info-row", label: "左右信息行" },
 ];
 
 function productLayout(config = {}, variant = "") {
@@ -338,6 +339,15 @@ function ProductPackageCard({ plan, index, config = {}, layout, selected, focuse
   const choose = (event) => { if (!interactive) return; event.stopPropagation(); onChoose?.(index); onInspect?.(event, index); };
   const keyboard = (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); choose(event); } };
   const cardProps = { style: planStyle, role: interactive ? "button" : undefined, tabIndex: interactive ? 0 : undefined, onClick: choose, onKeyDown: keyboard };
+  if (layout === "info-row") {
+    const [primaryName, secondaryName = ""] = name.split(" · ");
+    const [primaryCopy, secondaryCopy = ""] = supportingCopy.split(" · ");
+    return <div className={`${baseClass} ht-info-row ${selected ? "chosen" : ""}`} {...cardProps} style={productStyle}>
+      <span className="ht-info-row-marker" aria-hidden="true">◆</span>
+      <span className="ht-info-row-main"><strong>{primaryName}</strong>{secondaryName && <small>{secondaryName}</small>}{primaryCopy && <small>{primaryCopy}</small>}</span>
+      <span className="ht-info-row-price" data-inspector-area="price"><strong>{priceView.main}</strong>{secondaryCopy && <small>{secondaryCopy}</small>}</span>
+    </div>;
+  }
   if (layout === "vertical") {
     const monthly = fields.monthly && fields.monthly !== priceView.main && fields.monthly !== priceView.strike ? fields.monthly : "";
     return <div className={`${baseClass} ht-vertical-plan ${selected ? "chosen" : ""}`} {...cardProps}>
@@ -2442,11 +2452,17 @@ function AgreementStyle({ active, updateNode }) {
 
 function ListContent({ active, updateNode, addNestedNode, allowAdd = true }) {
   if (active.id === "benefits" && active.config?.bluePrivilege) return <><PrivilegeComparisonEditor active={active} updateNode={updateNode} />{allowAdd && <button type="button" className="text-action" onClick={() => addNestedNode(active.id, "List item")}><Plus size={15} /> 添加独立子组件</button>}</>;
+  if (active.config?.listVariant === "testimonials") {
+    const reviews = active.config.testimonialRows ?? [];
+    const commitReviews = (next) => updateNodeConfig(active, updateNode, { testimonialRows: next });
+    const patchReview = (index, patch) => commitReviews(reviews.map((row, position) => position === index ? { ...row, ...patch } : row));
+    return <><Field label="展示形式"><select value="testimonials" onChange={(event) => updateNodeConfig(active, updateNode, { listVariant: event.target.value })}><option value="benefits">特权列表</option><option value="testimonials">评价列表</option></select></Field><h4>评价</h4>{reviews.map((row, index) => <section className="product-row-editor" key={index}><header><strong>评价 {index + 1}</strong><button type="button" className="icon" aria-label={`删除评价 ${index + 1}`} onClick={() => commitReviews(reviews.filter((_, position) => position !== index))}><X size={15} /></button></header><Field label="标题" required><input value={row.title} onChange={(event) => patchReview(index, { title: event.target.value })} /></Field><Field label="评价正文" required><textarea value={row.quote} onChange={(event) => patchReview(index, { quote: event.target.value })} /></Field><Field label="署名"><input value={row.author} onChange={(event) => patchReview(index, { author: event.target.value })} /></Field></section>)}<button type="button" className="text-action" onClick={() => commitReviews([...reviews, { title: "", quote: "", author: "" }])}><Plus size={15} /> 添加评价</button></>;
+  }
   const rows = listRowsFor(active);
   const commit = (nextRows) => updateNodeConfig(active, updateNode, { listRows: nextRows });
   const patchRow = (index, patch) => commit(rows.map((row, position) => position === index ? { ...row, ...patch } : row));
   const move = (index, direction) => { const next = [...rows]; const other = index + direction; if (other < 0 || other >= next.length) return; [next[index], next[other]] = [next[other], next[index]]; commit(next); };
-  return <><h4>特权行</h4>{rows.map((row, index) => <section className="product-row-editor" key={index}><header><strong>第 {index + 1} 行</strong><div><button type="button" title="上移" disabled={index === 0} onClick={() => move(index, -1)}>↑</button><button type="button" title="下移" disabled={index === rows.length - 1} onClick={() => move(index, 1)}>↓</button><button type="button" title="删除" onClick={() => commit(rows.filter((_, position) => position !== index))}><X size={15} /></button></div></header><Field label="标题"><input value={row.title} onChange={(event) => patchRow(index, { title: event.target.value })} /></Field><label className="switch-row"><input type="checkbox" checked={row.showCaption !== false} onChange={(event) => patchRow(index, { showCaption: event.target.checked })} /><strong>显示描述</strong></label>{row.showCaption !== false && <Field label="描述"><input value={row.caption} onChange={(event) => patchRow(index, { caption: event.target.value })} /></Field>}<Field label="行首内容"><select value={row.leadingMode ?? "icon"} onChange={(event) => patchRow(index, { leadingMode: event.target.value })}><option value="icon">图标</option><option value="text">文字</option><option value="none">不显示</option></select></Field>{row.leadingMode !== "none" && <Field label={row.leadingMode === "text" ? "行首文字" : "图标字符"}><input value={row.leading ?? "✓"} onChange={(event) => patchRow(index, { leading: event.target.value })} /></Field>}</section>)}<button type="button" className="text-action" onClick={() => commit([...rows, { title: "", caption: "", leadingMode: "icon", leading: "✓", showCaption: true }])}><Plus size={15} /> 添加特权行</button>{allowAdd && <button type="button" className="text-action" onClick={() => addNestedNode(active.id, "List item")}><Plus size={15} /> 添加独立子组件</button>}</>;
+  return <><Field label="展示形式"><select value="benefits" onChange={(event) => updateNodeConfig(active, updateNode, { listVariant: event.target.value, testimonialRows: listRowsFor(active).map((row) => ({ title: row.title, quote: row.caption, author: "" })) })}><option value="benefits">特权列表</option><option value="testimonials">评价列表</option></select></Field><h4>特权行</h4>{rows.map((row, index) => <section className="product-row-editor" key={index}><header><strong>第 {index + 1} 行</strong><div><button type="button" title="上移" disabled={index === 0} onClick={() => move(index, -1)}>↑</button><button type="button" title="下移" disabled={index === rows.length - 1} onClick={() => move(index, 1)}>↓</button><button type="button" title="删除" onClick={() => commit(rows.filter((_, position) => position !== index))}><X size={15} /></button></div></header><Field label="标题"><input value={row.title} onChange={(event) => patchRow(index, { title: event.target.value })} /></Field><label className="switch-row"><input type="checkbox" checked={row.showCaption !== false} onChange={(event) => patchRow(index, { showCaption: event.target.checked })} /><strong>显示描述</strong></label>{row.showCaption !== false && <Field label="描述"><input value={row.caption} onChange={(event) => patchRow(index, { caption: event.target.value })} /></Field>}<Field label="行首内容"><select value={row.leadingMode ?? "icon"} onChange={(event) => patchRow(index, { leadingMode: event.target.value })}><option value="icon">图标</option><option value="text">文字</option><option value="none">不显示</option></select></Field>{row.leadingMode !== "none" && <Field label={row.leadingMode === "text" ? "行首文字" : "图标字符"}><input value={row.leading ?? "✓"} onChange={(event) => patchRow(index, { leading: event.target.value })} /></Field>}</section>)}<button type="button" className="text-action" onClick={() => commit([...rows, { title: "", caption: "", leadingMode: "icon", leading: "✓", showCaption: true }])}><Plus size={15} /> 添加特权行</button>{allowAdd && <button type="button" className="text-action" onClick={() => addNestedNode(active.id, "List item")}><Plus size={15} /> 添加独立子组件</button>}</>;
 }
 
 function TabsContent({ active, updateNode }) {
@@ -3457,6 +3473,7 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, on
   if (node.type === "Stars") return wrap(<div className="preview-stars">{node.content || "★★★★★"}</div>);
   if (node.type === "Discount") return wrap(<h2>{node.content || "Discount"}</h2>, "preview-headline");
   if (isTextLayer) return wrap(node.variant === "headline" ? <h2 style={textStyle}><RichText node={node} fallback="Heading" interactive /></h2> : node.variant === "section" ? <h3 style={textStyle}><RichText node={node} interactive /></h3> : <p style={textStyle} className={node.variant === "boundary" ? "preview-boundary" : ""}><RichText node={node} fallback="Supporting text" interactive /></p>, node.variant === "headline" ? "preview-headline" : "preview-copy");
+  if (isListLayer && config.listVariant === "testimonials") return wrap(<div className="preview-testimonials">{(config.testimonialRows ?? []).map((row, index) => <article key={index} data-inspector-row={index}><strong>{row.title}</strong><span aria-label="5 星评价">★★★★★</span><p>{row.quote}</p>{row.author && <small>{row.author}</small>}</article>)}</div>, "preview-testimonials-wrap");
   if (isListLayer) {
     const rows = listRowsFor(node);
     if (!rows.length && !children.length) return wrap(<div className="preview-list-anchor">List</div>, "preview-list-anchor-wrap");

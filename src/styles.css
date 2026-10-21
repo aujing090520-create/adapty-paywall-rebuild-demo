@@ -1516,6 +1516,15 @@ textarea { min-height: 80px; resize: vertical; }
 .template-rc-source-18 .preview-headline h2 { font-weight: 400; }
 .template-rc-source-18 .preview-products-wrap { margin-top: 25px; }
 .template-rc-source-18 .preview-products .ht-vertical-plan { border: 0; border-radius: 0; }
+.preview-products.product-layout-info-row { display: grid; gap: 4px; }
+.preview-products .ht-info-row { display: grid; grid-template-columns: 35px minmax(0,1fr) auto; align-items: center; gap: 7px; min-height: 54px; padding: 3px 2px; border: 0; border-radius: 0; background: transparent; color: #222; cursor: pointer; }
+.preview-products .ht-info-row-marker { display: grid; place-items: center; width: 35px; height: 35px; background: #f4f4f4; color: #242424; font-size: 12px; }
+.preview-products .ht-info-row.chosen .ht-info-row-marker { background: #242424; color: #fff; }
+.preview-products .ht-info-row-main, .preview-products .ht-info-row-price { display: grid; gap: 1px; min-width: 0; }
+.preview-products .ht-info-row-main strong { font-size: 11px; font-weight: 500; }
+.preview-products .ht-info-row-main small, .preview-products .ht-info-row-price small { color: #777; font-size: 9px; }
+.preview-products .ht-info-row-price { text-align: right; white-space: nowrap; }
+.preview-products .ht-info-row-price strong { font-size: 11px; font-weight: 500; }
 .template-rc-source-18 .preview-button { margin-top: auto; }
 .template-rc-source-18 .preview-cta { background: #232121 !important; border-radius: 0; }
 .template-rc-source-19 .preview-award-wrap { margin: 12px 0; }
@@ -1549,6 +1558,18 @@ textarea { min-height: 80px; resize: vertical; }
 .template-rc-source-21 .preview-products.product-layout-vertical { grid-template-columns: repeat(2,minmax(0,1fr)); }
 .template-rc-source-22 .preview-award-wrap { margin: 10px 0; }
 .template-rc-source-22 .preview-list { width: 100%; }
+.template-rc-source-22 .preview-award-wrap svg { display: none; }
+.template-rc-source-22 .preview-award-wrap .preview-award { display: flex; flex-direction: column; align-items: center; }
+.template-rc-source-22 .preview-award-wrap .preview-award small { order: 0; }
+.template-rc-source-22 .preview-award-wrap .preview-award strong { order: 1; }
+.template-rc-source-22 .preview-award-wrap .preview-award span { order: 2; }
+.template-rc-source-22 .preview-award-wrap strong { color: #777; font-weight: 400; }
+.template-rc-source-22 .preview-testimonials-wrap { width: 100%; max-height: 157px; margin-top: 11px; overflow: hidden; text-align: left; }
+.template-rc-source-22 .preview-testimonials article { padding: 10px 1px 12px; border-top: 1px solid #ddd; }
+.template-rc-source-22 .preview-testimonials article strong { display: block; color: #161616; font-size: 11px; }
+.template-rc-source-22 .preview-testimonials article > span { display: block; margin: 3px 0; color: #f5bf3d; font-size: 10px; letter-spacing: 1px; }
+.template-rc-source-22 .preview-testimonials article p { margin: 0 0 6px; color: #111; font-size: 9px; line-height: 1.35; }
+.template-rc-source-22 .preview-testimonials article small { color: #999; font-size: 8px; font-style: italic; }
 .template-rc-source-22 .preview-products-wrap { width: 100%; margin-top: auto; }
 .template-rc-source-23 { --rc-surface: #fff; --rc-ink: #111; --rc-muted: #777; }
 .template-rc-source-23 .phone-content { padding-top: 75px; background: linear-gradient(#b7221a 0 35%, #fff 35%); }
@@ -1567,6 +1588,10 @@ textarea { min-height: 80px; resize: vertical; }
 .template-rc-source-23 .preview-products .ht-vertical-plan.chosen strong, .template-rc-source-23 .preview-products .ht-vertical-plan.chosen .ht-vertical-total, .template-rc-source-23 .preview-products .ht-vertical-plan.chosen small { color: #fff; }
 .template-rc-source-23 .preview-list { margin-top: 14px; }
 .template-rc-source-23 .preview-benefits { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.template-rc-source-23 .preview-benefits li { display: block; padding: 0; }
+.template-rc-source-23 .preview-benefits li > i { display: none; }
+.template-rc-source-23 .preview-benefits strong { display: block; margin-bottom: 3px; color: #ac2920; font-size: 8px; font-weight: 700; text-transform: uppercase; }
+.template-rc-source-23 .preview-benefits small { color: #151515; font-size: 9px; line-height: 1.3; }
 .template-rc-source-23 .preview-button { margin-top: auto; }
 .template-rc-source-23 .preview-cta { border-radius: 0; background: #b7221a !important; }
 .template-rc-source-24 .phone-content { padding-top: 70px; background: #080808; }

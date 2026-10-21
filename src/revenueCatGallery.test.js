@@ -75,6 +75,9 @@ test("testimonial, library, and concert layouts keep their observed first-screen
   assert.deepEqual(tree(26).find((item) => item.type === "Timeline").config.listRows.map((row) => row.marker), ["lock", "bell", "star"]);
   assert.deepEqual(tree(24).filter((item) => item.type === "Image").map((item) => item.config.mediaSrc), observedTemplate(24).assets);
   assert.equal(tree(27).find((item) => item.type === "Feature Table").config.tableVariant, "feature-list");
+  assert.equal(tree(18).find((item) => item.type === "Products").config.packageLayout, "info-row");
+  assert.equal(tree(22).find((item) => item.id.endsWith("-reviews")).config.listVariant, "testimonials");
+  assert.equal(tree(22).find((item) => item.id.endsWith("-reviews")).config.testimonialRows[0].author, "CatMomSarah");
   assert.deepEqual(tree(29).find((item) => item.type === "Feature Table").config.rows.map((row) => row.values), [["✓", "✓"], ["—", "✓"], ["—", "✓"], ["—", "✓"], ["—", "✓"]]);
   assert.deepEqual(tree(36).slice(0, 5).map((item) => item.type), ["Header", "Text", "Image", "List", "Text"]);
   assert.ok(tree(39).findIndex((item) => item.type === "List") < tree(39).findIndex((item) => item.id.endsWith("-copy-2")));

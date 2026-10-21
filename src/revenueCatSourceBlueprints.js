@@ -133,7 +133,7 @@ export function createSourceTemplateNodes(template, node) {
   const button = (part, index, depth = 0) => add(part, "Button", at(index), { action: [5, 6].includes(order) ? "OfferCodeRedemption" : "Purchase", backgroundColor: order === 13 ? "#f2f2f7" : template.accent, ...([5, 13].includes(order) ? { color: "#111111", radius: 99 } : {}) }, depth);
   const products = (depth = 0) => {
     const visibleRows = plan.products ?? [];
-    return add("products", "Products", visibleRows.join("\n") || "绑定商品||", { defaultSelected: [8, 19, 22, 30, 32, 33, 34, 35, 36, 40].includes(order) ? 1 : 0, packageLayout: [4, 14, 19, 22, 30].includes(order) ? "horizontal" : "vertical", showOfferBadge: true, showCards: visibleRows.length > 0, sourcePackageCount: sourcePackageCount(order), purchasePerCard: order === 10, badgeGradient: [template.accent, template.accent, template.accent], selectedBorderGradient: [template.accent, template.accent, template.accent], ...(visibleRows.length ? { packageRows: sourceProductRows(order) } : {}) }, depth);
+    return add("products", "Products", visibleRows.join("\n") || "绑定商品||", { defaultSelected: [8, 19, 22, 30, 32, 33, 34, 35, 36, 40].includes(order) ? 1 : 0, packageLayout: order === 18 ? "info-row" : [4, 14, 19, 22, 30].includes(order) ? "horizontal" : "vertical", showOfferBadge: true, showCards: visibleRows.length > 0, sourcePackageCount: sourcePackageCount(order), purchasePerCard: order === 10, badgeGradient: [template.accent, template.accent, template.accent], selectedBorderGradient: [template.accent, template.accent, template.accent], ...(visibleRows.length ? { packageRows: sourceProductRows(order) } : {}) }, depth);
   };
   const links = (depth = 0) => {
     const policyLines = lines.filter((line) => /^(Restore( Purchases| purchases)?|Terms( of Use| of service)?|Privacy( Policy| policy)?|Privacy policy)$/.test(line));
@@ -298,7 +298,13 @@ export function createSourceTemplateNodes(template, node) {
   if (plan.reviews) {
     const reviewLines = lines.slice(...plan.reviews);
     if (plan.reviewStyle === "quote") result.push(add("review", "Text", reviewLines.join("\n")));
-    else if (plan.reviewStyle === "list") result.push(add("reviews", "List", Array.from({ length: Math.floor(reviewLines.length / 3) }, (_, index) => reviewLines.slice(index * 3, index * 3 + 3).join("|" )).join("\n")));
+    else if (plan.reviewStyle === "list") {
+      const testimonialRows = Array.from({ length: Math.floor(reviewLines.length / 3) }, (_, index) => {
+        const [title, quote, author] = reviewLines.slice(index * 3, index * 3 + 3);
+        return { title, quote, author };
+      });
+      result.push(add("reviews", "List", testimonialRows.map((row) => `${row.title}|${row.quote}|${row.author}`).join("\n"), { listVariant: "testimonials", testimonialRows }));
+    }
     else {
       const groupSize = order === 7 ? 2 : order === 20 ? 2 : 3;
       const slides = Array.from({ length: Math.floor(reviewLines.length / groupSize) }, (_, index) => {
