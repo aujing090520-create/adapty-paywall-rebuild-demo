@@ -230,6 +230,11 @@ textarea { min-height: 80px; resize: vertical; }
 .button-action-sheet strong { display: block; margin-bottom: 12px; font-size: 22px; }
 .button-action-sheet small { color: #777; }
 .button-action-close { position: absolute; top: 16px; right: 14px; display: grid; place-items: center; border: 0; background: transparent; }
+.offer-code-preview { display: grid; gap: 10px; }
+.offer-code-preview label { font-size: 12px; font-weight: 700; }
+.offer-code-preview input { width: 100%; min-height: 38px; padding: 0 10px; border: 1px solid #c9c9d0; border-radius: 6px; background: #fff; color: #222; }
+.offer-code-preview button { min-height: 38px; border: 0; border-radius: 6px; background: #643ed9; color: #fff; font-weight: 700; cursor: pointer; }
+.offer-code-preview small { line-height: 1.4; }
 .property-scroll .preview-field-focus { outline: 2px solid #7445ed; outline-offset: 4px; border-radius: 4px; background-color: #f5f0ff; transition: outline-color .15s, background-color .15s; }
 .property-scroll .inspector-section { padding: 1px 2px; }
 .phone .preview-subzone-selected { outline: 2px solid #7445ed; outline-offset: -2px; }

@@ -45,6 +45,9 @@ test("source-specific commerce structures do not revert to generic packages", ()
   for (const order of [13, 14, 15]) {
     assert.equal(tree(order).find((item) => item.type === "Web Paywall Button").config.action, "WebCheckout");
   }
+  for (const order of [5, 6]) {
+    assert.equal(tree(order).find((item) => item.type === "Button").config.action, "OfferCodeRedemption");
+  }
   assert.equal(tree(29).find((item) => item.type === "Products").config.showCards, false);
   assert.equal(revenueCatGallery[1].productCount, 1);
   assert.equal(revenueCatGallery[28].productCount, 1);

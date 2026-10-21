@@ -56,8 +56,8 @@
 | 2 | AstroApp Offer | 1 | 1 | 无可见套餐卡 |
 | 3 | BookApp Offer | 1 | 1 | 无可见套餐卡 |
 | 4 | Wide badge style | 2 | 1 | Carousel ×1 |
-| 5 | Offer code 01 | 1 | 0 | 无可见套餐卡，优惠码动作未核 |
-| 6 | Offer code 03 | 1 | 0 | 无可见套餐卡，优惠码动作未核 |
+| 5 | Offer code 01 | 1 | 0 | 无可见套餐卡；领取按钮为 `Navigate to → Offer code redemption` |
+| 6 | Offer code 03 | 1 | 0 | 无可见套餐卡；领取按钮为 `Navigate to → Offer code redemption` |
 | 7 | Switch - Free trial | 2 | 1 | Carousel、Toggle、Tab、Tab control 各 ×1 |
 | 8 | Switch - Family plans | 2 | 1 | Toggle、Tab、Tab control 各 ×1 |
 | 9 | Switch - Free trial 1 package | 1 | 1 | Toggle、Tab、Tab control 各 ×1；无可见套餐卡 |
@@ -95,3 +95,5 @@
 | 41 | Boxer | 1 | 1 | 无可见套餐卡 |
 
 本地还原状态：40 张已将源端 Package 数量与关键交互层逐张对到通用组件节点。无可见选择卡的模板保留商品绑定，但不显示套餐卡；第 10 张复用商品组件的“每档购买”配置。已把画廊可见的角标、副文案、日英双语套餐名等补入商品组件；40 张已核实模板的可见文字均映射到本地节点，并有回归测试守护。第 13 张的结构、首按钮、网页结账按钮和底部位置已做源画面对照；第 37 张的 BACK/RESTORE 也已归入顶部按钮。第 13–15 张的网页购买入口为 RevenueCat Billing 浏览器结账，不是任意 URL 跳转；本地仅预览该动作及自动关闭选项，未发起真实交易。其余源端字段、视觉尺寸、交互条件及动作目标尚不能称为完整功能复刻。第 38 张仍按预览做临时映射，未标为编辑器已核实。四张 HelloTalk 手动模板不在本轮修改范围。
+
+第 5、6 张已继续逐项读取源草稿：两张领取按钮均为 `Navigate to → Offer code redemption`，不是直接核销。通用按钮已支持该动作，本地兑换页只验证非空输入，不请求 RevenueCat 或更改价格。缺少一键配置导出不阻断逐项读取；未核实的字段继续在本表保留为未核实，不用预览文案代替源字段。真实支付、兑换结果与履约是独立的外部集成事项，不纳入模板编辑器还原完成度。

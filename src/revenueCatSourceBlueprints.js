@@ -130,7 +130,7 @@ export function createSourceTemplateNodes(template, node) {
   };
   const media = (part, depth = 0) => add(part, "Image", at(plan.heading), { mediaSrc: template.heroAsset, mediaFit: template.art === "icon" ? "contain" : "cover", mediaBackgroundColor: template.art === "dark" ? "#131421" : "#f6f6f8", mediaWidth: 100, mediaHeight: template.art === "icon" ? 80 : 140 }, depth);
   const header = (part, index, depth = 0) => node(id(part), "Header", at(index), depth, { variant: "headline", ...([13, 37].includes(order) ? { config: { textAlign: "left", fontSize: 19 } } : {}) });
-  const button = (part, index, depth = 0) => add(part, "Button", at(index), { action: [5, 6].includes(order) ? "None" : "Purchase", backgroundColor: order === 13 ? "#f2f2f7" : template.accent, ...(order === 13 ? { color: "#111111", radius: 99 } : {}) }, depth);
+  const button = (part, index, depth = 0) => add(part, "Button", at(index), { action: [5, 6].includes(order) ? "OfferCodeRedemption" : "Purchase", backgroundColor: order === 13 ? "#f2f2f7" : template.accent, ...(order === 13 ? { color: "#111111", radius: 99 } : {}) }, depth);
   const products = (depth = 0) => {
     const visibleRows = plan.products ?? [];
     return add("products", "Products", visibleRows.join("\n") || "绑定商品||", { defaultSelected: 0, packageLayout: visibleRows.length === 3 ? "horizontal" : "vertical", showOfferBadge: false, showCards: visibleRows.length > 0, sourcePackageCount: sourcePackageCount(order), purchasePerCard: order === 10, badgeGradient: [template.accent, template.accent, template.accent], selectedBorderGradient: [template.accent, template.accent, template.accent], ...(visibleRows.length ? { packageRows: sourceProductRows(order) } : {}) }, depth);
