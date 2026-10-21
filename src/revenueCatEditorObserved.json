@@ -1,0 +1,8078 @@
+[
+  {
+    "order": 1,
+    "name": "Multi-step Paywall",
+    "draft": "wf34b8a59d0afc4807",
+    "layers": [
+      {
+        "text": "Title content",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Start Your Free Week And Reclaim 30+ Minutes Daily",
+        "type": "text"
+      },
+      {
+        "text": "Feature list",
+        "type": "stack"
+      },
+      {
+        "text": "Feature #1",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Copy",
+        "type": "stack"
+      },
+      {
+        "text": "Sleep deeper",
+        "type": "text"
+      },
+      {
+        "text": "Finally quiet the mind before bed",
+        "type": "text"
+      },
+      {
+        "text": "Feature #1",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Copy",
+        "type": "stack"
+      },
+      {
+        "text": "Be fully present",
+        "type": "text"
+      },
+      {
+        "text": "Because life keeps moving whether you're there or not",
+        "type": "text"
+      },
+      {
+        "text": "Feature #1",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Copy",
+        "type": "stack"
+      },
+      {
+        "text": "Own your mornings",
+        "type": "text"
+      },
+      {
+        "text": "Start the day with intention, not anxiety.",
+        "type": "text"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "240K+ reviews",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "4.000.000 Users",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Title content",
+        "type": "stack"
+      },
+      {
+        "text": "Most People Feel Calmer After Just 3 Sessions",
+        "type": "text"
+      },
+      {
+        "text": "Small daily practice, real lasting change",
+        "type": "text"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Results you'll feel within a week",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Image and close button",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "People Who Meditate Daily Sleep 40% Better",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Title",
+        "type": "text"
+      },
+      {
+        "text": "Description",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Title",
+        "type": "text"
+      },
+      {
+        "text": "Description",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Title",
+        "type": "text"
+      },
+      {
+        "text": "Description",
+        "type": "text"
+      },
+      {
+        "text": "Timeline",
+        "type": "timeline"
+      },
+      {
+        "text": "First item",
+        "type": "timeline_item"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Title",
+        "type": "text"
+      },
+      {
+        "text": "Description",
+        "type": "text"
+      },
+      {
+        "text": "Second item",
+        "type": "timeline_item"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Title",
+        "type": "text"
+      },
+      {
+        "text": "Description",
+        "type": "text"
+      },
+      {
+        "text": "Third item",
+        "type": "timeline_item"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Title",
+        "type": "text"
+      },
+      {
+        "text": "Description",
+        "type": "text"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Package stack",
+        "type": "stack"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Yearly",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price_per_year }}/year",
+        "type": "text"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Weekly",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price_per_week }}/week",
+        "type": "text"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 2,
+    "name": "AstroApp Offer",
+    "draft": "wf09679a4e90b04e77",
+    "layers": [
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Close button",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "60% off",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "30 days free, then 60% off",
+        "type": "text"
+      },
+      {
+        "text": "Your welcome back gift is here. AI astrologer, personalized horoscopes, and your full birth chart, all yours.",
+        "type": "text"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "$0.00 due today. 7-day free trial, then $59.99 $39.99/year. Cancel anytime.",
+        "type": "text"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy Policy",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms of Use",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 3,
+    "name": "BookApp Offer",
+    "draft": "wfa3b7650d3850483b",
+    "layers": [
+      {
+        "text": "Close button",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Offer callout",
+        "type": "stack"
+      },
+      {
+        "text": "Your One-Time Offer",
+        "type": "text"
+      },
+      {
+        "text": "Title & subtitle",
+        "type": "stack"
+      },
+      {
+        "text": "{{ product.relative_discount }} OFF",
+        "type": "text"
+      },
+      {
+        "text": "Daily picks, audio summaries, sleep mode, and AI recommendations. Your library, streaks, and highlights stay yours.",
+        "type": "text"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Lock in your price {{ product.price_per_period }}. Cancel anytime.",
+        "type": "text"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Get My Offer",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 4,
+    "name": "Wide badge style",
+    "draft": "wf704096011a444966",
+    "layers": [
+      {
+        "text": "Header",
+        "type": "header"
+      },
+      {
+        "text": "Close button",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Content",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Body",
+        "type": "stack"
+      },
+      {
+        "text": "Header",
+        "type": "stack"
+      },
+      {
+        "text": "Unlock full access",
+        "type": "text"
+      },
+      {
+        "text": "Carousel",
+        "type": "carousel"
+      },
+      {
+        "text": "Page 1",
+        "type": "stack"
+      },
+      {
+        "text": "Testimonial",
+        "type": "stack"
+      },
+      {
+        "text": "Best cat photo app",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "I open CatGPT daily for fresh cat photos. The collections are adorable, easy to save, and always brighten my mood.",
+        "type": "text"
+      },
+      {
+        "text": "WhiskerGalleryFan",
+        "type": "text"
+      },
+      {
+        "text": "Page 2",
+        "type": "stack"
+      },
+      {
+        "text": "Testimonial",
+        "type": "stack"
+      },
+      {
+        "text": "Perfect for cat lovers",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "The cat collections are gorgeous. I love browsing different breeds and moods whenever I need a quick smile.",
+        "type": "text"
+      },
+      {
+        "text": "DailyCatScroll",
+        "type": "text"
+      },
+      {
+        "text": "Page 3",
+        "type": "stack"
+      },
+      {
+        "text": "Testimonial",
+        "type": "stack"
+      },
+      {
+        "text": "My favorite daily escape",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "This app is my favorite little escape. The curated galleries are cute, calming, and always have the perfect cat photo.",
+        "type": "text"
+      },
+      {
+        "text": "CatPicsForever",
+        "type": "text"
+      },
+      {
+        "text": "Package stack",
+        "type": "stack"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "BEST VALUE",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "{{ product.periodly | capitalize }}",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "({{ product.relative_discount }} off)",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price_per_month }}/mo billed annually",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "{{ product.periodly | capitalize }}",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 5,
+    "name": "Offer code 01",
+    "draft": "wf89f124233c974e34",
+    "layers": [
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "We have a special discount for you!",
+        "type": "text"
+      },
+      {
+        "text": "Lowest price guaranteed",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "25OFFSUMMER",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "$59.99",
+        "type": "text"
+      },
+      {
+        "text": "$44.99/{{ product.period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Redeem Offer",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 6,
+    "name": "Offer code 03",
+    "draft": "wf5b1b90cca18549f6",
+    "layers": [
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Limited time offer",
+        "type": "text"
+      },
+      {
+        "text": "Lowest price guaranteed",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "25OFFSUMMER",
+        "type": "text"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "$59.99",
+        "type": "text"
+      },
+      {
+        "text": "$44.99/{{ product.period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Claim limited time offer",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 7,
+    "name": "Switch - Free trial",
+    "draft": "wfe31c7a86c7df43ce",
+    "layers": [
+      {
+        "text": "Image and close button",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Start your gardening journey today",
+        "type": "text"
+      },
+      {
+        "text": "Social proof carousel",
+        "type": "carousel"
+      },
+      {
+        "text": "Page 1",
+        "type": "stack"
+      },
+      {
+        "text": "Testimonial",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "“This app turned my brown thumb green almost overnight. My once-droopy pothos now unfurls a new leaf every week!” 🌿",
+        "type": "text"
+      },
+      {
+        "text": "CatMomSarah",
+        "type": "text"
+      },
+      {
+        "text": "Page 2",
+        "type": "stack"
+      },
+      {
+        "text": "Testimonial",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "“The smart reminders rescue every plant before I even think to water. It’s like having a mini-gardener living in my phone.” ✨",
+        "type": "text"
+      },
+      {
+        "text": "LunasHuman",
+        "type": "text"
+      },
+      {
+        "text": "Page 3",
+        "type": "stack"
+      },
+      {
+        "text": "Testimonial",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "“Tiny, timely care tips finally cracked the code for my orchid. After months of silence, it’s blooming in full color again!” 🪴",
+        "type": "text"
+      },
+      {
+        "text": "CatMomSarah2024",
+        "type": "text"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Switch",
+        "type": "toggle"
+      },
+      {
+        "text": "OFF",
+        "type": "tab"
+      },
+      {
+        "text": "Switch and text",
+        "type": "stack"
+      },
+      {
+        "text": "Enable Family Sharing",
+        "type": "text"
+      },
+      {
+        "text": "Switch control",
+        "type": "tab_control"
+      },
+      {
+        "text": "Package stack",
+        "type": "stack"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "{{ product.periodly | capitalize }}",
+        "type": "text"
+      },
+      {
+        "text": "Only {{ product.price_per_month }}/mo",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Monthly",
+        "type": "text"
+      },
+      {
+        "text": "$9.99/mo",
+        "type": "text"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 8,
+    "name": "Switch - Family plans",
+    "draft": "wf25ed4eb1f5d74447",
+    "layers": [
+      {
+        "text": "Image and close button",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Get access to all our training features",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Personalized, day-by-day training plans that adjust automatically to your pace.",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Race-day predictor and progress charts show exactly how close you are to your PR.",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Science-backed strength and mobility sessions prevent injuries before they start.",
+        "type": "text"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Switch",
+        "type": "toggle"
+      },
+      {
+        "text": "OFF",
+        "type": "tab"
+      },
+      {
+        "text": "Switch stack",
+        "type": "stack"
+      },
+      {
+        "text": "Show family plans",
+        "type": "text"
+      },
+      {
+        "text": "Switch control",
+        "type": "tab_control"
+      },
+      {
+        "text": "Package stack",
+        "type": "stack"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Monthly",
+        "type": "text"
+      },
+      {
+        "text": "$9.99/mo",
+        "type": "text"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Yearly",
+        "type": "text"
+      },
+      {
+        "text": "12 mo • $69.99",
+        "type": "text"
+      },
+      {
+        "text": "$5.83/mo",
+        "type": "text"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 9,
+    "name": "Switch - Free trial 1 package",
+    "draft": "wf1868b60263144f52",
+    "layers": [
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Close button",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Open the doors to infinite knowledge",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Switch",
+        "type": "toggle"
+      },
+      {
+        "text": "OFF",
+        "type": "tab"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Just",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price_per_period }}",
+        "type": "text"
+      },
+      {
+        "text": "Auto-renewable. Cancel anytime",
+        "type": "text"
+      },
+      {
+        "text": "Switch and text",
+        "type": "stack"
+      },
+      {
+        "text": "Enable Family Sharing",
+        "type": "text"
+      },
+      {
+        "text": "Switch control",
+        "type": "tab_control"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 10,
+    "name": "Virtual currencies OTP",
+    "draft": "wfac321a5a5d8846f9",
+    "layers": [
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Header row",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Title content",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Add credits to your account",
+        "type": "text"
+      },
+      {
+        "text": "Package stack",
+        "type": "stack"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "25 credits",
+        "type": "text"
+      },
+      {
+        "text": "5 seconds of video",
+        "type": "text"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "{{ product.price }}",
+        "type": "text"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "50 credits",
+        "type": "text"
+      },
+      {
+        "text": "10 seconds of video",
+        "type": "text"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "{{ product.price }}",
+        "type": "text"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "100 credits",
+        "type": "text"
+      },
+      {
+        "text": "20 seconds of video",
+        "type": "text"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "{{ product.price }}",
+        "type": "text"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "250 credits",
+        "type": "text"
+      },
+      {
+        "text": "50 seconds of video",
+        "type": "text"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "{{ product.price }}",
+        "type": "text"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "500 credits",
+        "type": "text"
+      },
+      {
+        "text": "100 second of video",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "{{ product.price }}",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 11,
+    "name": "Virtual currencies subscription",
+    "draft": "wf12f6475f9cd8430e",
+    "layers": [
+      {
+        "text": "Header row",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Title content",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Pick your plan",
+        "type": "text"
+      },
+      {
+        "text": "Features",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "500 video credits per month",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Access to the latest video gen models",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Script-to-Video with AI Voiceover",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Video exports in full HD resolution",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "100+ AI voice styles",
+        "type": "text"
+      },
+      {
+        "text": "Social proof",
+        "type": "stack"
+      },
+      {
+        "text": "4.9 stars",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "1,000+ reviews",
+        "type": "text"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Package stack",
+        "type": "stack"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "{{ product.period | capitalize }}",
+        "type": "text"
+      },
+      {
+        "text": "Only {{ product.price_per_month }}/mo",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "{{ product.period | capitalize }}",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "{{ product.price_per_month }}/mo",
+        "type": "text"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 12,
+    "name": "Multi-tier 1",
+    "draft": "wfdd82f4ea42c84ab2",
+    "layers": [
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Tabs",
+        "type": "tabs"
+      },
+      {
+        "text": "Premium",
+        "type": "tab"
+      },
+      {
+        "text": "Unlock the universe with our Premium plan",
+        "type": "text"
+      },
+      {
+        "text": "Tab buttons",
+        "type": "tab_control"
+      },
+      {
+        "text": "Standard",
+        "type": "tab_control_button"
+      },
+      {
+        "text": "Standard",
+        "type": "text"
+      },
+      {
+        "text": "Premium",
+        "type": "tab_control_button"
+      },
+      {
+        "text": "Premium",
+        "type": "text"
+      },
+      {
+        "text": "Features",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Ad-free interactive sky map for tonight",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Dark-site finder within 50 km radius",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Real-time ISS & satellite fly-over alerts",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Save up to 10 observation logs with notes",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Live, guided star-party streams & group chat",
+        "type": "text"
+      },
+      {
+        "text": "Package stack",
+        "type": "stack"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Details",
+        "type": "stack"
+      },
+      {
+        "text": "{{ product.periodly | capitalize }}",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Description",
+        "type": "stack"
+      },
+      {
+        "text": "Only {{ product.price_per_month }}/mo",
+        "type": "text"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Details",
+        "type": "stack"
+      },
+      {
+        "text": "{{ product.periodly | capitalize }}",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Description",
+        "type": "stack"
+      },
+      {
+        "text": "Billed at {{ product.price_per_period_abbreviated }}.",
+        "type": "text"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 13,
+    "name": "Recipe book [Web]",
+    "draft": "wf0df2f512a79b4e2c",
+    "layers": [
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Unlock access to all recipes",
+        "type": "text"
+      },
+      {
+        "text": "Feature list",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Healthy recipes, specially curated",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "A welcoming cooking community",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "New recipe recommendations",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Priority support",
+        "type": "text"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Package list",
+        "type": "stack"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Annual",
+        "type": "text"
+      },
+      {
+        "text": "Full access for just {{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Monthly",
+        "type": "text"
+      },
+      {
+        "text": "Full access for just {{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Button stack",
+        "type": "stack"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue in-app",
+        "type": "text"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Or, save 30%",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 14,
+    "name": "Social proof [Web]",
+    "draft": "wf7e6b8b1e92ec4baf",
+    "layers": [
+      {
+        "text": "Header row",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Title content",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Get CatPrrro",
+        "type": "text"
+      },
+      {
+        "text": "Get personalized insights to understand your cats 3x better.",
+        "type": "text"
+      },
+      {
+        "text": "Testimonials",
+        "type": "stack"
+      },
+      {
+        "text": "Carousel",
+        "type": "carousel"
+      },
+      {
+        "text": "Page 1",
+        "type": "stack"
+      },
+      {
+        "text": "Testimonial",
+        "type": "stack"
+      },
+      {
+        "text": "Cat whisperer in your pocket",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Never understood why my cat went crazy at 3 AM until CatGPT explained their behavior patterns. Now we both sleep through the night!",
+        "type": "text"
+      },
+      {
+        "text": "CatMomSarah",
+        "type": "text"
+      },
+      {
+        "text": "Page 2",
+        "type": "stack"
+      },
+      {
+        "text": "Testimonial",
+        "type": "stack"
+      },
+      {
+        "text": "Life-changing for cat parents!",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "My rescue cat transformed in just weeks using the personality insights. The breed-specific tips were spot-on and now she runs the household. Help.",
+        "type": "text"
+      },
+      {
+        "text": "LunasHuman",
+        "type": "text"
+      },
+      {
+        "text": "Page 3",
+        "type": "stack"
+      },
+      {
+        "text": "Testimonial",
+        "type": "stack"
+      },
+      {
+        "text": "Actually understands cats!",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Finally cracked the code on why my cat was acting out at night! The 3AM behavior predictions are scary accurate. My furniture (and sleep schedule) thank you, CatGPT!",
+        "type": "text"
+      },
+      {
+        "text": "CatMomSarah2024",
+        "type": "text"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "ZStack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "30",
+        "type": "text"
+      },
+      {
+        "text": "DAYS",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price }}",
+        "type": "text"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "ZStack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "12",
+        "type": "text"
+      },
+      {
+        "text": "MONTHS",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price }}",
+        "type": "text"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "ZStack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "LIFETIME",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price }}",
+        "type": "text"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Subscribe now",
+        "type": "text"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Join directly and save",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 15,
+    "name": "StarFinder [Web]",
+    "draft": "wf758574ec8ebf4bf0",
+    "layers": [
+      {
+        "text": "Header row",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Title content",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Get StarFinder Plus",
+        "type": "text"
+      },
+      {
+        "text": "Our most advanced features, for our most dedicated users.",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "JOIN TODAY",
+        "type": "text"
+      },
+      {
+        "text": "Feature list",
+        "type": "stack"
+      },
+      {
+        "text": "Feature #1",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Copy",
+        "type": "stack"
+      },
+      {
+        "text": "Priority access to our newest maps",
+        "type": "text"
+      },
+      {
+        "text": "Skip the queue, get instant insights",
+        "type": "text"
+      },
+      {
+        "text": "Feature #2",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Copy",
+        "type": "stack"
+      },
+      {
+        "text": "Vote on new features to be added",
+        "type": "text"
+      },
+      {
+        "text": "Make sure your voice is heard",
+        "type": "text"
+      },
+      {
+        "text": "Feature #3",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Copy",
+        "type": "stack"
+      },
+      {
+        "text": "Support ongoing development",
+        "type": "text"
+      },
+      {
+        "text": "Help us continue to grow StarFinder",
+        "type": "text"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Or, save 30%",
+        "type": "text"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Auto-renews for {{ product.price_per_period }} until canceled",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 16,
+    "name": "CatGPT Plus w/ header image",
+    "draft": "wf8d669c9920044830",
+    "layers": [
+      {
+        "text": "Header row",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Title content",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Get CatGPT Plus",
+        "type": "text"
+      },
+      {
+        "text": "Our most advanced features, for our most dedicated users.",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "JOIN TODAY",
+        "type": "text"
+      },
+      {
+        "text": "Feature list",
+        "type": "stack"
+      },
+      {
+        "text": "Feature #1",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Copy",
+        "type": "stack"
+      },
+      {
+        "text": "Priority access to our advanced feline intelligence",
+        "type": "text"
+      },
+      {
+        "text": "Skip the queue, get instant cat insights",
+        "type": "text"
+      },
+      {
+        "text": "Feature #2",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Copy",
+        "type": "stack"
+      },
+      {
+        "text": "4x faster response times during peak purring hours",
+        "type": "text"
+      },
+      {
+        "text": "Never miss a crucial meow-ment",
+        "type": "text"
+      },
+      {
+        "text": "Feature #3",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Copy",
+        "type": "stack"
+      },
+      {
+        "text": "Custom personality matching with 100+ cat breeds",
+        "type": "text"
+      },
+      {
+        "text": "Find your perfect feline personality match",
+        "type": "text"
+      },
+      {
+        "text": "Feature #4",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Copy",
+        "type": "stack"
+      },
+      {
+        "text": "Unlimited cat-to-human translations",
+        "type": "text"
+      },
+      {
+        "text": "For seamless communication",
+        "type": "text"
+      },
+      {
+        "text": "Feature #5",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Copy",
+        "type": "stack"
+      },
+      {
+        "text": "Use CatGPT across 5 devices simultaneously",
+        "type": "text"
+      },
+      {
+        "text": "The more the merrier",
+        "type": "text"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Start Free Trial",
+        "type": "text"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Auto-renews for {{ product.price_per_period }} until canceled",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 17,
+    "name": "ConcertBuddy",
+    "draft": "wffdf496b4097a41d4",
+    "layers": [
+      {
+        "text": "Content",
+        "type": "stack"
+      },
+      {
+        "text": "Bg image",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Copy & actions",
+        "type": "stack"
+      },
+      {
+        "text": "Close button",
+        "type": "stack"
+      },
+      {
+        "text": "Close button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Header",
+        "type": "stack"
+      },
+      {
+        "text": "Title",
+        "type": "stack"
+      },
+      {
+        "text": "ConcertBuddy",
+        "type": "text"
+      },
+      {
+        "text": "Ultra",
+        "type": "text"
+      },
+      {
+        "text": "Subtitle",
+        "type": "text"
+      },
+      {
+        "text": "Main",
+        "type": "stack"
+      },
+      {
+        "text": "Features",
+        "type": "stack"
+      },
+      {
+        "text": "Feature 1",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Early ticket access, exclusive presale codes, and priority queue placement.",
+        "type": "text"
+      },
+      {
+        "text": "Feature 2",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Pick your seat on the interactive 3D venue map to compare views.",
+        "type": "text"
+      },
+      {
+        "text": "Feature 3",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Exclusive merch deals, partner venue discounts, and 5% cash-back.",
+        "type": "text"
+      },
+      {
+        "text": "Feature 4",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Plan festivals with up to 10 people.",
+        "type": "text"
+      },
+      {
+        "text": "Actions",
+        "type": "stack"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Unlock Ultra for just {{ product.price_per_period }}",
+        "type": "text"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Secondary",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 18,
+    "name": "Wabi Sabi v2",
+    "draft": "wf8669f7762f644775",
+    "layers": [
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "メンバーシップ",
+        "type": "text"
+      },
+      {
+        "text": "Membership",
+        "type": "text"
+      },
+      {
+        "text": "その道を選ぶように。木目のように、 それぞれの道に個性がある。",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "一月",
+        "type": "text"
+      },
+      {
+        "text": "Monthly Path",
+        "type": "text"
+      },
+      {
+        "text": "月から月へ",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "{{ product.price }}",
+        "type": "text"
+      },
+      {
+        "text": "month to month",
+        "type": "text"
+      },
+      {
+        "text": "",
+        "type": "text"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "季節",
+        "type": "text"
+      },
+      {
+        "text": "Seasonal Journey",
+        "type": "text"
+      },
+      {
+        "text": "月から月へ",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "{{ product.price }}",
+        "type": "text"
+      },
+      {
+        "text": "three months",
+        "type": "text"
+      },
+      {
+        "text": "",
+        "type": "text"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "一年",
+        "type": "text"
+      },
+      {
+        "text": "Annual Reflection",
+        "type": "text"
+      },
+      {
+        "text": "月から月へ",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "{{ product.price }}",
+        "type": "text"
+      },
+      {
+        "text": "full year",
+        "type": "text"
+      },
+      {
+        "text": "",
+        "type": "text"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "続ける",
+        "type": "text"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Auto-renews for {{ product.price_per_period }} until canceled",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 19,
+    "name": "Social proof carousel",
+    "draft": "wf1f3339ce67324daa",
+    "layers": [
+      {
+        "text": "Header row",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Title content",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Get CatPrrro",
+        "type": "text"
+      },
+      {
+        "text": "Get personalized insights to understand your cats 3x better.",
+        "type": "text"
+      },
+      {
+        "text": "Testimonial Header",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "The Download",
+        "type": "text"
+      },
+      {
+        "text": "App of the Year",
+        "type": "text"
+      },
+      {
+        "text": "for 2025",
+        "type": "text"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Testimonials",
+        "type": "stack"
+      },
+      {
+        "text": "Carousel",
+        "type": "carousel"
+      },
+      {
+        "text": "Page 1",
+        "type": "stack"
+      },
+      {
+        "text": "Testimonial",
+        "type": "stack"
+      },
+      {
+        "text": "Cat whisperer in your pocket",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Never understood why my cat went crazy at 3 AM until CatGPT explained their behavior patterns. Now we both sleep through the night!",
+        "type": "text"
+      },
+      {
+        "text": "CatMomSarah",
+        "type": "text"
+      },
+      {
+        "text": "Page 2",
+        "type": "stack"
+      },
+      {
+        "text": "Testimonial",
+        "type": "stack"
+      },
+      {
+        "text": "Life-changing for cat parents!",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "My rescue cat transformed in just weeks using the personality insights. The breed-specific tips were spot-on and now she runs the household. Help.",
+        "type": "text"
+      },
+      {
+        "text": "LunasHuman",
+        "type": "text"
+      },
+      {
+        "text": "Page 3",
+        "type": "stack"
+      },
+      {
+        "text": "Testimonial",
+        "type": "stack"
+      },
+      {
+        "text": "Actually understands cats!",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Finally cracked the code on why my cat was acting out at night! The 3AM behavior predictions are scary accurate. My furniture (and sleep schedule) thank you, CatGPT!",
+        "type": "text"
+      },
+      {
+        "text": "CatMomSarah2024",
+        "type": "text"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "ZStack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "30",
+        "type": "text"
+      },
+      {
+        "text": "DAYS",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price }}",
+        "type": "text"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "ZStack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "12",
+        "type": "text"
+      },
+      {
+        "text": "MONTHS",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price }}",
+        "type": "text"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "ZStack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "LIFETIME",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price }}",
+        "type": "text"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 20,
+    "name": "Mindful moments",
+    "draft": "wff718d5851c324a0d",
+    "layers": [
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Carousel",
+        "type": "carousel"
+      },
+      {
+        "text": "Page 1",
+        "type": "stack"
+      },
+      {
+        "text": "Mindful moments",
+        "type": "text"
+      },
+      {
+        "text": "Short guided practices to fit your busy day",
+        "type": "text"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Page 2",
+        "type": "stack"
+      },
+      {
+        "text": "Community connection",
+        "type": "text"
+      },
+      {
+        "text": "Share your journey in our vibrant community",
+        "type": "text"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Page 3",
+        "type": "stack"
+      },
+      {
+        "text": "Sleep Soundscapes",
+        "type": "text"
+      },
+      {
+        "text": "Relax and sleep better with soothing sound journeys",
+        "type": "text"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Packages",
+        "type": "stack"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Annual",
+        "type": "text"
+      },
+      {
+        "text": "Only {{ product.price_per_month }}/mo",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price_per_year }}/year",
+        "type": "text"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Monthly",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 21,
+    "name": "Gradient timeline",
+    "draft": "wf3336b72acccb4589",
+    "layers": [
+      {
+        "text": "Header row",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Title content",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Get Cat.io Pro",
+        "type": "text"
+      },
+      {
+        "text": "Timeline",
+        "type": "timeline"
+      },
+      {
+        "text": "First item",
+        "type": "timeline_item"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Title",
+        "type": "text"
+      },
+      {
+        "text": "Description",
+        "type": "text"
+      },
+      {
+        "text": "Second item",
+        "type": "timeline_item"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Title",
+        "type": "text"
+      },
+      {
+        "text": "Description",
+        "type": "text"
+      },
+      {
+        "text": "Third item",
+        "type": "timeline_item"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Title",
+        "type": "text"
+      },
+      {
+        "text": "Description",
+        "type": "text"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Package stack",
+        "type": "stack"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Details",
+        "type": "stack"
+      },
+      {
+        "text": "Yearly",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Description",
+        "type": "stack"
+      },
+      {
+        "text": "Only {{ product.price_per_month }}/mo",
+        "type": "text"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Details",
+        "type": "stack"
+      },
+      {
+        "text": "Monthly",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Description",
+        "type": "stack"
+      },
+      {
+        "text": "Billed at {{ product.price_per_period_abbreviated }}.",
+        "type": "text"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 22,
+    "name": "Vertical list of reviews",
+    "draft": "wff8eb5e9582124690",
+    "layers": [
+      {
+        "text": "Header row",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Title content",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Get Cat GPT Plus",
+        "type": "text"
+      },
+      {
+        "text": "Get real-time meow translations and personalized insights to understand your cats 3x better.",
+        "type": "text"
+      },
+      {
+        "text": "Testimonial Header",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "The Download",
+        "type": "text"
+      },
+      {
+        "text": "App of the Century",
+        "type": "text"
+      },
+      {
+        "text": "for 2025",
+        "type": "text"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Testimonials",
+        "type": "stack"
+      },
+      {
+        "text": "Testimonial",
+        "type": "stack"
+      },
+      {
+        "text": "Divider",
+        "type": "stack"
+      },
+      {
+        "text": "Cat whisperer in your pocket",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Never understood why my cat went crazy at 3 AM until CatGPT explained their behavior patterns. Now we both sleep through the night!",
+        "type": "text"
+      },
+      {
+        "text": "CatMomSarah",
+        "type": "text"
+      },
+      {
+        "text": "Testimonial",
+        "type": "stack"
+      },
+      {
+        "text": "Divider",
+        "type": "stack"
+      },
+      {
+        "text": "Life-changing for cat parents!",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "My rescue cat transformed in just weeks using the personality insights. The breed-specific tips were spot-on and now she runs the household. Help.",
+        "type": "text"
+      },
+      {
+        "text": "LunasHuman",
+        "type": "text"
+      },
+      {
+        "text": "Testimonial",
+        "type": "stack"
+      },
+      {
+        "text": "Divider",
+        "type": "stack"
+      },
+      {
+        "text": "Actually understands cats!",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Star Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Finally cracked the code on why my cat was acting out at night! The 3AM behavior predictions are scary accurate, and the recommendations helped me adjust her feeding schedule. My furniture (and sleep schedule) thank you, CatGPT!",
+        "type": "text"
+      },
+      {
+        "text": "CatMomSarah2024",
+        "type": "text"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "ZStack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "30",
+        "type": "text"
+      },
+      {
+        "text": "DAYS",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price }}",
+        "type": "text"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "ZStack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "12",
+        "type": "text"
+      },
+      {
+        "text": "MONTHS",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price }}",
+        "type": "text"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "ZStack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "LIFETIME",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price }}",
+        "type": "text"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 23,
+    "name": "Sharp red background",
+    "draft": "wf084189f3145f43ee",
+    "layers": [
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "LIMITED TIME OFFER",
+        "type": "text"
+      },
+      {
+        "text": "CatGPT Plus",
+        "type": "text"
+      },
+      {
+        "text": "Divider",
+        "type": "stack"
+      },
+      {
+        "text": "Packages",
+        "type": "stack"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "{{ product.periodly }}",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "{{ product.price_per_month }}",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "({{ product.price_per_period_abbreviated }})",
+        "type": "text"
+      },
+      {
+        "text": "per month, billed annually",
+        "type": "text"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "{{ product.periodly }}",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price_per_month }}",
+        "type": "text"
+      },
+      {
+        "text": "Divider",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Feature",
+        "type": "stack"
+      },
+      {
+        "text": "SKIP THE QUEUE",
+        "type": "text"
+      },
+      {
+        "text": "Priority access to our advanced feline intelligence mode",
+        "type": "text"
+      },
+      {
+        "text": "Feature",
+        "type": "stack"
+      },
+      {
+        "text": "NEVER MISS A MEOW-MENT",
+        "type": "text"
+      },
+      {
+        "text": "4x faster response time during peak purring hours",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Feature",
+        "type": "stack"
+      },
+      {
+        "text": "A PURR-FECT MATCH",
+        "type": "text"
+      },
+      {
+        "text": "Custom personality matching with 100+ cat breeds",
+        "type": "text"
+      },
+      {
+        "text": "Feature",
+        "type": "stack"
+      },
+      {
+        "text": "TRANSLATIONS",
+        "type": "text"
+      },
+      {
+        "text": "Unlimited cat-to-human translations across 5 devices",
+        "type": "text"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Auto-renews for {{ product.price_per_period }} until canceled",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 24,
+    "name": "CatGPT Dev Tools",
+    "draft": "wfb82612f2d5f34ea6",
+    "layers": [
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "CatGPT Dev Tools",
+        "type": "text"
+      },
+      {
+        "text": "Choose your development environment configuration",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "ACTIVE: SAVE ON YEARLY",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "{{ product.store_product_name }}",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "{{ product.price }}",
+        "type": "text"
+      },
+      {
+        "text": "/{{ product.period }}",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Advanced API rate limits (1000 req/s)",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Custom domain support + SSL",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Priority build queues",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Extended compute time",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Dedicated infrastructure",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "24/7 priority support",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Advanced security features",
+        "type": "text"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "{{ product.store_product_name }}",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "{{ product.price }}",
+        "type": "text"
+      },
+      {
+        "text": "/{{ product.period }}",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Advanced API rate limits (1000 req/s)",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Custom domain support + SSL",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Priority build queues",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Extended compute time",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Dedicated infrastructure",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "24/7 priority support",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Advanced security features",
+        "type": "text"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 25,
+    "name": "Cat.io",
+    "draft": "wf4db3f13f4b444784",
+    "layers": [
+      {
+        "text": "Header row",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Title content",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Get Cat.io Pro",
+        "type": "text"
+      },
+      {
+        "text": "Our most advanced features, for our most dedicated users.",
+        "type": "text"
+      },
+      {
+        "text": "Feature list",
+        "type": "stack"
+      },
+      {
+        "text": "Feature #1",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Copy",
+        "type": "stack"
+      },
+      {
+        "text": "Priority access to our advanced feline intelligence",
+        "type": "text"
+      },
+      {
+        "text": "Skip the queue, get instant cat insights",
+        "type": "text"
+      },
+      {
+        "text": "Feature #2",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Copy",
+        "type": "stack"
+      },
+      {
+        "text": "Unlimited cat queries",
+        "type": "text"
+      },
+      {
+        "text": "Always find what you're looking for",
+        "type": "text"
+      },
+      {
+        "text": "Feature #3",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Copy",
+        "type": "stack"
+      },
+      {
+        "text": "Category-leading cat categorization",
+        "type": "text"
+      },
+      {
+        "text": "Just the catalyst you need",
+        "type": "text"
+      },
+      {
+        "text": "Feature #4",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Copy",
+        "type": "stack"
+      },
+      {
+        "text": "Access to our private community",
+        "type": "text"
+      },
+      {
+        "text": "To connect with likeminded feline enthusiasts",
+        "type": "text"
+      },
+      {
+        "text": "Feature #5",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Copy",
+        "type": "stack"
+      },
+      {
+        "text": "Beta test our newest purrroducts",
+        "type": "text"
+      },
+      {
+        "text": "Special access to what's coming next",
+        "type": "text"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Package stack",
+        "type": "stack"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Details",
+        "type": "stack"
+      },
+      {
+        "text": "Yearly",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Description",
+        "type": "stack"
+      },
+      {
+        "text": "Only {{ product.price_per_month }}/mo",
+        "type": "text"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Details",
+        "type": "stack"
+      },
+      {
+        "text": "Monthly",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Description",
+        "type": "stack"
+      },
+      {
+        "text": "Billed at {{ product.price_per_period_abbreviated }}.",
+        "type": "text"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 26,
+    "name": "Timeline",
+    "draft": "wffa8ca107ebee40af",
+    "layers": [
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Unlock full access",
+        "type": "text"
+      },
+      {
+        "text": "Timeline",
+        "type": "timeline"
+      },
+      {
+        "text": "First item",
+        "type": "timeline_item"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Title",
+        "type": "text"
+      },
+      {
+        "text": "Description",
+        "type": "text"
+      },
+      {
+        "text": "Second item",
+        "type": "timeline_item"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Title",
+        "type": "text"
+      },
+      {
+        "text": "Description",
+        "type": "text"
+      },
+      {
+        "text": "Third item",
+        "type": "timeline_item"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Title",
+        "type": "text"
+      },
+      {
+        "text": "Description",
+        "type": "text"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Only {{ product.price_per_period }} ({{ product.price_per_month }}/mo)",
+        "type": "text"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 27,
+    "name": "What's included table",
+    "draft": "wf17defbc67c4741bc",
+    "layers": [
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Unlock all of our exclusive features by subscribing to Nimbus Premium",
+        "type": "text"
+      },
+      {
+        "text": "Packages",
+        "type": "stack"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Annual",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "{{ product.relative_discount }}",
+        "type": "text"
+      },
+      {
+        "text": "Only {{ product.price_per_month }}/mo",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price_per_period }}",
+        "type": "text"
+      },
+      {
+        "text": "Divider",
+        "type": "stack"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Monthly",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price_per_period }}",
+        "type": "text"
+      },
+      {
+        "text": "Features",
+        "type": "stack"
+      },
+      {
+        "text": "WHAT'S INCLUDED",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Feature card",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "AI-Powered Stargazing Guide",
+        "type": "text"
+      },
+      {
+        "text": "Point your camera at the sky and instantly identify stars or galaxies.",
+        "type": "text"
+      },
+      {
+        "text": "Divider",
+        "type": "stack"
+      },
+      {
+        "text": "Feature card",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Live Space Missions Feed",
+        "type": "text"
+      },
+      {
+        "text": "Track satellites, space stations, and ongoing missions in real time.",
+        "type": "text"
+      },
+      {
+        "text": "Divider",
+        "type": "stack"
+      },
+      {
+        "text": "Feature card",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Immersive Space Journeys",
+        "type": "text"
+      },
+      {
+        "text": "Travel through the universe with stunning visualizations of planets,galaxies, black holes, and exoplanets.",
+        "type": "text"
+      },
+      {
+        "text": "Divider",
+        "type": "stack"
+      },
+      {
+        "text": "Feature card",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Real-Time Planet Tracking",
+        "type": "text"
+      },
+      {
+        "text": "Follow any celestial body in real-time with interactive 3D models.",
+        "type": "text"
+      },
+      {
+        "text": "Divider",
+        "type": "stack"
+      },
+      {
+        "text": "Feature card",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Galactic Events Notifications",
+        "type": "text"
+      },
+      {
+        "text": "Never miss meteor showers, eclipses, or planetary alignments.",
+        "type": "text"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 28,
+    "name": "Plane background",
+    "draft": "wf2400de8ca2b743a2",
+    "layers": [
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "PREMIUM",
+        "type": "text"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "YOUR ALL-ACCESS PASS",
+        "type": "text"
+      },
+      {
+        "text": "Take your flights to the next level with advanced navigation, real-time weather, and smart flight planning. Upgrade now for a safer, smoother flight experience!",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Packages",
+        "type": "stack"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Annual",
+        "type": "text"
+      },
+      {
+        "text": "Only {{ product.price_per_month }}/mo",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Monthly",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 29,
+    "name": "Comparison table",
+    "draft": "wf0a8ae9696f2d456b",
+    "layers": [
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Unlock Your Smartest Study Routine",
+        "type": "text"
+      },
+      {
+        "text": "Comparison table",
+        "type": "stack"
+      },
+      {
+        "text": "Column",
+        "type": "stack"
+      },
+      {
+        "text": "Features",
+        "type": "text"
+      },
+      {
+        "text": "Assignment Tracker",
+        "type": "text"
+      },
+      {
+        "text": "AI-generated Study Plans",
+        "type": "text"
+      },
+      {
+        "text": "+1,000 Flashcards",
+        "type": "text"
+      },
+      {
+        "text": "Pomodoro Timer",
+        "type": "text"
+      },
+      {
+        "text": "Pro Note Organization",
+        "type": "text"
+      },
+      {
+        "text": "Column",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "FREE",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Column",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "PRO",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Subscribe to Pro for just {{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 30,
+    "name": "Begin your journey",
+    "draft": "wf03f556b3de7b4716",
+    "layers": [
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Begin your journey",
+        "type": "text"
+      },
+      {
+        "text": "Unlock the peace of mind and support you've been looking for.",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Feature #1",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Full access to guided meditation",
+        "type": "text"
+      },
+      {
+        "text": "Feature #2",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Daily affirmations and reminders",
+        "type": "text"
+      },
+      {
+        "text": "Feature #2",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "A supportive, engaged community",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Monthly",
+        "type": "text"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Annual",
+        "type": "text"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Lifetime",
+        "type": "text"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore",
+        "type": "text"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy policy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 31,
+    "name": "Recipe book",
+    "draft": "wf2e48a11a29ab4904",
+    "layers": [
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Join to unlock our complete recipe book",
+        "type": "text"
+      },
+      {
+        "text": "Feature list",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Thousands of curated recipes",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "A vibrant, private community",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "New recipe recommendations",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Priority support",
+        "type": "text"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Package list",
+        "type": "stack"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Annual",
+        "type": "text"
+      },
+      {
+        "text": "Full access for just {{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Monthly",
+        "type": "text"
+      },
+      {
+        "text": "Full access for just {{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 32,
+    "name": "OG Template",
+    "draft": "wf48eb0f1f499b4013",
+    "layers": [
+      {
+        "text": "Header image",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Main content",
+        "type": "stack"
+      },
+      {
+        "text": "Experience Pro today!",
+        "type": "text"
+      },
+      {
+        "text": "Check out the power of all we offer.",
+        "type": "text"
+      },
+      {
+        "text": "Package list",
+        "type": "stack"
+      },
+      {
+        "text": "Package #1",
+        "type": "package"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Monthly",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Package #2",
+        "type": "package"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Yearly",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Additional text",
+        "type": "stack"
+      },
+      {
+        "text": "Cancel anytime.",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 33,
+    "name": "Trail running",
+    "draft": "wfc4d98e0993aa4ca5",
+    "layers": [
+      {
+        "text": "Header stack",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Close button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Unlock all benefits",
+        "type": "text"
+      },
+      {
+        "text": "Subscribe today to get access to x, y, z powerful benefits.",
+        "type": "text"
+      },
+      {
+        "text": "Feature list",
+        "type": "stack"
+      },
+      {
+        "text": "Feature #1",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Feature description #1",
+        "type": "text"
+      },
+      {
+        "text": "Feature #2",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Feature description #2",
+        "type": "text"
+      },
+      {
+        "text": "Feature #3",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Feature description #3",
+        "type": "text"
+      },
+      {
+        "text": "Feature #4",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Feature description #4",
+        "type": "text"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Package stack",
+        "type": "stack"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "{{ product.periodly | capitalize }}",
+        "type": "text"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "{{ product.periodly | capitalize }}",
+        "type": "text"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }} ({{ product.price_per_month }}/mo)",
+        "type": "text"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Additional links",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy policy",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 34,
+    "name": "Gym app",
+    "draft": "wfbd6b38358e3c460c",
+    "layers": [
+      {
+        "text": "Header stack",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Close button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Join today, cancel anytime!",
+        "type": "text"
+      },
+      {
+        "text": "Unlock all benefits",
+        "type": "text"
+      },
+      {
+        "text": "Feature list",
+        "type": "stack"
+      },
+      {
+        "text": "Feature #1",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Strength training routines",
+        "type": "text"
+      },
+      {
+        "text": "To keep you chasing your goals",
+        "type": "text"
+      },
+      {
+        "text": "Feature #2",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Aerobic challenges",
+        "type": "text"
+      },
+      {
+        "text": "For a well rounded fitness plan",
+        "type": "text"
+      },
+      {
+        "text": "Feature #3",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Time saving tips",
+        "type": "text"
+      },
+      {
+        "text": "To get the most out of each workout",
+        "type": "text"
+      },
+      {
+        "text": "Package stack",
+        "type": "stack"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Monthly",
+        "type": "text"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Annual",
+        "type": "text"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 35,
+    "name": "Template 004",
+    "draft": "wf1c37646ab2e34151",
+    "layers": [
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Dive in and save",
+        "type": "text"
+      },
+      {
+        "text": "Feature list",
+        "type": "stack"
+      },
+      {
+        "text": "Feature #1",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Unlimited identification",
+        "type": "text"
+      },
+      {
+        "text": "Tag everything you find",
+        "type": "text"
+      },
+      {
+        "text": "Feature #2",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "HD mapping",
+        "type": "text"
+      },
+      {
+        "text": "For limitless exploration",
+        "type": "text"
+      },
+      {
+        "text": "Feature #3",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Priority support",
+        "type": "text"
+      },
+      {
+        "text": "Get the most out of Pro",
+        "type": "text"
+      },
+      {
+        "text": "Package stack",
+        "type": "stack"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Monthly",
+        "type": "text"
+      },
+      {
+        "text": "Cancel anytime",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Annual",
+        "type": "text"
+      },
+      {
+        "text": "Save {{ product.relative_discount }}",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "",
+        "type": "text"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore purchases",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 36,
+    "name": "Lock icon",
+    "draft": "wf34c59e548cca464f",
+    "layers": [
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Title of your paywall",
+        "type": "text"
+      },
+      {
+        "text": "Subtitle of your paywall",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Feature list",
+        "type": "stack"
+      },
+      {
+        "text": "Feature #1",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Feature #1 description",
+        "type": "text"
+      },
+      {
+        "text": "Feature #2",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Feature #2 description",
+        "type": "text"
+      },
+      {
+        "text": "Feature #3",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Feature #3 description",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Join today with our best pricing",
+        "type": "text"
+      },
+      {
+        "text": "Package stack",
+        "type": "stack"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Monthly",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Annual",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Join today, cancel anytime.",
+        "type": "text"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 37,
+    "name": "Feature List",
+    "draft": "wf33d31ff272d84b09",
+    "layers": [
+      {
+        "text": "Header row",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "BACK",
+        "type": "text"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "RESTORE",
+        "type": "text"
+      },
+      {
+        "text": "Title of your paywall",
+        "type": "text"
+      },
+      {
+        "text": "Divider",
+        "type": "stack"
+      },
+      {
+        "text": "Feature list",
+        "type": "stack"
+      },
+      {
+        "text": "Feature #1",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Feature name #1",
+        "type": "text"
+      },
+      {
+        "text": "Description of the feature",
+        "type": "text"
+      },
+      {
+        "text": "Feature #2",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Feature name #2",
+        "type": "text"
+      },
+      {
+        "text": "Description of the feature",
+        "type": "text"
+      },
+      {
+        "text": "Feature #3",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Feature name #3",
+        "type": "text"
+      },
+      {
+        "text": "Description of the feature",
+        "type": "text"
+      },
+      {
+        "text": "Feature #4",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Feature name #4",
+        "type": "text"
+      },
+      {
+        "text": "Description of the feature",
+        "type": "text"
+      },
+      {
+        "text": "Packages",
+        "type": "stack"
+      },
+      {
+        "text": "Yearly package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Annual",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }} ({{ product.price_per_month }}/mo)",
+        "type": "text"
+      },
+      {
+        "text": "Yearly package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Monthly",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Cancel anytime",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy policy",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms of service",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 39,
+    "name": "snowflake",
+    "draft": "wfee1dfaab67a24d1b",
+    "layers": [
+      {
+        "text": "Header row",
+        "type": "stack"
+      },
+      {
+        "text": "Close button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Primary icon",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Title & subtitle",
+        "type": "stack"
+      },
+      {
+        "text": "Unlock Premium Today",
+        "type": "text"
+      },
+      {
+        "text": "Get access to all subscriber benefits",
+        "type": "text"
+      },
+      {
+        "text": "Offer callout",
+        "type": "stack"
+      },
+      {
+        "text": "Join today with our best offer",
+        "type": "text"
+      },
+      {
+        "text": "Feature list",
+        "type": "stack"
+      },
+      {
+        "text": "Feature #1",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "A description of the benefits of Premium",
+        "type": "text"
+      },
+      {
+        "text": "Feature #2",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "An additional reason to consider purchasing",
+        "type": "text"
+      },
+      {
+        "text": "Feature #3",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "There are more reasons",
+        "type": "text"
+      },
+      {
+        "text": "Feature #4",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "So many that it will be impossible to say no to this upgrade",
+        "type": "text"
+      },
+      {
+        "text": "Feature #5",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Especially after this one",
+        "type": "text"
+      },
+      {
+        "text": "Footer",
+        "type": "footer"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Your subscription auto-renews for {{ product.price_per_period }} until canceled.",
+        "type": "text"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Upgrade to Premium",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 40,
+    "name": "Untitled Paywall",
+    "draft": "wf1ef3c0d9b0564e7f",
+    "layers": [
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Unlock Unlimited Access",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Full access to the product",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "But without the ads",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "So you can focus on what matters",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "\"This app has saved me so much time and effort. I'm a big fan, and will keep coming back to it.\"",
+        "type": "text"
+      },
+      {
+        "text": "- Joan A",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Monthly",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }}",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "",
+        "type": "text"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Annual",
+        "type": "text"
+      },
+      {
+        "text": "{{ product.price_per_period_abbreviated }} ({{ product.price_per_month }}/mo)",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Save {{ product.relative_discount }} (only {{ product.price_per_month }}/mo)",
+        "type": "text"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Try Free and Subscribe",
+        "type": "text"
+      },
+      {
+        "text": "Cancel anytime",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "order": 41,
+    "name": "Boxer",
+    "draft": "wfe5b9327c0d05475c",
+    "layers": [
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "4.9 stars",
+        "type": "text"
+      },
+      {
+        "text": "Stack",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "1,000+ reviews",
+        "type": "text"
+      },
+      {
+        "text": "Image",
+        "type": "image"
+      },
+      {
+        "text": "Get full access today",
+        "type": "text"
+      },
+      {
+        "text": "Feature list",
+        "type": "stack"
+      },
+      {
+        "text": "Feature 1",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Personalized guided training sessions",
+        "type": "text"
+      },
+      {
+        "text": "Feature 2",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Real-time feedback on punching technique",
+        "type": "text"
+      },
+      {
+        "text": "Feature 3",
+        "type": "stack"
+      },
+      {
+        "text": "Icon",
+        "type": "icon"
+      },
+      {
+        "text": "Daily challenges and progress tracking",
+        "type": "text"
+      },
+      {
+        "text": "Package",
+        "type": "package"
+      },
+      {
+        "text": "Join today for {{ product.price_per_period }}",
+        "type": "text"
+      },
+      {
+        "text": "Purchase button",
+        "type": "purchase_button"
+      },
+      {
+        "text": "Continue",
+        "type": "text"
+      },
+      {
+        "text": "Footer buttons",
+        "type": "stack"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Restore Purchases",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Terms",
+        "type": "text"
+      },
+      {
+        "text": "Button",
+        "type": "button"
+      },
+      {
+        "text": "Privacy",
+        "type": "text"
+      }
+    ]
+  }
+]

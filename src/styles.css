@@ -1214,6 +1214,12 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-paywall .product-layout-vertical.product-count-3 { gap: 2cqw; }
 .preview-products.product-layout-vertical.product-count-2 { gap: 8px; }
 .preview-products.product-layout-vertical.product-count-3 { gap: 6px; }
+.preview-products-credit-list { display: grid; gap: 8px; }
+.preview-products-credit { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; padding: 8px 10px; border-radius: 8px; background: #242030; color: #fff; }
+.preview-products-credit span { display: grid; gap: 3px; min-width: 0; }
+.preview-products-credit strong { font-size: 12px; }
+.preview-products-credit small { color: #aaa5b5; font-size: 9px; }
+.preview-products-credit button { flex: 0 0 auto; min-width: 70px; padding: 8px; border: 0; border-radius: 5px; background: #63b6f5; color: #151222; font-weight: 700; cursor: pointer; }
 .preview-timeline { margin: 0 0 12px; padding: 0; list-style: none; }
 .preview-timeline li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 8px; position: relative; min-height: 42px; text-align: left; font-size: 10px; }
 .preview-timeline li:not(:last-child)::before { content: ""; position: absolute; left: 10px; top: 22px; bottom: 0; width: 2px; background: var(--timeline-line); }

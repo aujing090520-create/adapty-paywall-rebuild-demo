@@ -4,6 +4,7 @@ import { DEMO_SKUS, PRICE_DISPLAY_MODES, billingMonths, productPriceFields, reso
 import { applyComponent, captureComponent, componentKind, readComponentLibrary, writeComponentLibrary } from "./componentLibrary.js";
 import { protectedTemplateIds, readTemplateNodes, writeTemplateNodes } from "./templateStorage.js";
 import { revenueCatGallery } from "./revenueCatGallery.js";
+import { createSourceTemplateNodes, observedTemplate, sourceBlueprints } from "./revenueCatSourceBlueprints.js";
 import {
   Archive,
   ArrowLeft,
@@ -179,7 +180,7 @@ const documentStyleTemplateIds = new Set(["ht-blue-privilege", "ht-membership-pl
 const curatedSourceTemplateIds = new Set(["knowledge", "trial", "family", "document", "mindfulness", "editing-plan", "black-friday-timer", "halloween"]);
 const catalogTemplates = templates.filter((template) => template.documentTemplate || template.isGallery);
 const isEditableTemplate = (template) => template.isNew || sourceTreeObserved.has(template.id) || documentStyleTemplateIds.has(template.id);
-const templateEditableStatus = (template) => template.isGallery ? `Talkin RevenueCat 画廊第 ${template.sourceOrder} 张：${template.sourceTemplate}；本地可编辑结构` : template.sourceProvider === "RevenueCat" ? `Talkin 项目中的 RevenueCat 模板画廊：${template.sourceTemplate}；本地可编辑复现` : template.isNew ? "本地组合模板；组件均可编辑" : documentStyleTemplateIds.has(template.id) ? "飞书交付文档已定义样式与字段；本地可编辑复现" : "源端已观察核心结构；本地可编辑复现";
+const templateEditableStatus = (template) => template.isGallery ? template.editorVerified ? `Talkin RevenueCat 第 ${template.sourceOrder} 张：已核对源编辑器 Layers；本地为通用组件映射，字段细节仍以源端为准` : `Talkin RevenueCat 第 ${template.sourceOrder} 张：只有预览证据，源编辑器 Layers 尚未核实` : template.sourceProvider === "RevenueCat" ? `Talkin 项目中的 RevenueCat 模板画廊：${template.sourceTemplate}；本地可编辑复现` : template.isNew ? "本地组合模板；组件均可编辑" : documentStyleTemplateIds.has(template.id) ? "飞书交付文档已定义样式与字段；本地可编辑复现" : "源端已观察核心结构；本地可编辑复现";
 
 // Source-template filters reflect observed Builder trees; local combinations use their own component lists.
 const sourceVerifiedTemplateComponents = Object.freeze({
@@ -285,6 +286,10 @@ function productPackageRows(productNode, variant) {
     }));
   }
   const legacyRows = (productNode?.content ?? "").split("\n").filter(Boolean);
+  if (config.purchasePerCard) return legacyRows.map((line, index) => {
+    const [name = "", price = "", detail = ""] = line.split("|");
+    return { name, price, skuId: templateSkuId(variant, index), supportingCopy: detail, showSupportingCopy: Boolean(detail) };
+  });
   return legacyRows.map((line, index) => {
     const [name = "", price = "", detail = ""] = line.split("|");
     const row = { name, price, skuId: templateSkuId(variant, index), supportingCopy: "", referencePrice: "", saveCopy: "", badgeText: "", showSupportingCopy: false, showReferencePrice: false, showSaveCopy: false, showBadge: false };
@@ -358,48 +363,7 @@ function createBuilderNodes(templateId = "knowledge") {
   const hero = (depth = 0) => node("hero-image", "Hero Image", template.visual, depth, { theme: template.theme });
   const pending = (id, type, depth = 0) => node(id, type, "", depth, { sourcePending: true });
 
-  if (template.isGallery) {
-    const id = (part) => `${template.id}-${part}`;
-    const accent = template.accent;
-    const count = template.productCount;
-    const plans = count === 1 ? "年度|$69.99/年|按年订阅" : count === 3 ? "月度|$9.99/月|按月订阅\n年度|$69.99/年|按年订阅\n终身|$119.99|一次购买" : count === 5 ? "25 点|$2.99|一次购买\n50 点|$9.99|一次购买\n100 点|$17.99|一次购买\n250 点|$24.99|一次购买\n500 点|$39.99|一次购买" : "月度|$9.99/月|按月订阅\n年度|$69.99/年|按年订阅";
-    const media = () => node(id("media"), "Image", template.headline, 0, { config: { mediaSrc: template.heroAsset, mediaFit: template.art === "icon" ? "contain" : "cover", mediaBackgroundColor: template.art === "dark" ? "#131421" : "#f6f6f8", mediaWidth: 100, mediaHeight: template.art === "icon" ? 80 : 140 } });
-    const title = () => node(id("title"), "Header", template.headline, 0, { variant: "headline", config: { color: ["full", "dark", "red"].includes(template.art) ? "#ffffff" : "#1c1c23" } });
-    if (template.profile === "steps") return [
-      node(id("flow"), "Screen Flow", "", 0, { config: { defaultStep: 0 } }),
-      node(id("screen-intro"), "Screen", "权益介绍", 1),
-      node(id("intro-media"), "Image", "冥想主视觉", 2, { config: { mediaSrc: template.heroAsset, mediaFit: "contain", mediaWidth: 100, mediaHeight: 120 } }),
-      node(id("intro-title"), "Header", template.headline, 2, { variant: "headline" }),
-      node(id("intro-list"), "List", "Sleep deeper|Finally quiet the mind before bed\nBe fully present|Because life keeps moving\nOwn your mornings|Start the day with intention", 2),
-      node(id("intro-next"), "Button", "Continue", 2, { config: { action: "NextScreen", backgroundColor: accent } }),
-      node(id("screen-proof"), "Screen", "口碑与体验", 1),
-      node(id("proof-title"), "Header", "Most People Feel Calmer After Just 3 Sessions", 2, { variant: "headline" }),
-      node(id("proof-social"), "Social Proof", "Small daily practice, real lasting change", 2, { config: { rating: 4.9, count: "示例数据", caption: "请替换为真实评价" } }),
-      node(id("proof-next"), "Button", "Continue", 2, { config: { action: "NextScreen", backgroundColor: accent } }),
-      node(id("screen-offer"), "Screen", "选择套餐", 1),
-      node(id("offer-title"), "Header", "People Who Meditate Daily Sleep 40% Better", 2, { variant: "headline" }),
-      node(id("offer-list"), "List", "Fall asleep faster|Guided sleep meditations\nMake it a daily habit|Streaks and reminders\nSee yourself change|Track your progress", 2),
-      node(id("products"), "Products", plans, 2, { config: { defaultSelected: 1, packageLayout: "vertical" } }),
-      node(id("action"), "Button", "Continue", 2, { config: { action: "Purchase", backgroundColor: accent } }),
-      node(id("links"), "Links", "恢复购买 · 服务条款 · 隐私政策", 2),
-    ];
-    const result = [];
-    if (template.heroAsset && ["top", "full", "center", "icon"].includes(template.art) && template.profile !== "offer") result.push(media());
-    result.push(title());
-    if (template.heroAsset && (template.profile === "offer" || !["top", "full", "center", "icon"].includes(template.art))) result.push(media());
-    if (["benefits", "web", "web-reviews", "tiers", "reviews-list", "comparison", "plans"].includes(template.profile)) result.push(node(id("benefits"), "List", template.featureLines.join("\n"), 0, { config: { accentColor: accent } }));
-    if (["timeline", "steps"].includes(template.profile)) result.push(node(id("timeline"), "Timeline", "", 0, { config: { accentColor: accent, listRows: [{ title: "现在", caption: "立即开始体验" }, { title: "下一步", caption: "解锁更多内容" }, { title: "持续使用", caption: "根据商品规则续订" }] } }));
-    if (["toggle"].includes(template.profile)) result.push(node(id("toggle"), "Toggle", template.sourceTemplate.includes("Family") ? "家庭套餐|查看家庭方案" : "开启免费试用|查看试用方案", 0, { config: { onColor: accent, linkedProductsId: id("products") } }));
-    if (["reviews", "web-reviews", "reviews-list"].includes(template.profile)) result.push(node(id("reviews"), template.profile === "reviews-list" ? "List" : "Carousel", "评价示例一|请替换为真实评价\n评价示例二|请替换为真实评价", 0));
-    if (["table", "comparison"].includes(template.profile)) result.push(node(id("table"), "Feature Table", "", 0, { config: { columns: template.profile === "comparison" ? ["免费", "Pro"] : ["会员"], rows: [{ name: "完整功能", values: template.profile === "comparison" ? ["受限", "✓"] : ["✓"] }, { name: "专属支持", values: template.profile === "comparison" ? ["—", "✓"] : ["✓"] }] } }));
-    if (template.profile === "tiers") result.push(node(id("tiers"), "Tabs", "", 0, { config: { tabs: [{ id: "standard", title: "标准", description: "基础权益" }, { id: "premium", title: "高级", description: "全部权益" }], defaultTab: 1 } }));
-    if (["offer", "code"].includes(template.profile)) result.push(node(id("offer"), "Text", template.profile === "code" ? "25OFFSUMMER" : "限时优惠", 0, { variant: "section", config: { color: accent } }));
-    result.push(node(id("products"), "Products", plans, 0, { config: { defaultSelected: count === 1 ? 0 : 1, packageLayout: count === 3 ? "horizontal" : "vertical", productTemplate: template.profile === "credits" ? "rc-credits-onetime" : undefined } }));
-    result.push(node(id("action"), "Button", template.profile === "code" ? "领取优惠" : template.profile === "credits" ? "购买点数" : "继续", 0, { config: { action: "Purchase", backgroundColor: accent } }));
-    if (template.profile.startsWith("web")) result.push(node(id("web"), "Web Paywall Button", "前往网页购买", 0, { config: { action: "OpenURL", actionUrl: "" } }));
-    result.push(node(id("links"), "Links", "恢复购买 · 服务条款 · 隐私政策", 0));
-    return result;
-  }
+  if (template.isGallery) return createSourceTemplateNodes(template, node);
 
   if (template.id === "rc-gradient-timeline") {
     return [
@@ -1567,7 +1531,7 @@ function App() {
           selected={templateSelected}
           setSelected={setTemplateSelected}
           onClose={() => setModal(null)}
-          onOpenBuilder={(templateIndex) => { const template = templates[templateIndex]; applyTemplate(templateIndex); setModal(null); setView("builder"); notify(template.isGallery ? `已应用 RevenueCat 画廊第 ${template.sourceOrder} 张的本地可编辑结构。` : template.isNew ? "已应用本地组合模板。" : isEditableTemplate(template) ? (documentStyleTemplateIds.has(template.id) ? "已应用基于飞书 Paywall 规范的可编辑模板。" : "已应用基于源端核心结构的可编辑复现。") : "已应用源端预览内容；精确节点树仍在采集。"); }}
+          onOpenBuilder={(templateIndex) => { const template = templates[templateIndex]; applyTemplate(templateIndex); setModal(null); setView("builder"); notify(template.isGallery ? template.editorVerified ? `第 ${template.sourceOrder} 张源编辑器 Layers 已核对；本地按通用组件映射。` : `第 ${template.sourceOrder} 张只有源预览证据，编辑器层级待核。` : template.isNew ? "已应用本地组合模板。" : isEditableTemplate(template) ? (documentStyleTemplateIds.has(template.id) ? "已应用基于飞书 Paywall 规范的可编辑模板。" : "已应用基于源端核心结构的可编辑复现。") : "已应用源端预览内容；精确节点树仍在采集。"); }}
         />
       )}
       {modal?.kind === "ai" && <AiModal onClose={() => setModal(null)} markUnknown={markUnknown} />}
@@ -1735,6 +1699,7 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
   const [productPickerOpen, setProductPickerOpen] = useState(false);
   const [transientProducts, setTransientProducts] = useState([]);
   const [previewMode, setPreviewMode] = useState("source");
+  const [galleryProductPreview, setGalleryProductPreview] = useState("source");
   const [pricePreviewMode, setPricePreviewMode] = useState("1");
   const [retentionPreview, setRetentionPreview] = useState(null);
   const [previewFocus, setPreviewFocus] = useState(null);
@@ -1744,7 +1709,9 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
   const previewDropMarker = useRef(null);
   const linkedOfferRows = isNew ? draft.offerRows : selected.config?.offerRows;
   const linkedDefaultProductId = isNew ? draft.defaultProductId : selected.config?.defaultProductId;
-  const linkedNodes = builderNodes.map((item) => item.type === "Products" ? linkedPackageNode(item, linkedOfferRows, linkedDefaultProductId, item.config?.productTemplate ?? (item.config?.bluePrivilege ? "blue-privilege" : templates[appliedTemplate]?.documentTemplate)) : item);
+  const galleryTemplate = appliedTemplate !== null && templates[appliedTemplate]?.isGallery;
+  const galleryHasProducts = galleryTemplate && builderNodes.some((item) => item.type === "Products");
+  const linkedNodes = builderNodes.map((item) => item.type === "Products" && (!galleryTemplate || galleryProductPreview === "selected") ? linkedPackageNode(item, linkedOfferRows, linkedDefaultProductId, item.config?.productTemplate ?? (item.config?.bluePrivilege ? "blue-privilege" : templates[appliedTemplate]?.documentTemplate)) : item);
   const updateNodeWithPreview = (id, patch) => {
     updateBuilderNode(id, patch);
     if (id === "products" && patch.config?.packageLayout === "vertical") setBuilderNodes((current) => {
@@ -1774,6 +1741,7 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
     return () => zone?.classList.remove("preview-subzone-selected");
   }, [previewFocus, builderNodes]);
   useEffect(() => setPreviewMode(Array.isArray(linkedOfferRows) || (appliedTemplate !== null && (templates[appliedTemplate]?.documentTemplate || templates[appliedTemplate]?.isNew)) ? "editable" : "source"), [appliedTemplate, Boolean(linkedOfferRows)]);
+  useEffect(() => setGalleryProductPreview("source"), [appliedTemplate]);
   useEffect(() => {
     if (!activeNode?.startsWith("added-")) return;
     const scroll = document.querySelector(".ht-template-scroll");
@@ -1927,12 +1895,13 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
                 <button className={previewMode === "source" ? "active" : ""} onClick={() => setPreviewMode("source")}>{templates[appliedTemplate].documentTemplate ? "文档样式" : "Source visual"}</button>
                 <button className={previewMode === "editable" ? "active" : ""} disabled={!isEditableTemplate(templates[appliedTemplate])} onClick={() => setPreviewMode("editable")}>Editable structure</button>
               </div>}
+              {galleryHasProducts && <div className="preview-mode" aria-label="商品预览数据"><button className={galleryProductPreview === "source" ? "active" : ""} onClick={() => setGalleryProductPreview("source")}>源模板档位</button><button className={galleryProductPreview === "selected" ? "active" : ""} onClick={() => setGalleryProductPreview("selected")}>已选商品</button></div>}
               <button className="icon unknown-action" title="Preview orientation" onClick={() => markUnknown(builderBoundary)}><RotateCw size={15} /></button>
               <button className="icon unknown-action" title="Preview visibility" onClick={() => markUnknown(builderBoundary)}><Eye size={15} /></button>
             </div>
             <PaywallPreview nodes={linkedNodes} template={appliedTemplate !== null ? templates[appliedTemplate] : null} mode={previewMode} pricePreviewMode={pricePreviewMode} activeNode={activeNode} onSelect={selectPreviewNode} onUpdateHeroPosition={updateHeroCopyPosition} onReorder={previewMode === "editable" ? previewReorder : null} retentionPreviewOpen={retentionPreviewOpen} onOpenRetention={() => setRetentionPreview({ templateId: templates[appliedTemplate]?.id })} onCloseRetention={() => setRetentionPreview(null)} />
             {appliedTemplate !== null && !templates[appliedTemplate].isNew && previewMode === "source" && <p className="source-preview-note">{templates[appliedTemplate].documentTemplate ? "飞书文档中的 Paywall 样式参考，与模板库卡片一一对应。" : "源端模板画面，与模板库卡片一一对应。"}</p>}
-            {appliedTemplate !== null && previewMode === "editable" && <p className="source-preview-note">{templates[appliedTemplate].isGallery ? "按 RevenueCat 画廊模板重建的本地可编辑结构；并非源站画面原样。" : templates[appliedTemplate].isNew ? "本地组合模板；组件和文案可在左侧选择后编辑。" : isEditableTemplate(templates[appliedTemplate]) ? "已采集样式与核心字段的本地可编辑复现。" : "精确节点树仍在采集。"}</p>}
+            {appliedTemplate !== null && previewMode === "editable" && <p className="source-preview-note">{templates[appliedTemplate].isGallery ? templates[appliedTemplate].editorVerified ? "已核对 RevenueCat 编辑器 Layers；本地是通用组件映射，SKU、字段和动作目标仍需核验。" : "仅有 RevenueCat 画廊预览证据；编辑器 Layers、SKU 与动作目标均未核实。" : templates[appliedTemplate].isNew ? "本地组合模板；组件和文案可在左侧选择后编辑。" : isEditableTemplate(templates[appliedTemplate]) ? "已采集样式与核心字段的本地可编辑复现。" : "精确节点树仍在采集。"}</p>}
             <p className="preview-disclaimer">All prices, titles, and offers displayed are placeholders. The actual data from App Store and Google Play will be shown in the app.</p>
           </div>
           <aside className="property-panel"><div className="component-library-toolbar"><span>组件库</span><div><button type="button" className="icon" title="保存当前组件" aria-label="保存当前组件" disabled={!rawActive} onClick={() => { setLibraryName(""); setLibraryError(""); setLibraryMode("save"); }}><Save size={17} /></button><button type="button" className="icon" title="读取已保存组件" aria-label="读取已保存组件" disabled={!rawActive} onClick={() => { setLibrarySearch(""); setLibraryError(""); setLibraryMode("load"); }}><FolderOpen size={17} /></button></div></div><BuilderProperties active={active} previewFocus={previewFocus} markUnknown={markUnknown} boundary={builderBoundary} templateLinks={templateLinks} setTemplateLinks={setTemplateLinks} updateNode={updateNodeWithPreview} removeNode={deleteElement} addNestedNode={addNestedElement} isDocumentTemplate={isDocumentTemplate} pricePreviewMode={pricePreviewMode} setPricePreviewMode={setPricePreviewMode} retentionPreviewOpen={retentionPreviewOpen} onPreviewRetention={() => { setPreviewMode("editable"); setRetentionPreview((current) => current?.templateId === templates[appliedTemplate]?.id ? null : { templateId: templates[appliedTemplate]?.id }); }} /></aside>
@@ -2360,7 +2329,7 @@ function ProductsStyleEditor({ active, updateNode, pricePreviewMode }) {
 
 function ProductsLayoutEditor({ active, updateNode }) {
   const config = active.config ?? {};
-  return <><h4>套餐布局</h4><Field label="布局类型"><select aria-label="布局类型" value={productLayout(config)} onChange={(event) => updateNodeConfig(active, updateNode, { packageLayout: event.target.value })}>{PRODUCT_LAYOUTS.map((layout) => <option key={layout.id} value={layout.id}>{layout.label}</option>)}</select></Field><ConfigNumberField label="套餐最小高度" active={active} updateNode={updateNode} name="planHeight" fallback="" min={30} max={300} suffix="px" /><h4>组件位置</h4><ElementLayoutEditor active={active} updateNode={updateNode} /></>;
+  return <><h4>套餐布局</h4><label className="switch-row"><input type="checkbox" checked={config.showCards !== false} onChange={(event) => updateNodeConfig(active, updateNode, { showCards: event.target.checked })} /><span>{config.showCards === false ? "仅绑定" : "展示"}</span><strong>展示套餐选择卡</strong></label>{config.showCards !== false && <><Field label="布局类型"><select aria-label="布局类型" value={productLayout(config)} onChange={(event) => updateNodeConfig(active, updateNode, { packageLayout: event.target.value })}>{PRODUCT_LAYOUTS.map((layout) => <option key={layout.id} value={layout.id}>{layout.label}</option>)}</select></Field><ConfigNumberField label="套餐最小高度" active={active} updateNode={updateNode} name="planHeight" fallback="" min={30} max={300} suffix="px" /></>}<h4>组件位置</h4><ElementLayoutEditor active={active} updateNode={updateNode} /></>;
 }
 
 function ImageStyle() {
@@ -2802,7 +2771,7 @@ function TemplatesModal({ selected, setSelected, onClose, onOpenBuilder }) {
       <p>Background theme</p><Filter group="background" value="All">All</Filter><Filter group="background" value="Light">Light</Filter><Filter group="background" value="Dark">Dark</Filter>
       <p>Category</p><Filter group="category" value="All">All paywalls</Filter><Filter group="category" value="Popular">Popular</Filter><Filter group="category" value="Seasonal">Seasonal</Filter>
     </aside><div className="template-content"><div className="template-scroll-content">
-      <div className="template-selection-summary">{pendingTemplate ? <><span>Selected template</span><strong>{pendingTemplate.title}</strong><small>{displayTags(pendingTemplate).join(" · ")}</small></> : <span>No template selected</span>}</div>
+      <div className="template-selection-summary">{pendingTemplate ? <><span>Selected template</span><strong>{pendingTemplate.title}</strong><small>{pendingTemplate.isGallery ? `${pendingTemplate.editorVerified ? "源编辑器 Layers 已核对" : "仅源预览"}：${pendingTemplate.observedComponents.join(" · ")}。SKU 和字段配置待核验。` : displayTags(pendingTemplate).join(" · ")}</small></> : <span>No template selected</span>}</div>
       <div className="template-grid rich-template-grid">{prioritizedTemplates.map((template) => {
         const index = templates.indexOf(template);
         return <button aria-pressed={pendingSelected === index} className={`template template-${template.theme} ${pendingSelected === index ? "selected" : ""}`} onClick={() => setPendingSelected(index)} key={template.id}>
@@ -2900,19 +2869,23 @@ function SourceTemplateMedia({ template }) {
 function GalleryTemplateMedia({ template }) {
   const profile = template.profile;
   const dark = ["full", "dark", "red"].includes(template.art);
+  const source = observedTemplate(template.sourceOrder);
+  const plan = sourceBlueprints[template.sourceOrder - 1];
+  const lines = source.text.split("\n");
   const features = template.featureLines;
+  const previewProducts = plan.flow ? [] : plan.products ?? [];
   return <div className={`rc-gallery-preview art-${template.art} profile-${profile}`} style={{ "--rc-accent": template.accent, "--rc-ink": dark ? "#fff" : "#1c1d23" }}>
     <span className="rc-gallery-new">NEW</span>
     {template.heroAsset && <div className="rc-gallery-art"><img src={template.heroAsset} alt="" loading="lazy" /></div>}
     <div className="rc-gallery-content">
       <strong>{template.headline}</strong>
-      {profile === "offer" && <b className="rc-gallery-offer">{template.sourceTemplate === "AstroApp Offer" ? "60% off" : "19% OFF"}</b>}
-      {profile === "toggle" && <span className="rc-gallery-toggle">{template.sourceTemplate.includes("Family") ? "Family Sharing" : "Free trial"}<i /></span>}
-      {profile === "reviews" && <span className="rc-gallery-review">“Great value and a thoughtful experience.”</span>}
+      {profile === "offer" && lines.find((line) => /\d+%\s*off/i.test(line) && line !== template.headline) && <b className="rc-gallery-offer">{lines.find((line) => /\d+%\s*off/i.test(line) && line !== template.headline)}</b>}
+      {plan.toggle !== undefined && <span className="rc-gallery-toggle">{lines[plan.toggle]}<i /></span>}
+      {plan.reviews && <span className="rc-gallery-review">{lines[plan.reviews[0]]}</span>}
       {profile === "steps" && <span className="rc-gallery-steps">● ── ● ── ●</span>}
-      <div className="rc-gallery-features">{features.map((item) => <span key={item}><i />{item}</span>)}</div>
-      {profile !== "steps" && <div className={`rc-gallery-plans count-${Math.min(template.productCount, 3)}`}>{Array.from({ length: Math.min(template.productCount, 3) }, (_, index) => <span key={index}>{profile === "credits" ? `${[25, 50, 100][index]} credits` : template.productCount === 1 ? "Yearly" : ["Monthly", "Yearly", "Lifetime"][index]}<b>{profile === "credits" ? ["$2.99", "$9.99", "$17.99"][index] : template.productCount === 1 ? "$69.99" : ["$9.99", "$69.99", "$119.99"][index]}</b></span>)}</div>}
-      <div className="rc-gallery-cta">{profile === "code" ? "Redeem Offer" : profile === "credits" ? "Buy credits" : "Continue"}</div>
+      {!!features.length && <div className="rc-gallery-features">{features.slice(0, 5).map((item) => <span key={item}><i />{item.split("|")[0]}</span>)}</div>}
+      {!!previewProducts.length && <div className={`rc-gallery-plans count-${Math.min(previewProducts.length, 3)}`}>{previewProducts.slice(0, 3).map((row, index) => { const [name, price] = row.split("|"); return <span key={`${index}-${name}`}>{name}<b>{price}</b></span>; })}</div>}
+      {plan.cta !== undefined && <div className="rc-gallery-cta">{lines[plan.cta]}</div>}
     </div>
   </div>;
 }
@@ -3504,8 +3477,9 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, on
       const [label = "Continue", , price = ""] = node.content.split("|");
       return wrap(<button className="preview-cta"><span>{label}</span>{price && <small>{price}</small>}</button>, "preview-button");
     }
+    if (config.showCards === false) return null;
     const switched = Boolean(toggleStates[config.linkedToggleId]);
-    return wrap(<PreviewProducts key={config.linkedToggleId ? String(switched) : node.id} content={node.content} config={node.config} childrenNodes={children} priceMode={pricePreviewMode} switched={switched} onInspect={(event, index) => onSelect(node.id, previewClickArea(event), index + (switched ? Number(config.groupSize) || 0 : 0))} />, "preview-products-wrap");
+    return wrap(<PreviewProducts key={config.linkedToggleId ? String(switched) : node.id} content={node.content} config={node.config} childrenNodes={children} priceMode={pricePreviewMode} switched={switched} onInspect={(event, index) => onSelect(node.id, previewClickArea(event), index + (switched ? Number(config.groupSize) || 0 : 0))} onPurchase={(plan, index) => { onSelect(node.id, "price", index); onButtonAction?.({ type: "Purchase Button", config: { action: "Purchase" } }, plan); }} />, "preview-products-wrap");
   }
   if (node.type === "Toggle") return wrap(<PreviewToggle key={`${node.id}-${node.defaultState ?? "Off"}`} content={node.content} defaultState={node.defaultState} config={config} linkedEnabled={config.linkedProductsId ? toggleStates[node.id] : undefined} onChange={config.linkedProductsId ? (enabled) => onToggleChange?.(node.id, enabled) : undefined} />, "preview-toggle-wrap");
   if (["Toggle On", "Toggle Off"].includes(node.type)) return wrap(<div className="preview-toggle-anchor" />, "preview-toggle-anchor-wrap");
@@ -3551,7 +3525,7 @@ function PreviewCarousel({ content, config = {} }) {
   return <div className="preview-carousel"><span>★★★★★</span><p>{copy ? <><strong>{title}</strong><small>{copy}</small></> : slide}</p><div><button aria-label="Previous review" onClick={(event) => { event.stopPropagation(); setCurrent((index) => (index - 1 + slides.length) % slides.length); }}>‹</button><i style={{ gap: `${config.gap ?? 8}px` }}>{slides.map((_, index) => <b className={index === current ? "active" : ""} style={{ color: index === current ? config.accentColor : config.secondaryColor }} key={index}>•</b>)}</i><button aria-label="Next review" onClick={(event) => { event.stopPropagation(); setCurrent((index) => (index + 1) % slides.length); }}>›</button></div></div>;
 }
 
-function PreviewProducts({ content, config = {}, childrenNodes = [], priceMode = "1", switched = false, onInspect }) {
+function PreviewProducts({ content, config = {}, childrenNodes = [], priceMode = "1", switched = false, onInspect, onPurchase }) {
   const source = content || childrenNodes.map((child) => child.content).filter(Boolean).join("\n");
   const allRows = productPackageRows({ content: source, config }, config.productTemplate);
   const groupSize = Math.max(1, Number(config.groupSize) || allRows.length);
@@ -3561,6 +3535,7 @@ function PreviewProducts({ content, config = {}, childrenNodes = [], priceMode =
   const defaultChoice = config.linkedToggleId && (requestedChoice < 0 || rows[requestedChoice]?.emptySlot) ? rows.findIndex((row) => !row.emptySlot) : requestedChoice;
   const [chosen, setChosen] = useState(defaultChoice);
   useEffect(() => setChosen(defaultChoice), [defaultChoice]);
+  if (config.purchasePerCard) return <div className="preview-products-credit-list">{rows.map((row, index) => <div className="preview-products-credit" key={`${row.skuId || row.name}-${index}`}><span><strong>{row.name}</strong>{row.supportingCopy && <small>{row.supportingCopy}</small>}</span><button type="button" onClick={(event) => { event.stopPropagation(); onPurchase?.(row, index); }}>{resolveProductPrice(row, priceMode).main}</button></div>)}</div>;
   return <div className={`preview-products product-layout-${layout} product-count-${Math.min(rows.length, 3)}`}>{rows.map((row, index) => <ProductPackageCard key={`${row.skuId || row.name}-${index}`} plan={row} index={index} config={config} layout={layout} selected={index === chosen} priceMode={priceMode} onChoose={setChosen} onInspect={onInspect} />)}</div>;
 }
 
