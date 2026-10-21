@@ -328,7 +328,7 @@ textarea { min-height: 80px; resize: vertical; }
 .preview-screen-progress { display: flex; justify-content: center; gap: 7px; margin: 0 0 14px; }
 .preview-screen-progress button { width: 24px; height: 5px; padding: 0; border: 0; border-radius: 3px; background: #d5d9df; }
 .preview-screen-progress button.active { background: #3787a8; }
-.preview-feature-table { width: 100%; margin: 0 0 12px; border-collapse: collapse; table-layout: fixed; font-size: 9px; }
+.preview-feature-table { width: 100%; min-width: 0; max-width: 100%; margin: 0 0 12px; border-collapse: collapse; table-layout: fixed; font-size: 9px; }
 .preview-feature-table th, .preview-feature-table td { padding: 7px 4px; border-bottom: 1px solid #e4e5e8; overflow-wrap: anywhere; text-align: center; }
 .preview-feature-table th:first-child { width: 44%; text-align: left; }
 .preview-feature-table thead { background: #f5f6f8; }
