@@ -1656,11 +1656,28 @@ textarea { min-height: 80px; resize: vertical; }
 .template-rc-source-30 .preview-headline h2 { text-align: center; }
 .template-rc-source-30 .preview-products-wrap { margin-top: auto; }
 .template-rc-source-31 .preview-products-wrap, .template-rc-source-33 .preview-products-wrap { margin-top: auto; }
+.template-rc-source-31 .preview-benefits strong, .template-rc-source-33 .preview-benefits strong { font-weight: 400; }
 .template-rc-source-32 .preview-products.product-layout-vertical, .template-rc-source-34 .preview-products.product-layout-vertical { grid-template-columns: repeat(2,minmax(0,1fr)); }
-.template-rc-source-32 .preview-products-wrap { margin-top: 12px; }
-.template-rc-source-32 .preview-cta { background: #6d40d0 !important; }
+.template-rc-source-32 [data-node-id$="-image"] { margin-bottom: 23px; }
+.template-rc-source-32 [data-node-id$="-image"] .preview-image { height: 245px !important; border-radius: 0 0 50% 50% / 0 0 12% 12%; }
+.template-rc-source-32 .preview-products-wrap { margin-top: 30px; }
+.template-rc-source-32 .preview-products .ht-vertical-plan { padding-left: 29px; }
+.template-rc-source-32 .preview-products .ht-vertical-plan::before { content: ""; position: absolute; left: 9px; top: 50%; width: 12px; height: 12px; border: 1px solid #d7d7dc; border-radius: 50%; transform: translateY(-50%); }
+.template-rc-source-32 .preview-products .ht-vertical-plan.chosen::before { border-color: #a353cc; background: #a353cc; box-shadow: inset 0 0 0 3px #fff; }
+.template-rc-source-32 .preview-cta { background: linear-gradient(90deg,#5834d4,#e1b9a7) !important; }
 .template-rc-source-33 .preview-products .ht-vertical-plan.chosen { background: linear-gradient(120deg,#2733be,#36a9e0) !important; color: #fff; }
 .template-rc-source-33 .preview-cta { background: linear-gradient(90deg,#262bb5,#3da8e7) !important; }
+.template-rc-source-34 .phone-content > .preview-node { order: 3; }
+.template-rc-source-34 [data-node-id$="-image"] { order: 0 !important; margin-bottom: 31px !important; }
+.template-rc-source-34 [data-node-id$="-image"] .preview-image { height: 155px !important; mask-image: linear-gradient(to bottom,#000 82%,transparent); }
+.template-rc-source-34 [data-node-id$="-copy-0"] { order: 1 !important; align-self: center; margin-bottom: 12px; padding: 4px 12px; border-radius: 99px; background: #abecd9; }
+.template-rc-source-34 [data-node-id$="-copy-0"] p { margin: 0; color: #111; font-size: 10px; font-weight: 700; }
+.template-rc-source-34 [data-node-id$="-title"] { order: 2 !important; }
+.template-rc-source-34 [data-node-id$="-features"] { order: 3 !important; }
+.template-rc-source-34 [data-node-id$="-products"] { order: 4 !important; }
+.template-rc-source-34 [data-node-id$="-action"] { order: 5 !important; }
+.template-rc-source-34 [data-node-id$="-links"] { order: 6 !important; }
+.template-rc-source-34 .preview-benefits li > i { color: #111 !important; }
 .template-rc-source-34 .preview-products-wrap { margin-top: 8px; }
 .template-rc-source-34 .preview-button { margin-top: auto; }
 .template-rc-source-34 .preview-cta { background: #5bb58e !important; }
@@ -1736,6 +1753,10 @@ textarea { min-height: 80px; resize: vertical; }
 .template-rc-source-41 .phone-content { background: #050710; }
 .template-rc-source-41 [data-node-id$="-image"] { order: 0; }
 .template-rc-source-41 [data-node-id$="-social"] { position: absolute; z-index: 2; top: 250px; right: 0; left: 0; order: 1; color: #fff; text-align: center; }
+.template-rc-source-41 .preview-social-proof { display: flex; flex-direction: column; align-items: center; gap: 1px; background: transparent; }
+.template-rc-source-41 .preview-social-proof > span { order: 0; color: #fff; }
+.template-rc-source-41 .preview-social-proof > div { order: 1; font-size: 14px; letter-spacing: 0; }
+.template-rc-source-41 .preview-social-proof > strong { order: 2; color: #fff; font-size: 10px; }
 .template-rc-source-41 [data-node-id$="-title"] { order: 2; }
 .template-rc-source-41 [data-node-id$="-features"] { order: 3; }
 .template-rc-source-41 [data-node-id$="-products"] { order: 4; }

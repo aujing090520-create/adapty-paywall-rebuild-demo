@@ -289,7 +289,7 @@ export function createSourceTemplateNodes(template, node) {
   (plan.copy ?? []).forEach((index, itemIndex) => result.push(add(`copy-${itemIndex}`, "Text", at(index))));
   if (plan.award) result.push(add("award", "Award", "", { title: at(plan.award[1]), source: at(plan.award[0]), subtitle: at(plan.award[2]), accentColor: template.accent }));
   if (plan.tabs) result.push(add("tabs", "Tabs", "", { tabs: plan.tabs.map((index) => ({ id: `tier-${index}`, title: at(index), description: "" })), defaultTab: 1 }));
-  if (plan.features) result.push(add("features", "List", listContent(plan.features, plan.paired), { accentColor: template.accent }));
+  if (plan.features) result.push(add("features", "List", listContent(plan.features, plan.paired), { accentColor: order === 34 ? "#111111" : template.accent, ...(order === 34 ? { listRows: sourceFeatureLines(order).map((line, index) => { const [title, caption] = line.split("|"); return { title, caption, showCaption: true, leadingMode: "icon", leading: ["dumbbell", "running", "clock"][index] }; }) } : {}) }));
   if (plan.timeline) {
     const section = lines.slice(...plan.timeline);
     const listRows = Array.from({ length: Math.ceil(section.length / 2) }, (_, index) => ({ title: section[index * 2], caption: section[index * 2 + 1] ?? "", ...([21, 26].includes(order) ? { marker: ["lock", "bell", "star"][index] ?? "number" } : {}) }));
@@ -322,7 +322,7 @@ export function createSourceTemplateNodes(template, node) {
       }
     }
   }
-  if (plan.social) result.push(add("social", "Social Proof", "", { rating: Number.parseFloat(at(plan.social[0])) || 5, count: at(plan.social[1]), caption: at(plan.social[0]), accentColor: template.accent }));
+  if (plan.social) result.push(add("social", "Social Proof", "", { rating: Number.parseFloat(at(plan.social[0])) || 5, count: at(plan.social[1]), caption: at(plan.social[0]), accentColor: order === 41 ? "#ffe479" : template.accent }));
   if (plan.toggle !== undefined) result.push(add("toggle", "Toggle", at(plan.toggle), { onColor: template.accent }));
   if (sourcePackageCount(order)) result.push(products());
   if (plan.table) {
