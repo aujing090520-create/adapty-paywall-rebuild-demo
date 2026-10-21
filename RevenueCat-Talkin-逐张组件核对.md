@@ -1,6 +1,6 @@
 # Talkin RevenueCat 逐张组件核对
 
-来源：2026-10-21 登录 Talkin 项目 RevenueCat 的 `Select template` 画廊，逐张读取可见文字、组件选择标签和图片资源，记录于 `src/revenueCatObserved.json`。用户授权后，逐张创建并保留未发布草稿，核对源编辑器 Layers：41 张中 40 张有 Layers 记录，见 `src/revenueCatEditorObserved.json`；第 38 张 `RevenueCat themed` 的选择动作只生成了空白草稿，源组件结构**未核实**。下表描述预览可见内容与本地映射，不等于源编辑器的逐字段配置。源端真实 SKU、支付结果、优惠码核销、网页跳转目标和完整嵌套关系尚未逐张核验。标题和价格为源模板示例，不应作为 HelloTalk 商品数据。
+来源：2026-10-21 登录 Talkin 项目 RevenueCat 的 `Select template` 画廊，逐张读取可见文字、组件选择标签和图片资源，记录于 `src/revenueCatObserved.json`。用户授权后，逐张创建并保留未发布草稿，核对源编辑器 Layers：41 张中 40 张有 Layers 记录，见 `src/revenueCatEditorObserved.json`；第 38 张 `RevenueCat themed` 的选择动作只生成了空白草稿，源组件结构**未核实**。下表描述预览可见内容与本地映射，不等于源编辑器的逐字段配置。源端真实 SKU、支付结果、优惠码核销、网页结账履约和完整嵌套关系尚未逐张核验。标题和价格为源模板示例，不应作为 HelloTalk 商品数据。
 
 | 序号 | 源模板 | 可见组件与本地映射 |
 | --- | --- | --- |
@@ -64,9 +64,9 @@
 | 10 | Virtual currencies OTP | 5 | 5 | 每档各有 Purchase button |
 | 11 | Virtual currencies subscription | 2 | 1 | 通用文本/图片层 |
 | 12 | Multi-tier 1 | 2 | 1 | Tabs、Tab、Tab control 各 ×1，Tab control button ×2 |
-| 13 | Recipe book [Web] | 2 | 2 | 两个购买入口位于套餐列表之后，分别为 App 内继续与网页优惠；不是每个套餐一个购买按钮，目标未核 |
-| 14 | Social proof [Web] | 3 | 2 | Carousel ×1；两个购买入口，目标未核 |
-| 15 | StarFinder [Web] | 1 | 2 | 无可见套餐卡；两个购买入口，目标未核 |
+| 13 | Recipe book [Web] | 2 | 2 | 两个购买入口位于套餐列表之后，分别为 Standard checkout 与 Web checkout (browser)；不是每个套餐一个购买按钮 |
+| 14 | Social proof [Web] | 3 | 2 | Carousel ×1；第二购买入口已核为 Web checkout (browser) |
+| 15 | StarFinder [Web] | 1 | 2 | 无可见套餐卡；第二购买入口已核为 Web checkout (browser) |
 | 16 | CatGPT Plus w/ header image | 1 | 1 | 无可见套餐卡 |
 | 17 | ConcertBuddy | 1 | 1 | 无可见套餐卡 |
 | 18 | Wabi Sabi v2 | 3 | 1 | 通用文本/图片层 |
@@ -94,4 +94,4 @@
 | 40 | Untitled Paywall | 2 | 1 | 通用文本/图标层 |
 | 41 | Boxer | 1 | 1 | 无可见套餐卡 |
 
-本地还原状态：40 张已将源端 Package 数量与关键交互层逐张对到通用组件节点。无可见选择卡的模板保留商品绑定，但不显示套餐卡；第 10 张复用商品组件的“每档购买”配置。源端字段、视觉尺寸、交互条件及动作目标尚不能称为完整功能复刻。第 38 张仍按预览做临时映射，未标为编辑器已核实。四张 HelloTalk 手动模板不在本轮修改范围。
+本地还原状态：40 张已将源端 Package 数量与关键交互层逐张对到通用组件节点。无可见选择卡的模板保留商品绑定，但不显示套餐卡；第 10 张复用商品组件的“每档购买”配置。已把画廊可见的角标、副文案、日英双语套餐名等补入商品组件；40 张已核实模板的可见文字均映射到本地节点，并有回归测试守护。第 13 张的结构、首按钮、网页结账按钮和底部位置已做源画面对照；第 37 张的 BACK/RESTORE 也已归入顶部按钮。第 13–15 张的网页购买入口为 RevenueCat Billing 浏览器结账，不是任意 URL 跳转；本地仅预览该动作及自动关闭选项，未发起真实交易。其余源端字段、视觉尺寸、交互条件及动作目标尚不能称为完整功能复刻。第 38 张仍按预览做临时映射，未标为编辑器已核实。四张 HelloTalk 手动模板不在本轮修改范围。

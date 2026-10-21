@@ -47,6 +47,51 @@ export const sourceBlueprints = [
   { heading: 2, social: [0, 1], features: [3, 6], copy: [6], cta: 7 },
 ];
 
+// Only copy that is visible in the source preview belongs here. Prices remain
+// sample preview values until a real SKU is selected in the builder.
+const sourcePackageDetails = {
+  4: { 0: { badgeText: "BEST VALUE", savingCopy: "(19% off)" } },
+  8: { 1: { supportingCopy: "12 mo • $69.99" } },
+  11: { 0: { badgeText: "19% OFF" } },
+  12: { 0: { badgeText: "SAVE 19%" } },
+  13: { 0: { supportingCopy: "Full access for just $69.99/yr", badgeText: "19% OFF" }, 1: { supportingCopy: "Full access for just $9.99/mo" } },
+  18: {
+    0: { name: "一月 · Monthly Path", supportingCopy: "月から月へ · month to month" },
+    1: { name: "季節 · Seasonal Journey", supportingCopy: "月から月へ · three months" },
+    2: { name: "一年 · Annual Reflection", supportingCopy: "月から月へ · full year" },
+  },
+  20: { 0: { badgeText: "19% OFF" } },
+  21: { 0: { badgeText: "19% OFF" }, 1: { supportingCopy: "Billed at $9.99/mo." } },
+  23: { 0: { supportingCopy: "($69.99/yr)", badgeText: "SAVE 19%" } },
+  24: { 0: { supportingCopy: "/year", badgeText: "19% OFF" }, 1: { supportingCopy: "/month" } },
+  25: { 0: { badgeText: "19% OFF" }, 1: { supportingCopy: "Billed at $9.99/mo." } },
+  27: { 0: { badgeText: "19%" } },
+  28: { 0: { badgeText: "19% OFF" } },
+  30: { 1: { badgeText: "19% OFF" } },
+  31: { 0: { supportingCopy: "Full access for just $69.99/yr", badgeText: "19% OFF" }, 1: { supportingCopy: "Full access for just $9.99/mo" } },
+  32: { 1: { badgeText: "19% OFF" } },
+  33: { 1: { supportingCopy: "$69.99/yr ($5.83/mo)", badgeText: "SAVE 19%" } },
+  34: { 1: { badgeText: "SAVE 19%" } },
+  35: { 0: { supportingCopy: "Cancel anytime" }, 1: { badgeText: "Save 19%" } },
+  37: { 0: { supportingCopy: "$69.99/yr ($5.83/mo)", badgeText: "SAVE 19%" } },
+  40: { 1: { supportingCopy: "$69.99/yr ($5.83/mo)", badgeText: "Save 19% (only $5.83/mo)" } },
+};
+
+export function sourceProductRows(order) {
+  return (sourceBlueprints[order - 1].products ?? []).map((line, index) => {
+    const [name = "", price = "", supportingCopy = ""] = line.split("|");
+    const override = sourcePackageDetails[order]?.[index] ?? {};
+    const row = { name, price, supportingCopy, ...override };
+    return {
+      ...row,
+      skuId: "",
+      showSupportingCopy: Boolean(row.supportingCopy),
+      showBadge: Boolean(row.badgeText),
+      showSavingCopy: Boolean(row.savingCopy),
+    };
+  });
+}
+
 export const observedTemplate = (order) => observed[order - 1];
 export const observedEditor = (order) => editorObserved.find((item) => item.order === order);
 export const observedLayerCount = (order, type) => observedEditor(order)?.layers.filter((layer) => layer.type === type).length;
@@ -84,11 +129,11 @@ export function createSourceTemplateNodes(template, node) {
     return paired ? Array.from({ length: Math.ceil(section.length / 2) }, (_, index) => section.slice(index * 2, index * 2 + 2).join("|")).join("\n") : section.join("\n");
   };
   const media = (part, depth = 0) => add(part, "Image", at(plan.heading), { mediaSrc: template.heroAsset, mediaFit: template.art === "icon" ? "contain" : "cover", mediaBackgroundColor: template.art === "dark" ? "#131421" : "#f6f6f8", mediaWidth: 100, mediaHeight: template.art === "icon" ? 80 : 140 }, depth);
-  const header = (part, index, depth = 0) => node(id(part), "Header", at(index), depth, { variant: "headline" });
-  const button = (part, index, depth = 0) => add(part, "Button", at(index), { action: [5, 6].includes(order) ? "None" : "Purchase", backgroundColor: template.accent }, depth);
+  const header = (part, index, depth = 0) => node(id(part), "Header", at(index), depth, { variant: "headline", ...([13, 37].includes(order) ? { config: { textAlign: "left", fontSize: 19 } } : {}) });
+  const button = (part, index, depth = 0) => add(part, "Button", at(index), { action: [5, 6].includes(order) ? "None" : "Purchase", backgroundColor: order === 13 ? "#f2f2f7" : template.accent, ...(order === 13 ? { color: "#111111", radius: 99 } : {}) }, depth);
   const products = (depth = 0) => {
     const visibleRows = plan.products ?? [];
-    return add("products", "Products", visibleRows.join("\n") || "绑定商品||", { defaultSelected: 0, packageLayout: visibleRows.length === 3 ? "horizontal" : "vertical", showOfferBadge: false, showCards: visibleRows.length > 0, sourcePackageCount: sourcePackageCount(order), purchasePerCard: order === 10 }, depth);
+    return add("products", "Products", visibleRows.join("\n") || "绑定商品||", { defaultSelected: 0, packageLayout: visibleRows.length === 3 ? "horizontal" : "vertical", showOfferBadge: false, showCards: visibleRows.length > 0, sourcePackageCount: sourcePackageCount(order), purchasePerCard: order === 10, badgeGradient: [template.accent, template.accent, template.accent], selectedBorderGradient: [template.accent, template.accent, template.accent], ...(visibleRows.length ? { packageRows: sourceProductRows(order) } : {}) }, depth);
   };
   const links = (depth = 0) => {
     const policyLines = lines.filter((line) => /^(Restore( Purchases| purchases)?|Terms( of Use| of service)?|Privacy( Policy| policy)?|Privacy policy)$/.test(line));
@@ -119,11 +164,16 @@ export function createSourceTemplateNodes(template, node) {
   }
 
   const result = [];
-  if (template.heroAsset && ["top", "full", "center", "icon"].includes(template.art)) result.push(media("image"));
+  if (order === 37) {
+    result.push(add("header-actions", "Stack", "", { axis: "horizontal", gap: 8 }));
+    result.push(add("back", "Button", at(0), { action: "Dismiss", backgroundColor: "#f1f1f1", color: "#151515", radius: 99 }, 1));
+    if (template.heroAsset) result.push(media("image", 1));
+    result.push(add("restore", "Button", at(1), { action: "RestorePurchases", backgroundColor: "#f1f1f1", color: "#151515", radius: 99 }, 1));
+  } else if (template.heroAsset && ["top", "full", "center", "icon"].includes(template.art)) result.push(media("image"));
   result.push(header("title", plan.heading));
-  if (template.heroAsset && !["top", "full", "center", "icon"].includes(template.art)) result.push(media("image"));
+  if (order !== 37 && template.heroAsset && !["top", "full", "center", "icon"].includes(template.art)) result.push(media("image"));
   (plan.copy ?? []).forEach((index, itemIndex) => result.push(add(`copy-${itemIndex}`, "Text", at(index))));
-  if (plan.award) result.push(add("award", "Award", "", { title: at(plan.award[1]), source: at(plan.award[0]), accentColor: template.accent }));
+  if (plan.award) result.push(add("award", "Award", "", { title: at(plan.award[1]), source: at(plan.award[0]), subtitle: at(plan.award[2]), accentColor: template.accent }));
   if ([7, 8, 9].includes(order)) result.push(add("tabs", "Tabs", "", { tabs: [{ id: "off", title: "OFF", description: "" }, { id: "on", title: "ON", description: "" }], defaultTab: 0, linkedToggleId: id("toggle") }));
   if (plan.tabs) result.push(add("tabs", "Tabs", "", { tabs: plan.tabs.map((index) => ({ id: `tier-${index}`, title: at(index), description: "" })), defaultTab: 1 }));
   if (plan.features) result.push(add("features", "List", listContent(plan.features, plan.paired), { accentColor: template.accent }));
@@ -151,10 +201,10 @@ export function createSourceTemplateNodes(template, node) {
   if (plan.table) {
     const tableLines = lines.slice(...plan.table);
     const pairedRows = order === 27 ? Array.from({ length: Math.floor(tableLines.length / 2) }, (_, index) => tableLines.slice(index * 2, index * 2 + 2)) : tableLines.map((line) => [line, ""]);
-    result.push(add("table", "Feature Table", "", { columns: order === 29 ? [at(7), at(8)] : ["包含"], rows: pairedRows.map(([name, description]) => ({ name, values: order === 29 ? ["", ""] : [description] })) }));
+    result.push(add("table", "Feature Table", "", { title: order === 27 ? at(7) : order === 29 ? at(1) : "", columns: order === 29 ? [at(7), at(8)] : ["包含"], rows: pairedRows.map(([name, description]) => ({ name, values: order === 29 ? ["", ""] : [description] })) }));
   }
-  if (plan.cta !== undefined) result.push(button("action", plan.cta));
-  if (plan.webCta !== undefined) result.push(add("web-action", "Web Paywall Button", at(plan.webCta), { action: "OpenURL", actionUrl: "" }));
+  if (plan.cta !== undefined) result.push(order === 18 ? add("action", "Button", `${at(18)} ${at(19)}`, { action: "Purchase", backgroundColor: template.accent }) : button("action", plan.cta));
+  if (plan.webCta !== undefined) result.push(add("web-action", "Web Paywall Button", at(plan.webCta), { action: "WebCheckout", autoDismiss: true, backgroundColor: order === 13 ? "#b53231" : template.accent, ...(order === 13 ? { color: "#ffffff", radius: 99 } : {}) }));
   (plan.afterCta ?? []).forEach((index, itemIndex) => result.push(add(`after-action-${itemIndex}`, "Text", at(index))));
   const footer = links();
   if (footer) result.push(footer);

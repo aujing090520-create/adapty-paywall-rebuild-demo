@@ -457,7 +457,7 @@ function createBuilderNodes(templateId = "knowledge") {
       node("rc-web-products", "Products", "年度|$69.99/年|按年订阅\n月度|$9.99/月|按月订阅", 0, { config: { defaultSelected: 0, packageLayout: "vertical" } }),
       node("rc-web-app", "Button", "在应用内继续", 0, { config: { action: "Purchase", backgroundColor: "#607c44" } }),
       node("rc-web-caption", "Text", "或者选择网页购买", 0, { variant: "body" }),
-      node("rc-web-link", "Web Paywall Button", "前往网页购买", 0, { config: { action: "OpenURL", actionUrl: "", backgroundColor: "#355a74" } }),
+      node("rc-web-link", "Web Paywall Button", "前往网页购买", 0, { config: { action: "WebCheckout", autoDismiss: true, backgroundColor: "#355a74" } }),
       node("rc-web-links", "Links", "恢复购买 · 服务条款 · 隐私政策", 0),
     ];
   }
@@ -2380,10 +2380,10 @@ function TextLayout() {
 }
 
 function ButtonContent({ active, updateNode }) {
-  const action = active.config?.action ?? (active.type === "Purchase Button" ? "Purchase" : "None");
+  const action = active.config?.action ?? (active.type === "Purchase Button" ? "Purchase" : active.type === "Web Paywall Button" ? "WebCheckout" : "None");
   const url = active.config?.actionUrl ?? "";
   const validUrl = !url || safeButtonUrl(url);
-  return <><Field label="按钮文案" required><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><Field label="点击后"><select value={action} onChange={(event) => updateNodeConfig(active, updateNode, { action: event.target.value })}><option value="None">无动作</option><option value="Purchase">唤起支付</option><option value="NextScreen">进入下一页</option><option value="OpenPage">打开内置页面</option><option value="OpenURL">打开链接</option></select></Field>{action === "OpenPage" && <Field label="目标页面" required><select value={active.config?.actionPage ?? "ht-blue-privilege"} onChange={(event) => updateNodeConfig(active, updateNode, { actionPage: event.target.value })}>{templates.filter((item) => item.documentTemplate).map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></Field>}{action === "OpenURL" && <><Field label="目标链接" required><input type="url" placeholder="https://" value={url} onChange={(event) => updateNodeConfig(active, updateNode, { actionUrl: event.target.value })} aria-invalid={!validUrl} /></Field>{!validUrl && <p className="property-copy" role="alert">请输入以 https:// 或 http:// 开头的有效链接</p>}</>}{action === "Purchase" && <p className="property-copy">预览将展示所选商品的支付确认页，不会发起真实支付。</p>}</>;
+  return <><Field label="按钮文案" required><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><Field label="点击后"><select value={action} onChange={(event) => updateNodeConfig(active, updateNode, { action: event.target.value })}><option value="None">无动作</option><option value="Purchase">唤起支付</option><option value="WebCheckout">浏览器网页结账</option><option value="RestorePurchases">恢复购买</option><option value="Dismiss">关闭付费墙</option><option value="NextScreen">进入下一页</option><option value="OpenPage">打开内置页面</option><option value="OpenURL">打开链接</option></select></Field>{action === "OpenPage" && <Field label="目标页面" required><select value={active.config?.actionPage ?? "ht-blue-privilege"} onChange={(event) => updateNodeConfig(active, updateNode, { actionPage: event.target.value })}>{templates.filter((item) => item.documentTemplate).map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></Field>}{action === "OpenURL" && <><Field label="目标链接" required><input type="url" placeholder="https://" value={url} onChange={(event) => updateNodeConfig(active, updateNode, { actionUrl: event.target.value })} aria-invalid={!validUrl} /></Field>{!validUrl && <p className="property-copy" role="alert">请输入以 https:// 或 http:// 开头的有效链接</p>}</>}{action === "Purchase" && <p className="property-copy">预览将展示所选商品的支付确认页，不会发起真实支付。</p>}{action === "WebCheckout" && <><label className="switch-row"><input type="checkbox" checked={active.config?.autoDismiss !== false} onChange={(event) => updateNodeConfig(active, updateNode, { autoDismiss: event.target.checked })} /><span>{active.config?.autoDismiss !== false ? "开启" : "关闭"}</span><strong>结账后自动关闭付费墙</strong></label><p className="property-copy">来源模板使用 RevenueCat Billing 网页结账；本地仅预览交互，未连接真实结账。</p></>}{action === "RestorePurchases" && <p className="property-copy">预览不会请求 App Store 或 Google Play 的购买记录。</p>}</>;
 }
 
 function WebButtonContent({ active, updateNode }) {
@@ -3332,13 +3332,16 @@ function PaywallPreview({ nodes, template, mode, pricePreviewMode, activeNode, o
   useEffect(() => setScreenIndex(configuredScreenIndex), [template?.id, configuredScreenIndex]);
   const runButtonAction = (node, product) => {
     if (!node) return;
-    const action = node.config?.action ?? (node.type === "Purchase Button" ? "Purchase" : "None");
+    const action = node.config?.action ?? (node.type === "Purchase Button" ? "Purchase" : node.type === "Web Paywall Button" ? "WebCheckout" : "None");
     if (action === "NextScreen") {
       const count = nodes.filter((item) => item.type === "Screen").length;
       setScreenIndex((current) => Math.min(current + 1, Math.max(0, count - 1)));
       return;
     }
     if (action === "Purchase") setActionPreview({ kind: "payment", product });
+    if (action === "WebCheckout") setActionPreview({ kind: "webCheckout", autoDismiss: node.config?.autoDismiss !== false });
+    if (action === "RestorePurchases") setActionPreview({ kind: "restore" });
+    if (action === "Dismiss") setActionPreview({ kind: "dismissed" });
     if (action === "OpenPage") {
       const target = templates.find((item) => item.id === (node.config?.actionPage ?? "ht-blue-privilege") && item.documentTemplate);
       setActionPreview(target ? { kind: "page", target } : { kind: "error", message: "目标页面不可用" });
@@ -3369,11 +3372,13 @@ function PaywallPreview({ nodes, template, mode, pricePreviewMode, activeNode, o
     latestAtDepth[depth] = node.id;
     latestAtDepth.length = depth + 1;
   });
-  return <div className={`phone template-${hero?.theme ?? "lavender"}`}><button className="close-phone" aria-label="Close preview">×</button><div className="phone-content">{!template?.isNew && <span className="phone-kicker">PREMIUM ACCESS</span>}{nodes.filter((node) => !parents.has(node.id)).map((node) => <PreviewElement key={node.id} node={node} children={children.get(node.id) ?? []} getChildren={(childId) => children.get(childId) ?? []} active={node.id === activeNode} activeNode={activeNode} onSelect={onSelect} onButtonAction={runButtonAction} onReorder={onReorder} pricePreviewMode={pricePreviewMode} toggleStates={previewToggles} onToggleChange={(id, enabled) => setPreviewToggles((current) => ({ ...current, [id]: enabled }))} screenIndex={screenIndex} onScreenChange={setScreenIndex} />)}</div>{overlay}</div>;
+  return <div className={`phone template-${hero?.theme ?? "lavender"} ${template?.isGallery ? `template-${template.id}` : ""}`}><button className="close-phone" aria-label="Close preview">×</button><div className="phone-content">{!template?.isNew && <span className="phone-kicker">PREMIUM ACCESS</span>}{nodes.filter((node) => !parents.has(node.id)).map((node) => <PreviewElement key={node.id} node={node} children={children.get(node.id) ?? []} getChildren={(childId) => children.get(childId) ?? []} active={node.id === activeNode} activeNode={activeNode} onSelect={onSelect} onButtonAction={runButtonAction} onReorder={onReorder} pricePreviewMode={pricePreviewMode} toggleStates={previewToggles} onToggleChange={(id, enabled) => setPreviewToggles((current) => ({ ...current, [id]: enabled }))} screenIndex={screenIndex} onScreenChange={setScreenIndex} />)}</div>{overlay}</div>;
 }
 
 function ButtonActionOverlay({ preview, onClose }) {
-  return <div className={`button-action-overlay ${preview.kind === "page" ? "page" : "sheet"}`} role="dialog" aria-modal="true" aria-label={preview.kind === "payment" ? "支付预览" : "页面预览"}>{preview.kind === "page" ? <><div className="button-action-page"><HelloTalkPaywall variant={preview.target.documentTemplate} /></div><button type="button" className="button-action-back" onClick={onClose} aria-label="返回编辑预览"><ArrowLeft size={18} /> 返回</button></> : <><button type="button" className="button-action-scrim" onClick={onClose} aria-label="关闭预览" /><div className="button-action-sheet"><button type="button" className="button-action-close" onClick={onClose} aria-label="关闭预览"><X size={18} /></button><h3>{preview.kind === "payment" ? "支付预览" : "无法打开"}</h3>{preview.kind === "payment" ? <><p>{preview.product?.name || "未选择商品"}</p><strong>{preview.product?.price || ""}</strong><small>仅预览，不会发起真实支付</small></> : <p role="alert">{preview.message}</p>}</div></>}</div>;
+  const title = { payment: "支付预览", webCheckout: "网页结账预览", restore: "恢复购买预览", dismissed: "关闭付费墙预览" }[preview.kind] ?? "无法打开";
+  const message = preview.kind === "restore" ? "此动作需要 App Store 或 Google Play 的购买记录；本地预览不会请求商店。" : preview.kind === "dismissed" ? "实际页面会返回上一页；本地保留编辑预览。" : preview.message;
+  return <div className={`button-action-overlay ${preview.kind === "page" ? "page" : "sheet"}`} role="dialog" aria-modal="true" aria-label={title}>{preview.kind === "page" ? <><div className="button-action-page"><HelloTalkPaywall variant={preview.target.documentTemplate} /></div><button type="button" className="button-action-back" onClick={onClose} aria-label="返回编辑预览"><ArrowLeft size={18} /> 返回</button></> : <><button type="button" className="button-action-scrim" onClick={onClose} aria-label="关闭预览" /><div className="button-action-sheet"><button type="button" className="button-action-close" onClick={onClose} aria-label="关闭预览"><X size={18} /></button><h3>{title}</h3>{preview.kind === "payment" ? <><p>{preview.product?.name || "未选择商品"}</p><strong>{preview.product?.price || ""}</strong><small>仅预览，不会发起真实支付</small></> : preview.kind === "webCheckout" ? <><p>此按钮将使用 RevenueCat Billing 在浏览器打开网页结账。</p><small>本地未连接 Billing，预览不会发起交易。{preview.autoDismiss ? "结账后自动关闭付费墙。" : "结账后保持付费墙打开。"}</small></> : <p>{message}</p>}</div></>}</div>;
 }
 
 function previewClickArea(event) {
@@ -3427,7 +3432,7 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, on
     return wrap(<div className="preview-screen-flow" onClick={(event) => event.stopPropagation()}><div className="preview-screen-progress" aria-label={`第 ${current + 1} 页，共 ${children.length} 页`}>{children.map((child, index) => <button type="button" key={child.id} className={index === current ? "active" : ""} aria-label={`查看第 ${index + 1} 页`} aria-current={index === current ? "step" : undefined} onClick={(event) => { event.stopPropagation(); onScreenChange?.(index); }} />)}</div>{children[current] && renderChildren([children[current]])}</div>, "preview-screen-flow-wrap");
   }
   if (node.type === "Screen") return wrap(<div className="preview-screen" onClick={(event) => event.stopPropagation()}>{renderChildren()}</div>, "preview-screen-wrap");
-  if (node.type === "Feature Table") return wrap(<table className="preview-feature-table" style={{ backgroundColor: config.backgroundColor }}><thead><tr><th>权益</th>{(config.columns ?? []).map((column, index) => <th key={index} style={{ color: config.accentColor }}>{column}</th>)}</tr></thead><tbody>{(config.rows ?? []).map((row, index) => <tr key={index} data-inspector-row={index}><th scope="row">{row.name}</th>{(config.columns ?? []).map((_, columnIndex) => <td key={columnIndex}>{row.values?.[columnIndex] ?? ""}</td>)}</tr>)}</tbody></table>, "preview-feature-table-wrap");
+  if (node.type === "Feature Table") return wrap(<>{config.title && <h3 className="preview-table-title">{config.title}</h3>}<table className="preview-feature-table" style={{ backgroundColor: config.backgroundColor }}><thead><tr><th>权益</th>{(config.columns ?? []).map((column, index) => <th key={index} style={{ color: config.accentColor }}>{column}</th>)}</tr></thead><tbody>{(config.rows ?? []).map((row, index) => <tr key={index} data-inspector-row={index}><th scope="row">{row.name}</th>{(config.columns ?? []).map((_, columnIndex) => <td key={columnIndex}>{row.values?.[columnIndex] ?? ""}</td>)}</tr>)}</tbody></table></>, "preview-feature-table-wrap");
   if (["Hero Image", "Hero Video"].includes(node.type)) {
     const config = node.config ?? {};
     const dimensions = mediaDimensions(config);
@@ -3449,7 +3454,7 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, on
   }
   if (node.type === "Timeline") return wrap(<ol className="preview-timeline" style={{ "--timeline-accent": config.accentColor ?? "#6a31e9", "--timeline-line": config.lineColor ?? "#d9cafa" }}>{listRowsFor(node).map((row, index) => <li key={index} data-inspector-row={index}><span className="timeline-marker">{index + 1}</span><span><strong>{row.title}</strong>{row.showCaption !== false && row.caption && <small>{row.caption}</small>}</span></li>)}</ol>, "preview-timeline-wrap");
   if (node.type === "Social Proof") return wrap(<div className="preview-social-proof"><div aria-label={`${config.rating ?? 5} 分`} style={{ color: config.accentColor ?? "#ffb40d" }}>{"★".repeat(Math.max(0, Math.min(5, Math.round(Number(config.rating ?? 5)))))}</div><strong>{config.count ?? "50,000+"}</strong><span>{config.caption ?? node.content}</span></div>, "preview-social-proof-wrap");
-  if (node.type === "Award") return wrap(<div className="preview-award"><Star size={20} fill={config.accentColor ?? "#f3a718"} color={config.accentColor ?? "#f3a718"} /><strong>{config.title ?? node.content}</strong><small>{config.source ?? "编辑推荐"}</small></div>, "preview-award-wrap");
+  if (node.type === "Award") return wrap(<div className="preview-award"><Star size={20} fill={config.accentColor ?? "#f3a718"} color={config.accentColor ?? "#f3a718"} /><strong>{config.title ?? node.content}</strong>{config.subtitle && <span>{config.subtitle}</span>}<small>{config.source ?? "编辑推荐"}</small></div>, "preview-award-wrap");
   if (node.type === "Tabs") return wrap(<PreviewTabs tabs={config.tabs ?? []} defaultTab={config.defaultTab ?? 0} config={config} />, "preview-tabs-wrap");
   if (node.type === "Stack") return wrap(<div className="preview-stack" style={{ flexDirection: config.axis === "horizontal" ? "row" : "column", gap: `${config.gap ?? 8}px`, backgroundColor: config.backgroundColor }}>{renderChildren()}</div>, "preview-stack-wrap");
   if (node.type === "Icon") {

@@ -361,6 +361,24 @@ textarea { min-height: 80px; resize: vertical; }
 .preview-screen-progress button { width: 24px; height: 5px; padding: 0; border: 0; border-radius: 3px; background: #d5d9df; }
 .preview-screen-progress button.active { background: #3787a8; }
 .preview-feature-table { width: 100%; min-width: 0; max-width: 100%; margin: 0 0 12px; border-collapse: collapse; table-layout: fixed; font-size: 9px; }
+.preview-table-title { margin: 9px 0 5px; font-size: 10px; font-weight: 800; text-align: left; }
+.template-rc-source-13 .phone-content { display: flex; flex-direction: column; padding: 7px 12px 30px; background: #fff; }
+.template-rc-source-13 .preview-headline h2 { margin: 6px 0 15px; color: #111; line-height: 1.2; }
+.template-rc-source-13 .preview-benefits li, .template-rc-source-13 .preview-benefits strong { color: #171717; }
+.template-rc-source-13 .preview-benefits { gap: 10px; }
+.template-rc-source-13 .preview-products-wrap { margin-top: auto; }
+.template-rc-source-13 .preview-products.product-layout-vertical { gap: 7px; }
+.template-rc-source-13 .preview-products .ht-vertical-plan { min-height: 58px; background: #fff; }
+.template-rc-source-13 .preview-button { margin-bottom: 6px; }
+.template-rc-source-13 .preview-cta { min-height: 33px; }
+.template-rc-source-37 .preview-stack { display: grid; grid-template-columns: 1fr 44px 1fr; align-items: center; padding: 4px 0 12px; }
+.template-rc-source-37 .preview-stack .preview-button:last-child { justify-self: end; }
+.template-rc-source-37 .preview-stack .preview-cta { width: auto; min-height: 22px; padding: 3px 8px; font-size: 9px; }
+.template-rc-source-37 .preview-stack .preview-image { width: 40px !important; height: 40px !important; padding: 0; }
+.template-rc-source-37 .preview-stack .preview-node { margin: 0; }
+.template-rc-source-37 .preview-stack .preview-button { width: fit-content; }
+.template-rc-source-37 .phone-content { background: #fff; }
+.template-rc-source-37 .preview-headline h2, .template-rc-source-37 .preview-benefits strong { color: #242424; }
 .preview-feature-table th, .preview-feature-table td { padding: 7px 4px; border-bottom: 1px solid #e4e5e8; overflow-wrap: anywhere; text-align: center; }
 .preview-feature-table th:first-child { width: 44%; text-align: left; }
 .preview-feature-table thead { background: #f5f6f8; }
