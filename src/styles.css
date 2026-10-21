@@ -1915,13 +1915,15 @@ textarea { min-height: 80px; resize: vertical; }
 .template-rc-source-41 .preview-social-proof > div { order: 1; font-size: 14px; letter-spacing: 0; }
 .template-rc-source-41 .preview-social-proof > strong { order: 2; color: #fff; font-size: 10px; }
 .template-rc-source-41 [data-node-id$="-title"] { order: 2; }
-.template-rc-source-41 [data-node-id$="-features"] { order: 3; }
+.template-rc-source-41 [data-node-id$="-features"] { order: 3; margin-bottom: 6px; }
 .template-rc-source-41 .preview-benefits li > i { color: #fff !important; }
+.template-rc-source-41 .preview-benefits { margin-bottom: 6px; }
 .template-rc-source-41 [data-node-id$="-products"] { order: 4; }
 .template-rc-source-41 [data-node-id$="-copy-0"] { order: 5; margin-top: 35px; text-align: center; }
+.template-rc-source-41 [data-node-id$="-copy-0"] p { margin-bottom: 0; }
 .template-rc-source-41 [data-node-id$="-action"] { order: 6; }
 .template-rc-source-41 [data-node-id$="-links"] { order: 7; }
 .template-rc-source-41 .preview-headline h2 { text-align: center; }
-.template-rc-source-41 .preview-button { margin-top: 12px; }
+.template-rc-source-41 .preview-button { margin-top: 8px; }
 .template-rc-source-41 .preview-links { margin-top: 10px; }
 .template-rc-source-41 .preview-cta { background: linear-gradient(90deg,#1824a1,#a31973) !important; border-radius: 22px; }
