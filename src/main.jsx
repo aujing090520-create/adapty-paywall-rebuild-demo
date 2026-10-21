@@ -153,11 +153,11 @@ const templates = [
   { id: "item-placeholder", title: "Item One", subtitle: "This is a brief description for the first placeholder item.", tags: ["1 product"], productCount: 1, media: "none", components: [], category: "All", theme: "clean", visual: "item-placeholder", asset: "/real-adapty-templates/item-placeholder.png" },
   { id: "item-placeholder-dark", title: "Item One", subtitle: "This is a brief description for the first placeholder item.", tags: ["1 product"], productCount: 1, media: "none", components: [], category: "All", theme: "black", visual: "item-placeholder-dark", asset: "/real-adapty-templates/item-placeholder-dark.png" },
   { id: "fantasy-access", title: "Transparent template #3", subtitle: "Advantageous offer", tags: ["1 product"], productCount: 1, media: "image", components: [], category: "All", theme: "midnight", visual: "fantasy-access", asset: "/real-adapty-templates/fantasy-access.png" },
-  { id: "subscription-guide", title: "订阅说明与权益", subtitle: "权益与续订说明", tags: ["1 product", "Trial timeline"], productCount: 1, media: "none", components: ["Trial timeline"], category: "Popular", theme: "clean", visual: "subscription-guide", previewTone: "teal", isNew: true },
-  { id: "trial-journey", title: "免费试用引导", subtitle: "试用时间线与套餐", tags: ["1 product", "Trial timeline", "Toggle"], productCount: 1, media: "none", components: ["Trial timeline", "Toggle"], category: "Popular", theme: "clean", visual: "trial-journey", previewTone: "blue", isNew: true },
-  { id: "limited-offer", title: "限时优惠", subtitle: "倒计时与套餐选择", tags: ["More than 1 product", "Timer"], productCount: 2, media: "none", components: ["Timer"], category: "Seasonal", theme: "sale", visual: "limited-offer", previewTone: "coral", isNew: true },
-  { id: "trust-proof", title: "用户口碑与权益", subtitle: "评分、评价与权益", tags: ["1 product", "Reviews", "Social Proof", "Award"], productCount: 1, media: "none", components: ["Reviews", "Social Proof", "Award"], category: "Popular", theme: "clean", visual: "trust-proof", previewTone: "olive", isNew: true },
-  { id: "plan-explainer", title: "套餐说明与价格", subtitle: "说明标签与商品套餐", tags: ["More than 1 product", "Tabs"], productCount: 2, media: "none", components: ["Tabs"], category: "Popular", theme: "clean", visual: "plan-explainer", previewTone: "purple", isNew: true },
+  { id: "rc-gradient-timeline", title: "渐变权益时间线", subtitle: "RevenueCat · Gradient timeline", tags: ["2 products", "Trial timeline"], productCount: 2, media: "none", components: ["Trial timeline"], category: "Popular", theme: "clean", visual: "rc-gradient-timeline", previewTone: "teal", sourceProvider: "RevenueCat", sourceTemplate: "Gradient timeline", isNew: true },
+  { id: "rc-family-plans", title: "家庭套餐开关", subtitle: "RevenueCat · Switch - Family plans", tags: ["2 products", "Toggle"], productCount: 2, media: "none", components: ["Toggle"], category: "Popular", theme: "clean", visual: "rc-family-plans", previewTone: "blue", sourceProvider: "RevenueCat", sourceTemplate: "Switch - Family plans", isNew: true },
+  { id: "rc-offer-code", title: "优惠码促销", subtitle: "RevenueCat · Offer code 01", tags: ["1 product", "Offer code"], productCount: 1, media: "none", components: ["Offer code"], category: "Seasonal", theme: "sale", visual: "rc-offer-code", previewTone: "coral", sourceProvider: "RevenueCat", sourceTemplate: "Offer code 01", isNew: true },
+  { id: "rc-social-proof", title: "口碑评价轮播", subtitle: "RevenueCat · Social proof carousel", tags: ["3 products", "Reviews", "Social Proof", "Award"], productCount: 3, media: "none", components: ["Reviews", "Social Proof", "Award"], category: "Popular", theme: "clean", visual: "rc-social-proof", previewTone: "olive", sourceProvider: "RevenueCat", sourceTemplate: "Social proof carousel", isNew: true },
+  { id: "rc-multi-tier", title: "会员等级与套餐", subtitle: "RevenueCat · Multi-tier 1", tags: ["2 products", "Tabs"], productCount: 2, media: "none", components: ["Tabs"], category: "Popular", theme: "clean", visual: "rc-multi-tier", previewTone: "purple", sourceProvider: "RevenueCat", sourceTemplate: "Multi-tier 1", isNew: true },
   { id: "ht-blue-privilege", title: "蓝色特权页", subtitle: "蓝色特权对比与商品套餐", tags: ["3 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-blue", visual: "ht-blue", documentTemplate: "blue-privilege", prdScreenshot: "/ht-prd-screenshots/blue-privilege.png" },
   { id: "ht-membership-plans", title: "HelloTalk 会员套餐页", subtitle: "会员订阅方案与访客示例轮播", tags: ["3 products", "Carousel", "Timer"], productCount: 2, media: "image", components: ["Carousel", "Timer"], category: "Popular", theme: "ht-plans", visual: "ht-plans", documentTemplate: "membership-plans", prdScreenshot: "/ht-prd-screenshots/membership-plans.jpg" },
   { id: "ht-payment-recovery", title: "HelloTalk 支付未完成页", subtitle: "支付恢复与倒计时优惠", tags: ["2 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-recovery", visual: "ht-recovery", documentTemplate: "payment-recovery", prdScreenshot: "/ht-prd-screenshots/payment-recovery.png" },
@@ -171,7 +171,7 @@ const documentStyleTemplateIds = new Set(["ht-blue-privilege", "ht-membership-pl
 const curatedSourceTemplateIds = new Set(["knowledge", "trial", "family", "document", "mindfulness", "editing-plan", "black-friday-timer", "halloween"]);
 const catalogTemplates = templates.filter((template) => template.documentTemplate || template.isNew || curatedSourceTemplateIds.has(template.id));
 const isEditableTemplate = (template) => template.isNew || sourceTreeObserved.has(template.id) || documentStyleTemplateIds.has(template.id);
-const templateEditableStatus = (template) => template.isNew ? "本地组合模板；组件均可编辑" : documentStyleTemplateIds.has(template.id) ? "飞书交付文档已定义样式与字段；本地可编辑复现" : "源端已观察核心结构；本地可编辑复现";
+const templateEditableStatus = (template) => template.sourceProvider === "RevenueCat" ? `Talkin 项目中的 RevenueCat 模板画廊：${template.sourceTemplate}；本地可编辑复现` : template.isNew ? "本地组合模板；组件均可编辑" : documentStyleTemplateIds.has(template.id) ? "飞书交付文档已定义样式与字段；本地可编辑复现" : "源端已观察核心结构；本地可编辑复现";
 
 // Source-template filters reflect observed Builder trees; local combinations use their own component lists.
 const sourceVerifiedTemplateComponents = Object.freeze({
@@ -350,70 +350,58 @@ function createBuilderNodes(templateId = "knowledge") {
   const hero = (depth = 0) => node("hero-image", "Hero Image", template.visual, depth, { theme: template.theme });
   const pending = (id, type, depth = 0) => node(id, type, "", depth, { sourcePending: true });
 
-  if (template.id === "subscription-guide") {
+  if (template.id === "rc-gradient-timeline") {
     return [
-      node("guide-header", "Header", "开启完整会员体验", 0, { variant: "headline" }),
-      node("guide-caption", "Text", "解锁更多权益，随时管理订阅。", 0, { variant: "body" }),
-      node("guide-benefits", "List", "无限使用|畅享全部会员功能\n专属体验|获得持续更新的高级权益", 0),
-      node("guide-timeline", "Timeline", "", 0, { config: { listRows: [{ title: "今天", caption: "立即解锁会员权益" }, { title: "到期前", caption: "可在应用商店管理订阅" }, { title: "续订日", caption: "按所选套餐续订" }] } }),
-      node("guide-products", "Products", "月度|灵活订阅|¥78/月", 0),
-      node("guide-action", "Button", "继续", 0, { config: { action: "Purchase" } }),
-      node("guide-footer", "Footer", "可随时在应用商店管理订阅", 0),
-      node("guide-links", "Links", "服务条款 · 隐私政策", 0),
+      node("rc-timeline-header", "Header", "解锁完整会员体验", 0, { variant: "headline" }),
+      node("rc-timeline-steps", "Timeline", "", 0, { config: { accentColor: "#458d7a", lineColor: "#c5ded6", listRows: [{ title: "现在", caption: "立即使用全部功能" }, { title: "抢先体验", caption: "新功能开放测试时收到提醒" }, { title: "专属支持", caption: "获得问题反馈与帮助" }] } }),
+      node("rc-timeline-products", "Products", "年度|$69.99/年|约 $5.83/月\n月度|$9.99/月|按月订阅", 0, { config: { defaultSelected: 0, packageLayout: "vertical" } }),
+      node("rc-timeline-action", "Button", "继续", 0, { config: { action: "Purchase", backgroundColor: "#458d7a" } }),
+      node("rc-timeline-links", "Links", "恢复购买 · 服务条款 · 隐私政策", 0),
     ];
   }
 
-  if (template.id === "trial-journey") {
+  if (template.id === "rc-family-plans") {
     return [
-      node("trial-header", "Header", "先体验，再决定", 0, { variant: "headline" }),
-      node("trial-caption", "Text", "试用与续订节点一目了然", 0, { variant: "body" }),
-      node("trial-timeline", "Timeline", "", 0, { config: { accentColor: "#1765d7", lineColor: "#b6d6f7", listRows: [{ title: "今天", caption: "开始体验会员权益" }, { title: "试用结束前", caption: "可在应用商店管理订阅" }, { title: "续订日", caption: "按所选套餐续订" }] } }),
-      node("trial-toggle", "Toggle", "接收试用提醒|管理提醒偏好", 0, { defaultState: "Off", config: { onColor: "#1765d7", offColor: "#d9dde0" } }),
-      node("trial-products", "Products", "月度|¥78|¥78/月", 0, { config: { defaultSelected: 0, packageLayout: "vertical" } }),
-      node("trial-action", "Button", "继续", 0, { config: { action: "Purchase", backgroundColor: "#1765d7" } }),
-      node("trial-footer", "Footer", "可随时在应用商店管理订阅", 0),
-      node("trial-links", "Links", "服务条款 · 隐私政策", 0),
+      node("rc-family-header", "Header", "解锁所有训练功能", 0, { variant: "headline" }),
+      node("rc-family-benefits", "List", "个性化训练|根据你的进度调整每日计划\n进度追踪|预测比赛表现并查看训练曲线\n专业训练|力量与灵活性课程", 0),
+      node("rc-family-toggle", "Toggle", "显示家庭套餐|切换套餐类型", 0, { defaultState: "Off", config: { onColor: "#6c78d8", offColor: "#d9dde0", linkedProductsId: "rc-family-products" } }),
+      node("rc-family-products", "Products", "月度|$9.99/月|按月订阅\n年度|$69.99/年|约 $5.83/月\n家庭月度||\n家庭年度||", 0, { config: { defaultSelected: 1, packageLayout: "vertical", productTemplate: "rc-family-plans", linkedToggleId: "rc-family-toggle", groupSize: 2 } }),
+      node("rc-family-action", "Button", "继续", 0, { config: { action: "Purchase", backgroundColor: "#6c78d8" } }),
+      node("rc-family-links", "Links", "恢复购买 · 服务条款 · 隐私政策", 0),
     ];
   }
 
-  if (template.id === "limited-offer") {
+  if (template.id === "rc-offer-code") {
     return [
-      node("offer-header", "Header", "选择适合你的优惠套餐", 0, { variant: "headline" }),
-      node("offer-caption", "Text", "活动时间与价格以实际配置为准", 0, { variant: "body" }),
-      node("offer-timer", "Timer", "04:59:59", 0, { config: { enabled: true, format: "hh:mm:ss", prefix: "剩余时间", resetMode: "Reset timer on every paywall view" } }),
-      node("offer-benefits", "List", "完整权益|解锁全部会员功能\n灵活管理|随时在应用商店查看订阅", 0),
-      node("offer-products", "Products", "月度|¥78|¥78/月\n年度|¥488|¥40.67/月", 0, { config: { defaultSelected: 1, packageLayout: "vertical" } }),
-      node("offer-action", "Button", "继续", 0, { config: { action: "Purchase", backgroundColor: "#e85b47" } }),
-      node("offer-footer", "Footer", "续订规则以所选商品信息为准", 0),
-      node("offer-links", "Links", "服务条款 · 隐私政策", 0),
+      node("rc-offer-header", "Header", "一份特别优惠", 0, { variant: "headline" }),
+      node("rc-offer-caption", "Text", "以当前配置的商品与优惠为准", 0, { variant: "body" }),
+      node("rc-offer-code-text", "Text", "25OFFSUMMER", 0, { variant: "section", config: { color: "#a82b43", backgroundColor: "#ffe3ea" } }),
+      node("rc-offer-products", "Products", "年度优惠|$44.99/年|原价 $59.99", 0, { config: { defaultSelected: 0, packageLayout: "vertical" } }),
+      node("rc-offer-action", "Button", "领取优惠", 0, { config: { action: "Purchase", backgroundColor: "#a82b43" } }),
+      node("rc-offer-links", "Links", "恢复购买 · 服务条款 · 隐私政策", 0),
     ];
   }
 
-  if (template.id === "trust-proof") {
+  if (template.id === "rc-social-proof") {
     return [
-      node("trust-header", "Header", "看看会员能得到什么", 0, { variant: "headline" }),
-      node("trust-caption", "Text", "权益与评价可按业务内容替换", 0, { variant: "body" }),
-      node("trust-benefits", "List", "专属功能|解锁会员专属能力\n持续更新|获得后续权益更新", 0),
-      node("trust-award", "Award", "会员精选权益", 0, { config: { title: "会员精选权益", source: "模板示例", accentColor: "#9a7a27" } }),
-      node("trust-social", "Social Proof", "评价展示", 0, { config: { rating: 5, count: "示例评分", caption: "请替换为真实评价数据", accentColor: "#9a7a27" } }),
-      node("trust-reviews", "Carousel", "评价示例一|这里展示用户体验反馈\n---\n评价示例二|这里展示另一条用户反馈", 0, { config: { itemCount: 2, initialSlide: 0 } }),
-      node("trust-products", "Products", "月度|¥78|¥78/月", 0, { config: { defaultSelected: 0 } }),
-      node("trust-action", "Button", "继续", 0, { config: { action: "Purchase", backgroundColor: "#637b3e" } }),
-      node("trust-links", "Links", "服务条款 · 隐私政策", 0),
+      node("rc-social-header", "Header", "看看会员体验", 0, { variant: "headline" }),
+      node("rc-social-caption", "Text", "评价与荣誉内容为模板示例，请替换为真实材料", 0, { variant: "body" }),
+      node("rc-social-award", "Award", "年度应用奖", 0, { config: { title: "年度应用奖", source: "模板示例", accentColor: "#9a7a27" } }),
+      node("rc-social-reviews", "Carousel", "评价示例一|这里展示第一条用户反馈\n---\n评价示例二|这里展示第二条用户反馈\n---\n评价示例三|这里展示第三条用户反馈", 0, { config: { itemCount: 3, initialSlide: 0 } }),
+      node("rc-social-products", "Products", "30 天|$9.99|短期体验\n12 个月|$69.99|年度订阅\n终身|$119.99|一次购买", 0, { config: { defaultSelected: 1, packageLayout: "horizontal" } }),
+      node("rc-social-action", "Button", "继续", 0, { config: { action: "Purchase", backgroundColor: "#637b3e" } }),
+      node("rc-social-links", "Links", "恢复购买 · 服务条款 · 隐私政策", 0),
     ];
   }
 
-  if (template.id === "plan-explainer") {
+  if (template.id === "rc-multi-tier") {
     return [
-      node("plans-header", "Header", "选一个适合你的套餐", 0, { variant: "headline" }),
-      node("plans-intro", "Stack", "", 0, { config: { axis: "horizontal", gap: 8 } }),
-      node("plans-icon", "Icon", "", 1, { config: { iconName: "shield", iconSize: 22, color: "#7a50ad" } }),
-      node("plans-caption", "Text", "对比价格前，先了解权益与订阅规则", 1, { variant: "body" }),
-      node("plans-tabs", "Tabs", "", 0, { config: { tabs: [{ id: "benefits", title: "会员权益", description: "解锁专属功能与持续更新的服务" }, { id: "billing", title: "订阅说明", description: "续订与取消方式以应用商店信息为准" }], defaultTab: 0 } }),
-      node("plans-products", "Products", "月度|¥78|¥78/月\n年度|¥488|¥40.67/月", 0, { config: { defaultSelected: 1, packageLayout: "horizontal" } }),
-      node("plans-action", "Button", "继续", 0, { config: { action: "Purchase", backgroundColor: "#7a50ad" } }),
-      node("plans-footer", "Footer", "可随时在应用商店管理订阅", 0),
-      node("plans-links", "Links", "服务条款 · 隐私政策", 0),
+      node("rc-tier-header", "Header", "升级高级会员", 0, { variant: "headline" }),
+      node("rc-tier-tabs", "Tabs", "", 0, { config: { tabs: [{ id: "standard", title: "标准", description: "基础权益" }, { id: "premium", title: "高级", description: "全部权益与优先支持" }], defaultTab: 1 } }),
+      node("rc-tier-benefits", "List", "无广告星图|随时查看夜空\n实时提醒|追踪卫星与空间站\n观测记录|保存个人观测笔记\n直播与社区|参加互动活动", 0),
+      node("rc-tier-products", "Products", "年度|$69.99/年|约 $5.83/月\n月度|$9.99/月|按月订阅", 0, { config: { defaultSelected: 0, packageLayout: "vertical" } }),
+      node("rc-tier-action", "Button", "继续", 0, { config: { action: "Purchase", backgroundColor: "#7a50ad" } }),
+      node("rc-tier-links", "Links", "恢复购买 · 服务条款 · 隐私政策", 0),
     ];
   }
 
@@ -1005,7 +993,7 @@ const paywallProductCatalog = DEMO_SKUS.map((sku) => ({ id: sku.id, name: sku.la
 function linkedPackageNode(productNode, offerRows, defaultProductId, variant) {
   if (!productNode || !Array.isArray(offerRows)) return productNode;
   const originalRows = productPackageRows(productNode, variant);
-  const slotCount = { "blue-privilege": 3, "membership-plans": 3, "payment-recovery": 2, "sku-sheet": 2 }[variant] ?? originalRows.length;
+  const slotCount = { "blue-privilege": 3, "membership-plans": 3, "payment-recovery": 2, "sku-sheet": 2, "rc-family-plans": 4 }[variant] ?? originalRows.length;
   const packageRows = Array.from({ length: slotCount }, (_, index) => {
     const row = offerRows[index];
     const existing = originalRows.find((item) => item.skuId && item.skuId === row?.id) ?? {};
@@ -2634,9 +2622,9 @@ function TemplatesModal({ selected, setSelected, onClose, onOpenBuilder }) {
   const pendingTemplate = pendingSelected === null ? null : templates[pendingSelected];
   const displayTags = (template) => isEditableTemplate(template) ? template.tags : ["Source preview", "Structure pending"];
   const countBy = (matches) => catalogTemplates.filter(matches).length;
-  const componentOptions = [["Free trial toggle", "免费试用开关"], ["Trial timeline", "试用时间线"], ["Reviews", "评价"], ["Timer", "倒计时"], ["Toggle", "普通开关"], ["Social Proof", "口碑展示"], ["Award", "奖项展示"], ["Tabs", "标签页"]];
+  const componentOptions = [["Free trial toggle", "免费试用开关"], ["Trial timeline", "试用时间线"], ["Reviews", "评价"], ["Timer", "倒计时"], ["Toggle", "普通开关"], ["Social Proof", "口碑展示"], ["Award", "奖项展示"], ["Tabs", "标签页"], ["Offer code", "优惠码"]];
   const filteredTemplates = catalogTemplates.filter((template) => {
-    const productMatch = !filters.products.length || filters.products.some((item) => template.productCount === (item === "1 product" ? 1 : 2));
+    const productMatch = !filters.products.length || filters.products.some((item) => item === "1 product" ? template.productCount === 1 : template.productCount > 1);
     const mediaMatch = filters.media === "All" || (filters.media === "With Image or Video" ? ["image", "video"].includes(template.media) : template.media === "none");
     const componentMatch = filters.components.every((item) => (template.isNew ? template.components : sourceVerifiedTemplateComponents[template.id])?.includes(item));
     const lengthMatch = filters.length === "All" || (filters.length === "Short" ? template.title.length < 28 : template.title.length >= 28);
@@ -2666,7 +2654,7 @@ function TemplatesModal({ selected, setSelected, onClose, onOpenBuilder }) {
       <div className="template-grid rich-template-grid">{prioritizedTemplates.map((template) => {
         const index = templates.indexOf(template);
         return <button aria-pressed={pendingSelected === index} className={`template template-${template.theme} ${pendingSelected === index ? "selected" : ""}`} onClick={() => setPendingSelected(index)} key={template.id}>
-          <div className="template-source-preview"><SourceTemplateMedia template={template} /></div><strong>{template.title}</strong><small>{displayTags(template).join(" · ")}</small>
+          <div className="template-source-preview"><SourceTemplateMedia template={template} /></div><strong>{template.title}</strong>{template.sourceTemplate && <small className="template-origin">RevenueCat · {template.sourceTemplate}</small>}<small>{displayTags(template).join(" · ")}</small>
         </button>;
       })}</div>
       {!filteredTemplates.length && <div className="template-empty">没有符合筛选条件的模板</div>}
@@ -2723,7 +2711,7 @@ function IntegratedTemplateMedia({ template }) {
   const caption = nodes.find((entry) => entry.type === "Text")?.content ?? template.subtitle;
   const products = nodes.find((entry) => entry.type === "Products")?.content?.split("\n") ?? [];
   const action = nodes.find((entry) => entry.type === "Button")?.content ?? "继续";
-  const details = nodes.filter((entry) => ["List", "Timeline", "Timer", "Social Proof", "Award", "Carousel", "Tabs", "Toggle"].includes(entry.type)).slice(0, 4);
+  const details = nodes.filter((entry) => ["List", "Timeline", "Timer", "Social Proof", "Award", "Carousel", "Tabs", "Toggle"].includes(entry.type) || entry.id === "rc-offer-code-text").slice(0, 4);
   const detailText = (entry) => {
     if (entry.type === "List") return entry.content.split("\n").slice(0, 2).map((row) => row.split("|")[0]).join(" · ");
     if (entry.type === "Timeline") return entry.config?.listRows?.slice(0, 3).map((row) => row.title).join(" → ");
@@ -2739,7 +2727,7 @@ function IntegratedTemplateMedia({ template }) {
     <div className="new-template-preview-content">
       <strong>{heading}</strong><small>{caption}</small>
       <div className="new-template-preview-details">{details.map((entry) => <span key={entry.id}>{detailText(entry)}</span>)}</div>
-      <div className="new-template-preview-plans">{products.slice(0, 2).map((row, index) => { const parts = row.split("|"); return <div className="new-template-preview-plan" key={index}>{parts[0]} <b>{parts.find((part) => part.includes("¥")) ?? ""}</b></div>; })}</div>
+      <div className="new-template-preview-plans">{products.slice(0, 2).map((row, index) => { const parts = row.split("|"); return <div className="new-template-preview-plan" key={index}>{parts[0]} <b>{parts.find((part) => /[¥$€£]/.test(part)) ?? ""}</b></div>; })}</div>
       <div className="new-template-preview-button">{action}</div>
     </div>
   </div>;
@@ -3189,6 +3177,8 @@ function HelloTalkPaywall({ variant, nodes, activeNode, onSelect, onButtonAction
 }
 function PaywallPreview({ nodes, template, mode, pricePreviewMode, activeNode, onSelect, onUpdateHeroPosition, onReorder, retentionPreviewOpen, onOpenRetention, onCloseRetention }) {
   const [actionPreview, setActionPreview] = useState(null);
+  const [previewToggles, setPreviewToggles] = useState({});
+  useEffect(() => setPreviewToggles({}), [template?.id]);
   const runButtonAction = (node, product) => {
     if (!node) return;
     const action = node.config?.action ?? (node.type === "Purchase Button" ? "Purchase" : "None");
@@ -3223,7 +3213,7 @@ function PaywallPreview({ nodes, template, mode, pricePreviewMode, activeNode, o
     latestAtDepth[depth] = node.id;
     latestAtDepth.length = depth + 1;
   });
-  return <div className={`phone template-${hero?.theme ?? "lavender"}`}><button className="close-phone" aria-label="Close preview">×</button><div className="phone-content">{!template?.isNew && <span className="phone-kicker">PREMIUM ACCESS</span>}{nodes.filter((node) => !parents.has(node.id)).map((node) => <PreviewElement key={node.id} node={node} children={children.get(node.id) ?? []} getChildren={(childId) => children.get(childId) ?? []} active={node.id === activeNode} activeNode={activeNode} onSelect={onSelect} onButtonAction={runButtonAction} onReorder={onReorder} pricePreviewMode={pricePreviewMode} />)}</div>{overlay}</div>;
+  return <div className={`phone template-${hero?.theme ?? "lavender"}`}><button className="close-phone" aria-label="Close preview">×</button><div className="phone-content">{!template?.isNew && <span className="phone-kicker">PREMIUM ACCESS</span>}{nodes.filter((node) => !parents.has(node.id)).map((node) => <PreviewElement key={node.id} node={node} children={children.get(node.id) ?? []} getChildren={(childId) => children.get(childId) ?? []} active={node.id === activeNode} activeNode={activeNode} onSelect={onSelect} onButtonAction={runButtonAction} onReorder={onReorder} pricePreviewMode={pricePreviewMode} toggleStates={previewToggles} onToggleChange={(id, enabled) => setPreviewToggles((current) => ({ ...current, [id]: enabled }))} />)}</div>{overlay}</div>;
 }
 
 function ButtonActionOverlay({ preview, onClose }) {
@@ -3242,7 +3232,7 @@ function previewClickArea(event) {
   return "component";
 }
 
-function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, onReorder, dragProps, reorderHandle, children = [], getChildren = () => [], pricePreviewMode = "1" }) {
+function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, onReorder, dragProps, reorderHandle, children = [], getChildren = () => [], pricePreviewMode = "1", toggleStates = {}, onToggleChange }) {
   const select = (event) => {
     const indexed = event?.target instanceof Element ? event.target.closest("[data-inspector-slide], [data-inspector-row]") : null;
     const slideValue = indexed?.getAttribute(indexed.hasAttribute("data-inspector-row") ? "data-inspector-row" : "data-inspector-slide");
@@ -3270,7 +3260,7 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, on
   const textStyle = { color: config.color, fontSize: config.fontSize ? `${config.fontSize}px` : undefined, fontWeight: config.fontWeight, textAlign: config.textAlign };
   const buttonStyle = { backgroundColor: config.backgroundColor, color: config.color, borderRadius: config.radius === undefined ? undefined : `${config.radius}px` };
   const cardStyle = { backgroundColor: config.backgroundColor, borderRadius: config.radius === undefined ? undefined : `${config.radius}px`, boxShadow: config.shadow ? `0 ${Math.max(2, Math.round(config.shadow / 2))}px ${config.shadow}px #17172833` : undefined };
-  const renderChildren = () => children.map((child) => <PreviewElement key={child.id} node={child} children={getChildren(child.id)} getChildren={getChildren} active={child.id === activeNode} activeNode={activeNode} onSelect={onSelect} onButtonAction={onButtonAction} onReorder={onReorder} pricePreviewMode={pricePreviewMode} />);
+  const renderChildren = () => children.map((child) => <PreviewElement key={child.id} node={child} children={getChildren(child.id)} getChildren={getChildren} active={child.id === activeNode} activeNode={activeNode} onSelect={onSelect} onButtonAction={onButtonAction} onReorder={onReorder} pricePreviewMode={pricePreviewMode} toggleStates={toggleStates} onToggleChange={onToggleChange} />);
   const isTextLayer = isTextNodeType(node.type);
   const isListLayer = ["List", "Feature list", "Features"].includes(node.type) || /^List \d+$/.test(node.type);
   const isListItemLayer = node.type === "List item" || node.type === "Today" || /^Item \d+$/.test(node.type) || /^Day \d+$/.test(node.type);
@@ -3325,9 +3315,10 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, on
       const [label = "Continue", , price = ""] = node.content.split("|");
       return wrap(<button className="preview-cta"><span>{label}</span>{price && <small>{price}</small>}</button>, "preview-button");
     }
-    return wrap(<PreviewProducts content={node.content} config={node.config} childrenNodes={children} priceMode={pricePreviewMode} onInspect={(event, index) => onSelect(node.id, previewClickArea(event), index)} />, "preview-products-wrap");
+    const switched = Boolean(toggleStates[config.linkedToggleId]);
+    return wrap(<PreviewProducts key={config.linkedToggleId ? String(switched) : node.id} content={node.content} config={node.config} childrenNodes={children} priceMode={pricePreviewMode} switched={switched} onInspect={(event, index) => onSelect(node.id, previewClickArea(event), index + (switched ? Number(config.groupSize) || 0 : 0))} />, "preview-products-wrap");
   }
-  if (node.type === "Toggle") return wrap(<PreviewToggle key={`${node.id}-${node.defaultState ?? "Off"}`} content={node.content} defaultState={node.defaultState} config={config} />, "preview-toggle-wrap");
+  if (node.type === "Toggle") return wrap(<PreviewToggle key={`${node.id}-${node.defaultState ?? "Off"}`} content={node.content} defaultState={node.defaultState} config={config} linkedEnabled={config.linkedProductsId ? toggleStates[node.id] : undefined} onChange={config.linkedProductsId ? (enabled) => onToggleChange?.(node.id, enabled) : undefined} />, "preview-toggle-wrap");
   if (["Toggle On", "Toggle Off"].includes(node.type)) return wrap(<div className="preview-toggle-anchor" />, "preview-toggle-anchor-wrap");
   if (node.type === "Footer Top Part") return wrap(<div className="preview-card-anchor" />, "preview-card-anchor-wrap");
   if (node.type === "Button and Links") { const [cta, links] = (node.content ?? "GET FULL ACCESS|Terms · Privacy · Restore").split("|"); return wrap(<><button className="preview-cta" style={buttonStyle}>{cta}</button><small className="preview-links" style={textStyle}>{links}</small></>, "preview-button"); }
@@ -3371,20 +3362,24 @@ function PreviewCarousel({ content, config = {} }) {
   return <div className="preview-carousel"><span>★★★★★</span><p>{copy ? <><strong>{title}</strong><small>{copy}</small></> : slide}</p><div><button aria-label="Previous review" onClick={(event) => { event.stopPropagation(); setCurrent((index) => (index - 1 + slides.length) % slides.length); }}>‹</button><i style={{ gap: `${config.gap ?? 8}px` }}>{slides.map((_, index) => <b className={index === current ? "active" : ""} style={{ color: index === current ? config.accentColor : config.secondaryColor }} key={index}>•</b>)}</i><button aria-label="Next review" onClick={(event) => { event.stopPropagation(); setCurrent((index) => (index + 1) % slides.length); }}>›</button></div></div>;
 }
 
-function PreviewProducts({ content, config = {}, childrenNodes = [], priceMode = "1", onInspect }) {
+function PreviewProducts({ content, config = {}, childrenNodes = [], priceMode = "1", switched = false, onInspect }) {
   const source = content || childrenNodes.map((child) => child.content).filter(Boolean).join("\n");
-  const rows = productPackageRows({ content: source, config }, config.productTemplate);
+  const allRows = productPackageRows({ content: source, config }, config.productTemplate);
+  const groupSize = Math.max(1, Number(config.groupSize) || allRows.length);
+  const rows = config.linkedToggleId ? allRows.slice(switched ? groupSize : 0, switched ? groupSize * 2 : groupSize) : allRows;
   const layout = productLayout(config);
-  const defaultChoice = config.linkedProducts && config.defaultSelected === -1 ? -1 : Math.min(Math.max(0, Number(config.defaultSelected) || 0), Math.max(0, rows.length - 1));
+  const requestedChoice = config.linkedProducts && config.defaultSelected === -1 ? -1 : Math.min(Math.max(0, Number(config.defaultSelected) || 0), Math.max(0, rows.length - 1));
+  const defaultChoice = config.linkedToggleId && (requestedChoice < 0 || rows[requestedChoice]?.emptySlot) ? rows.findIndex((row) => !row.emptySlot) : requestedChoice;
   const [chosen, setChosen] = useState(defaultChoice);
   useEffect(() => setChosen(defaultChoice), [defaultChoice]);
   return <div className={`preview-products product-layout-${layout}`}>{rows.map((row, index) => <ProductPackageCard key={`${row.skuId || row.name}-${index}`} plan={row} index={index} config={config} layout={layout} selected={index === chosen} priceMode={priceMode} onChoose={setChosen} onInspect={onInspect} />)}</div>;
 }
 
-function PreviewToggle({ content, defaultState = "Off", config = {} }) {
+function PreviewToggle({ content, defaultState = "Off", config = {}, linkedEnabled, onChange }) {
   const [title = "Not sure? Get free trial", secondary = "Cancel anytime"] = (content || "").split("|");
-  const [enabled, setEnabled] = useState(defaultState === "On");
-  return <button className={`preview-toggle ${enabled ? "enabled" : ""}`} role="switch" aria-checked={enabled} onClick={(event) => { event.stopPropagation(); setEnabled((value) => !value); }}><span><strong>{title}</strong><small>{secondary}</small></span><i style={{ backgroundColor: enabled ? config.onColor : config.offColor }}><b /></i></button>;
+  const [localEnabled, setLocalEnabled] = useState(defaultState === "On");
+  const enabled = linkedEnabled ?? localEnabled;
+  return <button className={`preview-toggle ${enabled ? "enabled" : ""}`} role="switch" aria-checked={enabled} onClick={(event) => { event.stopPropagation(); const next = !enabled; setLocalEnabled(next); onChange?.(next); }}><span><strong>{title}</strong><small>{secondary}</small></span><i style={{ backgroundColor: enabled ? config.onColor : config.offColor }}><b /></i></button>;
 }
 
 function PreviewTabs({ tabs, defaultTab, config }) {
