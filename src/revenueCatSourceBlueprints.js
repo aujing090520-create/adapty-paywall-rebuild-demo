@@ -290,7 +290,7 @@ export function createSourceTemplateNodes(template, node) {
   if (plan.award) result.push(add("award", "Award", "", { title: at(plan.award[1]), source: at(plan.award[0]), subtitle: at(plan.award[2]), accentColor: template.accent, ...([19, 22].includes(order) ? { leftDecorationSrc: source.assets[1], rightDecorationSrc: source.assets[2] } : {}) }));
   if (plan.tabs) result.push(add("tabs", "Tabs", "", { tabs: plan.tabs.map((index) => ({ id: `tier-${index}`, title: at(index), description: "" })), defaultTab: 1 }));
   if (plan.features) {
-    const sourceIcons = { 34: ["dumbbell", "running", "clock"], 35: ["scan", "map", "help"], 37: ["blocks", "activity", "archive", "download"], 40: ["arrow", "help", "running"] }[order];
+    const sourceIcons = { 34: ["weight", "running", "clock"], 35: ["scan", "map", "help"], 37: ["blocks", "activity", "archive", "download"], 40: ["access", "noads", "running"] }[order];
     const accentColor = { 34: "#111111", 35: "#ffffff", 37: "#151515", 40: "#ffffff" }[order] ?? template.accent;
     result.push(add("features", "List", listContent(plan.features, plan.paired), { accentColor, ...(sourceIcons ? { listRows: sourceFeatureLines(order).map((line, index) => { const [title, caption] = line.split("|"); return { title, caption, showCaption: true, leadingMode: "icon", leading: sourceIcons[index] }; }) } : {}) }));
   }
