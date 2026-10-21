@@ -20,13 +20,75 @@ test("every editable gallery tree is backed by the matching source preview", () 
     assert.equal(source.name, template.title);
     assert.ok(source.labels.length > 0);
     const nodes = createSourceTemplateNodes(template, node);
-    assert.ok(nodes.some((item) => item.type === "Header"), template.title);
+    assert.ok(nodes.some((item) => item.type === "Header" || item.type === "Carousel"), template.title);
     assert.ok(nodes.every((item) => item.id.startsWith(template.id)), template.title);
     assert.equal(nodes.some((item) => item.type === "Products"), sourcePackageCount(template.sourceOrder) > 0, template.title);
     assert.equal(template.productCount, sourcePackageCount(template.sourceOrder), template.title);
     assert.equal(template.visibleProductCount, sourceBlueprints[template.sourceOrder - 1].products?.length ?? 0, template.title);
     assert.deepEqual(template.sourceSelectionLabels, source.labels, template.title);
-    assert.equal(template.media, source.assets.length ? "image" : "none", template.title);
+    assert.equal(template.media, template.heroAsset ? "image" : "none", template.title);
+  }
+});
+
+test("Mindful moments uses the observed first carousel page and preserves all three illustrations", () => {
+  const node = (id, type, content, depth, options = {}) => ({ id, type, content, depth, ...options });
+  const tree = createSourceTemplateNodes(revenueCatGallery[19], node);
+  const slides = tree.find((item) => item.type === "Carousel")?.config.slides;
+  assert.deepEqual(slides.map((slide) => slide.title), ["Mindful moments", "Community connection", "Sleep Soundscapes"]);
+  assert.deepEqual(slides.map((slide) => slide.image), [observedTemplate(20).assets[2], observedTemplate(20).assets[3], observedTemplate(20).assets[1]]);
+  assert.equal(tree[0].type, "Image");
+  assert.equal(tree.some((item) => item.type === "Header"), false);
+});
+
+test("multi-step artwork and restore actions stay on their observed screens", () => {
+  const node = (id, type, content, depth, options = {}) => ({ id, type, content, depth, ...options });
+  const flow = createSourceTemplateNodes(revenueCatGallery[0], node);
+  const assets = observedTemplate(1).assets;
+  assert.deepEqual(flow.filter((item) => item.type === "Image").map((item) => item.config.mediaSrc), [assets[0], assets[2], assets[3]]);
+  assert.equal(flow.find((item) => item.id.endsWith("screen-3-timeline")).config.enabled, false);
+  const dark = createSourceTemplateNodes(revenueCatGallery[39], node);
+  assert.deepEqual(dark.filter((item) => ["Dismiss", "RestorePurchases"].includes(item.config?.action)).map((item) => item.content), ["×", "Restore"]);
+});
+
+test("switch control is not rendered as a second standalone tabs component", () => {
+  const node = (id, type, content, depth, options = {}) => ({ id, type, content, depth, ...options });
+  for (const order of [7, 8, 9]) {
+    const tree = createSourceTemplateNodes(revenueCatGallery[order - 1], node);
+    assert.equal(tree.some((item) => item.type === "Tabs"), false);
+    assert.equal(tree.some((item) => item.type === "Toggle"), true);
+  }
+  const firstReview = createSourceTemplateNodes(revenueCatGallery[6], node).find((item) => item.type === "Carousel")?.config.slides[0];
+  assert.match(firstReview.title, /brown thumb green/);
+});
+
+test("testimonial, library, and concert layouts keep their observed first-screen hierarchy", () => {
+  const node = (id, type, content, depth, options = {}) => ({ id, type, content, depth, ...options });
+  const tree = (order) => createSourceTemplateNodes(revenueCatGallery[order - 1], node);
+  assert.equal(tree(4).find((item) => item.type === "Carousel").config.slides[0].title, "Best cat photo app");
+  assert.deepEqual(tree(9).slice(0, 3).map((item) => item.type), ["Image", "Header", "Image"]);
+  assert.equal(tree(9)[0].config.mediaSrc, observedTemplate(9).assets[1]);
+  assert.equal(tree(9)[2].config.mediaSrc, observedTemplate(9).assets[0]);
+  const concert = tree(17);
+  assert.match(concert.find((item) => item.type === "Header").content, /ConcertBuddy Ultra/);
+  assert.ok(concert.findIndex((item) => item.type === "List") < concert.findIndex((item) => item.id.endsWith("-copy-2")));
+  assert.deepEqual(tree(21).find((item) => item.type === "Timeline").config.listRows.map((row) => row.marker), ["lock", "bell", "star"]);
+  assert.deepEqual(tree(26).find((item) => item.type === "Timeline").config.listRows.map((row) => row.marker), ["lock", "bell", "star"]);
+  assert.deepEqual(tree(24).filter((item) => item.type === "Image").map((item) => item.config.mediaSrc), observedTemplate(24).assets);
+  assert.equal(tree(27).find((item) => item.type === "Feature Table").config.tableVariant, "feature-list");
+  assert.deepEqual(tree(29).find((item) => item.type === "Feature Table").config.rows.map((row) => row.values), [["✓", "✓"], ["—", "✓"], ["—", "✓"], ["—", "✓"], ["—", "✓"]]);
+  assert.deepEqual(tree(36).slice(0, 5).map((item) => item.type), ["Header", "Text", "Image", "List", "Text"]);
+  assert.ok(tree(39).findIndex((item) => item.type === "List") < tree(39).findIndex((item) => item.id.endsWith("-copy-2")));
+  assert.equal(tree(39).find((item) => item.type === "Products").config.showCards, false);
+});
+
+test("source background images missing from the text inventory remain editable image nodes", () => {
+  const node = (id, type, content, depth, options = {}) => ({ id, type, content, depth, ...options });
+  for (const [order, assetId] of [[30, "1181742_1738081702"], [35, "1181742_1734689045"]]) {
+    const template = revenueCatGallery[order - 1];
+    const image = createSourceTemplateNodes(template, node).find((item) => item.id.endsWith("-image"));
+    assert.match(template.heroAsset, new RegExp(`${assetId}\\.webp`));
+    assert.equal(template.media, "image");
+    assert.equal(image?.config.mediaSrc, template.heroAsset);
   }
 });
 
@@ -37,8 +99,10 @@ test("source-specific commerce structures do not revert to generic packages", ()
   assert.match(tree(1).find((item) => item.type === "Products").content, /Weekly\|\$2\.99\/week/);
   assert.equal(tree(2).find((item) => item.type === "Products").config.showCards, false);
   assert.equal(tree(3).find((item) => item.type === "Products").config.showCards, false);
+  assert.equal(tree(8).find((item) => item.type === "Products").config.defaultSelected, 1);
   assert.equal(tree(5).find((item) => item.type === "Products").config.showCards, false);
   assert.equal(tree(10).find((item) => item.type === "Products").content.split("\n").length, 5);
+  for (const order of [10, 11]) assert.deepEqual(tree(order).slice(0, 2).map((item) => item.type), ["Image", "Header"]);
   assert.equal(tree(10).find((item) => item.type === "Products").config.purchasePerCard, true);
   assert.equal(tree(13).find((item) => item.type === "Products").config.purchasePerCard, false);
   assert.deepEqual(tree(13).filter((item) => ["Button", "Web Paywall Button"].includes(item.type)).map((item) => item.content), ["Continue in-app", "Or, save 30%"]);
@@ -98,7 +162,7 @@ test("40 source editor layer inventories remain distinct from the unverified tem
     assert.equal(nodes.find((item) => item.type === "Products")?.config.sourcePackageCount, observedLayerCount(order, "package"), template.title);
     assert.equal(nodes.some((item) => item.type === "Timeline"), Boolean(observedLayerCount(order, "timeline")), template.title);
     assert.equal(nodes.some((item) => item.type === "Toggle"), Boolean(observedLayerCount(order, "toggle")), template.title);
-    assert.equal(nodes.some((item) => item.type === "Tabs"), Boolean(observedLayerCount(order, "tabs") || observedLayerCount(order, "tab_control")), template.title);
+    assert.equal(nodes.some((item) => item.type === "Tabs"), Boolean(observedLayerCount(order, "tabs")), template.title);
     assert.equal(nodes.some((item) => item.type === "Carousel"), Boolean(observedLayerCount(order, "carousel")), template.title);
   }
 });

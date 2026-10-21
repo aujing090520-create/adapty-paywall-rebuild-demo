@@ -26,7 +26,7 @@ export const sourceBlueprints = [
   { heading: 2, reviews: [0, 10], reviewStyle: "carousel", products: ["Annual|$69.99/year|Only $5.83/mo", "Monthly|$9.99/mo|"], cta: 16 },
   { heading: 0, timeline: [1, 7], products: ["Yearly|$69.99/yr|Only $5.83/mo", "Monthly|$9.99/mo|"], cta: 14 },
   { heading: 0, copy: [1], award: [2, 3, 4], reviews: [5, 14], reviewStyle: "list", products: ["30 DAYS|$9.99|", "12 MONTHS|$69.99|", "LIFETIME|$119.99|"], cta: 22 },
-  { heading: 1, copy: [0, 5], products: ["yearly|$69.99/yr|$5.83 per month", "monthly|$9.99|"], features: [9, 17], paired: true, cta: 17, afterCta: [18] },
+  { heading: 1, copy: [0], products: ["yearly|$5.83|($69.99/yr) per month, billed annually", "monthly|$9.99|"], features: [9, 17], paired: true, cta: 17, afterCta: [18] },
   { heading: 0, copy: [1, 2], features: [6, 13], products: ["Pro Access / year|$69.99|", "Pro Access / month|$9.99|"], cta: 24 },
   { heading: 0, copy: [1], features: [2, 12], paired: true, products: ["Yearly|$69.99/yr|Only $5.83/mo", "Monthly|$9.99/mo|"], cta: 19 },
   { heading: 0, timeline: [1, 7], copy: [7], cta: 8 },
@@ -108,12 +108,12 @@ export function sourceFeatureLines(order) {
 
 export function sourceComponentNames(order) {
   const plan = sourceBlueprints[order - 1];
-  return [plan.flow && "多步骤页面", observedTemplate(order).assets.length > 0 && "图片", "标题", (plan.flow || plan.copy) && "文案", (plan.flow || plan.features) && "特权列表", plan.award && "奖项", plan.reviews && (plan.reviewStyle === "list" ? "评价列表" : plan.reviewStyle === "quote" ? "引述评价" : "轮播评价"), plan.social && "口碑数据", (plan.timeline || observedLayerCount(order, "timeline")) && "时间线", (plan.tabs || [7, 8, 9].includes(order)) && "档位切换", plan.toggle !== undefined && "开关", plan.table && "权益表格", sourcePackageCount(order) && (order === 10 ? "点数档位" : plan.products ? "商品套餐" : "商品套餐（仅绑定）"), (plan.flow || plan.cta !== undefined) && "按钮", plan.webCta !== undefined && "网页购买入口", "协议链接"].filter(Boolean);
+  return [plan.flow && "多步骤页面", observedTemplate(order).assets.length > 0 && "图片", order !== 20 && "标题", (plan.flow || plan.copy) && "文案", (plan.flow || plan.features) && "特权列表", plan.award && "奖项", plan.reviews && (plan.reviewStyle === "list" ? "评价列表" : plan.reviewStyle === "quote" ? "引述评价" : "轮播评价"), plan.social && "口碑数据", (plan.timeline || observedLayerCount(order, "timeline")) && "时间线", plan.tabs && "档位切换", plan.toggle !== undefined && "开关", plan.table && "权益表格", sourcePackageCount(order) && (order === 10 ? "点数档位" : plan.products ? "商品套餐" : "商品套餐（仅绑定）"), (plan.flow || plan.cta !== undefined) && "按钮", plan.webCta !== undefined && "网页购买入口", "协议链接"].filter(Boolean);
 }
 
 export function sourceFilterComponents(order) {
   const plan = sourceBlueprints[order - 1];
-  return [plan.flow && "Multi-step", plan.reviews && "Reviews", plan.award && "Award", plan.social && "Social Proof", (plan.timeline || observedLayerCount(order, "timeline")) && "Trial timeline", (plan.tabs || [7, 8, 9].includes(order)) && "Tabs", plan.toggle !== undefined && "Toggle", plan.table && "Feature table", plan.products?.some((row) => row.includes("credits")) && "Credits", plan.webCta !== undefined && "Web purchase", [5, 6].includes(order) && "Offer code"].filter(Boolean);
+  return [plan.flow && "Multi-step", plan.reviews && "Reviews", plan.award && "Award", plan.social && "Social Proof", (plan.timeline || observedLayerCount(order, "timeline")) && "Trial timeline", plan.tabs && "Tabs", plan.toggle !== undefined && "Toggle", plan.table && "Feature table", plan.products?.some((row) => row.includes("credits")) && "Credits", plan.webCta !== undefined && "Web purchase", [5, 6].includes(order) && "Offer code"].filter(Boolean);
 }
 
 export function createSourceTemplateNodes(template, node) {
@@ -133,7 +133,7 @@ export function createSourceTemplateNodes(template, node) {
   const button = (part, index, depth = 0) => add(part, "Button", at(index), { action: [5, 6].includes(order) ? "OfferCodeRedemption" : "Purchase", backgroundColor: order === 13 ? "#f2f2f7" : template.accent, ...([5, 13].includes(order) ? { color: "#111111", radius: 99 } : {}) }, depth);
   const products = (depth = 0) => {
     const visibleRows = plan.products ?? [];
-    return add("products", "Products", visibleRows.join("\n") || "绑定商品||", { defaultSelected: 0, packageLayout: visibleRows.length === 3 ? "horizontal" : "vertical", showOfferBadge: false, showCards: visibleRows.length > 0, sourcePackageCount: sourcePackageCount(order), purchasePerCard: order === 10, badgeGradient: [template.accent, template.accent, template.accent], selectedBorderGradient: [template.accent, template.accent, template.accent], ...(visibleRows.length ? { packageRows: sourceProductRows(order) } : {}) }, depth);
+    return add("products", "Products", visibleRows.join("\n") || "绑定商品||", { defaultSelected: [8, 19, 22, 30, 32, 33, 34, 35, 36, 40].includes(order) ? 1 : 0, packageLayout: [4, 14, 19, 22, 30].includes(order) ? "horizontal" : "vertical", showOfferBadge: true, showCards: visibleRows.length > 0, sourcePackageCount: sourcePackageCount(order), purchasePerCard: order === 10, badgeGradient: [template.accent, template.accent, template.accent], selectedBorderGradient: [template.accent, template.accent, template.accent], ...(visibleRows.length ? { packageRows: sourceProductRows(order) } : {}) }, depth);
   };
   const links = (depth = 0) => {
     const policyLines = lines.filter((line) => /^(Restore( Purchases| purchases)?|Terms( of Use| of service)?|Privacy( Policy| policy)?|Privacy policy)$/.test(line));
@@ -168,23 +168,105 @@ export function createSourceTemplateNodes(template, node) {
     return [...content, price, button("action", plan.cta), links()].filter(Boolean);
   }
 
+  if (order === 20) {
+    const slides = [
+      { id: "mindful", title: at(2), caption: at(3), image: source.assets[2] },
+      { id: "community", title: at(4), caption: at(5), image: source.assets[3] },
+      { id: "sleep", title: at(0), caption: at(1), image: source.assets[1] },
+    ];
+    return [media("image"), add("reviews", "Carousel", "", { slides, initialSlide: 0 }), products(), button("action", plan.cta), links()].filter(Boolean);
+  }
+
+  if (order === 9) {
+    return [
+      add("icon", "Image", "", { mediaSrc: source.assets[1], mediaFit: "contain", mediaWidth: 100, mediaHeight: 100, mediaBackgroundColor: "transparent" }),
+      header("title", plan.heading),
+      media("image"),
+      add("copy-0", "Text", `${at(1)} ${at(2)}`),
+      add("copy-1", "Text", at(3)),
+      add("toggle", "Toggle", at(plan.toggle), { onColor: template.accent }),
+      products(),
+      button("action", plan.cta),
+      links(),
+    ].filter(Boolean);
+  }
+
+  if (order === 17) {
+    return [
+      media("image"),
+      node(id("title"), "Header", `${at(0)} ${at(1)}`, 0, { variant: "headline" }),
+      add("copy-1", "Text", at(2)),
+      add("features", "List", listContent(plan.features), { accentColor: template.accent }),
+      add("products", "Products", "绑定商品||", { showCards: false, sourcePackageCount: sourcePackageCount(order) }),
+      add("copy-2", "Text", at(7)),
+      button("action", plan.cta),
+      links(),
+    ].filter(Boolean);
+  }
+
+  if (order === 24) {
+    return [
+      header("title", plan.heading),
+      add("copy-0", "Text", at(1)),
+      add("copy-1", "Text", at(2)),
+      add("feature-images", "Stack", "", { axis: "horizontal", gap: 6 }),
+      add("feature-image-1", "Image", "", { mediaSrc: source.assets[0], mediaFit: "contain", mediaBackgroundColor: "#999999", mediaWidth: 100, mediaHeight: 100 }, 1),
+      add("feature-image-2", "Image", "", { mediaSrc: source.assets[1], mediaFit: "contain", mediaBackgroundColor: "#999999", mediaWidth: 100, mediaHeight: 100 }, 1),
+      products(),
+      add("features", "List", listContent(plan.features, plan.paired), { accentColor: template.accent }),
+      button("action", plan.cta),
+      links(),
+    ].filter(Boolean);
+  }
+
+  if (order === 36) {
+    return [
+      header("title", plan.heading),
+      add("copy-0", "Text", at(1)),
+      media("image"),
+      add("features", "List", listContent(plan.features), { accentColor: template.accent }),
+      add("copy-1", "Text", at(5)),
+      products(),
+      add("copy-2", "Text", at(10)),
+      button("action", plan.cta),
+      links(),
+    ].filter(Boolean);
+  }
+
+  if (order === 39) {
+    return [
+      media("image"),
+      header("title", plan.heading),
+      add("copy-0", "Text", at(1)),
+      add("copy-1", "Text", at(2)),
+      add("features", "List", listContent(plan.features), { accentColor: template.accent }),
+      add("products", "Products", "绑定商品||", { showCards: false, sourcePackageCount: sourcePackageCount(order) }),
+      add("copy-2", "Text", at(8)),
+      button("action", plan.cta),
+      links(),
+    ].filter(Boolean);
+  }
+
   if (plan.flow) {
     return [
       add("flow", "Screen Flow", "", { defaultStep: 0 }),
       node(id("screen-1"), "Screen", "权益介绍", 1),
-      media("screen-1-image", 2),
+      add("screen-1-image", "Image", "", { mediaSrc: source.assets[0], mediaFit: "contain", mediaBackgroundColor: "#ffffff", mediaWidth: 100, mediaHeight: 240 }, 2),
       header("screen-1-title", 0, 2),
       add("screen-1-features", "List", listContent([1, 7], true), {}, 2),
       add("screen-1-proof", "Social Proof", "", { count: `${at(7)} · ${at(8)}`, caption: "" }, 2),
       button("screen-1-next", 9, 2),
       node(id("screen-2"), "Screen", "口碑与体验", 1),
       header("screen-2-title", 10, 2),
-      add("screen-2-copy", "Text", `${at(11)}\n${at(12)}`, {}, 2),
+      add("screen-2-subtitle", "Text", at(11), {}, 2),
+      add("screen-2-image", "Image", "", { mediaSrc: source.assets[2], mediaFit: "contain", mediaBackgroundColor: "#ffffff", mediaWidth: 100, mediaHeight: 260 }, 2),
+      add("screen-2-copy", "Text", at(12), {}, 2),
       button("screen-2-next", 13, 2),
       node(id("screen-3"), "Screen", "选择套餐", 1),
+      add("screen-3-image", "Image", "", { mediaSrc: source.assets[3], mediaFit: "cover", mediaBackgroundColor: "#ffffff", mediaWidth: 100, mediaHeight: 100 }, 2),
       header("screen-3-title", 14, 2),
       add("screen-3-features", "List", listContent([15, 21], true), {}, 2),
-      add("screen-3-timeline", "Timeline", "", { accentColor: template.accent, listRows: [{ title: "First item", caption: "" }, { title: "Second item", caption: "" }, { title: "Third item", caption: "" }] }, 2),
+      add("screen-3-timeline", "Timeline", "", { enabled: false, accentColor: template.accent, listRows: [{ title: "First item", caption: "" }, { title: "Second item", caption: "" }, { title: "Third item", caption: "" }] }, 2),
       products(2),
       button("screen-3-action", 25, 2),
       links(2),
@@ -197,17 +279,20 @@ export function createSourceTemplateNodes(template, node) {
     result.push(add("back", "Button", at(0), { action: "Dismiss", backgroundColor: "#f1f1f1", color: "#151515", radius: 99 }, 1));
     if (template.heroAsset) result.push(media("image", 1));
     result.push(add("restore", "Button", at(1), { action: "RestorePurchases", backgroundColor: "#f1f1f1", color: "#151515", radius: 99 }, 1));
-  } else if (template.heroAsset && ["top", "full", "center", "icon"].includes(template.art)) result.push(media("image"));
+  } else if (order === 40) {
+    result.push(add("header-actions", "Stack", "", { axis: "horizontal", gap: 8 }));
+    result.push(add("back", "Button", "×", { action: "Dismiss", backgroundColor: "transparent", color: "#ffffff", radius: 0 }, 1));
+    result.push(add("restore", "Button", "Restore", { action: "RestorePurchases", backgroundColor: "transparent", color: "#ffffff", radius: 0 }, 1));
+  } else if (template.heroAsset && (["top", "full", "center", "icon"].includes(template.art) || [10, 11].includes(order))) result.push(media("image"));
   result.push(header("title", plan.heading));
-  if (order !== 37 && template.heroAsset && !["top", "full", "center", "icon"].includes(template.art)) result.push(media("image"));
+  if (order !== 37 && template.heroAsset && !["top", "full", "center", "icon"].includes(template.art) && ![10, 11].includes(order)) result.push(media("image"));
   (plan.copy ?? []).forEach((index, itemIndex) => result.push(add(`copy-${itemIndex}`, "Text", at(index))));
   if (plan.award) result.push(add("award", "Award", "", { title: at(plan.award[1]), source: at(plan.award[0]), subtitle: at(plan.award[2]), accentColor: template.accent }));
-  if ([7, 8, 9].includes(order)) result.push(add("tabs", "Tabs", "", { tabs: [{ id: "off", title: "OFF", description: "" }, { id: "on", title: "ON", description: "" }], defaultTab: 0, linkedToggleId: id("toggle") }));
   if (plan.tabs) result.push(add("tabs", "Tabs", "", { tabs: plan.tabs.map((index) => ({ id: `tier-${index}`, title: at(index), description: "" })), defaultTab: 1 }));
   if (plan.features) result.push(add("features", "List", listContent(plan.features, plan.paired), { accentColor: template.accent }));
   if (plan.timeline) {
     const section = lines.slice(...plan.timeline);
-    const listRows = Array.from({ length: Math.ceil(section.length / 2) }, (_, index) => ({ title: section[index * 2], caption: section[index * 2 + 1] ?? "" }));
+    const listRows = Array.from({ length: Math.ceil(section.length / 2) }, (_, index) => ({ title: section[index * 2], caption: section[index * 2 + 1] ?? "", ...([21, 26].includes(order) ? { marker: ["lock", "bell", "star"][index] ?? "number" } : {}) }));
     result.push(add("timeline", "Timeline", "", { accentColor: template.accent, listRows }));
   }
   if (plan.reviews) {
@@ -220,7 +305,15 @@ export function createSourceTemplateNodes(template, node) {
         const group = reviewLines.slice(index * groupSize, index * groupSize + groupSize);
         return { id: `source-review-${index + 1}`, image: order === 20 ? source.assets[index + 1] ?? "" : "", title: group[0], caption: group.slice(1).join("\n") };
       });
-      result.push(add("reviews", "Carousel", "", { slides, initialSlide: 0 }));
+      if (order === 4) {
+        const reviews = [[4, 5, 6], [7, 8, 9], [1, 2, 3]].map(([title, caption, author], index) => ({ id: `source-review-${index + 1}`, image: "", title: at(title), caption: `${at(caption)}\n${at(author)}` }));
+        result.push(add("reviews", "Carousel", "", { slides: reviews, initialSlide: 0, hideImageIfEmpty: true }));
+      } else if (order === 7) {
+        const reviews = [[3, 4], [5, 6], [1, 2]].map(([title, caption], index) => ({ id: `source-review-${index + 1}`, image: "", title: at(title), caption: at(caption) }));
+        result.push(add("reviews", "Carousel", "", { slides: reviews, initialSlide: 0, hideImageIfEmpty: true }));
+      } else {
+      result.push(add("reviews", "Carousel", "", { slides, initialSlide: 0, hideImageIfEmpty: true }));
+      }
     }
   }
   if (plan.social) result.push(add("social", "Social Proof", "", { rating: Number.parseFloat(at(plan.social[0])) || 5, count: at(plan.social[1]), caption: at(plan.social[0]), accentColor: template.accent }));
@@ -229,7 +322,7 @@ export function createSourceTemplateNodes(template, node) {
   if (plan.table) {
     const tableLines = lines.slice(...plan.table);
     const pairedRows = order === 27 ? Array.from({ length: Math.floor(tableLines.length / 2) }, (_, index) => tableLines.slice(index * 2, index * 2 + 2)) : tableLines.map((line) => [line, ""]);
-    result.push(add("table", "Feature Table", "", { title: order === 27 ? at(7) : order === 29 ? at(1) : "", columns: order === 29 ? [at(7), at(8)] : ["包含"], rows: pairedRows.map(([name, description]) => ({ name, values: order === 29 ? ["", ""] : [description] })) }));
+    result.push(add("table", "Feature Table", "", { title: order === 27 ? at(7) : order === 29 ? at(1) : "", tableVariant: order === 27 ? "feature-list" : "comparison", columns: order === 29 ? [at(7), at(8)] : ["包含"], rows: pairedRows.map(([name, description], index) => ({ name, values: order === 29 ? [index === 0 ? "✓" : "—", "✓"] : [description] })) }));
   }
   if (plan.cta !== undefined) result.push(order === 18 ? add("action", "Button", `${at(18)} ${at(19)}`, { action: "Purchase", backgroundColor: template.accent }) : button("action", plan.cta));
   if (plan.webCta !== undefined) result.push(add("web-action", "Web Paywall Button", at(plan.webCta), { action: "WebCheckout", autoDismiss: true, backgroundColor: order === 13 ? "#b53231" : template.accent, ...(order === 13 ? { color: "#ffffff", radius: 99 } : {}) }));
