@@ -80,6 +80,11 @@ test("testimonial, library, and concert layouts keep their observed first-screen
   assert.equal(tree(25).find((item) => item.type === "Products").config.packageLayout, "horizontal");
   assert.equal(tree(12).find((item) => item.type === "Products").config.packageLayout, "horizontal");
   assert.equal(tree(14).find((item) => item.type === "Products").config.defaultSelected, 1);
+  for (const order of [19, 22]) {
+    const award = tree(order).find((item) => item.type === "Award");
+    assert.equal(award.config.leftDecorationSrc, observedTemplate(order).assets[1]);
+    assert.equal(award.config.rightDecorationSrc, observedTemplate(order).assets[2]);
+  }
   assert.ok(tree(28).some((item) => item.id.endsWith("-copy-0") && /PREMIUM/.test(item.content)));
   assert.equal(tree(22).find((item) => item.id.endsWith("-reviews")).config.listVariant, "testimonials");
   assert.equal(tree(22).find((item) => item.id.endsWith("-reviews")).config.testimonialRows[0].author, "CatMomSarah");
@@ -159,6 +164,7 @@ test("observed package badges, subtitles, and bilingual labels stay with their p
   assert.equal(sourceProductRows(40)[1].badgeText, "Save 19% (only $5.83/mo)");
   assert.deepEqual(tree(19).find((item) => item.type === "Award").config, {
     title: "App of the Year", source: "The Download", subtitle: "for 2025", accentColor: revenueCatGallery[18].accent,
+    leftDecorationSrc: observedTemplate(19).assets[1], rightDecorationSrc: observedTemplate(19).assets[2],
   });
   assert.equal(tree(27).find((item) => item.type === "Feature Table").config.title, "WHAT'S INCLUDED");
   assert.equal(tree(18).find((item) => item.id.endsWith("-action")).content, "続ける Continue");

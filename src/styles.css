@@ -1304,6 +1304,10 @@ textarea { min-height: 80px; resize: vertical; }
 .preview-video video { width: 100%; height: 100%; }
 .preview-award { display: flex; align-items: center; justify-content: center; gap: 5px; min-width: 0; padding: 8px; font-size: 10px; }
 .preview-award small { color: #777; font-size: 9px; }
+.preview-award-decorated { gap: 5px; color: #777; text-align: center; }
+.preview-award-decorated > img { width: 18px; height: 40px; object-fit: contain; }
+.preview-award-decorated > span { display: grid; gap: 1px; }
+.preview-award-decorated strong { color: #777; font-size: 13px; font-weight: 500; }
 .template-save-error { margin: 8px 16px; padding: 9px 12px; border: 1px solid #d83741; color: #b4232a; background: #fff3f4; font-size: 12px; }
 
 /* RevenueCat source compositions. Rules are scoped to the observed Talkin
@@ -1572,11 +1576,21 @@ textarea { min-height: 80px; resize: vertical; }
 .preview-products .ht-info-row-main small, .preview-products .ht-info-row-price small { color: #777; font-size: 9px; }
 .preview-products .ht-info-row-price { text-align: right; white-space: nowrap; }
 .preview-products .ht-info-row-price strong { font-size: 11px; font-weight: 500; }
-.template-rc-source-18 .preview-button { margin-top: auto; }
+.template-rc-source-18 .preview-button { margin-top: 100px; padding-top: 12px; border-top: 1px solid #ddd; }
 .template-rc-source-18 .preview-cta { background: #232121 !important; border-radius: 0; }
 .template-rc-source-19 .preview-award-wrap { margin: 12px 0; }
 .template-rc-source-19 .preview-carousel-wrap { width: 100%; }
-.template-rc-source-19 .preview-products-wrap { width: 100%; margin-top: auto; }
+.template-rc-source-19 .preview-carousel { padding: 0 5px; background: transparent; }
+.template-rc-source-19 .preview-slide-carousel { min-height: 128px; padding: 12px; border-radius: 15px; background: #f6f6f9; text-align: left; }
+.template-rc-source-19 .preview-slide-carousel > strong, .template-rc-source-19 .preview-slide-carousel > p { text-align: left !important; }
+.template-rc-source-19 .preview-slide-carousel > strong::after { content: "★★★★★"; display: block; margin: 4px 0; color: #ffbe31; letter-spacing: 2px; }
+.template-rc-source-19 .preview-slide-dots { position: relative; top: 40px; }
+.template-rc-source-19 .preview-products-wrap { width: 100%; margin-top: 55px; }
+.template-rc-source-19 .preview-products-wrap { border-top: 1px solid #e1e1e4; padding-top: 12px; }
+.template-rc-source-19 .preview-products .ht-blue-plan.chosen { background: #e85b4d !important; color: #fff; }
+.template-rc-source-19 .preview-products .ht-blue-plan.chosen strong, .template-rc-source-19 .preview-products .ht-blue-plan.chosen em { color: #fff; }
+.template-rc-source-19 .preview-button { width: 100%; background: transparent !important; }
+.template-rc-source-19 .preview-cta { width: 100%; border-radius: 22px !important; }
 .template-rc-source-19 .preview-cta { background: #e85b4d !important; }
 .template-rc-source-20 .phone-content { align-items: center; background: linear-gradient(#fff 0 52%,#f0faf7 70%,#fff 88%); text-align: center; }
 .template-rc-source-20 [data-node-id$="-image"] { margin: 0 auto 10px; }
@@ -1610,6 +1624,8 @@ textarea { min-height: 80px; resize: vertical; }
 .template-rc-source-22 .preview-award-wrap .preview-award small { order: 0; }
 .template-rc-source-22 .preview-award-wrap .preview-award strong { order: 1; }
 .template-rc-source-22 .preview-award-wrap .preview-award span { order: 2; }
+.template-rc-source-22 .preview-award-wrap .preview-award-decorated { flex-direction: row; }
+.template-rc-source-22 .preview-award-wrap .preview-award-decorated > span { order: 0; }
 .template-rc-source-22 .preview-award-wrap strong { color: #777; font-weight: 400; }
 .template-rc-source-22 .preview-testimonials-wrap { width: 100%; max-height: 157px; margin-top: 11px; overflow: hidden; text-align: left; }
 .template-rc-source-22 .preview-testimonials article { padding: 10px 1px 12px; border-top: 1px solid #ddd; }

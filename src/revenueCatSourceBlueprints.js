@@ -287,7 +287,7 @@ export function createSourceTemplateNodes(template, node) {
   result.push(header("title", plan.heading));
   if (order !== 37 && template.heroAsset && !["top", "full", "center", "icon"].includes(template.art) && ![10, 11].includes(order)) result.push(media("image"));
   (plan.copy ?? []).forEach((index, itemIndex) => result.push(add(`copy-${itemIndex}`, "Text", at(index))));
-  if (plan.award) result.push(add("award", "Award", "", { title: at(plan.award[1]), source: at(plan.award[0]), subtitle: at(plan.award[2]), accentColor: template.accent }));
+  if (plan.award) result.push(add("award", "Award", "", { title: at(plan.award[1]), source: at(plan.award[0]), subtitle: at(plan.award[2]), accentColor: template.accent, ...([19, 22].includes(order) ? { leftDecorationSrc: source.assets[1], rightDecorationSrc: source.assets[2] } : {}) }));
   if (plan.tabs) result.push(add("tabs", "Tabs", "", { tabs: plan.tabs.map((index) => ({ id: `tier-${index}`, title: at(index), description: "" })), defaultTab: 1 }));
   if (plan.features) {
     const sourceIcons = { 34: ["dumbbell", "running", "clock"], 35: ["scan", "map", "help"], 37: ["blocks", "activity", "archive", "download"] }[order];
