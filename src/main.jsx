@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { DEMO_SKUS, PRICE_DISPLAY_MODES, billingMonths, productPriceFields, resolveProductPrice, skuById, skuCopy, templateSkuId } from "./productPricing.js";
 import { applyComponent, captureComponent, componentKind, readComponentLibrary, writeComponentLibrary } from "./componentLibrary.js";
+import { protectedTemplateIds, readTemplateNodes, writeTemplateNodes } from "./templateStorage.js";
 import {
   Archive,
   ArrowLeft,
@@ -40,6 +41,10 @@ import {
   RectangleHorizontal,
   RotateCw,
   Type,
+  Star,
+  Heart,
+  ShieldCheck,
+  Users,
 } from "lucide-react";
 import "./styles.css";
 
@@ -154,7 +159,7 @@ const templates = [
   { id: "ht-sku-sheet", title: "HelloTalk SKU 半窗", subtitle: "横版促销视觉与套餐选择", tags: ["2 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-sku", visual: "ht-sku", documentTemplate: "sku-sheet", prdScreenshot: "/ht-prd-screenshots/sku-sheet.jpg" },
 ];
 
-const componentCatalog = ["Text", "Image", "Card", "Web Paywall Button", "Button", "List", "Links", "Agreement", "Timer", "Carousel", "Products"];
+const componentCatalog = ["Text", "Header", "Image", "Video", "Icon", "Card", "Stack", "Web Paywall Button", "Button", "List", "Timeline", "Social Proof", "Award", "Tabs", "Toggle", "Links", "Agreement", "Timer", "Carousel", "Products", "Footer"];
 
 const sourceTreeObserved = new Set(["knowledge", "trial", "connection", "family", "premium-access", "document", "yoga", "black-friday", "black-friday-timer", "christmas", "halloween", "new-year", "report", "avatar", "mindfulness", "trial-white", "trial-blue", "fitness-trial", "access", "weather", "workout", "audiobooks", "herbs", "video-access", "design-life", "full-app", "item-placeholder", "item-placeholder-dark", "fantasy-access", "editing-plan", "training"]);
 const documentStyleTemplateIds = new Set(["ht-blue-privilege", "ht-membership-plans", "ht-payment-recovery", "ht-sku-sheet"]);
@@ -880,7 +885,7 @@ function createBuilderNodes(templateId = "knowledge") {
 
 function createComponentNode(type, index) {
   const contentByType = {
-    Text: "text", Image: "", Card: "", "Web Paywall Button": "Pay on web", Button: "button text", List: "", "List item": "title|caption", Links: "Terms · Privacy · Restore · Login", Agreement: "我已阅读并同意", Timer: "04:59:59", Carousel: "", Products: "",
+    Text: "text", Header: "标题", Image: "", Video: "", Icon: "", Card: "", Stack: "", "Web Paywall Button": "Pay on web", Button: "button text", List: "", Timeline: "", "Social Proof": "超过 50,000 位用户选择了我们", Award: "年度精选应用", Tabs: "", Toggle: "启用免费试用|可随时取消", Footer: "可随时取消", "List item": "title|caption", Links: "Terms · Privacy · Restore · Login", Agreement: "我已阅读并同意", Timer: "04:59:59", Carousel: "", Products: "",
   };
   const configByType = {
     Timer: { enabled: true, format: "hh:mm:ss", separator: ":", prefix: "", suffix: "", resetMode: "Reset timer on every paywall view" },
@@ -888,8 +893,15 @@ function createComponentNode(type, index) {
     Products: { defaultSelected: 0, showOfferBadge: true },
     Button: { action: "Purchase" },
     Agreement: { showCheckbox: true, required: true, termsLabel: "服务条款", termsUrl: "", privacyLabel: "隐私政策", privacyUrl: "" },
+    Icon: { iconName: "star", iconSize: 24, color: "#6a31e9" },
+    Timeline: { listRows: [{ title: "今天", caption: "立即解锁全部权益" }, { title: "第 2 天", caption: "收到订阅提醒" }, { title: "第 3 天", caption: "订阅开始，可随时取消" }] },
+    Tabs: { tabs: [{ id: `tab-${index}-1`, title: "月度", description: "月度套餐" }, { id: `tab-${index}-2`, title: "年度", description: "年度套餐" }], defaultTab: 0 },
+    Stack: { axis: "vertical", gap: 8 },
+    "Social Proof": { count: "50,000+", caption: "用户好评", rating: 5 },
+    Award: { title: "年度精选应用", source: "编辑推荐", accentColor: "#f3a718" },
+    Toggle: { onColor: "#6a31e9", offColor: "#d9dde0" },
   };
-  return { id: `added-${type.toLowerCase().replace(/[^a-z]+/g, "-")}-${index}`, type, label: "", depth: 0, content: contentByType[type] ?? "", config: configByType[type] };
+  return { id: `added-${type.toLowerCase().replace(/[^a-z]+/g, "-")}-${index}`, type, label: "", depth: 0, content: contentByType[type] ?? "", config: configByType[type], ...(type === "Header" ? { variant: "headline" } : {}), ...(type === "Toggle" ? { defaultState: "Off" } : {}) };
 }
 
 function isTextNodeType(type) {
@@ -897,17 +909,8 @@ function isTextNodeType(type) {
 }
 
 function BuilderNodeIcon({ type }) {
-  const Icon = type === "Timer" ? Clock3
-    : type === "Products" ? Package
-      : type === "Links" ? Link2
-        : type === "Agreement" ? Check
-        : type === "Carousel" ? GalleryHorizontal
-          : type === "Card" ? RectangleHorizontal
-            : ["Button", "Purchase Button", "Web Paywall Button"].includes(type) ? MousePointerClick
-              : ["Hero Image", "Image"].includes(type) ? ImageIcon
-                : type === "List" ? List
-                  : isTextNodeType(type) ? Type
-                    : Blocks;
+  const icons = { Timer: Clock3, Products: Package, Award: Star, Toggle: Check, Timeline: Clock3, Tabs: LayoutTemplate, "Social Proof": Users, Icon: Star, Stack: Blocks, Video: ImageIcon, Links: Link2, Agreement: Check, Carousel: GalleryHorizontal, Card: RectangleHorizontal, List, Footer: Type };
+  const Icon = icons[type] ?? (["Button", "Purchase Button", "Web Paywall Button"].includes(type) ? MousePointerClick : ["Hero Image", "Image"].includes(type) ? ImageIcon : isTextNodeType(type) ? Type : Blocks);
   return <Icon size={13} strokeWidth={2.15} />;
 }
 
@@ -952,6 +955,7 @@ const localeLabels = {
 };
 
 const zhCopy = {
+  "Stack": "容器", "Timeline": "时间线", "Social Proof": "口碑展示", "Award": "奖项展示", "Tabs": "选项卡",
   "Paywalls": "付费墙", "Test": "测试",
   "Evidence & gaps": "已验证与缺口", "Only observed behavior is reproduced. These routes are deliberately not invented.": "仅复刻已观察到的行为；未验证的结果不会被编造。",
   "Create paywall": "创建付费墙", "General": "基础设置", "Products": "商品套餐",
@@ -1119,6 +1123,8 @@ function App() {
   const [appliedTemplate, setAppliedTemplate] = useState(null);
   const [templateLinks, setTemplateLinks] = useState({ terms: "terms-link", privacy: "privacy-link" });
   const [builderNodes, setBuilderNodes] = useState(() => createBuilderNodes());
+  const currentTemplateId = useRef(null);
+  const [templateSaveError, setTemplateSaveError] = useState(false);
   const [builderOrigin, setBuilderOrigin] = useState("existing");
   const [activeNode, setActiveNode] = useState("links");
   const [unknownOpen, setUnknownOpen] = useState(false);
@@ -1195,13 +1201,25 @@ function App() {
   };
   const applyTemplate = (templateIndex) => {
     const template = templates[templateIndex];
-    const nextNodes = createBuilderNodes(template.id);
+    if (currentTemplateId.current && protectedTemplateIds.has(currentTemplateId.current)) {
+      writeTemplateNodes(window.localStorage, currentTemplateId.current, builderNodes);
+    }
+    const nextNodes = readTemplateNodes(window.localStorage, template.id) ?? createBuilderNodes(template.id);
+    currentTemplateId.current = template.id;
+    setTemplateSaveError(false);
     setTemplateSelected(templateIndex);
     setAppliedTemplate(templateIndex);
     setBuilderNodes(nextNodes);
     // Templates do not share a universal node id; select the first real layer.
     setActiveNode(nextNodes[0]?.id ?? "links");
   };
+
+  useEffect(() => {
+    const templateId = currentTemplateId.current;
+    if (templateId && protectedTemplateIds.has(templateId)) {
+      setTemplateSaveError(!writeTemplateNodes(window.localStorage, templateId, builderNodes));
+    }
+  }, [builderNodes]);
 
   return (
     <div className={`app ${unknownOpen ? "" : "evidence-collapsed"}`}>
@@ -1267,6 +1285,7 @@ function App() {
               setModal={setModal}
               markUnknown={markUnknown}
               builderNodes={builderNodes}
+              templateSaveError={templateSaveError}
               setBuilderNodes={setBuilderNodes}
               updateBuilderNode={updateBuilderNode}
               removeBuilderNode={removeBuilderNode}
@@ -1292,6 +1311,7 @@ function App() {
               setModal={setModal}
               markUnknown={markUnknown}
               builderNodes={builderNodes}
+              templateSaveError={templateSaveError}
               setBuilderNodes={setBuilderNodes}
               updateBuilderNode={updateBuilderNode}
               removeBuilderNode={removeBuilderNode}
@@ -1511,7 +1531,7 @@ function CreatePaywall({ draft, setDraft, setView, setModal }) {
   );
 }
 
-function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setView, duplicate, setModal, markUnknown, builderNodes, setBuilderNodes, updateBuilderNode, removeBuilderNode, activeNode, setActiveNode, appliedTemplate, templateLinks, setTemplateLinks, notify }) {
+function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setView, duplicate, setModal, markUnknown, builderNodes, setBuilderNodes, updateBuilderNode, removeBuilderNode, activeNode, setActiveNode, appliedTemplate, templateSaveError, templateLinks, setTemplateLinks, notify }) {
   const [componentRecords, setComponentRecords] = useState(() => readComponentLibrary(window.localStorage));
   const [libraryMode, setLibraryMode] = useState(null);
   const [libraryName, setLibraryName] = useState("");
@@ -1695,7 +1715,8 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
       <section className="builder-page">
         {isNew ? <><button className="back" onClick={() => setView("create")}><ArrowLeft size={18} /> 创建付费墙</button><div className="workspace-heading"><div><span className="eyebrow">新建付费墙</span><h1>{selected.name}</h1></div></div></> : <WorkspaceHeader selected={selected} setView={setView} duplicate={duplicate} setModal={setModal} markUnknown={markUnknown} />}
         <div className="detail-tabs"><button onClick={() => setView(isNew ? "create" : "general")}>General</button><button className="active">Builder & Generator</button></div>
-        {appliedTemplate !== null && <div className={`template-context ${isEditableTemplate(templates[appliedTemplate]) ? "observed-tree" : "preview-only"}`}><span>Template</span><strong>{templates[appliedTemplate].title}</strong><small>{isEditableTemplate(templates[appliedTemplate]) ? templateEditableStatus(templates[appliedTemplate]) : "源端已采集预览内容；精确节点树待采集"}</small><button className="secondary" onClick={() => setModal({ kind: "templates" })}><LayoutTemplate size={15} /> Change template</button></div>}
+        {appliedTemplate !== null && <div className={`template-context ${isEditableTemplate(templates[appliedTemplate]) ? "observed-tree" : "preview-only"}`}><span>Template</span><strong>{templates[appliedTemplate].title}</strong><small>{isEditableTemplate(templates[appliedTemplate]) ? templateEditableStatus(templates[appliedTemplate]) : "源端已采集预览内容；精确节点树待采集"}{protectedTemplateIds.has(templates[appliedTemplate].id) ? " · 当前浏览器自动保存" : ""}</small><button className="secondary" onClick={() => setModal({ kind: "templates" })}><LayoutTemplate size={15} /> Change template</button></div>}
+        {templateSaveError && <p className="template-save-error" role="alert">模板未能保存到当前浏览器。请缩小已上传的图片或视频后重试。</p>}
         <div className="builder">
           <aside className="node-panel">
             <div className="add-element-wrap"><button className="add-element" onClick={() => setAddElementOpen((open) => !open)}><Plus size={17} /> Add element</button>{addElementOpen && <div className="add-element-menu">{componentCatalog.filter((item) => item !== "Agreement" || (isDocumentTemplate && !builderNodes.some((entry) => entry.type === "Agreement"))).map((item) => <button key={item} onClick={() => addElement(item)}>{item === "Agreement" ? zhCopy[item] : item}</button>)}</div>}</div>
@@ -1810,8 +1831,32 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
     return <div className="property-scroll"><h3>Text</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}{tab === "content" && <TextContent active={active} updateNode={updateNode} />}{tab === "style" && <TextStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
   }
 
-  if (["Image", "Black Friday Image"].includes(type) || /^Image \d+$/.test(type)) {
-    return <div className="property-scroll"><h3>Image</h3>{nodeEditor}{tabBar}{tab === "content" && <ImageContent active={active} updateNode={updateNode} />}{tab === "style" && <HeroStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} showHeight />}</div>;
+  if (["Image", "Video", "Black Friday Image"].includes(type) || /^Image \d+$/.test(type)) {
+    return <div className="property-scroll"><h3>{type}</h3>{nodeEditor}{tabBar}{tab === "content" && <MediaUploadFields active={active} updateNode={updateNode} label={type === "Video" ? "视频文件" : "图片文件"} accept={type === "Video" ? "video/mp4,video/quicktime" : "image/*"} required />}{tab === "style" && <HeroStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} showHeight />}</div>;
+  }
+
+  if (type === "Icon") {
+    return <div className="property-scroll"><h3>图标</h3>{nodeEditor}{tabBar}{tab === "content" && <Field label="图标"><select value={active.config?.iconName ?? "star"} onChange={(event) => updateNodeConfig(active, updateNode, { iconName: event.target.value })}>{[["star", "星标"], ["heart", "喜爱"], ["check", "勾选"], ["shield", "保障"], ["users", "用户"]].map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></Field>}{tab === "style" && <><ConfigColorField label="图标颜色" active={active} updateNode={updateNode} name="color" fallback="#6a31e9" /><ConfigNumberField label="图标大小" active={active} updateNode={updateNode} name="iconSize" fallback={24} min={12} max={96} suffix="px" /></>}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
+  }
+
+  if (type === "Timeline") {
+    return <div className="property-scroll"><h3>时间线</h3>{nodeEditor}{tabBar}{tab === "content" && <TimelineContent active={active} updateNode={updateNode} />}{tab === "style" && <><ConfigColorField label="节点颜色" active={active} updateNode={updateNode} name="accentColor" fallback="#6a31e9" /><ConfigColorField label="连接线颜色" active={active} updateNode={updateNode} name="lineColor" fallback="#d9cafa" /></>}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
+  }
+
+  if (type === "Social Proof") {
+    return <div className="property-scroll"><h3>口碑展示</h3>{nodeEditor}{tabBar}{tab === "content" && <><Field label="人数"><ConfigInput active={active} updateNode={updateNode} name="count" fallback="50,000+" /></Field><Field label="说明"><ConfigInput active={active} updateNode={updateNode} name="caption" fallback="用户好评" /></Field><Field label="评分"><input type="number" min="0" max="5" step="0.1" value={active.config?.rating ?? 5} onChange={(event) => updateNodeConfig(active, updateNode, { rating: event.target.value })} /></Field></>}{tab === "style" && <><ConfigColorField label="星标颜色" active={active} updateNode={updateNode} name="accentColor" fallback="#ffb40d" /><TextStyleEditor active={active} updateNode={updateNode} /></>}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
+  }
+
+  if (type === "Award") {
+    return <div className="property-scroll"><h3>奖项展示</h3>{nodeEditor}{tabBar}{tab === "content" && <><Field label="奖项名称" required><ConfigInput active={active} updateNode={updateNode} name="title" fallback="年度精选应用" /></Field><Field label="颁发方"><ConfigInput active={active} updateNode={updateNode} name="source" fallback="编辑推荐" /></Field></>}{tab === "style" && <><ConfigColorField label="奖项颜色" active={active} updateNode={updateNode} name="accentColor" fallback="#f3a718" /><TextStyleEditor active={active} updateNode={updateNode} /></>}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
+  }
+
+  if (type === "Tabs") {
+    return <div className="property-scroll"><h3>选项卡</h3>{nodeEditor}{tabBar}{tab === "content" && <TabsContent active={active} updateNode={updateNode} />}{tab === "style" && <><ConfigColorField label="选中颜色" active={active} updateNode={updateNode} name="accentColor" fallback="#6a31e9" /><ConfigColorField label="背景颜色" active={active} updateNode={updateNode} name="backgroundColor" fallback="#f5f3f9" /></>}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
+  }
+
+  if (type === "Stack") {
+    return <div className="property-scroll"><h3>容器</h3>{nodeEditor}{tabBar}{tab === "content" && <CardContent active={active} addNestedNode={addNestedNode} />}{tab === "style" && <CardStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <><Field label="排列方向"><div className="segmented">{[["vertical", "纵向"], ["horizontal", "横向"]].map(([value, label]) => <button type="button" key={value} className={(active.config?.axis ?? "vertical") === value ? "active" : ""} onClick={() => updateNodeConfig(active, updateNode, { axis: value })}>{label}</button>)}</div></Field><ConfigNumberField label="组件间距" active={active} updateNode={updateNode} name="gap" fallback={8} min={0} max={80} suffix="px" /><ElementLayoutEditor active={active} updateNode={updateNode} /></>}</div>;
   }
 
   if (["Button", "Purchase Button"].includes(type)) {
@@ -1844,7 +1889,11 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
   }
 
   if (type === "Toggle") {
-    return <div className="property-scroll"><h3>Toggle</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}<ToggleContent node={active} updateNode={updateNode} boundary={componentBoundary} markUnknown={markUnknown} /></div>;
+    return <div className="property-scroll"><h3>开关</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}{tab === "content" && <ToggleContent node={active} updateNode={updateNode} boundary={componentBoundary} markUnknown={markUnknown} />}{tab === "style" && <><ConfigColorField label="开启颜色" active={active} updateNode={updateNode} name="onColor" fallback="#6a31e9" /><ConfigColorField label="关闭颜色" active={active} updateNode={updateNode} name="offColor" fallback="#d9dde0" /></>}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
+  }
+
+  if (type === "Footer") {
+    return <div className="property-scroll"><h3>页脚</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}{tab === "content" && <Field label="页脚文案"><textarea value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field>}{tab === "style" && <TextStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
   }
 
   if (["Toggle On", "Toggle Off"].includes(type)) {
@@ -1884,7 +1933,7 @@ function heroTitleParts(config) {
   };
 }
 
-function MediaUploadFields({ active, updateNode, label = "Media file", required = false }) {
+function MediaUploadFields({ active, updateNode, label = "Media file", required = false, accept = "image/*,video/*" }) {
   const inputRef = useRef(null);
   const config = active.config ?? {};
   const handleFile = (event) => {
@@ -1894,7 +1943,7 @@ function MediaUploadFields({ active, updateNode, label = "Media file", required 
     reader.onload = () => updateNodeConfig(active, updateNode, { mediaState: "custom", mediaSrc: reader.result, mediaName: file.name, mediaType: file.type.startsWith("video/") ? "Video" : "Image" });
     reader.readAsDataURL(file);
   };
-  return <><Field label={label} required={required}><input ref={inputRef} className="visually-hidden" type="file" accept="image/*,video/*" onChange={handleFile} /><button className="upload" type="button" onClick={() => inputRef.current?.click()}><Upload size={18} /> {config.mediaName ? `Replace ${config.mediaName}` : "Upload image or video"}<small>PNG, JPG, WebP, MP4, max size 10MB.</small></button></Field>{config.mediaState !== "removed" && <div className="media-actions"><span>{config.mediaName || "Source media"}</span><button type="button" className="secondary" onClick={() => updateNodeConfig(active, updateNode, { mediaState: "removed", mediaSrc: "", mediaName: "" })}>Remove media</button>{config.mediaState === "custom" && <button type="button" className="text-action" onClick={() => updateNodeConfig(active, updateNode, { mediaState: "source", mediaSrc: "", mediaName: "" })}>Restore source</button>}</div>}{config.mediaState === "removed" && <div className="media-actions"><span>No media</span><button type="button" className="text-action" onClick={() => updateNodeConfig(active, updateNode, { mediaState: "source", mediaSrc: "", mediaName: "" })}>Restore source</button></div>}</>;
+  return <><Field label={label} required={required}><input ref={inputRef} className="visually-hidden" type="file" accept={accept} onChange={handleFile} /><button className="upload" type="button" onClick={() => inputRef.current?.click()}><Upload size={18} /> {config.mediaName ? `Replace ${config.mediaName}` : "Upload image or video"}<small>PNG, JPG, WebP, MP4, max size 10MB.</small></button></Field>{config.mediaState !== "removed" && <div className="media-actions"><span>{config.mediaName || "Source media"}</span><button type="button" className="secondary" onClick={() => updateNodeConfig(active, updateNode, { mediaState: "removed", mediaSrc: "", mediaName: "" })}>Remove media</button>{config.mediaState === "custom" && <button type="button" className="text-action" onClick={() => updateNodeConfig(active, updateNode, { mediaState: "source", mediaSrc: "", mediaName: "" })}>Restore source</button>}</div>}{config.mediaState === "removed" && <div className="media-actions"><span>No media</span><button type="button" className="text-action" onClick={() => updateNodeConfig(active, updateNode, { mediaState: "source", mediaSrc: "", mediaName: "" })}>Restore source</button></div>}</>;
 }
 
 function HeroMediaContent({ active, updateNode }) {
@@ -2123,13 +2172,13 @@ function TimerContent({ active, updateNode }) {
   return <><label className="switch-row"><input type="checkbox" checked={config.enabled !== false} onChange={(event) => updateConfig({ enabled: event.target.checked })} /><span>{config.enabled !== false ? "On" : "Off"}</span><strong>Show timer</strong></label><h4>Time format</h4><div className="split-fields"><Field label="Format"><select value={config.format ?? "hh:mm:ss"} onChange={(event) => updateConfig({ format: event.target.value })}><option value="hh:mm:ss">hh:mm:ss</option><option value="mm:ss">mm:ss</option></select></Field><Field label="Time separator"><select value={config.separator ?? ":"} onChange={(event) => updateConfig({ separator: event.target.value })}><option value=":">Colon</option><option value="·">Dot</option><option value=" ">Space</option></select></Field></div><h4>Timer text</h4><Field label="Start value" required><input value={active.content ?? "04:59:59"} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><div className="split-fields"><Field label="Text before"><ConfigInput active={active} updateNode={updateNode} name="prefix" fallback="" placeholder="Enter text here" /></Field><Field label="Text after"><ConfigInput active={active} updateNode={updateNode} name="suffix" fallback="" placeholder="Enter text here" /></Field></div><h4>Timer mode</h4><Field label=""><select value={config.resetMode ?? "Reset timer on every paywall view"} onChange={(event) => updateConfig({ resetMode: event.target.value })}><option>Reset timer on every paywall view</option></select></Field></>;
 }
 
-function ToggleContent({ node, updateNode, boundary, markUnknown }) {
+function ToggleContent({ node, updateNode }) {
   const [title = "", secondary = ""] = (node.content ?? "").split("|");
   const defaultState = node.defaultState ?? "Off";
   const updateCopy = (nextTitle, nextSecondary) => updateNode(node.id, { content: `${nextTitle}|${nextSecondary}` });
   return <>
     <Field label="Default toggle state"><div className="segmented"><button className={defaultState === "Off" ? "active" : ""} onClick={() => updateNode(node.id, { defaultState: "Off" })}>Off</button><button className={defaultState === "On" ? "active" : ""} onClick={() => updateNode(node.id, { defaultState: "On" })}>On</button></div></Field>
-    <Field label="Title text" required><textarea value={title} onChange={(event) => updateCopy(event.target.value, secondary)} /></Field><Field label="Secondary text"><textarea value={secondary} onChange={(event) => updateCopy(title, event.target.value)} /></Field><InspectorBoundary boundary={boundary} markUnknown={markUnknown} message="开关的颜色、边框与布局字段尚未接入预览，不显示为可编辑字段。" />
+    <Field label="Title text" required><textarea value={title} onChange={(event) => updateCopy(event.target.value, secondary)} /></Field><Field label="Secondary text"><textarea value={secondary} onChange={(event) => updateCopy(title, event.target.value)} /></Field>
   </>;
 }
 
@@ -2207,6 +2256,18 @@ function ListContent({ active, updateNode, addNestedNode, allowAdd = true }) {
   const patchRow = (index, patch) => commit(rows.map((row, position) => position === index ? { ...row, ...patch } : row));
   const move = (index, direction) => { const next = [...rows]; const other = index + direction; if (other < 0 || other >= next.length) return; [next[index], next[other]] = [next[other], next[index]]; commit(next); };
   return <><h4>特权行</h4>{rows.map((row, index) => <section className="product-row-editor" key={index}><header><strong>第 {index + 1} 行</strong><div><button type="button" title="上移" disabled={index === 0} onClick={() => move(index, -1)}>↑</button><button type="button" title="下移" disabled={index === rows.length - 1} onClick={() => move(index, 1)}>↓</button><button type="button" title="删除" onClick={() => commit(rows.filter((_, position) => position !== index))}><X size={15} /></button></div></header><Field label="标题"><input value={row.title} onChange={(event) => patchRow(index, { title: event.target.value })} /></Field><label className="switch-row"><input type="checkbox" checked={row.showCaption !== false} onChange={(event) => patchRow(index, { showCaption: event.target.checked })} /><strong>显示描述</strong></label>{row.showCaption !== false && <Field label="描述"><input value={row.caption} onChange={(event) => patchRow(index, { caption: event.target.value })} /></Field>}<Field label="行首内容"><select value={row.leadingMode ?? "icon"} onChange={(event) => patchRow(index, { leadingMode: event.target.value })}><option value="icon">图标</option><option value="text">文字</option><option value="none">不显示</option></select></Field>{row.leadingMode !== "none" && <Field label={row.leadingMode === "text" ? "行首文字" : "图标字符"}><input value={row.leading ?? "✓"} onChange={(event) => patchRow(index, { leading: event.target.value })} /></Field>}</section>)}<button type="button" className="text-action" onClick={() => commit([...rows, { title: "", caption: "", leadingMode: "icon", leading: "✓", showCaption: true }])}><Plus size={15} /> 添加特权行</button>{allowAdd && <button type="button" className="text-action" onClick={() => addNestedNode(active.id, "List item")}><Plus size={15} /> 添加独立子组件</button>}</>;
+}
+
+function TabsContent({ active, updateNode }) {
+  const tabs = active.config?.tabs ?? [];
+  const update = (next, selected = active.config?.defaultTab ?? 0) => updateNodeConfig(active, updateNode, { tabs: next, defaultTab: Math.min(selected, next.length - 1) });
+  return <><Field label="默认选项"><select value={active.config?.defaultTab ?? 0} onChange={(event) => updateNodeConfig(active, updateNode, { defaultTab: Number(event.target.value) })}>{tabs.map((tab, index) => <option key={tab.id} value={index}>{tab.title || `选项 ${index + 1}`}</option>)}</select></Field>{tabs.map((tab, index) => <section className="product-row-editor" key={tab.id}><header><strong>选项 {index + 1}</strong><button type="button" className="icon" title="删除选项" aria-label={`删除选项 ${index + 1}`} disabled={tabs.length <= 1} onClick={() => update(tabs.filter((_, position) => position !== index), Math.max(0, Math.min(active.config?.defaultTab ?? 0, tabs.length - 2)))}><X size={15} /></button></header><Field label="选项名称"><input value={tab.title} onChange={(event) => update(tabs.map((item, position) => position === index ? { ...item, title: event.target.value } : item))} /></Field><Field label="选项内容"><textarea value={tab.description ?? ""} onChange={(event) => update(tabs.map((item, position) => position === index ? { ...item, description: event.target.value } : item))} /></Field></section>)}<button type="button" className="text-action" onClick={() => update([...tabs, { id: crypto.randomUUID(), title: `选项 ${tabs.length + 1}`, description: "" }])}><Plus size={15} /> 添加选项</button></>;
+}
+
+function TimelineContent({ active, updateNode }) {
+  const rows = listRowsFor(active);
+  const commit = (next) => updateNodeConfig(active, updateNode, { listRows: next });
+  return <><h4>时间节点</h4>{rows.map((row, index) => <section className="product-row-editor" key={index}><header><strong>节点 {index + 1}</strong><button type="button" className="icon" title="删除节点" aria-label={`删除节点 ${index + 1}`} disabled={rows.length <= 1} onClick={() => commit(rows.filter((_, position) => position !== index))}><X size={15} /></button></header><Field label="标题" required><input value={row.title} onChange={(event) => commit(rows.map((item, position) => position === index ? { ...item, title: event.target.value } : item))} /></Field><Field label="说明"><textarea value={row.caption ?? ""} onChange={(event) => commit(rows.map((item, position) => position === index ? { ...item, caption: event.target.value } : item))} /></Field></section>)}<button type="button" className="text-action" onClick={() => commit([...rows, { title: `节点 ${rows.length + 1}`, caption: "" }])}><Plus size={15} /> 添加节点</button></>;
 }
 
 function listRowsFor(node) {
@@ -3091,6 +3152,15 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, on
     if (!rows.length && !children.length) return wrap(<div className="preview-list-anchor">List</div>, "preview-list-anchor-wrap");
     return wrap(<div className="preview-benefits" style={{ background: node.config?.backgroundColor }}><ul className="preview-benefits">{rows.map((row, index) => <li key={index} data-inspector-row={index} className={row.leadingMode === "none" ? "no-leading" : ""}><i style={{ color: node.config?.accentColor }}>{row.leadingMode !== "none" ? row.leading || "✓" : ""}</i><span><strong>{row.title}</strong>{row.showCaption !== false && row.caption && <small>{row.caption}</small>}</span></li>)}</ul>{renderChildren()}</div>, "preview-list");
   }
+  if (node.type === "Timeline") return wrap(<ol className="preview-timeline" style={{ "--timeline-accent": config.accentColor ?? "#6a31e9", "--timeline-line": config.lineColor ?? "#d9cafa" }}>{listRowsFor(node).map((row, index) => <li key={index} data-inspector-row={index}><span className="timeline-marker">{index + 1}</span><span><strong>{row.title}</strong>{row.showCaption !== false && row.caption && <small>{row.caption}</small>}</span></li>)}</ol>, "preview-timeline-wrap");
+  if (node.type === "Social Proof") return wrap(<div className="preview-social-proof"><div aria-label={`${config.rating ?? 5} 分`} style={{ color: config.accentColor ?? "#ffb40d" }}>{"★".repeat(Math.max(0, Math.min(5, Math.round(Number(config.rating ?? 5)))))}</div><strong>{config.count ?? "50,000+"}</strong><span>{config.caption ?? node.content}</span></div>, "preview-social-proof-wrap");
+  if (node.type === "Award") return wrap(<div className="preview-award"><Star size={20} fill={config.accentColor ?? "#f3a718"} color={config.accentColor ?? "#f3a718"} /><strong>{config.title ?? node.content}</strong><small>{config.source ?? "编辑推荐"}</small></div>, "preview-award-wrap");
+  if (node.type === "Tabs") return wrap(<PreviewTabs tabs={config.tabs ?? []} defaultTab={config.defaultTab ?? 0} config={config} />, "preview-tabs-wrap");
+  if (node.type === "Stack") return wrap(<div className="preview-stack" style={{ flexDirection: config.axis === "horizontal" ? "row" : "column", gap: `${config.gap ?? 8}px`, backgroundColor: config.backgroundColor }}>{renderChildren()}</div>, "preview-stack-wrap");
+  if (node.type === "Icon") {
+    const Icon = { star: Star, heart: Heart, check: Check, shield: ShieldCheck, users: Users }[config.iconName] ?? Star;
+    return wrap(<Icon size={Number(config.iconSize) || 24} color={config.color ?? "#6a31e9"} aria-label={config.iconName ?? "star"} />, "preview-icon-wrap");
+  }
   if (isListItemLayer) { const [title, caption] = (node.content ?? "").split("|"); return wrap(<div className="preview-list-item" style={textStyle}><i>●</i><span><strong style={textStyle}>{title}</strong>{caption && <small style={textStyle}>{caption}</small>}</span></div>, "preview-list-item-wrap"); }
   if (node.type === "Card") return children.length ? wrap(<div className="preview-card" style={cardStyle}>{renderChildren()}</div>, "preview-card-wrap") : !node.content ? wrap(<div className="preview-card-anchor" style={cardStyle} />, "preview-card-anchor-wrap") : wrap(<div className="preview-card" style={cardStyle}>{node.content.split("\n").map((row) => { const [title, copy] = row.split("|"); return <div key={row}><strong>{title}</strong>{copy && <small>{copy}</small>}</div>; })}</div>, "preview-card-wrap");
   if (["Product", "Japanese Ai - 1 Year"].includes(node.type)) { const [name, price] = (node.content || "").split("|"); return wrap(<div className="preview-product"><strong>{name || "Product"}</strong>{price && <small>{price}</small>}</div>, "preview-product-anchor-wrap"); }
@@ -3101,6 +3171,10 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, on
     const height = `${92 * dimensions.height / 100}px`;
     return wrap(<div className={`preview-image${config.mediaSrc ? " has-media" : ""}${config.mediaOverflow === "scroll" && config.mediaType !== "Video" ? " media-scroll" : ""}`} style={{ width: `${dimensions.width}%`, marginInline: "auto", height, background: config.mediaBackgroundColor, borderRadius: config.rounded ? `${config.radius ?? 8}px` : undefined, padding: ["Top", "Right", "Bottom", "Left"].map((edge) => `${Math.max(0, Number(config[`padding${edge}`]) || 0)}px`).join(" "), transform: config.offsetY ? `translateY(${config.offsetY}px)` : undefined }}>{config.mediaState !== "removed" && (config.mediaSrc ? config.mediaOverflow === "scroll" ? <ScrollImage src={config.mediaSrc} alt={node.label || ""} dimensions={dimensions} /> : <img src={config.mediaSrc} alt={node.label || ""} style={{ width: dimensions.imageWidth, height: dimensions.imageHeight, objectFit: config.mediaFit ?? "cover" }} /> : node.type === "Black Friday Image" ? "BLACK FRIDAY" : node.content)}</div>, "preview-image-wrap");
   }
+  if (node.type === "Video") {
+    const dimensions = mediaDimensions(config);
+    return wrap(<div className="preview-video" style={{ width: `${dimensions.width}%`, height: `${92 * dimensions.height / 100}px`, backgroundColor: config.mediaBackgroundColor ?? "#222" }}>{config.mediaSrc && config.mediaState !== "removed" ? <video src={config.mediaSrc} autoPlay muted loop playsInline controls style={{ objectFit: config.mediaFit ?? "cover" }} /> : <span>视频</span>}</div>, "preview-video-wrap");
+  }
   if (node.type === "Carousel") return Array.isArray(config.slides) ? wrap(<PreviewSlideCarousel slides={config.slides} initialSlide={config.initialSlide ?? 0} config={config} onDotSelect={(index) => onSelect(node.id, "dots", index)} />, "preview-carousel-wrap") : children.length ? wrap(<div className="preview-carousel">{renderChildren()}</div>, "preview-carousel-wrap") : !node.content ? wrap(<div className="preview-card-anchor" />, "preview-carousel-wrap") : wrap(<PreviewCarousel content={node.content} config={node.config} />, "preview-carousel-wrap");
   if (node.type === "Timer") return node.config?.enabled === false ? null : wrap(<PreviewTimer content={node.content} config={node.config} />);
   if (node.type === "Products") {
@@ -3110,13 +3184,13 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, on
     }
     return wrap(<PreviewProducts content={node.content} config={node.config} childrenNodes={children} priceMode={pricePreviewMode} onInspect={(event, index) => onSelect(node.id, previewClickArea(event), index)} />, "preview-products-wrap");
   }
-  if (node.type === "Toggle") return wrap(<PreviewToggle key={`${node.id}-${node.defaultState ?? "Off"}`} content={node.content} defaultState={node.defaultState} />, "preview-toggle-wrap");
+  if (node.type === "Toggle") return wrap(<PreviewToggle key={`${node.id}-${node.defaultState ?? "Off"}`} content={node.content} defaultState={node.defaultState} config={config} />, "preview-toggle-wrap");
   if (["Toggle On", "Toggle Off"].includes(node.type)) return wrap(<div className="preview-toggle-anchor" />, "preview-toggle-anchor-wrap");
   if (node.type === "Footer Top Part") return wrap(<div className="preview-card-anchor" />, "preview-card-anchor-wrap");
   if (node.type === "Button and Links") { const [cta, links] = (node.content ?? "GET FULL ACCESS|Terms · Privacy · Restore").split("|"); return wrap(<><button className="preview-cta" style={buttonStyle}>{cta}</button><small className="preview-links" style={textStyle}>{links}</small></>, "preview-button"); }
   if (node.type === "Button" || node.type === "Web Paywall Button" || node.type === "Purchase Button") return wrap(<button className="preview-cta" style={buttonStyle} onClick={(event) => { event.stopPropagation(); select(event); onButtonAction?.(node); }}>{node.content ?? (node.type === "Web Paywall Button" ? "Pay on web" : node.type === "Button" ? "button text" : "Continue")}</button>, "preview-button");
   if (node.type === "Links") return wrap(<small className="preview-links" style={textStyle}>{node.content ?? "Terms · Privacy · Restore · Login"}</small>);
-  if (node.type === "Footer") return wrap(<small className="preview-footer">{node.content}</small>);
+  if (node.type === "Footer") return wrap(<small className="preview-footer" style={textStyle}>{node.content}</small>);
   return wrap(<p>{node.content || node.type}</p>);
 }
 
@@ -3164,10 +3238,17 @@ function PreviewProducts({ content, config = {}, childrenNodes = [], priceMode =
   return <div className={`preview-products product-layout-${layout}`}>{rows.map((row, index) => <ProductPackageCard key={`${row.skuId || row.name}-${index}`} plan={row} index={index} config={config} layout={layout} selected={index === chosen} priceMode={priceMode} onChoose={setChosen} onInspect={onInspect} />)}</div>;
 }
 
-function PreviewToggle({ content, defaultState = "Off" }) {
+function PreviewToggle({ content, defaultState = "Off", config = {} }) {
   const [title = "Not sure? Get free trial", secondary = "Cancel anytime"] = (content || "").split("|");
   const [enabled, setEnabled] = useState(defaultState === "On");
-  return <button className={`preview-toggle ${enabled ? "enabled" : ""}`} role="switch" aria-checked={enabled} onClick={(event) => { event.stopPropagation(); setEnabled((value) => !value); }}><span><strong>{title}</strong><small>{secondary}</small></span><i><b /></i></button>;
+  return <button className={`preview-toggle ${enabled ? "enabled" : ""}`} role="switch" aria-checked={enabled} onClick={(event) => { event.stopPropagation(); setEnabled((value) => !value); }}><span><strong>{title}</strong><small>{secondary}</small></span><i style={{ backgroundColor: enabled ? config.onColor : config.offColor }}><b /></i></button>;
+}
+
+function PreviewTabs({ tabs, defaultTab, config }) {
+  const [selected, setSelected] = useState(defaultTab);
+  useEffect(() => setSelected(Math.min(Math.max(0, Number(defaultTab) || 0), Math.max(0, tabs.length - 1))), [defaultTab, tabs.length]);
+  const active = tabs[selected];
+  return <div className="preview-tabs"><div role="tablist">{tabs.map((tab, index) => <button type="button" role="tab" aria-selected={index === selected} key={tab.id} style={index === selected ? { color: config.accentColor ?? "#6a31e9", borderColor: config.accentColor ?? "#6a31e9" } : undefined} onClick={(event) => { event.stopPropagation(); setSelected(index); }}>{tab.title}</button>)}</div><div role="tabpanel">{active?.description}</div></div>;
 }
 
 createRoot(document.getElementById("root")).render(<App />);
