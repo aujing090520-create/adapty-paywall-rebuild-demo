@@ -64,7 +64,7 @@
 | 10 | Virtual currencies OTP | 5 | 5 | 每档各有 Purchase button |
 | 11 | Virtual currencies subscription | 2 | 1 | 通用文本/图片层 |
 | 12 | Multi-tier 1 | 2 | 1 | Tabs、Tab、Tab control 各 ×1，Tab control button ×2 |
-| 13 | Recipe book [Web] | 2 | 2 | 两个购买入口，目标未核 |
+| 13 | Recipe book [Web] | 2 | 2 | 两个购买入口位于套餐列表之后，分别为 App 内继续与网页优惠；不是每个套餐一个购买按钮，目标未核 |
 | 14 | Social proof [Web] | 3 | 2 | Carousel ×1；两个购买入口，目标未核 |
 | 15 | StarFinder [Web] | 1 | 2 | 无可见套餐卡；两个购买入口，目标未核 |
 | 16 | CatGPT Plus w/ header image | 1 | 1 | 无可见套餐卡 |

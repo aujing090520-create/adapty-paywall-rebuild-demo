@@ -88,7 +88,7 @@ export function createSourceTemplateNodes(template, node) {
   const button = (part, index, depth = 0) => add(part, "Button", at(index), { action: [5, 6].includes(order) ? "None" : "Purchase", backgroundColor: template.accent }, depth);
   const products = (depth = 0) => {
     const visibleRows = plan.products ?? [];
-    return add("products", "Products", visibleRows.join("\n") || "绑定商品||", { defaultSelected: 0, packageLayout: visibleRows.length === 3 ? "horizontal" : "vertical", showOfferBadge: false, showCards: visibleRows.length > 0, sourcePackageCount: sourcePackageCount(order), purchasePerCard: observedLayerCount(order, "purchase_button") === sourcePackageCount(order) && sourcePackageCount(order) > 1 }, depth);
+    return add("products", "Products", visibleRows.join("\n") || "绑定商品||", { defaultSelected: 0, packageLayout: visibleRows.length === 3 ? "horizontal" : "vertical", showOfferBadge: false, showCards: visibleRows.length > 0, sourcePackageCount: sourcePackageCount(order), purchasePerCard: order === 10 }, depth);
   };
   const links = (depth = 0) => {
     const policyLines = lines.filter((line) => /^(Restore( Purchases| purchases)?|Terms( of Use| of service)?|Privacy( Policy| policy)?|Privacy policy)$/.test(line));

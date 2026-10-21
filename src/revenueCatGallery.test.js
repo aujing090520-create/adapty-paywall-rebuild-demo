@@ -40,6 +40,8 @@ test("source-specific commerce structures do not revert to generic packages", ()
   assert.equal(tree(5).find((item) => item.type === "Products").config.showCards, false);
   assert.equal(tree(10).find((item) => item.type === "Products").content.split("\n").length, 5);
   assert.equal(tree(10).find((item) => item.type === "Products").config.purchasePerCard, true);
+  assert.equal(tree(13).find((item) => item.type === "Products").config.purchasePerCard, false);
+  assert.deepEqual(tree(13).filter((item) => ["Button", "Web Paywall Button"].includes(item.type)).map((item) => item.content), ["Continue in-app", "Or, save 30%"]);
   assert.equal(tree(29).find((item) => item.type === "Products").config.showCards, false);
   assert.equal(revenueCatGallery[1].productCount, 1);
   assert.equal(revenueCatGallery[28].productCount, 1);
