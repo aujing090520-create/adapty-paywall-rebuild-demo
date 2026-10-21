@@ -1636,6 +1636,9 @@ textarea { min-height: 80px; resize: vertical; }
 .template-rc-source-27 .preview-button { margin-top: auto; }
 .template-rc-source-28 [data-node-id$="-image"] { margin: -37px -13px 5px; }
 .template-rc-source-28 [data-node-id$="-image"] .preview-image { height: 295px !important; }
+.template-rc-source-28 [data-node-id$="-copy-0"] { position: absolute; z-index: 2; top: 16px; left: 50%; transform: translateX(-50%); padding: 2px 8px; border-radius: 12px; background: #161616cf; white-space: nowrap; }
+.template-rc-source-28 [data-node-id$="-copy-0"] p { margin: 0; color: #fff; font-size: 9px; font-weight: 700; }
+.template-rc-source-28 [data-node-id$="-copy-0"] p::before { content: "✦"; margin-right: 4px; color: #ffb145; }
 .template-rc-source-28 .preview-products-wrap { margin-top: auto; }
 .template-rc-source-28 .preview-products .ht-vertical-plan { background: #090909; color: #fff; }
 .template-rc-source-28 .preview-cta { background: #a33920 !important; border-radius: 24px; }
