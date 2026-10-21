@@ -1176,6 +1176,12 @@ textarea { min-height: 80px; resize: vertical; }
 .preview-products .ht-vertical-price-line, .preview-products .ht-vertical-detail { display: flex; flex-wrap: wrap; gap: 1cqw; align-items: baseline; }
 .preview-products .ht-vertical-total { font-size: 5cqw; font-weight: 800; }
 .preview-products .ht-vertical-side { color: #777; font-size: 3.5cqw; text-align: right; }
+.ht-paywall .product-layout-vertical, .preview-products.product-layout-vertical { height: auto; align-content: start; grid-auto-rows: max-content; }
+.ht-paywall .product-layout-vertical.product-count-1, .preview-products.product-layout-vertical.product-count-1 { gap: 0; }
+.ht-paywall .product-layout-vertical.product-count-2 { gap: 2.5cqw; }
+.ht-paywall .product-layout-vertical.product-count-3 { gap: 2cqw; }
+.preview-products.product-layout-vertical.product-count-2 { gap: 8px; }
+.preview-products.product-layout-vertical.product-count-3 { gap: 6px; }
 .preview-timeline { margin: 0 0 12px; padding: 0; list-style: none; }
 .preview-timeline li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 8px; position: relative; min-height: 42px; text-align: left; font-size: 10px; }
 .preview-timeline li:not(:last-child)::before { content: ""; position: absolute; left: 10px; top: 22px; bottom: 0; width: 2px; background: var(--timeline-line); }

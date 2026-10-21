@@ -1934,7 +1934,7 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
     const listRow = list && tab === "content" && previewFocus.slideIndex != null ? (active.id === "benefits" && active.config?.bluePrivilege ? panel.querySelectorAll(".privilege-row-wrap")[previewFocus.slideIndex] : panel.querySelectorAll(".product-row-editor")[previewFocus.slideIndex]) : null;
     const timerField = active.type === "Timer" ? exactField(tab === "content" ? ["Start value"] : tab === "style" ? ["时间字体颜色"] : ["Vertical offset"]) : null;
     const productStyle = products && tab === "style" ? exactField(previewFocus.area === "badge" ? ["商品标签颜色", "商品角标颜色", "角标字号"] : previewFocus.area === "price" ? ["通用价格字号", "总价字号", "主价字号"] : ["商品选中框颜色", "名称字号"]) : null;
-    const productLayout = products && tab === "layout" ? exactField(["套餐间距", "套餐最小高度", "布局类型"]) : null;
+    const productLayout = products && tab === "layout" ? exactField(["套餐最小高度", "布局类型"]) : null;
     const agreementRow = active.type === "Agreement" && tab === "content" && previewFocus.slideIndex != null ? panel.querySelectorAll(".agreement-segment-editor")[previewFocus.slideIndex] : null;
     const agreementField = active.type === "Agreement" ? tab === "content" ? [...panel.querySelectorAll(".switch-row")].find((field) => field.querySelector("strong")?.textContent?.trim() === "勾选后才能点击按钮") : exactField(tab === "style" ? previewFocus.area === "links" ? ["链接颜色"] : ["文字颜色"] : ["对齐方式"]) : null;
     const carouselContentLabels = { media: ["图片"], headline: ["标题"], caption: ["说明文案"], dots: ["初始展示"] };
@@ -1942,7 +1942,7 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
     const hints = {
       content: { media: ["主视觉媒体", "Media file", "图片"], overlay: ["叠加图片"], headline: ["标题前缀", "标题"], caption: ["辅助文案", "说明文案", "描述"], price: ["商品", "展示名称"], badge: ["角标", "标签"], action: ["点击后", "按钮文案"] },
       style: { media: ["Image fit", "填充方式", "Background color"], overlay: ["图片背景"], headline: ["标题颜色", "文字颜色", "Title prefix color", "Font size"], caption: ["说明颜色", "Text color", "文字颜色"], price: ["价格颜色", "Price color"], badge: ["角标颜色", "标签颜色"], action: ["Fill color", "背景颜色"] },
-      layout: { media: ["组件宽度", "组件高度"], overlay: ["距左侧"], headline: ["标题上方间距", "距左侧", "Vertical offset", "Margin"], caption: ["标题与说明间距", "Vertical offset", "Margin"], price: ["套餐间距", "Margin"], badge: ["Margin"], action: ["Margin", "Vertical offset"] },
+      layout: { media: ["组件宽度", "组件高度"], overlay: ["距左侧"], headline: ["标题上方间距", "距左侧", "Vertical offset", "Margin"], caption: ["标题与说明间距", "Vertical offset", "Margin"], price: ["套餐最小高度", "布局类型", "Margin"], badge: ["Margin"], action: ["Margin", "Vertical offset"] },
     };
     const target = carouselSection
       ?? (slide && exactField(carouselContentLabels[area] ?? [], slide))
@@ -2315,7 +2315,7 @@ function ProductsStyleEditor({ active, updateNode, pricePreviewMode }) {
 
 function ProductsLayoutEditor({ active, updateNode }) {
   const config = active.config ?? {};
-  return <><h4>套餐布局</h4><Field label="布局类型"><select aria-label="布局类型" value={productLayout(config)} onChange={(event) => updateNodeConfig(active, updateNode, { packageLayout: event.target.value })}>{PRODUCT_LAYOUTS.map((layout) => <option key={layout.id} value={layout.id}>{layout.label}</option>)}</select></Field><ConfigNumberField label="套餐间距" active={active} updateNode={updateNode} name="planGap" fallback="" min={0} max={48} suffix="px" /><ConfigNumberField label="套餐最小高度" active={active} updateNode={updateNode} name="planHeight" fallback="" min={30} max={300} suffix="px" /><h4>组件位置</h4><ElementLayoutEditor active={active} updateNode={updateNode} /></>;
+  return <><h4>套餐布局</h4><Field label="布局类型"><select aria-label="布局类型" value={productLayout(config)} onChange={(event) => updateNodeConfig(active, updateNode, { packageLayout: event.target.value })}>{PRODUCT_LAYOUTS.map((layout) => <option key={layout.id} value={layout.id}>{layout.label}</option>)}</select></Field><ConfigNumberField label="套餐最小高度" active={active} updateNode={updateNode} name="planHeight" fallback="" min={30} max={300} suffix="px" /><h4>组件位置</h4><ElementLayoutEditor active={active} updateNode={updateNode} /></>;
 }
 
 function ImageStyle() {
@@ -3266,9 +3266,8 @@ function HelloTalkPaywall({ variant, nodes, activeNode, onSelect, onButtonAction
     }
     if (id === "products") {
       const plans = <>{visiblePlans.map((plan, index) => <Plan plan={plan} index={index} key={index} />)}</>;
-      const shellStyle = { ...styleFor("products"), ...(productConfig.planGap !== undefined && productConfig.planGap !== "" ? { gap: `${productConfig.planGap}px` } : {}) };
-      const shellClass = `product-layout-${packageLayout} ${packageLayout === "vertical" ? "ht-vertical-products" : packageLayout === "compact" ? "ht-recovery-plans" : packageLayout === "standard" && variant === "sku-sheet" ? "ht-sku-plans" : "ht-plan-shell"}`;
-      const shell = <section className={shellClass} style={shellStyle} onClick={select("products")}>{packageLayout === "vertical" && <h3>选择套餐</h3>}{plans}</section>;
+      const shellClass = `product-layout-${packageLayout} product-count-${Math.min(visiblePlans.length, 3)} ${packageLayout === "vertical" ? "ht-vertical-products" : packageLayout === "compact" ? "ht-recovery-plans" : packageLayout === "standard" && variant === "sku-sheet" ? "ht-sku-plans" : "ht-plan-shell"}`;
+      const shell = <section className={shellClass} style={styleFor("products")} onClick={select("products")}>{packageLayout === "vertical" && visiblePlans.length > 1 && <h3>选择套餐</h3>}{plans}</section>;
       return variant === "membership-plans" ? <div className="ht-member-products"><header className="ht-plan-heading"><b>选择套餐</b><span>特权对比 ›</span></header>{shell}</div> : shell;
     }
     if (id === "timer") return <Timer />;
@@ -3496,7 +3495,7 @@ function PreviewProducts({ content, config = {}, childrenNodes = [], priceMode =
   const defaultChoice = config.linkedToggleId && (requestedChoice < 0 || rows[requestedChoice]?.emptySlot) ? rows.findIndex((row) => !row.emptySlot) : requestedChoice;
   const [chosen, setChosen] = useState(defaultChoice);
   useEffect(() => setChosen(defaultChoice), [defaultChoice]);
-  return <div className={`preview-products product-layout-${layout}`}>{rows.map((row, index) => <ProductPackageCard key={`${row.skuId || row.name}-${index}`} plan={row} index={index} config={config} layout={layout} selected={index === chosen} priceMode={priceMode} onChoose={setChosen} onInspect={onInspect} />)}</div>;
+  return <div className={`preview-products product-layout-${layout} product-count-${Math.min(rows.length, 3)}`}>{rows.map((row, index) => <ProductPackageCard key={`${row.skuId || row.name}-${index}`} plan={row} index={index} config={config} layout={layout} selected={index === chosen} priceMode={priceMode} onChoose={setChosen} onInspect={onInspect} />)}</div>;
 }
 
 function PreviewToggle({ content, defaultState = "Off", config = {}, linkedEnabled, onChange }) {
