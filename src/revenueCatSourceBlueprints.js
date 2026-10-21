@@ -292,7 +292,7 @@ export function createSourceTemplateNodes(template, node) {
   if (plan.features) {
     const sourceIcons = { 34: ["weight", "running", "clock"], 35: ["scan", "map", "help"], 37: ["blocks", "activity", "archive", "download"], 40: ["access", "noads", "running"] }[order];
     const accentColor = { 34: "#111111", 35: "#ffffff", 37: "#151515", 40: "#ffffff" }[order] ?? template.accent;
-    result.push(add("features", "List", listContent(plan.features, plan.paired), { accentColor, ...(sourceIcons ? { listRows: sourceFeatureLines(order).map((line, index) => { const [title, caption] = line.split("|"); return { title, caption, showCaption: true, leadingMode: "icon", leading: sourceIcons[index] }; }) } : {}) }));
+    result.push(add("features", "List", listContent(plan.features, plan.paired), { accentColor, ...(sourceIcons ? { listRows: sourceFeatureLines(order).map((line, index) => { const [title, caption = ""] = line.split("|"); return { title, caption, showCaption: Boolean(caption), leadingMode: "icon", leading: sourceIcons[index] }; }) } : {}) }));
   }
   if (plan.timeline) {
     const section = lines.slice(...plan.timeline);
