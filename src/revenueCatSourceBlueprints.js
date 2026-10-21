@@ -213,7 +213,7 @@ export function createSourceTemplateNodes(template, node) {
       add("feature-image-1", "Image", "", { mediaSrc: source.assets[0], mediaFit: "contain", mediaBackgroundColor: "#999999", mediaWidth: 100, mediaHeight: 100 }, 1),
       add("feature-image-2", "Image", "", { mediaSrc: source.assets[1], mediaFit: "contain", mediaBackgroundColor: "#999999", mediaWidth: 100, mediaHeight: 100 }, 1),
       products(),
-      add("features", "List", listContent(plan.features, plan.paired), { accentColor: template.accent }),
+      add("features", "List", listContent(plan.features, plan.paired), { accentColor: template.accent }, 1),
       button("action", plan.cta),
       links(),
     ].filter(Boolean);

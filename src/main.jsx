@@ -324,7 +324,7 @@ function productPackageRows(productNode, variant) {
   });
 }
 
-function ProductPackageCard({ plan, index, config = {}, layout, selected, focused = false, interactive = true, priceMode = "1", onChoose, onInspect }) {
+function ProductPackageCard({ plan, index, config = {}, layout, selected, focused = false, interactive = true, priceMode = "1", onChoose, onInspect, embeddedBenefits, onBenefitInspect }) {
   const baseClass = `ht-node ${focused ? "selected" : ""}`;
   if (plan.emptySlot) return <div className={`${layout === "vertical" ? "ht-vertical-plan" : "ht-plan"} ht-plan-empty ${layout === "horizontal" ? "ht-blue-plan" : ""}`} aria-label={`套餐 ${index + 1} 空坑位`} />;
   const name = plan.name;
@@ -362,6 +362,7 @@ function ProductPackageCard({ plan, index, config = {}, layout, selected, focuse
       {hasBadge && <b data-inspector-area="badge" className="ht-vertical-badge" style={config.badgeFontSize ? { fontSize: `${config.badgeFontSize}px` } : undefined}>{plan.badgeText}</b>}
       <div className="ht-vertical-main"><strong style={config.nameFontSize ? { fontSize: `${config.nameFontSize}px` } : undefined}>{name}</strong><div className="ht-vertical-price-line" data-inspector-area="price"><span className="ht-vertical-total" style={priceStyle}>{priceView.main}</span>{priceView.strike && <del style={strikeStyle}>{priceView.strike}</del>}{saving && !fields.referenceTotal && <small className="ht-vertical-saving">{saving}</small>}</div>{(supportingCopy || saveText) && <div className="ht-vertical-detail">{supportingCopy && <small>{supportingCopy}</small>}{saveText && <small className="ht-plan-save-copy">{saveText}</small>}</div>}</div>
       <div className="ht-vertical-side">{monthly && <span>{monthly}</span>}{fields.months === 0 && fields.referenceTotal && !priceView.strike && <del style={strikeStyle}>{fields.referenceTotal}</del>}</div>
+      {selected && embeddedBenefits?.length > 0 && <ul className="ht-plan-embedded-benefits" onClick={(event) => { event.stopPropagation(); onBenefitInspect?.(event); }}>{embeddedBenefits.map((line, lineIndex) => <li key={`${line}-${lineIndex}`}><Check size={11} /><span>{line}</span></li>)}</ul>}
     </div>;
   }
   const priceNode = <em data-inspector-area="price" className="ht-plan-main-price" style={priceStyle}>{priceView.main}</em>;
@@ -3525,7 +3526,7 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, on
     }
     if (config.showCards === false) return null;
     const switched = Boolean(toggleStates[config.linkedToggleId]);
-    return wrap(<PreviewProducts key={config.linkedToggleId ? String(switched) : node.id} content={node.content} config={node.config} childrenNodes={children} priceMode={pricePreviewMode} switched={switched} onInspect={(event, index) => onSelect(node.id, previewClickArea(event), index + (switched ? Number(config.groupSize) || 0 : 0))} onPurchase={(plan, index) => { onSelect(node.id, "price", index); onButtonAction?.({ type: "Purchase Button", config: { action: "Purchase" } }, plan); }} />, "preview-products-wrap");
+    return wrap(<PreviewProducts key={config.linkedToggleId ? String(switched) : node.id} content={node.content} config={node.config} childrenNodes={children} priceMode={pricePreviewMode} switched={switched} onInspect={(event, index) => onSelect(node.id, previewClickArea(event), index + (switched ? Number(config.groupSize) || 0 : 0))} onChildSelect={(childId) => onSelect(childId, "row", 0)} onPurchase={(plan, index) => { onSelect(node.id, "price", index); onButtonAction?.({ type: "Purchase Button", config: { action: "Purchase" } }, plan); }} />, "preview-products-wrap");
   }
   if (node.type === "Toggle") return wrap(<PreviewToggle key={`${node.id}-${node.defaultState ?? "Off"}`} content={node.content} defaultState={node.defaultState} config={config} linkedEnabled={config.linkedProductsId ? toggleStates[node.id] : undefined} onChange={config.linkedProductsId ? (enabled) => onToggleChange?.(node.id, enabled) : undefined} />, "preview-toggle-wrap");
   if (["Toggle On", "Toggle Off"].includes(node.type)) return wrap(<div className="preview-toggle-anchor" />, "preview-toggle-anchor-wrap");
@@ -3571,7 +3572,7 @@ function PreviewCarousel({ content, config = {} }) {
   return <div className="preview-carousel"><span>★★★★★</span><p>{copy ? <><strong>{title}</strong><small>{copy}</small></> : slide}</p><div><button aria-label="Previous review" onClick={(event) => { event.stopPropagation(); setCurrent((index) => (index - 1 + slides.length) % slides.length); }}>‹</button><i style={{ gap: `${config.gap ?? 8}px` }}>{slides.map((_, index) => <b className={index === current ? "active" : ""} style={{ color: index === current ? config.accentColor : config.secondaryColor }} key={index}>•</b>)}</i><button aria-label="Next review" onClick={(event) => { event.stopPropagation(); setCurrent((index) => (index + 1) % slides.length); }}>›</button></div></div>;
 }
 
-function PreviewProducts({ content, config = {}, childrenNodes = [], priceMode = "1", switched = false, onInspect, onPurchase }) {
+function PreviewProducts({ content, config = {}, childrenNodes = [], priceMode = "1", switched = false, onInspect, onChildSelect, onPurchase }) {
   const source = content || childrenNodes.map((child) => child.content).filter(Boolean).join("\n");
   const allRows = productPackageRows({ content: source, config }, config.productTemplate);
   const groupSize = Math.max(1, Number(config.groupSize) || allRows.length);
@@ -3581,8 +3582,10 @@ function PreviewProducts({ content, config = {}, childrenNodes = [], priceMode =
   const defaultChoice = config.linkedToggleId && (requestedChoice < 0 || rows[requestedChoice]?.emptySlot) ? rows.findIndex((row) => !row.emptySlot) : requestedChoice;
   const [chosen, setChosen] = useState(defaultChoice);
   useEffect(() => setChosen(defaultChoice), [defaultChoice]);
+  const embeddedList = childrenNodes.find((child) => child.type === "List");
+  const embeddedBenefits = embeddedList?.config?.listRows?.map((row) => row.title).filter(Boolean) ?? embeddedList?.content?.split("\n").map((line) => line.split("|")[0]).filter(Boolean);
   if (config.purchasePerCard) return <div className="preview-products-credit-list">{rows.map((row, index) => <div className="preview-products-credit" key={`${row.skuId || row.name}-${index}`}><span><strong>{row.name}</strong>{row.supportingCopy && <small>{row.supportingCopy}</small>}</span><button type="button" onClick={(event) => { event.stopPropagation(); onPurchase?.(row, index); }}>{resolveProductPrice(row, priceMode).main}</button></div>)}</div>;
-  return <div className={`preview-products product-layout-${layout} product-count-${Math.min(rows.length, 3)}`}>{rows.map((row, index) => <ProductPackageCard key={`${row.skuId || row.name}-${index}`} plan={row} index={index} config={config} layout={layout} selected={index === chosen} priceMode={priceMode} onChoose={setChosen} onInspect={onInspect} />)}</div>;
+  return <div className={`preview-products product-layout-${layout} product-count-${Math.min(rows.length, 3)}`}>{rows.map((row, index) => <ProductPackageCard key={`${row.skuId || row.name}-${index}`} plan={row} index={index} config={config} layout={layout} selected={index === chosen} priceMode={priceMode} onChoose={setChosen} onInspect={onInspect} embeddedBenefits={embeddedBenefits} onBenefitInspect={embeddedList ? () => onChildSelect?.(embeddedList.id) : undefined} />)}</div>;
 }
 
 function PreviewToggle({ content, defaultState = "Off", config = {}, linkedEnabled, onChange }) {
