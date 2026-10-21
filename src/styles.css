@@ -1597,17 +1597,26 @@ textarea { min-height: 80px; resize: vertical; }
 .template-rc-source-20 [data-node-id$="-image"] .preview-image { width: 78px !important; height: 23px !important; }
 .template-rc-source-20 [data-node-id$="-image"] img { width: 100% !important; height: 100% !important; object-fit: contain !important; }
 .template-rc-source-20 .preview-carousel-wrap { width: 100%; }
-.template-rc-source-20 .preview-carousel { padding: 0; background: transparent; }
+.template-rc-source-20 .preview-carousel { position: relative; padding: 0; background: transparent; }
 .template-rc-source-20 .preview-slide-carousel { display: flex; flex-direction: column; align-items: center; }
 .template-rc-source-20 .preview-slide-carousel > strong { order: 0; margin-top: 17px; font-size: 20px; }
 .template-rc-source-20 .preview-slide-carousel > p { order: 1; margin: 4px 0 8px; color: #333; font-size: 11px; }
 .template-rc-source-20 .preview-slide-media { order: 2; width: 100%; height: 215px !important; margin: 0; background: transparent !important; }
 .template-rc-source-20 .preview-slide-media img { width: 100%; height: 100%; object-fit: contain !important; }
-.template-rc-source-20 .preview-slide-dots { order: 3; margin: 4px 0 10px; }
+.template-rc-source-20 .preview-slide-dots { position: absolute; top: -11px; right: 0; left: 0; margin: 0; }
 .template-rc-source-20 .preview-products-wrap, .template-rc-source-20 .preview-button { width: 100%; }
-.template-rc-source-20 .preview-products-wrap { margin-top: auto; }
+.template-rc-source-20 .preview-products-wrap { margin-top: auto; padding: 10px 0 0; border-radius: 15px 15px 0 0; background: #fff; }
+.template-rc-source-20 .preview-products .ht-vertical-main { grid-column: 1 / -1; grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+.template-rc-source-20 .preview-products .ht-vertical-main > strong { grid-column: 1; grid-row: 1; }
+.template-rc-source-20 .preview-products .ht-vertical-price-line { grid-column: 2; grid-row: 1 / span 2; justify-content: flex-end; }
+.template-rc-source-20 .preview-products .ht-vertical-detail { grid-column: 1; grid-row: 2; }
+.template-rc-source-20 .preview-products .ht-vertical-plan { min-height: 45px; }
+.template-rc-source-20 .preview-products .ht-vertical-plan.chosen { border-color: #5fbf92; background: #fff; }
+.template-rc-source-20 .preview-products .ht-vertical-main > strong::before { content: ""; display: inline-block; width: 9px; height: 9px; margin-right: 5px; border: 1px solid #ddd; border-radius: 50%; vertical-align: -1px; }
+.template-rc-source-20 .preview-products .ht-vertical-plan.chosen .ht-vertical-main > strong::before { border-color: #5fbf92; background: #5fbf92; box-shadow: inset 0 0 0 2px #fff; }
 .template-rc-source-20 .preview-cta { background: #5fbf92 !important; }
 .template-rc-source-21 .phone-content, .template-rc-source-25 .phone-content { align-items: center; }
+.template-rc-source-21 .phone-content { padding-top: 49px; }
 .template-rc-source-21 .preview-timeline-wrap, .template-rc-source-25 .preview-list, .template-rc-source-25 .preview-products-wrap { width: 100%; }
 .template-rc-source-21 .preview-timeline-wrap { margin-top: 16px; }
 .template-rc-source-21 .preview-timeline li { min-height: 72px; grid-template-columns: 25px minmax(0,1fr); gap: 8px; }
@@ -1616,7 +1625,12 @@ textarea { min-height: 80px; resize: vertical; }
 .template-rc-source-21 .preview-timeline li:nth-child(2) .timeline-marker { color: #5f9cb7; }
 .template-rc-source-21 .preview-timeline li:nth-child(3) .timeline-marker { color: #8791c7; }
 .template-rc-source-21 .preview-products-wrap, .template-rc-source-25 .preview-products-wrap { margin-top: auto; }
+.template-rc-source-21 .preview-products-wrap, .template-rc-source-21 .preview-button { width: 100%; }
 .template-rc-source-21 .preview-products.product-layout-vertical { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.template-rc-source-21 .preview-products .ht-vertical-plan { padding-right: 25px; }
+.template-rc-source-21 .preview-products .ht-vertical-plan::after { content: ""; position: absolute; right: 8px; top: 13px; width: 14px; height: 14px; border: 1px solid #c7c7c7; border-radius: 50%; }
+.template-rc-source-21 .preview-products .ht-vertical-plan.chosen::after { border-color: #438cd6; background: #438cd6; box-shadow: inset 0 0 0 3px #fff; }
+.template-rc-source-21 .preview-cta { border-radius: 4px; }
 .template-rc-source-22 .preview-award-wrap { margin: 10px 0; }
 .template-rc-source-22 .preview-list { width: 100%; }
 .template-rc-source-22 .preview-award-wrap svg { display: none; }
