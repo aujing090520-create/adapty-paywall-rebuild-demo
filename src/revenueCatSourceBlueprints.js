@@ -136,7 +136,7 @@ export function createSourceTemplateNodes(template, node) {
     return add("products", "Products", visibleRows.join("\n") || "绑定商品||", { defaultSelected: [8, 14, 19, 22, 30, 32, 33, 34, 35, 36, 40].includes(order) ? 1 : 0, packageLayout: order === 18 ? "info-row" : [4, 12, 14, 19, 22, 25, 30].includes(order) ? "horizontal" : "vertical", showOfferBadge: true, showCards: visibleRows.length > 0, sourcePackageCount: sourcePackageCount(order), purchasePerCard: order === 10, badgeGradient: [template.accent, template.accent, template.accent], selectedBorderGradient: [template.accent, template.accent, template.accent], ...(visibleRows.length ? { packageRows: sourceProductRows(order) } : {}) }, depth);
   };
   const links = (depth = 0) => {
-    const policyLines = lines.filter((line) => /^(Restore( Purchases| purchases)?|Terms( of Use| of service)?|Privacy( Policy| policy)?|Privacy policy)$/.test(line));
+    const policyLines = lines.filter((line) => /^(Restore( Purchases| purchases)?|Terms( of Use| of service)?|Privacy( Policy| policy)?|Privacy policy)$/.test(line) && !(order === 40 && line === "Restore"));
     return policyLines.length ? add("links", "Links", [...new Set(policyLines)].join(" · "), {}, depth) : null;
   };
 
@@ -286,12 +286,12 @@ export function createSourceTemplateNodes(template, node) {
   } else if (template.heroAsset && (["top", "full", "center", "icon"].includes(template.art) || [10, 11].includes(order))) result.push(media("image"));
   result.push(header("title", plan.heading));
   if (order !== 37 && template.heroAsset && !["top", "full", "center", "icon"].includes(template.art) && ![10, 11].includes(order)) result.push(media("image"));
-  if (order !== 26) (plan.copy ?? []).forEach((index, itemIndex) => result.push(add(`copy-${itemIndex}`, "Text", at(index))));
+  if (![26, 29].includes(order)) (plan.copy ?? []).forEach((index, itemIndex) => result.push(add(`copy-${itemIndex}`, "Text", at(index))));
   if (plan.award) result.push(add("award", "Award", "", { title: at(plan.award[1]), source: at(plan.award[0]), subtitle: at(plan.award[2]), accentColor: template.accent, ...([19, 22].includes(order) ? { leftDecorationSrc: source.assets[1], rightDecorationSrc: source.assets[2] } : {}) }));
   if (plan.tabs) result.push(add("tabs", "Tabs", "", { tabs: plan.tabs.map((index) => ({ id: `tier-${index}`, title: at(index), description: "" })), defaultTab: 1 }));
   if (plan.features) {
-    const sourceIcons = { 34: ["dumbbell", "running", "clock"], 35: ["scan", "map", "help"], 37: ["blocks", "activity", "archive", "download"] }[order];
-    const accentColor = { 34: "#111111", 35: "#ffffff", 37: "#151515" }[order] ?? template.accent;
+    const sourceIcons = { 34: ["dumbbell", "running", "clock"], 35: ["scan", "map", "help"], 37: ["blocks", "activity", "archive", "download"], 40: ["arrow", "help", "running"] }[order];
+    const accentColor = { 34: "#111111", 35: "#ffffff", 37: "#151515", 40: "#ffffff" }[order] ?? template.accent;
     result.push(add("features", "List", listContent(plan.features, plan.paired), { accentColor, ...(sourceIcons ? { listRows: sourceFeatureLines(order).map((line, index) => { const [title, caption] = line.split("|"); return { title, caption, showCaption: true, leadingMode: "icon", leading: sourceIcons[index] }; }) } : {}) }));
   }
   if (plan.timeline) {
@@ -333,8 +333,9 @@ export function createSourceTemplateNodes(template, node) {
   if (plan.table) {
     const tableLines = lines.slice(...plan.table);
     const pairedRows = order === 27 ? Array.from({ length: Math.floor(tableLines.length / 2) }, (_, index) => tableLines.slice(index * 2, index * 2 + 2)) : tableLines.map((line) => [line, ""]);
-    result.push(add("table", "Feature Table", "", { title: order === 27 ? at(7) : order === 29 ? at(1) : "", tableVariant: order === 27 ? "feature-list" : "comparison", ...(order === 27 ? { accentColor: "#25328d", backgroundColor: "#ffffff" } : {}), columns: order === 29 ? [at(7), at(8)] : ["包含"], rows: pairedRows.map(([name, description], index) => ({ name, values: order === 29 ? [index === 0 ? "✓" : "—", "✓"] : [description] })) }));
+    result.push(add("table", "Feature Table", "", { title: order === 27 ? at(7) : "", tableVariant: order === 27 ? "feature-list" : "comparison", ...(order === 27 ? { accentColor: "#25328d", backgroundColor: "#ffffff" } : {}), ...(order === 29 ? { firstColumnLabel: at(1) } : {}), columns: order === 29 ? [at(7), at(8)] : ["包含"], rows: pairedRows.map(([name, description], index) => ({ name, values: order === 29 ? [index === 0 ? "✓" : "—", "✓"] : [description] })) }));
   }
+  if (order === 29) result.push(add("copy-0", "Text", at(9)));
   if (plan.cta !== undefined) result.push(order === 18 ? add("action", "Button", `${at(18)} ${at(19)}`, { action: "Purchase", backgroundColor: template.accent }) : button("action", plan.cta));
   if (plan.webCta !== undefined) result.push(add("web-action", "Web Paywall Button", at(plan.webCta), { action: "WebCheckout", autoDismiss: true, backgroundColor: order === 13 ? "#b53231" : template.accent, ...(order === 13 ? { color: "#ffffff", radius: 99 } : {}) }));
   (plan.afterCta ?? []).forEach((index, itemIndex) => result.push(add(`after-action-${itemIndex}`, "Text", at(index))));

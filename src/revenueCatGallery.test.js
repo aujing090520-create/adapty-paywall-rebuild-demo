@@ -173,6 +173,7 @@ test("observed package badges, subtitles, and bilingual labels stay with their p
   assert.equal(devToolsTree.find((item) => item.type === "List")?.depth, 1);
   assert.equal(devToolsTree.findIndex((item) => item.type === "List"), devToolsTree.findIndex((item) => item.type === "Products") + 1);
   assert.ok(tree(26).findIndex((item) => item.id.endsWith("-copy-0")) > tree(26).findIndex((item) => item.type === "Timeline"));
+  assert.ok(tree(29).findIndex((item) => item.id.endsWith("-copy-0")) > tree(29).findIndex((item) => item.type === "Feature Table"));
   assert.deepEqual(tree(37).filter((item) => ["Dismiss", "RestorePurchases"].includes(item.config?.action)).map((item) => item.content), ["BACK", "RESTORE"]);
 });
 
