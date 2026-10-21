@@ -1718,11 +1718,13 @@ textarea { min-height: 80px; resize: vertical; }
 .template-rc-source-36 .preview-cta { background: #68d2d2 !important; color: #081c25; }
 .template-rc-source-37 .preview-products-wrap { margin-top: 20px; }
 .template-rc-source-37 .preview-button { margin-top: 10px; }
+.template-rc-source-37 [data-node-id$="-action"] .preview-cta { background: linear-gradient(90deg,#dc527e,#e57658) !important; }
 .template-rc-source-39 [data-node-id$="-image"] { margin-top: 38px; }
 .template-rc-source-39 [data-node-id$="-copy-0"] p { color: #444; }
 .template-rc-source-39 [data-node-id$="-copy-1"] { margin: 20px 0 10px; padding: 3px 11px; border-radius: 5px; background: #f9e777; }
 .template-rc-source-39 [data-node-id$="-copy-1"] p { margin: 0; color: #111; font-size: 10px; font-weight: 700; }
 .template-rc-source-39 .preview-list { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 9px; }
+.template-rc-source-39 .preview-benefits strong { font-weight: 400; }
 .template-rc-source-39 [data-node-id$="-copy-2"] { margin-top: auto; }
 .template-rc-source-39 [data-node-id$="-copy-2"] p { color: #111; text-align: center; }
 .template-rc-source-39 .preview-button { margin-top: 0; }
@@ -1747,7 +1749,7 @@ textarea { min-height: 80px; resize: vertical; }
 .template-rc-source-40 .preview-products .ht-vertical-plan.chosen { border-color: #6870ea !important; background: linear-gradient(110deg,#4c62c0,#3b4ba3) !important; }
 .template-rc-source-40 .preview-products .ht-vertical-plan.chosen strong, .template-rc-source-40 .preview-products .ht-vertical-plan.chosen .ht-vertical-total, .template-rc-source-40 .preview-products .ht-vertical-plan.chosen small { color: #fff; }
 .template-rc-source-40 .preview-button { margin-top: 7px; }
-.template-rc-source-40 .preview-cta { background: #f0e686 !important; color: #111; border-radius: 22px; }
+.template-rc-source-40 .preview-cta { background: linear-gradient(90deg,#f5e970,#fffef3) !important; color: #111; border-radius: 99px !important; }
 .template-rc-source-41 [data-node-id$="-image"] { margin: -37px -13px 12px; }
 .template-rc-source-41 [data-node-id$="-image"] .preview-image { height: 305px !important; }
 .template-rc-source-41 .phone-content { background: #050710; }
