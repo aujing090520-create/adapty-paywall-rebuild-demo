@@ -286,7 +286,7 @@ export function createSourceTemplateNodes(template, node) {
   } else if (template.heroAsset && (["top", "full", "center", "icon"].includes(template.art) || [10, 11].includes(order))) result.push(media("image"));
   result.push(header("title", plan.heading));
   if (order !== 37 && template.heroAsset && !["top", "full", "center", "icon"].includes(template.art) && ![10, 11].includes(order)) result.push(media("image"));
-  (plan.copy ?? []).forEach((index, itemIndex) => result.push(add(`copy-${itemIndex}`, "Text", at(index))));
+  if (order !== 26) (plan.copy ?? []).forEach((index, itemIndex) => result.push(add(`copy-${itemIndex}`, "Text", at(index))));
   if (plan.award) result.push(add("award", "Award", "", { title: at(plan.award[1]), source: at(plan.award[0]), subtitle: at(plan.award[2]), accentColor: template.accent, ...([19, 22].includes(order) ? { leftDecorationSrc: source.assets[1], rightDecorationSrc: source.assets[2] } : {}) }));
   if (plan.tabs) result.push(add("tabs", "Tabs", "", { tabs: plan.tabs.map((index) => ({ id: `tier-${index}`, title: at(index), description: "" })), defaultTab: 1 }));
   if (plan.features) {
@@ -299,6 +299,7 @@ export function createSourceTemplateNodes(template, node) {
     const listRows = Array.from({ length: Math.ceil(section.length / 2) }, (_, index) => ({ title: section[index * 2], caption: section[index * 2 + 1] ?? "", ...([21, 26].includes(order) ? { marker: ["lock", "bell", "star"][index] ?? "number" } : {}) }));
     result.push(add("timeline", "Timeline", "", { accentColor: template.accent, listRows }));
   }
+  if (order === 26) result.push(add("copy-0", "Text", at(7)));
   if (plan.reviews) {
     const reviewLines = lines.slice(...plan.reviews);
     if (plan.reviewStyle === "quote") result.push(add("review", "Text", reviewLines.join("\n")));
