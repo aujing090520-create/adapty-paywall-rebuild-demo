@@ -77,6 +77,7 @@ test("testimonial, library, and concert layouts keep their observed first-screen
   assert.equal(tree(27).find((item) => item.type === "Feature Table").config.tableVariant, "feature-list");
   assert.equal(tree(18).find((item) => item.type === "Products").config.packageLayout, "info-row");
   assert.equal(tree(25).find((item) => item.type === "Products").config.packageLayout, "horizontal");
+  assert.equal(tree(12).find((item) => item.type === "Products").config.packageLayout, "horizontal");
   assert.ok(tree(28).some((item) => item.id.endsWith("-copy-0") && /PREMIUM/.test(item.content)));
   assert.equal(tree(22).find((item) => item.id.endsWith("-reviews")).config.listVariant, "testimonials");
   assert.equal(tree(22).find((item) => item.id.endsWith("-reviews")).config.testimonialRows[0].author, "CatMomSarah");
