@@ -1663,13 +1663,15 @@ textarea { min-height: 80px; resize: vertical; }
 .template-rc-source-23 .preview-products .ht-vertical-plan { min-height: 75px; border: 2px solid #171717; border-radius: 0; }
 .template-rc-source-23 .preview-products .ht-vertical-plan.chosen { background: #0b0b0b !important; color: #fff; }
 .template-rc-source-23 .preview-products .ht-vertical-plan.chosen strong, .template-rc-source-23 .preview-products .ht-vertical-plan.chosen .ht-vertical-total, .template-rc-source-23 .preview-products .ht-vertical-plan.chosen small { color: #fff; }
-.template-rc-source-23 .preview-list { margin-top: 14px; }
+.template-rc-source-23 .preview-list { width: 100%; margin-top: 14px; padding-top: 14px; border-top: 1px solid #e5e5e5; }
+.template-rc-source-23 .preview-list > .preview-benefits { display: block; }
 .template-rc-source-23 .preview-benefits { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .template-rc-source-23 .preview-benefits li { display: block; padding: 0; }
 .template-rc-source-23 .preview-benefits li > i { display: none; }
 .template-rc-source-23 .preview-benefits strong { display: block; margin-bottom: 3px; color: #ac2920; font-size: 8px; font-weight: 700; text-transform: uppercase; }
 .template-rc-source-23 .preview-benefits small { color: #151515; font-size: 9px; line-height: 1.3; }
 .template-rc-source-23 .preview-button { margin-top: auto; }
+.template-rc-source-23 .preview-button { width: 100%; }
 .template-rc-source-23 .preview-cta { border-radius: 0; background: #b7221a !important; }
 .template-rc-source-24 .phone-content { padding-top: 70px; background: #080808; }
 .template-rc-source-24 .preview-headline h2 { margin-bottom: 2px; }
