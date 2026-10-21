@@ -158,13 +158,19 @@ const templates = [
   { id: "rc-offer-code", title: "优惠码促销", subtitle: "RevenueCat · Offer code 01", tags: ["1 product", "Offer code"], productCount: 1, media: "none", components: ["Offer code"], category: "Seasonal", theme: "sale", visual: "rc-offer-code", previewTone: "coral", sourceProvider: "RevenueCat", sourceTemplate: "Offer code 01", isNew: true },
   { id: "rc-social-proof", title: "口碑评价轮播", subtitle: "RevenueCat · Social proof carousel", tags: ["3 products", "Reviews", "Social Proof", "Award"], productCount: 3, media: "none", components: ["Reviews", "Social Proof", "Award"], category: "Popular", theme: "clean", visual: "rc-social-proof", previewTone: "olive", sourceProvider: "RevenueCat", sourceTemplate: "Social proof carousel", isNew: true },
   { id: "rc-multi-tier", title: "会员等级与套餐", subtitle: "RevenueCat · Multi-tier 1", tags: ["2 products", "Tabs"], productCount: 2, media: "none", components: ["Tabs"], category: "Popular", theme: "clean", visual: "rc-multi-tier", previewTone: "purple", sourceProvider: "RevenueCat", sourceTemplate: "Multi-tier 1", isNew: true },
+  { id: "rc-multi-step", title: "多步骤付费墙", subtitle: "RevenueCat · Multi-step Paywall", tags: ["2 products", "Multi-step"], productCount: 2, media: "none", components: ["Multi-step"], category: "Popular", theme: "clean", visual: "rc-multi-step", previewTone: "blue", sourceProvider: "RevenueCat", sourceTemplate: "Multi-step Paywall", isNew: true },
+  { id: "rc-credits-onetime", title: "一次性点数商品", subtitle: "RevenueCat · Virtual currencies OTP", tags: ["5 products", "Credits"], productCount: 5, media: "none", components: ["Credits"], category: "Popular", theme: "clean", visual: "rc-credits-onetime", previewTone: "teal", sourceProvider: "RevenueCat", sourceTemplate: "Virtual currencies OTP", isNew: true },
+  { id: "rc-web-purchase", title: "双渠道购买", subtitle: "RevenueCat · Recipe book [Web]", tags: ["2 products", "Web purchase"], productCount: 2, media: "none", components: ["Web purchase"], category: "Popular", theme: "clean", visual: "rc-web-purchase", previewTone: "olive", sourceProvider: "RevenueCat", sourceTemplate: "Recipe book [Web]", isNew: true },
+  { id: "rc-feature-table", title: "权益说明表", subtitle: "RevenueCat · What's included table", tags: ["2 products", "Feature table"], productCount: 2, media: "none", components: ["Feature table"], category: "Popular", theme: "clean", visual: "rc-feature-table", previewTone: "purple", sourceProvider: "RevenueCat", sourceTemplate: "What's included table", isNew: true },
+  { id: "rc-comparison-table", title: "权益对比表", subtitle: "RevenueCat · Comparison table", tags: ["1 product", "Feature table"], productCount: 1, media: "none", components: ["Feature table"], category: "Popular", theme: "clean", visual: "rc-comparison-table", previewTone: "blue", sourceProvider: "RevenueCat", sourceTemplate: "Comparison table", isNew: true },
+  { id: "rc-review-list", title: "纵向评价列表", subtitle: "RevenueCat · Vertical list of reviews", tags: ["3 products", "Reviews", "Award"], productCount: 3, media: "none", components: ["Reviews", "Award"], category: "Popular", theme: "clean", visual: "rc-review-list", previewTone: "coral", sourceProvider: "RevenueCat", sourceTemplate: "Vertical list of reviews", isNew: true },
   { id: "ht-blue-privilege", title: "蓝色特权页", subtitle: "蓝色特权对比与商品套餐", tags: ["3 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-blue", visual: "ht-blue", documentTemplate: "blue-privilege", prdScreenshot: "/ht-prd-screenshots/blue-privilege.png" },
   { id: "ht-membership-plans", title: "HelloTalk 会员套餐页", subtitle: "会员订阅方案与访客示例轮播", tags: ["3 products", "Carousel", "Timer"], productCount: 2, media: "image", components: ["Carousel", "Timer"], category: "Popular", theme: "ht-plans", visual: "ht-plans", documentTemplate: "membership-plans", prdScreenshot: "/ht-prd-screenshots/membership-plans.jpg" },
   { id: "ht-payment-recovery", title: "HelloTalk 支付未完成页", subtitle: "支付恢复与倒计时优惠", tags: ["2 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-recovery", visual: "ht-recovery", documentTemplate: "payment-recovery", prdScreenshot: "/ht-prd-screenshots/payment-recovery.png" },
   { id: "ht-sku-sheet", title: "HelloTalk SKU 半窗", subtitle: "横版促销视觉与套餐选择", tags: ["2 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-sku", visual: "ht-sku", documentTemplate: "sku-sheet", prdScreenshot: "/ht-prd-screenshots/sku-sheet.jpg" },
 ];
 
-const componentCatalog = ["Text", "Header", "Image", "Video", "Icon", "Card", "Stack", "Web Paywall Button", "Button", "List", "Timeline", "Social Proof", "Award", "Tabs", "Toggle", "Links", "Agreement", "Timer", "Carousel", "Products", "Footer"];
+const componentCatalog = ["Text", "Header", "Image", "Video", "Icon", "Card", "Stack", "Screen Flow", "Web Paywall Button", "Button", "List", "Feature Table", "Timeline", "Social Proof", "Award", "Tabs", "Toggle", "Links", "Agreement", "Timer", "Carousel", "Products", "Footer"];
 
 const sourceTreeObserved = new Set(["knowledge", "trial", "connection", "family", "premium-access", "document", "yoga", "black-friday", "black-friday-timer", "christmas", "halloween", "new-year", "report", "avatar", "mindfulness", "trial-white", "trial-blue", "fitness-trial", "access", "weather", "workout", "audiobooks", "herbs", "video-access", "design-life", "full-app", "item-placeholder", "item-placeholder-dark", "fantasy-access", "editing-plan", "training"]);
 const documentStyleTemplateIds = new Set(["ht-blue-privilege", "ht-membership-plans", "ht-payment-recovery", "ht-sku-sheet"]);
@@ -402,6 +408,79 @@ function createBuilderNodes(templateId = "knowledge") {
       node("rc-tier-products", "Products", "年度|$69.99/年|约 $5.83/月\n月度|$9.99/月|按月订阅", 0, { config: { defaultSelected: 0, packageLayout: "vertical" } }),
       node("rc-tier-action", "Button", "继续", 0, { config: { action: "Purchase", backgroundColor: "#7a50ad" } }),
       node("rc-tier-links", "Links", "恢复购买 · 服务条款 · 隐私政策", 0),
+    ];
+  }
+
+  if (template.id === "rc-multi-step") {
+    return [
+      node("rc-flow", "Screen Flow", "", 0, { config: { defaultStep: 0 } }),
+      node("rc-flow-intro", "Screen", "第一屏：权益", 1),
+      node("rc-flow-intro-title", "Header", "开始你的免费体验", 2, { variant: "headline" }),
+      node("rc-flow-intro-list", "List", "睡得更好|放松身心、改善睡眠\n专注当下|养成每日练习习惯\n开启清晨|用更轻松的方式开始一天", 2),
+      node("rc-flow-intro-next", "Button", "继续", 2, { config: { action: "NextScreen", backgroundColor: "#3787a8" } }),
+      node("rc-flow-proof", "Screen", "第二屏：口碑", 1),
+      node("rc-flow-proof-title", "Header", "短时练习，持续改变", 2, { variant: "headline" }),
+      node("rc-flow-proof-rating", "Social Proof", "模板演示评分", 2, { config: { rating: 4.8, count: "示例数据", caption: "请替换为真实评价" } }),
+      node("rc-flow-proof-next", "Button", "继续", 2, { config: { action: "NextScreen", backgroundColor: "#3787a8" } }),
+      node("rc-flow-offer", "Screen", "第三屏：套餐", 1),
+      node("rc-flow-offer-title", "Header", "解锁完整体验", 2, { variant: "headline" }),
+      node("rc-flow-offer-list", "List", "助眠内容|睡前引导练习\n习惯养成|提醒与连续记录\n进步反馈|查看练习变化", 2),
+      node("rc-flow-offer-products", "Products", "年度|$69.99/年|年度订阅\n每周|$2.99/周|按周订阅", 2, { config: { defaultSelected: 0, packageLayout: "vertical" } }),
+      node("rc-flow-offer-action", "Button", "继续", 2, { config: { action: "Purchase", backgroundColor: "#3787a8" } }),
+      node("rc-flow-offer-links", "Links", "恢复购买 · 服务条款 · 隐私政策", 2),
+    ];
+  }
+
+  if (template.id === "rc-credits-onetime") {
+    return [
+      node("rc-credits-title", "Header", "为账户添加点数", 0, { variant: "headline" }),
+      node("rc-credits-note", "Text", "一次性商品；点数与价格由所选 SKU 决定", 0, { variant: "body" }),
+      node("rc-credits-products", "Products", "25 点|$2.99|约 5 秒视频\n50 点|$9.99|约 10 秒视频\n100 点|$17.99|约 20 秒视频\n250 点|$24.99|约 50 秒视频\n500 点|$39.99|约 100 秒视频", 0, { config: { defaultSelected: 0, packageLayout: "vertical", productTemplate: "rc-credits-onetime" } }),
+      node("rc-credits-action", "Button", "购买点数", 0, { config: { action: "Purchase", backgroundColor: "#147a84" } }),
+      node("rc-credits-links", "Links", "恢复购买 · 服务条款 · 隐私政策", 0),
+    ];
+  }
+
+  if (template.id === "rc-web-purchase") {
+    return [
+      node("rc-web-title", "Header", "解锁全部内容", 0, { variant: "headline" }),
+      node("rc-web-benefits", "List", "精选内容|获得完整内容库\n持续更新|不断获得新推荐\n优先支持|更快得到帮助", 0),
+      node("rc-web-products", "Products", "年度|$69.99/年|按年订阅\n月度|$9.99/月|按月订阅", 0, { config: { defaultSelected: 0, packageLayout: "vertical" } }),
+      node("rc-web-app", "Button", "在应用内继续", 0, { config: { action: "Purchase", backgroundColor: "#607c44" } }),
+      node("rc-web-caption", "Text", "或者选择网页购买", 0, { variant: "body" }),
+      node("rc-web-link", "Web Paywall Button", "前往网页购买", 0, { config: { action: "OpenURL", actionUrl: "", backgroundColor: "#355a74" } }),
+      node("rc-web-links", "Links", "恢复购买 · 服务条款 · 隐私政策", 0),
+    ];
+  }
+
+  if (template.id === "rc-feature-table") {
+    return [
+      node("rc-included-title", "Header", "会员包含哪些权益", 0, { variant: "headline" }),
+      node("rc-included-products", "Products", "年度|$69.99/年|约 $5.83/月\n月度|$9.99/月|按月订阅", 0, { config: { defaultSelected: 0, packageLayout: "vertical" } }),
+      node("rc-included-table", "Feature Table", "", 0, { config: { columns: ["权益"], rows: [{ name: "AI 观星指南", values: ["识别星空中的天体"] }, { name: "实时任务", values: ["追踪卫星与空间站"] }, { name: "沉浸式探索", values: ["查看宇宙可视化内容"] }, { name: "行星追踪", values: ["交互查看天体位置"] }, { name: "事件提醒", values: ["不错过重要天象"] }] } }),
+      node("rc-included-action", "Button", "继续", 0, { config: { action: "Purchase", backgroundColor: "#7654a7" } }),
+      node("rc-included-links", "Links", "恢复购买 · 服务条款 · 隐私政策", 0),
+    ];
+  }
+
+  if (template.id === "rc-comparison-table") {
+    return [
+      node("rc-compare-title", "Header", "升级你的学习体验", 0, { variant: "headline" }),
+      node("rc-compare-table", "Feature Table", "", 0, { config: { columns: ["免费", "Pro"], rows: [{ name: "作业追踪", values: ["✓", "✓"] }, { name: "AI 学习计划", values: ["—", "✓"] }, { name: "更多卡片", values: ["受限", "无限"] }, { name: "番茄钟", values: ["—", "✓"] }, { name: "笔记整理", values: ["基础", "高级"] }] } }),
+      node("rc-compare-products", "Products", "年度|$69.99/年|按年订阅", 0, { config: { defaultSelected: 0, packageLayout: "vertical" } }),
+      node("rc-compare-action", "Button", "继续", 0, { config: { action: "Purchase", backgroundColor: "#315fc2" } }),
+      node("rc-compare-links", "Links", "恢复购买 · 服务条款 · 隐私政策", 0),
+    ];
+  }
+
+  if (template.id === "rc-review-list") {
+    return [
+      node("rc-review-title", "Header", "看看用户的体验", 0, { variant: "headline" }),
+      node("rc-review-award", "Award", "编辑推荐", 0, { config: { title: "编辑推荐", source: "模板示例，请替换真实奖项", accentColor: "#cf6a45" } }),
+      node("rc-review-items", "List", "用户评价 1|这里展示第一条用户评价\n用户评价 2|这里展示第二条用户评价\n用户评价 3|这里展示第三条用户评价", 0, { config: { listRows: [{ title: "用户评价 1", caption: "这里展示第一条用户评价", leadingMode: "text", leading: "★" }, { title: "用户评价 2", caption: "这里展示第二条用户评价", leadingMode: "text", leading: "★" }, { title: "用户评价 3", caption: "这里展示第三条用户评价", leadingMode: "text", leading: "★" }] } }),
+      node("rc-review-products", "Products", "30 天|$9.99|短期体验\n12 个月|$69.99|年度订阅\n终身|$119.99|一次购买", 0, { config: { defaultSelected: 1, packageLayout: "vertical" } }),
+      node("rc-review-action", "Button", "继续", 0, { config: { action: "Purchase", backgroundColor: "#cf6a45" } }),
+      node("rc-review-links", "Links", "恢复购买 · 服务条款 · 隐私政策", 0),
     ];
   }
 
@@ -947,7 +1026,7 @@ function createBuilderNodes(templateId = "knowledge") {
 
 function createComponentNode(type, index) {
   const contentByType = {
-    Text: "text", Header: "标题", Image: "", Video: "", Icon: "", Card: "", Stack: "", "Web Paywall Button": "Pay on web", Button: "button text", List: "", Timeline: "", "Social Proof": "超过 50,000 位用户选择了我们", Award: "年度精选应用", Tabs: "", Toggle: "启用免费试用|可随时取消", Footer: "可随时取消", "List item": "title|caption", Links: "Terms · Privacy · Restore · Login", Agreement: "我已阅读并同意", Timer: "04:59:59", Carousel: "", Products: "",
+    Text: "text", Header: "标题", Image: "", Video: "", Icon: "", Card: "", Stack: "", "Screen Flow": "", Screen: "新页面", "Feature Table": "", "Web Paywall Button": "Pay on web", Button: "button text", List: "", Timeline: "", "Social Proof": "超过 50,000 位用户选择了我们", Award: "年度精选应用", Tabs: "", Toggle: "启用免费试用|可随时取消", Footer: "可随时取消", "List item": "title|caption", Links: "Terms · Privacy · Restore · Login", Agreement: "我已阅读并同意", Timer: "04:59:59", Carousel: "", Products: "",
   };
   const configByType = {
     Timer: { enabled: true, format: "hh:mm:ss", separator: ":", prefix: "", suffix: "", resetMode: "Reset timer on every paywall view" },
@@ -959,6 +1038,8 @@ function createComponentNode(type, index) {
     Timeline: { listRows: [{ title: "今天", caption: "立即解锁全部权益" }, { title: "第 2 天", caption: "收到订阅提醒" }, { title: "第 3 天", caption: "订阅开始，可随时取消" }] },
     Tabs: { tabs: [{ id: `tab-${index}-1`, title: "月度", description: "月度套餐" }, { id: `tab-${index}-2`, title: "年度", description: "年度套餐" }], defaultTab: 0 },
     Stack: { axis: "vertical", gap: 8 },
+    "Screen Flow": { defaultStep: 0 },
+    "Feature Table": { columns: ["会员"], rows: [{ name: "权益名称", values: ["权益说明"] }] },
     "Social Proof": { count: "50,000+", caption: "用户好评", rating: 5 },
     Award: { title: "年度精选应用", source: "编辑推荐", accentColor: "#f3a718" },
     Toggle: { onColor: "#6a31e9", offColor: "#d9dde0" },
@@ -971,7 +1052,7 @@ function isTextNodeType(type) {
 }
 
 function BuilderNodeIcon({ type }) {
-  const icons = { Timer: Clock3, Products: Package, Award: Star, Toggle: Check, Timeline: Clock3, Tabs: LayoutTemplate, "Social Proof": Users, Icon: Star, Stack: Blocks, Video: ImageIcon, Links: Link2, Agreement: Check, Carousel: GalleryHorizontal, Card: RectangleHorizontal, List, Footer: Type };
+  const icons = { Timer: Clock3, Products: Package, Award: Star, Toggle: Check, Timeline: Clock3, Tabs: LayoutTemplate, "Screen Flow": LayoutTemplate, Screen: RectangleHorizontal, "Feature Table": List, "Social Proof": Users, Icon: Star, Stack: Blocks, Video: ImageIcon, Links: Link2, Agreement: Check, Carousel: GalleryHorizontal, Card: RectangleHorizontal, List, Footer: Type };
   const Icon = icons[type] ?? (["Button", "Purchase Button", "Web Paywall Button"].includes(type) ? MousePointerClick : ["Hero Image", "Image"].includes(type) ? ImageIcon : isTextNodeType(type) ? Type : Blocks);
   return <Icon size={13} strokeWidth={2.15} />;
 }
@@ -993,7 +1074,7 @@ const paywallProductCatalog = DEMO_SKUS.map((sku) => ({ id: sku.id, name: sku.la
 function linkedPackageNode(productNode, offerRows, defaultProductId, variant) {
   if (!productNode || !Array.isArray(offerRows)) return productNode;
   const originalRows = productPackageRows(productNode, variant);
-  const slotCount = { "blue-privilege": 3, "membership-plans": 3, "payment-recovery": 2, "sku-sheet": 2, "rc-family-plans": 4 }[variant] ?? originalRows.length;
+  const slotCount = { "blue-privilege": 3, "membership-plans": 3, "payment-recovery": 2, "sku-sheet": 2, "rc-family-plans": 4, "rc-credits-onetime": 5 }[variant] ?? originalRows.length;
   const packageRows = Array.from({ length: slotCount }, (_, index) => {
     const row = offerRows[index];
     const existing = originalRows.find((item) => item.skuId && item.skuId === row?.id) ?? {};
@@ -1017,7 +1098,7 @@ const localeLabels = {
 };
 
 const zhCopy = {
-  "Stack": "容器", "Timeline": "时间线", "Social Proof": "口碑展示", "Award": "奖项展示", "Tabs": "选项卡",
+  "Stack": "容器", "Screen Flow": "多步骤页面", "Screen": "页面", "Feature Table": "权益表格", "Timeline": "时间线", "Social Proof": "口碑展示", "Award": "奖项展示", "Tabs": "选项卡",
   "Paywalls": "付费墙", "Test": "测试",
   "Evidence & gaps": "已验证与缺口", "Only observed behavior is reproduced. These routes are deliberately not invented.": "仅复刻已观察到的行为；未验证的结果不会被编造。",
   "Create paywall": "创建付费墙", "General": "基础设置", "Products": "商品套餐",
@@ -1272,6 +1353,12 @@ function App() {
     setTemplateSelected(templateIndex);
     setAppliedTemplate(templateIndex);
     setBuilderNodes(nextNodes);
+    if (template.id === "rc-credits-onetime") setDraft((current) => {
+      const unchangedDemoProducts = current.offerRows?.map((row) => row.id).join("|") === "DEMO-BLUE-MONTH|DEMO-BLUE-YEAR|DEMO-BLUE-LIFETIME";
+      if (!unchangedDemoProducts) return current;
+      const ids = [25, 50, 100, 250, 500].map((amount) => `DEMO-CREDIT-${amount}`);
+      return { ...current, offerRows: ids.map((id) => ({ ...emptyPaywallOfferRow(), id, name: skuById(id)?.label ?? "" })), defaultProductId: ids[0] };
+    });
     // Templates do not share a universal node id; select the first real layer.
     setActiveNode(nextNodes[0]?.id ?? "links");
   };
@@ -1781,7 +1868,7 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
         {templateSaveError && <p className="template-save-error" role="alert">模板未能保存到当前浏览器。请缩小已上传的图片或视频后重试。</p>}
         <div className="builder">
           <aside className="node-panel">
-            <div className="add-element-wrap"><button className="add-element" onClick={() => setAddElementOpen((open) => !open)}><Plus size={17} /> Add element</button>{addElementOpen && <div className="add-element-menu">{componentCatalog.filter((item) => item !== "Agreement" || (isDocumentTemplate && !builderNodes.some((entry) => entry.type === "Agreement"))).map((item) => <button key={item} onClick={() => addElement(item)}>{item === "Agreement" ? zhCopy[item] : item}</button>)}</div>}</div>
+            <div className="add-element-wrap"><button className="add-element" onClick={() => setAddElementOpen((open) => !open)}><Plus size={17} /> Add element</button>{addElementOpen && <div className="add-element-menu">{componentCatalog.filter((item) => item !== "Agreement" || (isDocumentTemplate && !builderNodes.some((entry) => entry.type === "Agreement"))).map((item) => <button key={item} onClick={() => addElement(item)}>{zhCopy[item] ?? item}</button>)}</div>}</div>
             <div className="node-list">{builderNodes.map((node) => {
               const isDragging = dragState?.id === node.id;
               const dropClass = dragState?.targetId === node.id ? `drop-${dragState.position}` : "";
@@ -1933,6 +2020,18 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
 
   if (type === "Stack") {
     return <div className="property-scroll"><h3>容器</h3>{nodeEditor}{tabBar}{tab === "content" && <CardContent active={active} addNestedNode={addNestedNode} />}{tab === "style" && <CardStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <><Field label="排列方向"><div className="segmented">{[["vertical", "纵向"], ["horizontal", "横向"]].map(([value, label]) => <button type="button" key={value} className={(active.config?.axis ?? "vertical") === value ? "active" : ""} onClick={() => updateNodeConfig(active, updateNode, { axis: value })}>{label}</button>)}</div></Field><ConfigNumberField label="组件间距" active={active} updateNode={updateNode} name="gap" fallback={8} min={0} max={80} suffix="px" /><ElementLayoutEditor active={active} updateNode={updateNode} /></>}</div>;
+  }
+
+  if (type === "Screen Flow") {
+    return <div className="property-scroll"><h3>多步骤页面</h3>{nodeEditor}{tabBar}{tab === "content" && <><Field label="初始页面"><input type="number" min="1" value={Number(active.config?.defaultStep ?? 0) + 1} onChange={(event) => updateNodeConfig(active, updateNode, { defaultStep: Math.max(0, Number(event.target.value) - 1) })} /></Field><button type="button" className="text-action" onClick={() => addNestedNode(active.id, "Screen")}><Plus size={15} /> 添加页面</button></>}{tab === "style" && <CardStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
+  }
+
+  if (type === "Screen") {
+    return <div className="property-scroll"><h3>页面</h3>{nodeEditor}{tabBar}{tab === "content" && <><Field label="页面名称" required><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><div className="screen-add-controls">{["Header", "Text", "Image", "List", "Products", "Button", "Links"].map((childType) => <button type="button" className="text-action" key={childType} onClick={() => addNestedNode(active.id, childType)}><Plus size={14} /> {zhCopy[childType] ?? childType}</button>)}</div></>}{tab === "style" && <CardStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
+  }
+
+  if (type === "Feature Table") {
+    return <div className="property-scroll"><h3>权益表格</h3>{nodeEditor}{tabBar}{tab === "content" && <FeatureTableContent active={active} updateNode={updateNode} />}{tab === "style" && <><ConfigColorField label="表头颜色" active={active} updateNode={updateNode} name="accentColor" fallback="#6a31e9" /><ConfigColorField label="背景颜色" active={active} updateNode={updateNode} name="backgroundColor" fallback="#ffffff" /></>}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
   }
 
   if (["Button", "Purchase Button"].includes(type)) {
@@ -2270,7 +2369,7 @@ function ButtonContent({ active, updateNode }) {
   const action = active.config?.action ?? (active.type === "Purchase Button" ? "Purchase" : "None");
   const url = active.config?.actionUrl ?? "";
   const validUrl = !url || safeButtonUrl(url);
-  return <><Field label="按钮文案" required><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><Field label="点击后"><select value={action} onChange={(event) => updateNodeConfig(active, updateNode, { action: event.target.value })}><option value="None">无动作</option><option value="Purchase">唤起支付</option><option value="OpenPage">打开内置页面</option><option value="OpenURL">打开链接</option></select></Field>{action === "OpenPage" && <Field label="目标页面" required><select value={active.config?.actionPage ?? "ht-blue-privilege"} onChange={(event) => updateNodeConfig(active, updateNode, { actionPage: event.target.value })}>{templates.filter((item) => item.documentTemplate).map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></Field>}{action === "OpenURL" && <><Field label="目标链接" required><input type="url" placeholder="https://" value={url} onChange={(event) => updateNodeConfig(active, updateNode, { actionUrl: event.target.value })} aria-invalid={!validUrl} /></Field>{!validUrl && <p className="property-copy" role="alert">请输入以 https:// 或 http:// 开头的有效链接</p>}</>}{action === "Purchase" && <p className="property-copy">预览将展示所选商品的支付确认页，不会发起真实支付。</p>}</>;
+  return <><Field label="按钮文案" required><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><Field label="点击后"><select value={action} onChange={(event) => updateNodeConfig(active, updateNode, { action: event.target.value })}><option value="None">无动作</option><option value="Purchase">唤起支付</option><option value="NextScreen">进入下一页</option><option value="OpenPage">打开内置页面</option><option value="OpenURL">打开链接</option></select></Field>{action === "OpenPage" && <Field label="目标页面" required><select value={active.config?.actionPage ?? "ht-blue-privilege"} onChange={(event) => updateNodeConfig(active, updateNode, { actionPage: event.target.value })}>{templates.filter((item) => item.documentTemplate).map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></Field>}{action === "OpenURL" && <><Field label="目标链接" required><input type="url" placeholder="https://" value={url} onChange={(event) => updateNodeConfig(active, updateNode, { actionUrl: event.target.value })} aria-invalid={!validUrl} /></Field>{!validUrl && <p className="property-copy" role="alert">请输入以 https:// 或 http:// 开头的有效链接</p>}</>}{action === "Purchase" && <p className="property-copy">预览将展示所选商品的支付确认页，不会发起真实支付。</p>}</>;
 }
 
 function WebButtonContent({ active, updateNode }) {
@@ -2338,6 +2437,13 @@ function TabsContent({ active, updateNode }) {
   const tabs = active.config?.tabs ?? [];
   const update = (next, selected = active.config?.defaultTab ?? 0) => updateNodeConfig(active, updateNode, { tabs: next, defaultTab: Math.min(selected, next.length - 1) });
   return <><Field label="默认选项"><select value={active.config?.defaultTab ?? 0} onChange={(event) => updateNodeConfig(active, updateNode, { defaultTab: Number(event.target.value) })}>{tabs.map((tab, index) => <option key={tab.id} value={index}>{tab.title || `选项 ${index + 1}`}</option>)}</select></Field>{tabs.map((tab, index) => <section className="product-row-editor" key={tab.id}><header><strong>选项 {index + 1}</strong><button type="button" className="icon" title="删除选项" aria-label={`删除选项 ${index + 1}`} disabled={tabs.length <= 1} onClick={() => update(tabs.filter((_, position) => position !== index), Math.max(0, Math.min(active.config?.defaultTab ?? 0, tabs.length - 2)))}><X size={15} /></button></header><Field label="选项名称"><input value={tab.title} onChange={(event) => update(tabs.map((item, position) => position === index ? { ...item, title: event.target.value } : item))} /></Field><Field label="选项内容"><textarea value={tab.description ?? ""} onChange={(event) => update(tabs.map((item, position) => position === index ? { ...item, description: event.target.value } : item))} /></Field></section>)}<button type="button" className="text-action" onClick={() => update([...tabs, { id: crypto.randomUUID(), title: `选项 ${tabs.length + 1}`, description: "" }])}><Plus size={15} /> 添加选项</button></>;
+}
+
+function FeatureTableContent({ active, updateNode }) {
+  const columns = active.config?.columns ?? ["会员"];
+  const rows = active.config?.rows ?? [];
+  const commit = (patch) => updateNodeConfig(active, updateNode, patch);
+  return <><h4>对比列</h4>{columns.map((column, index) => <Field label={`第 ${index + 1} 列`} key={index} required><input value={column} onChange={(event) => commit({ columns: columns.map((item, position) => position === index ? event.target.value : item) })} /></Field>)}<div className="screen-add-controls"><button type="button" className="text-action" disabled={columns.length >= 3} onClick={() => commit({ columns: [...columns, "新列"], rows: rows.map((row) => ({ ...row, values: [...(row.values ?? []), ""] })) })}><Plus size={14} /> 添加列</button><button type="button" className="text-action" disabled={columns.length <= 1} onClick={() => commit({ columns: columns.slice(0, -1), rows: rows.map((row) => ({ ...row, values: (row.values ?? []).slice(0, -1) })) })}>移除末列</button></div><h4>权益行</h4>{rows.map((row, index) => <section className="product-row-editor" key={index}><header><strong>第 {index + 1} 行</strong><button type="button" className="icon" aria-label={`删除第 ${index + 1} 行`} onClick={() => commit({ rows: rows.filter((_, position) => position !== index) })}><X size={15} /></button></header><Field label="权益名称" required><input value={row.name} onChange={(event) => commit({ rows: rows.map((item, position) => position === index ? { ...item, name: event.target.value } : item) })} /></Field>{columns.map((column, columnIndex) => <Field label={column} key={columnIndex}><input value={row.values?.[columnIndex] ?? ""} onChange={(event) => commit({ rows: rows.map((item, position) => position === index ? { ...item, values: columns.map((_, valueIndex) => valueIndex === columnIndex ? event.target.value : item.values?.[valueIndex] ?? "") } : item) })} /></Field>)}</section>)}<button type="button" className="text-action" onClick={() => commit({ rows: [...rows, { name: "新权益", values: columns.map(() => "") }] })}><Plus size={15} /> 添加权益行</button></>;
 }
 
 function TimelineContent({ active, updateNode }) {
@@ -2620,9 +2726,10 @@ function TemplatesModal({ selected, setSelected, onClose, onOpenBuilder }) {
     return <label className="filter-option"><input type={list ? "checkbox" : "radio"} name={list ? undefined : group} checked={checked} onChange={() => list ? toggleListFilter(group, value) : setSingleFilter(group, value)} /> {children}</label>;
   };
   const pendingTemplate = pendingSelected === null ? null : templates[pendingSelected];
-  const displayTags = (template) => isEditableTemplate(template) ? template.tags : ["Source preview", "Structure pending"];
+  const tagLabels = { "1 product": "1 个商品", "2 products": "2 个商品", "3 products": "3 个商品", "4 products": "4 个商品", "5 products": "5 个商品", "Multi-step": "多步骤", Credits: "点数商品", "Web purchase": "网页购买", "Feature table": "权益表格", Reviews: "评价", Award: "奖项" };
+  const displayTags = (template) => isEditableTemplate(template) ? template.tags.map((tag) => tagLabels[tag] ?? tag) : ["Source preview", "Structure pending"];
   const countBy = (matches) => catalogTemplates.filter(matches).length;
-  const componentOptions = [["Free trial toggle", "免费试用开关"], ["Trial timeline", "试用时间线"], ["Reviews", "评价"], ["Timer", "倒计时"], ["Toggle", "普通开关"], ["Social Proof", "口碑展示"], ["Award", "奖项展示"], ["Tabs", "标签页"], ["Offer code", "优惠码"]];
+  const componentOptions = [["Free trial toggle", "免费试用开关"], ["Trial timeline", "试用时间线"], ["Reviews", "评价"], ["Timer", "倒计时"], ["Toggle", "普通开关"], ["Social Proof", "口碑展示"], ["Award", "奖项展示"], ["Tabs", "标签页"], ["Offer code", "优惠码"], ["Multi-step", "多步骤"], ["Credits", "点数商品"], ["Web purchase", "网页购买"], ["Feature table", "权益表格"]];
   const filteredTemplates = catalogTemplates.filter((template) => {
     const productMatch = !filters.products.length || filters.products.some((item) => item === "1 product" ? template.productCount === 1 : template.productCount > 1);
     const mediaMatch = filters.media === "All" || (filters.media === "With Image or Video" ? ["image", "video"].includes(template.media) : template.media === "none");
@@ -2711,7 +2818,7 @@ function IntegratedTemplateMedia({ template }) {
   const caption = nodes.find((entry) => entry.type === "Text")?.content ?? template.subtitle;
   const products = nodes.find((entry) => entry.type === "Products")?.content?.split("\n") ?? [];
   const action = nodes.find((entry) => entry.type === "Button")?.content ?? "继续";
-  const details = nodes.filter((entry) => ["List", "Timeline", "Timer", "Social Proof", "Award", "Carousel", "Tabs", "Toggle"].includes(entry.type) || entry.id === "rc-offer-code-text").slice(0, 4);
+  const details = nodes.filter((entry) => ["Screen Flow", "Feature Table", "Web Paywall Button", "List", "Timeline", "Timer", "Social Proof", "Award", "Carousel", "Tabs", "Toggle"].includes(entry.type) || entry.id === "rc-offer-code-text").slice(0, 4);
   const detailText = (entry) => {
     if (entry.type === "List") return entry.content.split("\n").slice(0, 2).map((row) => row.split("|")[0]).join(" · ");
     if (entry.type === "Timeline") return entry.config?.listRows?.slice(0, 3).map((row) => row.title).join(" → ");
@@ -2720,6 +2827,9 @@ function IntegratedTemplateMedia({ template }) {
     if (entry.type === "Award") return `★ ${entry.config?.title ?? entry.content}`;
     if (entry.type === "Carousel") return `★★★★★ ${entry.content.split("|")[0]}`;
     if (entry.type === "Tabs") return entry.config?.tabs?.map((tab) => tab.title).join("  /  ");
+    if (entry.type === "Screen Flow") return "多步骤引导";
+    if (entry.type === "Feature Table") return `权益表格 · ${entry.config?.rows?.length ?? 0} 行`;
+    if (entry.type === "Web Paywall Button") return "网页购买入口";
     return entry.content.split("|")[0];
   };
   return <div className={`new-template-preview tone-${template.previewTone ?? "teal"}`}>
@@ -3178,10 +3288,18 @@ function HelloTalkPaywall({ variant, nodes, activeNode, onSelect, onButtonAction
 function PaywallPreview({ nodes, template, mode, pricePreviewMode, activeNode, onSelect, onUpdateHeroPosition, onReorder, retentionPreviewOpen, onOpenRetention, onCloseRetention }) {
   const [actionPreview, setActionPreview] = useState(null);
   const [previewToggles, setPreviewToggles] = useState({});
+  const [screenIndex, setScreenIndex] = useState(0);
+  const configuredScreenIndex = Number(nodes.find((item) => item.type === "Screen Flow")?.config?.defaultStep ?? 0);
   useEffect(() => setPreviewToggles({}), [template?.id]);
+  useEffect(() => setScreenIndex(configuredScreenIndex), [template?.id, configuredScreenIndex]);
   const runButtonAction = (node, product) => {
     if (!node) return;
     const action = node.config?.action ?? (node.type === "Purchase Button" ? "Purchase" : "None");
+    if (action === "NextScreen") {
+      const count = nodes.filter((item) => item.type === "Screen").length;
+      setScreenIndex((current) => Math.min(current + 1, Math.max(0, count - 1)));
+      return;
+    }
     if (action === "Purchase") setActionPreview({ kind: "payment", product });
     if (action === "OpenPage") {
       const target = templates.find((item) => item.id === (node.config?.actionPage ?? "ht-blue-privilege") && item.documentTemplate);
@@ -3213,7 +3331,7 @@ function PaywallPreview({ nodes, template, mode, pricePreviewMode, activeNode, o
     latestAtDepth[depth] = node.id;
     latestAtDepth.length = depth + 1;
   });
-  return <div className={`phone template-${hero?.theme ?? "lavender"}`}><button className="close-phone" aria-label="Close preview">×</button><div className="phone-content">{!template?.isNew && <span className="phone-kicker">PREMIUM ACCESS</span>}{nodes.filter((node) => !parents.has(node.id)).map((node) => <PreviewElement key={node.id} node={node} children={children.get(node.id) ?? []} getChildren={(childId) => children.get(childId) ?? []} active={node.id === activeNode} activeNode={activeNode} onSelect={onSelect} onButtonAction={runButtonAction} onReorder={onReorder} pricePreviewMode={pricePreviewMode} toggleStates={previewToggles} onToggleChange={(id, enabled) => setPreviewToggles((current) => ({ ...current, [id]: enabled }))} />)}</div>{overlay}</div>;
+  return <div className={`phone template-${hero?.theme ?? "lavender"}`}><button className="close-phone" aria-label="Close preview">×</button><div className="phone-content">{!template?.isNew && <span className="phone-kicker">PREMIUM ACCESS</span>}{nodes.filter((node) => !parents.has(node.id)).map((node) => <PreviewElement key={node.id} node={node} children={children.get(node.id) ?? []} getChildren={(childId) => children.get(childId) ?? []} active={node.id === activeNode} activeNode={activeNode} onSelect={onSelect} onButtonAction={runButtonAction} onReorder={onReorder} pricePreviewMode={pricePreviewMode} toggleStates={previewToggles} onToggleChange={(id, enabled) => setPreviewToggles((current) => ({ ...current, [id]: enabled }))} screenIndex={screenIndex} onScreenChange={setScreenIndex} />)}</div>{overlay}</div>;
 }
 
 function ButtonActionOverlay({ preview, onClose }) {
@@ -3232,7 +3350,7 @@ function previewClickArea(event) {
   return "component";
 }
 
-function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, onReorder, dragProps, reorderHandle, children = [], getChildren = () => [], pricePreviewMode = "1", toggleStates = {}, onToggleChange }) {
+function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, onReorder, dragProps, reorderHandle, children = [], getChildren = () => [], pricePreviewMode = "1", toggleStates = {}, onToggleChange, screenIndex = 0, onScreenChange }) {
   const select = (event) => {
     const indexed = event?.target instanceof Element ? event.target.closest("[data-inspector-slide], [data-inspector-row]") : null;
     const slideValue = indexed?.getAttribute(indexed.hasAttribute("data-inspector-row") ? "data-inspector-row" : "data-inspector-slide");
@@ -3260,12 +3378,18 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, on
   const textStyle = { color: config.color, fontSize: config.fontSize ? `${config.fontSize}px` : undefined, fontWeight: config.fontWeight, textAlign: config.textAlign };
   const buttonStyle = { backgroundColor: config.backgroundColor, color: config.color, borderRadius: config.radius === undefined ? undefined : `${config.radius}px` };
   const cardStyle = { backgroundColor: config.backgroundColor, borderRadius: config.radius === undefined ? undefined : `${config.radius}px`, boxShadow: config.shadow ? `0 ${Math.max(2, Math.round(config.shadow / 2))}px ${config.shadow}px #17172833` : undefined };
-  const renderChildren = () => children.map((child) => <PreviewElement key={child.id} node={child} children={getChildren(child.id)} getChildren={getChildren} active={child.id === activeNode} activeNode={activeNode} onSelect={onSelect} onButtonAction={onButtonAction} onReorder={onReorder} pricePreviewMode={pricePreviewMode} toggleStates={toggleStates} onToggleChange={onToggleChange} />);
+  const renderChildren = (items = children) => items.map((child) => <PreviewElement key={child.id} node={child} children={getChildren(child.id)} getChildren={getChildren} active={child.id === activeNode} activeNode={activeNode} onSelect={onSelect} onButtonAction={onButtonAction} onReorder={onReorder} pricePreviewMode={pricePreviewMode} toggleStates={toggleStates} onToggleChange={onToggleChange} screenIndex={screenIndex} onScreenChange={onScreenChange} />);
   const isTextLayer = isTextNodeType(node.type);
   const isListLayer = ["List", "Feature list", "Features"].includes(node.type) || /^List \d+$/.test(node.type);
   const isListItemLayer = node.type === "List item" || node.type === "Today" || /^Item \d+$/.test(node.type) || /^Day \d+$/.test(node.type);
   const isImageLayer = ["Image", "Black Friday Image"].includes(node.type) || /^Image \d+$/.test(node.type);
   if (node.sourcePending) return wrap(<p className="preview-boundary">Source layer confirmed; field content pending</p>, "preview-copy");
+  if (node.type === "Screen Flow") {
+    const current = Math.min(Math.max(0, screenIndex), Math.max(0, children.length - 1));
+    return wrap(<div className="preview-screen-flow" onClick={(event) => event.stopPropagation()}><div className="preview-screen-progress" aria-label={`第 ${current + 1} 页，共 ${children.length} 页`}>{children.map((child, index) => <button type="button" key={child.id} className={index === current ? "active" : ""} aria-label={`查看第 ${index + 1} 页`} aria-current={index === current ? "step" : undefined} onClick={(event) => { event.stopPropagation(); onScreenChange?.(index); }} />)}</div>{children[current] && renderChildren([children[current]])}</div>, "preview-screen-flow-wrap");
+  }
+  if (node.type === "Screen") return wrap(<div className="preview-screen" onClick={(event) => event.stopPropagation()}>{renderChildren()}</div>, "preview-screen-wrap");
+  if (node.type === "Feature Table") return wrap(<table className="preview-feature-table" style={{ backgroundColor: config.backgroundColor }}><thead><tr><th>权益</th>{(config.columns ?? []).map((column, index) => <th key={index} style={{ color: config.accentColor }}>{column}</th>)}</tr></thead><tbody>{(config.rows ?? []).map((row, index) => <tr key={index} data-inspector-row={index}><th scope="row">{row.name}</th>{(config.columns ?? []).map((_, columnIndex) => <td key={columnIndex}>{row.values?.[columnIndex] ?? ""}</td>)}</tr>)}</tbody></table>, "preview-feature-table-wrap");
   if (["Hero Image", "Hero Video"].includes(node.type)) {
     const config = node.config ?? {};
     const dimensions = mediaDimensions(config);

@@ -19,6 +19,11 @@ export const DEMO_SKUS = [
   { id: "DEMO-RECOVERY-MONTH", label: "支付未完成 · 1个月", displayName: "1个月会员", months: 1, total: "¥78", monthly: "¥78/月" },
   { id: "DEMO-SKU-YEAR", label: "SKU 半窗 · 12个月", displayName: "12个月", months: 12, total: "¥338", monthly: "¥28.17/月", referenceTotal: "¥488" },
   { id: "DEMO-SKU-LIFETIME", label: "SKU 半窗 · 终身", displayName: "终身", months: 0, total: "¥698", referenceTotal: "¥1198", copy: { badgeText: "sku 折扣 EN" } },
+  { id: "DEMO-CREDIT-25", label: "点数 · 25 点（一次性）", displayName: "25 点", months: 0, total: "$2.99" },
+  { id: "DEMO-CREDIT-50", label: "点数 · 50 点（一次性）", displayName: "50 点", months: 0, total: "$9.99" },
+  { id: "DEMO-CREDIT-100", label: "点数 · 100 点（一次性）", displayName: "100 点", months: 0, total: "$17.99" },
+  { id: "DEMO-CREDIT-250", label: "点数 · 250 点（一次性）", displayName: "250 点", months: 0, total: "$24.99" },
+  { id: "DEMO-CREDIT-500", label: "点数 · 500 点（一次性）", displayName: "500 点", months: 0, total: "$39.99" },
 ];
 
 const templateSkus = {
