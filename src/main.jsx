@@ -7,6 +7,7 @@ import { revenueCatGallery } from "./revenueCatGallery.js";
 import { createSourceTemplateNodes, observedTemplate, sourceBlueprints } from "./revenueCatSourceBlueprints.js";
 import {
   Activity,
+  Armchair,
   Archive,
   ArrowLeft,
   BarChart3,
@@ -53,6 +54,8 @@ import {
   Star,
   Heart,
   ShieldCheck,
+  Shirt,
+  Ticket,
   Users,
 } from "lucide-react";
 import "./styles.css";
@@ -3482,7 +3485,7 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, on
   if (isListLayer) {
     const rows = listRowsFor(node);
     if (!rows.length && !children.length) return wrap(<div className="preview-list-anchor">List</div>, "preview-list-anchor-wrap");
-    return wrap(<div className="preview-benefits" style={{ background: node.config?.backgroundColor }}><ul className="preview-benefits">{rows.map((row, index) => <li key={index} data-inspector-row={index} className={row.leadingMode === "none" ? "no-leading" : ""}><i style={{ color: node.config?.accentColor }}>{row.leadingMode !== "none" ? ({ dumbbell: <Dumbbell size={17} />, running: <PersonStanding size={17} />, clock: <Clock3 size={17} />, scan: <ScanSearch size={17} />, map: <MapIcon size={17} />, help: <CircleHelp size={17} />, arrow: <ChevronRight size={17} />, blocks: <Blocks size={17} />, activity: <Activity size={17} />, archive: <Archive size={17} />, download: <Download size={17} /> }[row.leading] ?? row.leading ?? "✓") : ""}</i><span><strong>{row.title}</strong>{row.showCaption !== false && row.caption && <small>{row.caption}</small>}</span></li>)}</ul>{renderChildren()}</div>, "preview-list");
+    return wrap(<div className="preview-benefits" style={{ background: node.config?.backgroundColor }}><ul className="preview-benefits">{rows.map((row, index) => <li key={index} data-inspector-row={index} className={row.leadingMode === "none" ? "no-leading" : ""}><i style={{ color: node.config?.accentColor }}>{row.leadingMode !== "none" ? ({ dumbbell: <Dumbbell size={17} />, running: <PersonStanding size={17} />, clock: <Clock3 size={17} />, scan: <ScanSearch size={17} />, map: <MapIcon size={17} />, help: <CircleHelp size={17} />, arrow: <ChevronRight size={17} />, blocks: <Blocks size={17} />, activity: <Activity size={17} />, archive: <Archive size={17} />, download: <Download size={17} />, ticket: <Ticket size={17} />, seat: <Armchair size={17} />, shirt: <Shirt size={17} />, group: <Users size={17} /> }[row.leading] ?? row.leading ?? "✓") : ""}</i><span><strong>{row.title}</strong>{row.showCaption !== false && row.caption && <small>{row.caption}</small>}</span></li>)}</ul>{renderChildren()}</div>, "preview-list");
   }
   if (node.type === "Timeline") return config.enabled === false ? null : wrap(<ol className="preview-timeline" style={{ "--timeline-accent": config.accentColor ?? "#6a31e9", "--timeline-line": config.lineColor ?? "#d9cafa" }}>{listRowsFor(node).map((row, index) => <li key={index} data-inspector-row={index}><span className="timeline-marker">{row.marker === "lock" ? <LockKeyhole size={12} /> : row.marker === "bell" ? <Bell size={12} /> : row.marker === "star" ? <Star size={12} /> : index + 1}</span><span><strong>{row.title}</strong>{row.showCaption !== false && row.caption && <small>{row.caption}</small>}</span></li>)}</ol>, "preview-timeline-wrap");
   if (node.type === "Social Proof") return wrap(<div className="preview-social-proof"><div aria-label={`${config.rating ?? 5} 分`} style={{ color: config.accentColor ?? "#ffb40d" }}>{"★".repeat(Math.max(0, Math.min(5, Math.round(Number(config.rating ?? 5)))))}</div><strong>{config.count ?? "50,000+"}</strong><span>{config.caption ?? node.content}</span></div>, "preview-social-proof-wrap");

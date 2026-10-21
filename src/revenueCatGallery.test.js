@@ -71,6 +71,7 @@ test("testimonial, library, and concert layouts keep their observed first-screen
   const concert = tree(17);
   assert.match(concert.find((item) => item.type === "Header").content, /ConcertBuddy Ultra/);
   assert.ok(concert.findIndex((item) => item.type === "List") < concert.findIndex((item) => item.id.endsWith("-copy-2")));
+  assert.deepEqual(concert.find((item) => item.type === "List").config.listRows.map((row) => row.leading), ["ticket", "seat", "shirt", "group"]);
   assert.deepEqual(tree(21).find((item) => item.type === "Timeline").config.listRows.map((row) => row.marker), ["lock", "bell", "star"]);
   assert.deepEqual(tree(26).find((item) => item.type === "Timeline").config.listRows.map((row) => row.marker), ["lock", "bell", "star"]);
   assert.deepEqual(tree(24).filter((item) => item.type === "Image").map((item) => item.config.mediaSrc), observedTemplate(24).assets);
@@ -78,6 +79,7 @@ test("testimonial, library, and concert layouts keep their observed first-screen
   assert.equal(tree(18).find((item) => item.type === "Products").config.packageLayout, "info-row");
   assert.equal(tree(25).find((item) => item.type === "Products").config.packageLayout, "horizontal");
   assert.equal(tree(12).find((item) => item.type === "Products").config.packageLayout, "horizontal");
+  assert.equal(tree(14).find((item) => item.type === "Products").config.defaultSelected, 1);
   assert.ok(tree(28).some((item) => item.id.endsWith("-copy-0") && /PREMIUM/.test(item.content)));
   assert.equal(tree(22).find((item) => item.id.endsWith("-reviews")).config.listVariant, "testimonials");
   assert.equal(tree(22).find((item) => item.id.endsWith("-reviews")).config.testimonialRows[0].author, "CatMomSarah");
