@@ -93,6 +93,8 @@ test("testimonial, library, and concert layouts keep their observed first-screen
   assert.deepEqual(tree(36).find((item) => item.id.endsWith("-features")).config.listRows.map((row) => row.leading), ["arrow", "arrow", "arrow"]);
   assert.deepEqual(tree(37).find((item) => item.id.endsWith("-features")).config.listRows.map((row) => row.leading), ["blocks", "activity", "archive", "download"]);
   assert.equal(tree(41).find((item) => item.id.endsWith("-social")).config.accentColor, "#ffe479");
+  assert.match(tree(41).find((item) => item.id.endsWith("-social")).config.leftDecorationSrc, /1181742_1734623909\.webp/);
+  assert.match(tree(41).find((item) => item.id.endsWith("-social")).config.rightDecorationSrc, /1181742_1734623881\.webp/);
   assert.deepEqual(tree(29).find((item) => item.type === "Feature Table").config.rows.map((row) => row.values), [["✓", "✓"], ["—", "✓"], ["—", "✓"], ["—", "✓"], ["—", "✓"]]);
   assert.deepEqual(tree(36).slice(0, 5).map((item) => item.type), ["Header", "Text", "Image", "List", "Text"]);
   assert.ok(tree(39).findIndex((item) => item.type === "List") < tree(39).findIndex((item) => item.id.endsWith("-copy-2")));

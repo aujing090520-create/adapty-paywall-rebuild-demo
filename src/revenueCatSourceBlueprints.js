@@ -327,7 +327,7 @@ export function createSourceTemplateNodes(template, node) {
       }
     }
   }
-  if (plan.social) result.push(add("social", "Social Proof", "", { rating: Number.parseFloat(at(plan.social[0])) || 5, count: at(plan.social[1]), caption: at(plan.social[0]), accentColor: order === 41 ? "#ffe479" : template.accent }));
+  if (plan.social) result.push(add("social", "Social Proof", "", { rating: Number.parseFloat(at(plan.social[0])) || 5, count: at(plan.social[1]), caption: at(plan.social[0]), accentColor: order === 41 ? "#ffe479" : template.accent, ...(order === 41 ? { leftDecorationSrc: source.assets[1], rightDecorationSrc: source.assets[2] } : {}) }));
   if (plan.toggle !== undefined) result.push(add("toggle", "Toggle", at(plan.toggle), { onColor: template.accent }));
   if (sourcePackageCount(order)) result.push(products());
   if (plan.table) {
