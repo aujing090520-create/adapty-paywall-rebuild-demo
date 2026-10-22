@@ -337,7 +337,7 @@ function productPackageRows(productNode, variant) {
 }
 
 function ProductPackageCard({ plan, index, config = {}, layout, selected, focused = false, interactive = true, priceMode = "1", onChoose, onInspect, embeddedBenefits, onBenefitInspect }) {
-  const baseClass = `ht-node ${focused ? "selected" : ""}`;
+  const baseClass = `ht-node ${focused ? "selected" : ""} ${Number(config.planHeight) > 0 ? "ht-sized-plan" : ""}`;
   if (plan.emptySlot) return <div className={`${layout === "vertical" ? "ht-vertical-plan" : "ht-plan"} ht-plan-empty ${layout === "horizontal" ? "ht-blue-plan" : ""}`} aria-label={`套餐 ${index + 1} 空坑位`} />;
   const name = plan.name;
   const priceView = resolveProductPrice(plan, priceMode);
@@ -355,51 +355,70 @@ function ProductPackageCard({ plan, index, config = {}, layout, selected, focuse
   const compactPrice = priceView.main.length >= 6 && layout !== "compact";
   const priceStyle = { ...(compactPrice ? { fontSize: `min(${Number(configuredPriceSize) > 0 ? `${configuredPriceSize}px` : "6cqw"}, 4cqw)` } : Number(configuredPriceSize) > 0 ? { fontSize: `${configuredPriceSize}px` } : {}), ...(modeStyle.mainColor ? { color: modeStyle.mainColor } : {}) };
   const strikeStyle = { ...(Number(modeStyle.strikeFontSize) > 0 ? { fontSize: `${modeStyle.strikeFontSize}px` } : {}), ...(modeStyle.strikeColor ? { color: modeStyle.strikeColor } : {}) };
-  const planStyle = { ...productStyle, ...selectedStyle, ...(config.planRadius !== undefined && config.planRadius !== "" ? { borderRadius: `${config.planRadius}px` } : {}), ...(config.planHeight ? { minHeight: `${config.planHeight}px` } : {}) };
+  const frameStyle = { ...(Number(config.planWidth) > 0 ? { width: `${config.planWidth}%`, marginInline: "auto", justifySelf: "center" } : {}), ...(Number(config.planHeight) > 0 ? { minHeight: `${config.planHeight}px` } : {}), ...(config.planPadding !== "" && Number.isFinite(Number(config.planPadding)) && config.planPadding !== undefined ? { padding: `${config.planPadding}px` } : {}) };
+  const planStyle = { ...productStyle, ...selectedStyle, ...frameStyle, ...(config.planRadius !== undefined && config.planRadius !== "" ? { borderRadius: `${config.planRadius}px` } : {}) };
+  const partStyle = (part, base = {}) => ({ ...base, ...productPartStyle(config, part) });
   const choose = (event) => { if (!interactive) return; event.stopPropagation(); onChoose?.(index); onInspect?.(event, index); };
   const keyboard = (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); choose(event); } };
   const cardProps = { style: planStyle, role: interactive ? "button" : undefined, tabIndex: interactive ? 0 : undefined, onClick: choose, onKeyDown: keyboard };
+  if (hasCustomProductPlacement(config)) {
+    const monthly = (layout === "vertical" || config.productPartStyles?.monthly) && fields.monthly && fields.monthly !== priceView.main && fields.monthly !== priceView.strike ? fields.monthly : "";
+    const reference = priceView.strike || ((layout === "vertical" && fields.months === 0 || config.productPartStyles?.reference) ? fields.referenceTotal : "");
+    const parts = { name, price: config.showMainPrice === false ? "" : priceView.main, reference, monthly, supporting: supportingCopy, saving, save: saveText, badge: hasBadge ? plan.badgeText : "" };
+    const defaultAlign = ["vertical", "compact", "info-row"].includes(layout) ? "left" : "center";
+    return <div className={`${baseClass} ${layout === "vertical" ? "ht-vertical-plan" : layout === "info-row" ? "ht-info-row" : "ht-plan"} ht-custom-plan ${selected ? "chosen" : ""}`} {...cardProps}>
+      {PRODUCT_PARTS.map(([part], position) => {
+        if (!parts[part]) return null;
+        const settings = config.productPartStyles?.[part] ?? {};
+        const align = settings.align || defaultAlign;
+        const offsetX = Number(settings.offsetX) || 0;
+        const offsetY = Number(settings.offsetY) || 0;
+        return <span key={part} className={`ht-custom-part ht-custom-${part}`} data-product-part={part} data-inspector-area={`product-${part}`} style={{ ...partStyle(part, part === "price" ? priceStyle : part === "reference" ? strikeStyle : {}), order: Number(settings.order) || position + 1, alignSelf: align === "left" ? "flex-start" : align === "right" ? "flex-end" : "center", textAlign: align, transform: offsetX || offsetY ? `translate(${offsetX}px, ${offsetY}px)` : undefined }}>{parts[part]}</span>;
+      })}
+      {selected && embeddedBenefits?.length > 0 && <ul className="ht-plan-embedded-benefits" onClick={(event) => { event.stopPropagation(); onBenefitInspect?.(event); }}>{embeddedBenefits.map((line, lineIndex) => <li key={`${line}-${lineIndex}`}><Check size={11} /><span>{line}</span></li>)}</ul>}
+    </div>;
+  }
   if (layout === "info-row") {
     const [primaryName, secondaryName = ""] = name.split(" · ");
     const [primaryCopy, secondaryCopy = ""] = supportingCopy.split(" · ");
-    return <div className={`${baseClass} ht-info-row ${selected ? "chosen" : ""}`} {...cardProps} style={productStyle}>
+    return <div className={`${baseClass} ht-info-row ${selected ? "chosen" : ""}`} {...cardProps} style={{ ...productStyle, ...frameStyle }}>
       <span className="ht-info-row-marker" aria-hidden="true">◆</span>
-      <span className="ht-info-row-main"><strong>{primaryName}</strong>{secondaryName && <small>{secondaryName}</small>}{primaryCopy && <small>{primaryCopy}</small>}</span>
-      <span className="ht-info-row-price" data-inspector-area="price"><strong>{priceView.main}</strong>{secondaryCopy && <small>{secondaryCopy}</small>}</span>
+      <span className="ht-info-row-main"><strong data-inspector-area="product-name" style={partStyle("name")}>{primaryName}</strong>{secondaryName && <small data-inspector-area="product-supporting" style={partStyle("supporting")}>{secondaryName}</small>}{primaryCopy && <small data-inspector-area="product-supporting" style={partStyle("supporting")}>{primaryCopy}</small>}</span>
+      <span className="ht-info-row-price" data-inspector-area="product-price"><strong style={partStyle("price", priceStyle)}>{priceView.main}</strong>{secondaryCopy && <small data-inspector-area="product-supporting" style={partStyle("supporting")}>{secondaryCopy}</small>}</span>
     </div>;
   }
   if (layout === "vertical") {
     const monthly = fields.monthly && fields.monthly !== priceView.main && fields.monthly !== priceView.strike ? fields.monthly : "";
     if (config.cardContentLayout === "split-summary") return <div className={`${baseClass} ht-vertical-plan split-summary ${config.showRadio ? "with-radio" : ""} ${selected ? "chosen" : ""}`} {...cardProps}>
-      {hasBadge && <b data-inspector-area="badge" className="ht-vertical-badge">{plan.badgeText}</b>}
-      <div className="ht-split-summary-copy"><strong>{name} {saving && <small>{saving}</small>}</strong>{(supportingCopy || (config.duplicatePriceAsDetail && priceView.main)) && <span>{supportingCopy || priceView.main}</span>}</div>
-      <strong data-inspector-area="price" className="ht-split-summary-price" style={priceStyle}>{priceView.main}</strong>
+      {hasBadge && <b data-inspector-area="product-badge" className="ht-vertical-badge" style={partStyle("badge")}>{plan.badgeText}</b>}
+      <div className="ht-split-summary-copy"><strong data-inspector-area="product-name" style={partStyle("name")}>{name} {saving && <small data-inspector-area="product-saving" style={partStyle("saving")}>{saving}</small>}</strong>{(supportingCopy || (config.duplicatePriceAsDetail && priceView.main)) && <span data-inspector-area="product-supporting" style={partStyle("supporting")}>{supportingCopy || priceView.main}</span>}</div>
+      <strong data-inspector-area="product-price" className="ht-split-summary-price" style={partStyle("price", priceStyle)}>{priceView.main}</strong>
     </div>;
     return <div className={`${baseClass} ht-vertical-plan ${config.cardContentLayout === "radio-stacked" ? "radio-stacked" : ""} ${config.showRadio ? "with-radio" : ""} ${selected ? "chosen" : ""}`} {...cardProps}>
-      {hasBadge && <b data-inspector-area="badge" className="ht-vertical-badge" style={config.badgeFontSize ? { fontSize: `${config.badgeFontSize}px` } : undefined}>{plan.badgeText}</b>}
-      <div className="ht-vertical-main"><strong style={config.nameFontSize ? { fontSize: `${config.nameFontSize}px` } : undefined}>{name}</strong>{config.showMainPrice !== false && <div className="ht-vertical-price-line" data-inspector-area="price"><span className="ht-vertical-total" style={priceStyle}>{priceView.main}</span>{priceView.strike && <del style={strikeStyle}>{priceView.strike}</del>}{saving && !fields.referenceTotal && <small className="ht-vertical-saving">{saving}</small>}</div>}{(supportingCopy || saveText) && <div className="ht-vertical-detail">{supportingCopy && <small>{supportingCopy}</small>}{saveText && <small className="ht-plan-save-copy">{saveText}</small>}</div>}</div>
-      <div className="ht-vertical-side">{monthly && <span>{monthly}</span>}{fields.months === 0 && fields.referenceTotal && !priceView.strike && <del style={strikeStyle}>{fields.referenceTotal}</del>}</div>
+      {hasBadge && <b data-inspector-area="product-badge" className="ht-vertical-badge" style={partStyle("badge", config.badgeFontSize ? { fontSize: `${config.badgeFontSize}px` } : {})}>{plan.badgeText}</b>}
+      <div className="ht-vertical-main"><strong data-inspector-area="product-name" style={partStyle("name", config.nameFontSize ? { fontSize: `${config.nameFontSize}px` } : {})}>{name}</strong>{config.showMainPrice !== false && <div className="ht-vertical-price-line"><span className="ht-vertical-total" data-inspector-area="product-price" style={partStyle("price", priceStyle)}>{priceView.main}</span>{priceView.strike && <del data-inspector-area="product-reference" style={partStyle("reference", strikeStyle)}>{priceView.strike}</del>}{saving && !fields.referenceTotal && <small className="ht-vertical-saving" data-inspector-area="product-saving" style={partStyle("saving")}>{saving}</small>}</div>}{(supportingCopy || saveText) && <div className="ht-vertical-detail">{supportingCopy && <small data-inspector-area="product-supporting" style={partStyle("supporting")}>{supportingCopy}</small>}{saveText && <small className="ht-plan-save-copy" data-inspector-area="product-save" style={partStyle("save")}>{saveText}</small>}</div>}</div>
+      <div className="ht-vertical-side">{monthly && <span data-inspector-area="product-monthly" style={partStyle("monthly")}>{monthly}</span>}{fields.months === 0 && fields.referenceTotal && !priceView.strike && <del data-inspector-area="product-reference" style={partStyle("reference", strikeStyle)}>{fields.referenceTotal}</del>}</div>
       {selected && embeddedBenefits?.length > 0 && <ul className="ht-plan-embedded-benefits" onClick={(event) => { event.stopPropagation(); onBenefitInspect?.(event); }}>{embeddedBenefits.map((line, lineIndex) => <li key={`${line}-${lineIndex}`}><Check size={11} /><span>{line}</span></li>)}</ul>}
     </div>;
   }
-  const priceNode = <em data-inspector-area="price" className="ht-plan-main-price" style={priceStyle}>{priceView.main}</em>;
+  const priceNode = <em data-inspector-area="product-price" className="ht-plan-main-price" style={partStyle("price", priceStyle)}>{priceView.main}</em>;
   if (layout === "horizontal" && config.cardContentLayout === "duration-grid") {
     const [amount, unit = ""] = name.toUpperCase() === "LIFETIME" ? ["∞", "LIFETIME"] : name.split(/\s+/, 2);
     return <div className={`${baseClass} ht-plan ht-duration-plan ${selected ? "chosen" : ""}`} {...cardProps}>
-      <strong className="ht-duration-amount">{amount}</strong><span className="ht-duration-unit">{unit}</span>
-      <em data-inspector-area="price" className="ht-duration-price" style={priceStyle}>{priceView.main}</em>
+      <strong className="ht-duration-amount" data-inspector-area="product-name" style={partStyle("name")}>{amount}</strong><span className="ht-duration-unit" data-inspector-area="product-name" style={partStyle("name")}>{unit}</span>
+      <em data-inspector-area="product-price" className="ht-duration-price" style={partStyle("price", priceStyle)}>{priceView.main}</em>
     </div>;
   }
   if (layout === "horizontal") return <div className={`${baseClass} ht-plan ht-blue-plan ${selected ? "chosen" : ""} ${priceView.missing ? "price-missing" : ""}`} {...cardProps}>
-    <span>{hasBadge && <b data-inspector-area="badge" style={config.badgeFontSize ? { fontSize: `${config.badgeFontSize}px` } : undefined}>{plan.badgeText}</b>}<strong style={config.nameFontSize ? { fontSize: `${config.nameFontSize}px` } : undefined}>{name}</strong></span>
-    <div className="ht-blue-price" data-inspector-area="price">{priceView.strike && <del style={strikeStyle}>{priceView.strike}</del>}{priceNode}</div>
-    <div className="ht-blue-detail">{saving && <small className="ht-plan-saving">{saving}</small>}{primaryDetail && <i className={primaryDetail === saveText ? "ht-plan-save-copy" : ""} style={config.detailFontSize ? { fontSize: `${config.detailFontSize}px` } : undefined}>{primaryDetail}</i>}{extraSave && <small className="ht-plan-custom-save">{extraSave}</small>}</div>
+    <span>{hasBadge && <b data-inspector-area="product-badge" style={partStyle("badge", config.badgeFontSize ? { fontSize: `${config.badgeFontSize}px` } : {})}>{plan.badgeText}</b>}<strong data-inspector-area="product-name" style={partStyle("name", config.nameFontSize ? { fontSize: `${config.nameFontSize}px` } : {})}>{name}</strong></span>
+    <div className="ht-blue-price">{priceView.strike && <del data-inspector-area="product-reference" style={partStyle("reference", strikeStyle)}>{priceView.strike}</del>}{priceNode}</div>
+    <div className="ht-blue-detail">{saving && <small className="ht-plan-saving" data-inspector-area="product-saving" style={partStyle("saving")}>{saving}</small>}{primaryDetail && <i className={primaryDetail === saveText ? "ht-plan-save-copy" : ""} data-inspector-area={primaryDetail === saveText ? "product-save" : "product-supporting"} style={partStyle(primaryDetail === saveText ? "save" : "supporting", config.detailFontSize ? { fontSize: `${config.detailFontSize}px` } : {})}>{primaryDetail}</i>}{extraSave && <small className="ht-plan-custom-save" data-inspector-area="product-save" style={partStyle("save")}>{extraSave}</small>}</div>
   </div>;
   return <div className={`${baseClass} ht-plan ht-structured-plan ${selected ? "chosen" : ""} ${priceView.prominent ? "price-prominent" : ""} ${priceView.missing ? "price-missing" : ""}`} {...cardProps}>
-    {hasBadge && <b data-inspector-area="badge" className="ht-structured-badge" style={config.badgeFontSize ? { fontSize: `${config.badgeFontSize}px` } : undefined}>{plan.badgeText}</b>}
-    <strong className="ht-structured-name" style={config.nameFontSize ? { fontSize: `${config.nameFontSize}px` } : undefined}>{name}</strong>
-    <div data-inspector-area="price" className="ht-structured-price">{priceView.strike && <del className="ht-plan-extra-reference" style={strikeStyle}>{priceView.strike}</del>}{priceNode}</div>
-    {(saving || primaryDetail || extraSave) && <div className="ht-structured-detail">{saving && <small className="ht-plan-saving">{saving}</small>}{primaryDetail && <i className={primaryDetail === saveText ? "ht-plan-save-copy" : ""} style={config.detailFontSize ? { fontSize: `${config.detailFontSize}px` } : undefined}>{primaryDetail}</i>}{extraSave && <small className="ht-plan-custom-save">{extraSave}</small>}</div>}
+    {hasBadge && <b data-inspector-area="product-badge" className="ht-structured-badge" style={partStyle("badge", config.badgeFontSize ? { fontSize: `${config.badgeFontSize}px` } : {})}>{plan.badgeText}</b>}
+    <strong className="ht-structured-name" data-inspector-area="product-name" style={partStyle("name", config.nameFontSize ? { fontSize: `${config.nameFontSize}px` } : {})}>{name}</strong>
+    <div className="ht-structured-price">{priceView.strike && <del className="ht-plan-extra-reference" data-inspector-area="product-reference" style={partStyle("reference", strikeStyle)}>{priceView.strike}</del>}{priceNode}</div>
+    {(saving || primaryDetail || extraSave) && <div className="ht-structured-detail">{saving && <small className="ht-plan-saving" data-inspector-area="product-saving" style={partStyle("saving")}>{saving}</small>}{primaryDetail && <i className={primaryDetail === saveText ? "ht-plan-save-copy" : ""} data-inspector-area={primaryDetail === saveText ? "product-save" : "product-supporting"} style={partStyle(primaryDetail === saveText ? "save" : "supporting", config.detailFontSize ? { fontSize: `${config.detailFontSize}px` } : {})}>{primaryDetail}</i>}{extraSave && <small className="ht-plan-custom-save" data-inspector-area="product-save" style={partStyle("save")}>{extraSave}</small>}</div>}
   </div>;
 }
 
@@ -1993,8 +2012,8 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
     const list = active.type === "List" || /^List \d+$/.test(active.type) || ["Feature list", "Features"].includes(active.type);
     const listRow = list && tab === "content" && previewFocus.slideIndex != null ? (active.id === "benefits" && active.config?.bluePrivilege ? panel.querySelectorAll(".privilege-row-wrap")[previewFocus.slideIndex] : panel.querySelectorAll(".product-row-editor")[previewFocus.slideIndex]) : null;
     const timerField = active.type === "Timer" ? exactField(tab === "content" ? ["Start value"] : tab === "style" ? ["时间字体颜色"] : ["Vertical offset"]) : null;
-    const productStyle = products && tab === "style" ? exactField(previewFocus.area === "badge" ? ["商品标签颜色", "商品角标颜色", "角标字号"] : previewFocus.area === "price" ? ["通用价格字号", "总价字号", "主价字号"] : ["商品选中框颜色", "名称字号"]) : null;
-    const productLayout = products && tab === "layout" ? exactField(["套餐最小高度", "布局类型"]) : null;
+    const productStyle = products && tab === "style" ? panel.querySelector(".product-part-editor") : null;
+    const productLayout = products && tab === "layout" ? exactField(["布局类型"]) : null;
     const agreementRow = active.type === "Agreement" && tab === "content" && previewFocus.slideIndex != null ? panel.querySelectorAll(".agreement-segment-editor")[previewFocus.slideIndex] : null;
     const agreementField = active.type === "Agreement" ? tab === "content" ? [...panel.querySelectorAll(".switch-row")].find((field) => field.querySelector("strong")?.textContent?.trim() === "勾选后才能点击按钮") : exactField(tab === "style" ? previewFocus.area === "links" ? ["链接颜色"] : ["文字颜色"] : ["对齐方式"]) : null;
     const carouselContentLabels = { media: ["图片"], headline: ["标题"], caption: ["说明文案"], dots: ["初始展示"] };
@@ -2124,7 +2143,7 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
   }
 
   if (type === "Products") {
-    return <div className="property-scroll"><h3>商品套餐</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}<div className="product-price-mode-control"><Field label="价格样式预览"><select aria-label="价格样式预览" value={pricePreviewMode} onChange={(event) => setPricePreviewMode(event.target.value)}>{PRICE_DISPLAY_MODES.map((mode) => <option key={mode.id} value={mode.id}>{mode.id} · {mode.label}</option>)}</select></Field><small>仅切换编辑预览，实际展示由分发样式开关决定</small></div>{tab === "content" && <ProductsContent active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} />}{tab === "style" && <ProductsStyleEditor active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} />}{tab === "layout" && <ProductsLayoutEditor active={active} updateNode={updateNode} />}</div>;
+    return <div className="property-scroll"><h3>商品套餐</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}<div className="product-price-mode-control"><Field label="价格样式预览"><select aria-label="价格样式预览" value={pricePreviewMode} onChange={(event) => setPricePreviewMode(event.target.value)}>{PRICE_DISPLAY_MODES.map((mode) => <option key={mode.id} value={mode.id}>{mode.id} · {mode.label}</option>)}</select></Field><small>仅切换编辑预览，实际展示由分发样式开关决定</small></div>{tab === "content" && <ProductsContent active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} />}{tab === "style" && <ProductsStyleEditor active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} previewFocus={previewFocus} />}{tab === "layout" && <ProductsLayoutEditor active={active} updateNode={updateNode} />}</div>;
   }
 
   if (type === "Toggle") {
@@ -2371,7 +2390,34 @@ function ProductPriceModeStyleEditor({ active, updateNode, pricePreviewMode }) {
   return <div className="product-mode-style"><div className="product-mode-style-heading"><h4>当前价格样式</h4><button type="button" className="text-action" disabled={!styles[pricePreviewMode]} onClick={() => { const next = { ...styles }; delete next[pricePreviewMode]; updateNodeConfig(active, updateNode, { priceModeStyles: next }); }}>恢复通用样式</button></div><div className="split-fields">{number("主价字号", "mainFontSize")}{color("主价颜色", "mainColor", "#161616")}</div>{hasStrike && <div className="split-fields">{number("划线价字号", "strikeFontSize", 40)}{color("划线价颜色", "strikeColor", "#999999")}</div>}</div>;
 }
 
-function ProductsStyleEditor({ active, updateNode, pricePreviewMode }) {
+const PRODUCT_PARTS = [
+  ["name", "商品名称"], ["price", "主价格"], ["reference", "参考价"], ["monthly", "月均价"],
+  ["supporting", "辅助文案"], ["saving", "优惠信息"], ["save", "SAVE 文案"], ["badge", "商品角标"],
+];
+
+function productPartStyle(config, part) {
+  const value = config.productPartStyles?.[part] ?? {};
+  return {
+    ...(Number(value.fontSize) > 0 ? { fontSize: `${value.fontSize}px` } : {}),
+    ...(validHexColor(value.color) ? { color: value.color } : {}),
+  };
+}
+
+function hasCustomProductPlacement(config) {
+  return Object.values(config.productPartStyles ?? {}).some((value) => value.order || value.align || Number(value.offsetX) || Number(value.offsetY));
+}
+
+function ProductPartStyleEditor({ active, updateNode, previewFocus }) {
+  const requested = previewFocus?.id === active.id ? previewFocus.area?.replace(/^product-/, "") : null;
+  const [part, setPart] = useState("name");
+  useEffect(() => { if (PRODUCT_PARTS.some(([id]) => id === requested)) setPart(requested); }, [requested]);
+  const styles = active.config?.productPartStyles ?? {};
+  const current = styles[part] ?? {};
+  const patch = (key, value) => updateNodeConfig(active, updateNode, { productPartStyles: { ...styles, [part]: { ...current, [key]: value } } });
+  return <section className="product-part-editor" data-inspector-section="product-part"><h4>商品内元素</h4><Field label="编辑元素"><select value={part} onChange={(event) => setPart(event.target.value)}>{PRODUCT_PARTS.map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select></Field><div className="split-fields"><Field label="字号"><div className="number-unit"><input type="number" min="8" max="64" placeholder="继承模板" value={current.fontSize ?? ""} onChange={(event) => patch("fontSize", event.target.value)} /><span>px</span></div></Field><Field label="文字颜色"><div className="product-mode-color"><input type="color" aria-label="当前元素文字颜色色块" value={validHexColor(current.color) ? current.color : "#222222"} onChange={(event) => patch("color", event.target.value)} /><input aria-label="当前元素文字颜色" placeholder="继承模板" value={current.color ?? ""} onChange={(event) => patch("color", event.target.value)} /></div></Field></div><div className="split-fields"><Field label="水平位置"><select value={current.align ?? ""} onChange={(event) => patch("align", event.target.value)}><option value="">沿用当前布局</option><option value="left">居左</option><option value="center">居中</option><option value="right">居右</option></select></Field><Field label="上下顺序"><select value={current.order ?? ""} onChange={(event) => patch("order", event.target.value)}><option value="">沿用当前布局</option>{PRODUCT_PARTS.map(([, label], index) => <option key={index} value={index + 1}>第 {index + 1} 位</option>)}</select></Field></div><div className="split-fields"><Field label="水平偏移"><div className="number-unit"><input type="number" min="-120" max="120" value={current.offsetX ?? 0} onChange={(event) => patch("offsetX", event.target.value)} /><span>px</span></div></Field><Field label="垂直偏移"><div className="number-unit"><input type="number" min="-120" max="120" value={current.offsetY ?? 0} onChange={(event) => patch("offsetY", event.target.value)} /><span>px</span></div></Field></div></section>;
+}
+
+function ProductsStyleEditor({ active, updateNode, pricePreviewMode, previewFocus }) {
   const verticalBlue = productLayout(active.config) === "vertical";
   return <div className="product-color-settings">
     <ProductColorField label={verticalBlue ? "商品角标颜色" : "商品标签颜色"} active={active} updateNode={updateNode} name="badgeGradient" fallback={["#ff860a", "#ffb000", "#ffd10b"]} gradient />
@@ -2382,7 +2428,8 @@ function ProductsStyleEditor({ active, updateNode, pricePreviewMode }) {
     {active.config?.saveBackgroundColor && <ProductColorField label="SAVE 背景颜色" active={active} updateNode={updateNode} name="saveBackgroundColor" fallback="#ffffff" />}
     <ProductColorField label="购买按钮文字颜色" active={active} updateNode={updateNode} name="purchaseTextGradient" fallback={["#ffffff", "#ffffff", "#ffffff"]} gradient />
     <ProductColorField label="购买按钮背景颜色" active={active} updateNode={updateNode} name="purchaseBackgroundGradient" fallback={["#ff8707", "#ffb000", "#ffd10b"]} gradient />
-    <h4>套餐文字</h4><div className="split-fields"><ConfigNumberField label="名称字号" active={active} updateNode={updateNode} name="nameFontSize" fallback="" min={8} max={48} suffix="px" /><ConfigNumberField label="通用价格字号" active={active} updateNode={updateNode} name="priceFontSize" fallback="" min={8} max={56} suffix="px" /></div><div className="split-fields"><ConfigNumberField label="辅助文案字号" active={active} updateNode={updateNode} name="detailFontSize" fallback="" min={8} max={40} suffix="px" /><ConfigNumberField label="角标字号" active={active} updateNode={updateNode} name="badgeFontSize" fallback="" min={8} max={40} suffix="px" /></div><ProductPriceModeStyleEditor active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} />
+    <h4>商品框体</h4><div className="split-fields"><ConfigNumberField label="框体宽度" active={active} updateNode={updateNode} name="planWidth" fallback="" min={40} max={100} suffix="%" /><ConfigNumberField label="框体最小高度" active={active} updateNode={updateNode} name="planHeight" fallback="" min={30} max={300} suffix="px" /></div><ConfigNumberField label="框体内边距" active={active} updateNode={updateNode} name="planPadding" fallback="" min={0} max={40} suffix="px" />
+    <ProductPartStyleEditor active={active} updateNode={updateNode} previewFocus={previewFocus} /><ProductPriceModeStyleEditor active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} />
   </div>;
 }
 
@@ -2396,7 +2443,6 @@ function ProductsLayoutEditor({ active, updateNode }) {
       <Field label="布局类型"><select aria-label="布局类型" value={layout} onChange={(event) => updateNodeConfig(active, updateNode, { packageLayout: event.target.value })}>{PRODUCT_LAYOUTS.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}</select></Field>
       {(layout === "vertical" || layout === "horizontal") && <Field label="卡片内容排列"><select aria-label="卡片内容排列" value={config.cardContentLayout ?? "standard"} onChange={(event) => updateNodeConfig(active, updateNode, { cardContentLayout: event.target.value })}>{layout === "vertical" ? <><option value="standard">名称与价格分列</option><option value="radio-stacked">单选圆点、名称与价格纵排</option><option value="split-summary">名称和说明居左、价格居右</option></> : <><option value="standard">标准横向卡片</option><option value="duration-grid">数字、期限与价格纵排</option></>}</select></Field>}
       {layout === "vertical" && <><label className="switch-row"><input type="checkbox" checked={config.showRadio === true} onChange={(event) => updateNodeConfig(active, updateNode, { showRadio: event.target.checked })} /><strong>显示单选圆点</strong></label><label className="switch-row"><input type="checkbox" checked={config.showMainPrice !== false} onChange={(event) => updateNodeConfig(active, updateNode, { showMainPrice: event.target.checked })} /><strong>显示主价格</strong></label></>}
-      <ConfigNumberField label="套餐最小高度" active={active} updateNode={updateNode} name="planHeight" fallback="" min={30} max={300} suffix="px" />
     </>}
     <h4>组件位置</h4><ElementLayoutEditor active={active} updateNode={updateNode} />
   </>;
@@ -2667,15 +2713,10 @@ function CarouselContent({ active, updateNode, addNestedNode, allowAdd = true })
 
 function ProductsContent({ active, updateNode, pricePreviewMode }) {
   const config = active.config ?? {};
-    const verticalBlue = productLayout(config, config.productTemplate) === "vertical";
     const variant = config.productTemplate ?? (config.bluePrivilege ? "blue-privilege" : active.content?.includes("¥1198") ? "sku-sheet" : active.content?.includes("新用户立省") ? "payment-recovery" : "membership-plans");
     const rows = productPackageRows(active, variant);
     const updateRows = (nextRows, patch = {}) => updateNode(active.id, { config: { ...config, productTemplate: variant, packageRows: nextRows, ...patch } });
     const updateRow = (index, patch) => updateRows(rows.map((row, rowIndex) => rowIndex === index ? { ...row, ...patch } : row));
-    const optionalField = (row, index, valueKey, visibilityKey, label, hiddenByReference = false) => {
-      const available = Boolean(row[valueKey]);
-      return <div className="product-optional-field" key={valueKey}><label className="switch-row"><input type="checkbox" aria-label={`套餐 ${index + 1} 展示${label}`} checked={available && !hiddenByReference && row[visibilityKey] === true} disabled={!available || hiddenByReference} onChange={(event) => updateRow(index, { [visibilityKey]: event.target.checked })} /><span>{!available ? "无文案" : hiddenByReference ? "已隐藏" : row[visibilityKey] ? "开启" : "关闭"}</span><strong>{label}</strong></label>{hiddenByReference && <small className="property-copy">展示参考价时不显示优惠信息</small>}</div>;
-    };
     const linked = config.linkedProducts === true;
     const removeRow = (index) => {
       if (rows.length <= 1) return;
@@ -2699,10 +2740,6 @@ function ProductsContent({ active, updateNode, pricePreviewMode }) {
           {linked ? <div className="product-sku-summary"><span>{row.name}</span><span>SKU：{row.skuId}</span></div> : <div className="split-fields"><Field label="展示名称"><input aria-label={`套餐 ${index + 1} 名称`} value={row.name} onChange={(event) => updateRow(index, { name: event.target.value })} /></Field><Field label="SKU ID（演示映射）"><select aria-label={`套餐 ${index + 1} SKU ID`} value={row.skuId ?? ""} onChange={(event) => { const previous = skuById(row.skuId); const next = skuById(event.target.value); updateRow(index, { skuId: event.target.value, name: !row.name || row.name === previous?.displayName ? next?.displayName ?? row.name : row.name }); }}><option value="">请选择 SKU</option>{DEMO_SKUS.map((sku) => <option key={sku.id} value={sku.id}>{sku.id} · {sku.label}</option>)}</select></Field></div>}
           <div className="product-sku-summary" aria-label={`套餐 ${index + 1} SKU 商品信息`}><span>周期：{months === 0 ? "终身" : months ? `${months} 个月` : "未关联"}</span><span>总价：{fields.total || "未关联"}</span>{months !== 0 && <span>月均价：{fields.monthly || "未关联"}</span>}{fields.referenceTotal && <span>参考价：{fields.referenceTotal}</span>}</div>
           {skuById(row.skuId)?.referenceTotal && <label className="switch-row"><input type="checkbox" aria-label={`套餐 ${index + 1} 展示参考总价`} checked={row.showReferencePrice !== false} onChange={(event) => updateRow(index, { showReferencePrice: event.target.checked })} /><span>{row.showReferencePrice !== false ? "开启" : "关闭"}</span><strong>展示参考价</strong></label>}
-          {optionalField(row, index, "supportingCopy", "showSupportingCopy", "辅助文案")}
-          {optionalField(row, index, "savingCopy", "showSavingCopy", verticalBlue ? "总价旁优惠信息" : "优惠信息", verticalBlue && Boolean(fields.referenceTotal))}
-          {optionalField(row, index, "saveCopy", "showSaveCopy", "SAVE 文案")}
-          {optionalField(row, index, "badgeText", "showBadge", "商品角标")}
         </section>;
       })}</div>
       {!linked && !config.linkedTabsId && <button type="button" className="text-action" onClick={() => updateRows([...rows, { name: "新套餐", skuId: "", supportingCopy: "", savingCopy: "", saveCopy: "", badgeText: "", showSupportingCopy: false, showReferencePrice: false, showSavingCopy: false, showSaveCopy: false, showBadge: false }])}><Plus size={15} /> 添加套餐</button>}
@@ -3684,7 +3721,12 @@ function PreviewProducts({ content, config = {}, childrenNodes = [], priceMode =
   useEffect(() => setChosen(defaultChoice), [defaultChoice]);
   const embeddedList = childrenNodes.find((child) => child.type === "List");
   const embeddedBenefits = embeddedList?.config?.listRows?.map((row) => row.title).filter(Boolean) ?? embeddedList?.content?.split("\n").map((line) => line.split("|")[0]).filter(Boolean);
-  if (config.purchasePerCard) return <div className="preview-products-credit-list">{rows.map((row, index) => <div className="preview-products-credit" key={`${row.skuId || row.name}-${index}`}><span><strong>{row.name}</strong>{row.supportingCopy && <small>{row.supportingCopy}</small>}</span><button type="button" onClick={(event) => { event.stopPropagation(); onPurchase?.(row, index); }}>{resolveProductPrice(row, priceMode).main}</button></div>)}</div>;
+  if (config.purchasePerCard) return <div className="preview-products-credit-list">{rows.map((row, index) => {
+    const custom = hasCustomProductPlacement(config);
+    const part = (id) => config.productPartStyles?.[id] ?? {};
+    const partPlacement = (id, order) => ({ ...productPartStyle(config, id), ...(custom ? { order: Number(part(id).order) || order, alignSelf: part(id).align === "right" ? "flex-end" : part(id).align === "center" ? "center" : "flex-start", transform: Number(part(id).offsetX) || Number(part(id).offsetY) ? `translate(${Number(part(id).offsetX) || 0}px, ${Number(part(id).offsetY) || 0}px)` : undefined } : {}) });
+    return <div className={`preview-products-credit${custom ? " custom" : ""}`} key={`${row.skuId || row.name}-${index}`} onClick={(event) => onInspect?.(event, index)} style={{ ...(Number(config.planWidth) > 0 ? { width: `${config.planWidth}%`, marginInline: "auto" } : {}), ...(Number(config.planHeight) > 0 ? { minHeight: `${config.planHeight}px` } : {}), ...(config.planPadding !== "" && config.planPadding !== undefined ? { padding: `${config.planPadding}px` } : {}) }}><span className="preview-credit-copy"><strong data-inspector-area="product-name" style={partPlacement("name", 1)}>{row.name}</strong>{row.supportingCopy && <small data-inspector-area="product-supporting" style={partPlacement("supporting", 3)}>{row.supportingCopy}</small>}</span><button type="button" data-inspector-area="product-price" style={partPlacement("price", 2)} onClick={(event) => { event.stopPropagation(); onPurchase?.(row, index); }}>{resolveProductPrice(row, priceMode).main}</button></div>;
+  })}</div>;
   return <div className={`preview-products product-layout-${layout} product-count-${Math.min(rows.length, 3)}`}>{rows.map((row, index) => <ProductPackageCard key={`${row.skuId || row.name}-${index}`} plan={row} index={index} config={config} layout={layout} selected={index === chosen} priceMode={priceMode} onChoose={setChosen} onInspect={onInspect} embeddedBenefits={embeddedBenefits} onBenefitInspect={embeddedList ? () => onChildSelect?.(embeddedList.id) : undefined} />)}</div>;
 }
 

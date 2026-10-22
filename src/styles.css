@@ -2085,3 +2085,21 @@ textarea { min-height: 80px; resize: vertical; }
 
 .preview-page-background-wrap { position: absolute !important; inset: 0; z-index: 0; margin: 0 !important; }
 .preview-page-background, .preview-page-background img { display: block; width: 100%; height: 100%; }
+
+.product-part-editor { margin-top: 18px; padding-top: 12px; border-top: 1px solid #e6e3ec; }
+.product-part-editor h4 { margin: 0 0 10px; }
+.product-part-editor .split-fields { align-items: start; }
+.product-part-editor input, .product-part-editor select { min-width: 0; }
+.ht-blue-paywall .ht-plan-shell:has(> :is(.ht-custom-plan, .ht-sized-plan)), .ht-membership-paywall .ht-plan-shell:has(> :is(.ht-custom-plan, .ht-sized-plan)) { height: auto; min-height: 0; overflow-y: visible; }
+.preview-products.product-layout-horizontal:has(> :is(.ht-custom-plan, .ht-sized-plan)), .preview-products.product-layout-standard:has(> :is(.ht-custom-plan, .ht-sized-plan)) { height: auto; min-height: 0; }
+:is(.ht-paywall, .preview-products) .ht-custom-plan { display: flex !important; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 3px; box-sizing: border-box; min-width: 0; max-width: 100%; height: auto !important; text-align: inherit; }
+:is(.ht-paywall, .preview-products) .ht-custom-plan .ht-custom-part { position: static !important; display: block !important; width: max-content; max-width: 100%; min-width: 0; margin: 0; padding: 0; background: transparent; box-shadow: none; line-height: 1.15; overflow-wrap: anywhere; white-space: normal; }
+:is(.ht-paywall, .preview-products) .ht-custom-plan .ht-custom-name { font-size: 4cqw; font-weight: 700; }
+:is(.ht-paywall, .preview-products) .ht-custom-plan .ht-custom-price { font-size: 5cqw; font-weight: 800; }
+:is(.ht-paywall, .preview-products) .ht-custom-plan .ht-custom-reference { color: #999; text-decoration: line-through; }
+:is(.ht-paywall, .preview-products) .ht-custom-plan .ht-custom-monthly { color: #777; }
+:is(.ht-paywall, .preview-products) .ht-custom-plan .ht-custom-saving, :is(.ht-paywall, .preview-products) .ht-custom-plan .ht-custom-save { color: var(--save-text-color, #ff8207); }
+:is(.ht-paywall, .preview-products) .ht-custom-plan .ht-custom-badge { padding: 2px 5px; border-radius: 3px; background: var(--badge-background, #ff860a); color: #fff; }
+.preview-products-credit.custom { display: flex; flex-direction: column; align-items: stretch; }
+.preview-products-credit.custom .preview-credit-copy { display: contents; }
+.preview-products-credit.custom button { min-width: 0; }
