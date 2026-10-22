@@ -191,3 +191,9 @@
 第 9 张来源 Switch 默认 OFF：OFF 展示 `Enable Family Sharing` 与 `Continue`，ON 展示 `Family Sharing enabled` 与 `Start 1 week free trial`；ON 的 Purchase button 仍为 Standard checkout。共用开关与按钮新增可编辑的开启态文案联动，第 9 张本地实际点击验证两态文案与按钮支付预览。ON 的 Package 属性提示尚需选择 offering，故 `$69.99/year` 与试用时长仍只是来源预览文案，未验证真实 SKU、试用资格或交易结果。
 
 第 7 张来源 Switch 也有独立的 ON 商品组：OFF 为 Yearly、Monthly，ON 为 Yearly Family、Monthly Family，顺序和年档选中态不变。Switch control 在来源 ON 状态的 Track 色为 `#06BCD2`，按钮仍为 Continue。Demo 用同一个共用开关/商品套餐联动配置还原两组，已在本地点击确认 OFF→ON 显示对应两张家庭商品卡；来源中真实 SKU 绑定与交易仍未核对。
+
+第 10 张逐项复核了五档点数商品中的首档和末档购买按钮，来源均为 Standard checkout；首档 Package 属性提示尚未选择 offering，故五档价格仍只能作为预览文案，不能视为已绑定 SKU。本地保留共用商品组件的逐档按钮及所点商品支付预览，本批未改动该张视觉。
+
+第 11 张来源两档商品中的首档 Package 同样提示未选择 offering，主购买按钮为 Standard checkout；本地继续使用来源预览价格，不把它记为真实 SKU 验收。
+
+第 12 张在源编辑器切换标签复核：默认 Premium，标题为 `Unlock the universe with our Premium plan`，商品为 Yearly `$69.99/yr`、Monthly `$9.99/mo`；Standard 标题为 `Get started with our Standard plan`，商品为 Weekly `$2.99/wk`、6 Months `$39.99/6mo`。两态共用五条可见权益，按钮均为 Continue。本地用同一选项卡、标题和商品套餐组件联动两组配置；仅此模板新增 Standard 的商品预览行，来源 SKU 与购买结果仍未验收。

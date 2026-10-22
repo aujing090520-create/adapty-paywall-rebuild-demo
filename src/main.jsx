@@ -2047,7 +2047,7 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
   }
 
   if (isTextNodeType(type)) {
-    return <div className="property-scroll"><h3>Text</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}{tab === "content" && <TextContent active={active} updateNode={updateNode} />}{tab === "style" && <TextStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
+    return <div className="property-scroll"><h3>Text</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}{tab === "content" && <><TextContent active={active} updateNode={updateNode} />{Array.isArray(active.config?.tabContents) && <section className="product-row-editor"><h4>标签切换文案</h4>{active.config.tabContents.map((value, index) => <Field key={index} label={`选项 ${index + 1} 文案`} required><input value={value} onChange={(event) => updateNodeConfig(active, updateNode, { tabContents: active.config.tabContents.map((item, position) => position === index ? event.target.value : item) })} /></Field>)}</section>}</>}{tab === "style" && <TextStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
   }
 
   if (["Image", "Video", "Black Friday Image"].includes(type) || /^Image \d+$/.test(type)) {
@@ -2675,8 +2675,10 @@ function ProductsContent({ active, updateNode, pricePreviewMode }) {
         if (linked && row.emptySlot) return <section className="product-row-editor" key={index}><header><strong>套餐 {index + 1} · 空坑位</strong></header></section>;
         const fields = productPriceFields(row);
         const months = billingMonths(row);
+        const groupLabel = config.linkedTabsId && index % Number(config.groupSize) === 0 ? config.tabGroupLabels?.[Math.floor(index / Number(config.groupSize))] : null;
         return <section className="product-row-editor" key={index}>
-          <header><strong>套餐 {index + 1}</strong>{!linked && <button type="button" className="icon" title={rows.length <= 1 ? "至少保留一个套餐" : "删除套餐"} aria-label={`删除套餐 ${index + 1}`} disabled={rows.length <= 1} onClick={() => removeRow(index)}><X size={15} /></button>}</header>
+          {groupLabel && <h4>{groupLabel}</h4>}
+          <header><strong>套餐 {index + 1}</strong>{!linked && !config.linkedTabsId && <button type="button" className="icon" title={rows.length <= 1 ? "至少保留一个套餐" : "删除套餐"} aria-label={`删除套餐 ${index + 1}`} disabled={rows.length <= 1} onClick={() => removeRow(index)}><X size={15} /></button>}</header>
           {linked ? <div className="product-sku-summary"><span>{row.name}</span><span>SKU：{row.skuId}</span></div> : <div className="split-fields"><Field label="展示名称"><input aria-label={`套餐 ${index + 1} 名称`} value={row.name} onChange={(event) => updateRow(index, { name: event.target.value })} /></Field><Field label="SKU ID（演示映射）"><select aria-label={`套餐 ${index + 1} SKU ID`} value={row.skuId ?? ""} onChange={(event) => { const previous = skuById(row.skuId); const next = skuById(event.target.value); updateRow(index, { skuId: event.target.value, name: !row.name || row.name === previous?.displayName ? next?.displayName ?? row.name : row.name }); }}><option value="">请选择 SKU</option>{DEMO_SKUS.map((sku) => <option key={sku.id} value={sku.id}>{sku.id} · {sku.label}</option>)}</select></Field></div>}
           <div className="product-sku-summary" aria-label={`套餐 ${index + 1} SKU 商品信息`}><span>周期：{months === 0 ? "终身" : months ? `${months} 个月` : "未关联"}</span><span>总价：{fields.total || "未关联"}</span>{months !== 0 && <span>月均价：{fields.monthly || "未关联"}</span>}{fields.referenceTotal && <span>参考价：{fields.referenceTotal}</span>}</div>
           {skuById(row.skuId)?.referenceTotal && <label className="switch-row"><input type="checkbox" aria-label={`套餐 ${index + 1} 展示参考总价`} checked={row.showReferencePrice !== false} onChange={(event) => updateRow(index, { showReferencePrice: event.target.checked })} /><span>{row.showReferencePrice !== false ? "开启" : "关闭"}</span><strong>展示参考价</strong></label>}
@@ -2686,7 +2688,7 @@ function ProductsContent({ active, updateNode, pricePreviewMode }) {
           {optionalField(row, index, "badgeText", "showBadge", "商品角标")}
         </section>;
       })}</div>
-      {!linked && <button type="button" className="text-action" onClick={() => updateRows([...rows, { name: "新套餐", skuId: "", supportingCopy: "", savingCopy: "", saveCopy: "", badgeText: "", showSupportingCopy: false, showReferencePrice: false, showSavingCopy: false, showSaveCopy: false, showBadge: false }])}><Plus size={15} /> 添加套餐</button>}
+      {!linked && !config.linkedTabsId && <button type="button" className="text-action" onClick={() => updateRows([...rows, { name: "新套餐", skuId: "", supportingCopy: "", savingCopy: "", saveCopy: "", badgeText: "", showSupportingCopy: false, showReferencePrice: false, showSavingCopy: false, showSaveCopy: false, showBadge: false }])}><Plus size={15} /> 添加套餐</button>}
     </>;
 }
 
@@ -3412,9 +3414,11 @@ function HelloTalkPaywall({ variant, nodes, activeNode, onSelect, onButtonAction
 function PaywallPreview({ nodes, template, mode, pricePreviewMode, activeNode, onSelect, onUpdateHeroPosition, onReorder, retentionPreviewOpen, onOpenRetention, onCloseRetention }) {
   const [actionPreview, setActionPreview] = useState(null);
   const [previewToggles, setPreviewToggles] = useState({});
+  const [previewTabs, setPreviewTabs] = useState({});
   const [screenIndex, setScreenIndex] = useState(0);
   const configuredScreenIndex = Number(nodes.find((item) => item.type === "Screen Flow")?.config?.defaultStep ?? 0);
   useEffect(() => setPreviewToggles({}), [template?.id]);
+  useEffect(() => setPreviewTabs({}), [template?.id]);
   useEffect(() => setScreenIndex(configuredScreenIndex), [template?.id, configuredScreenIndex]);
   const runButtonAction = (node, product) => {
     if (!node) return;
@@ -3459,7 +3463,7 @@ function PaywallPreview({ nodes, template, mode, pricePreviewMode, activeNode, o
     latestAtDepth[depth] = node.id;
     latestAtDepth.length = depth + 1;
   });
-  return <div data-no-translate={template?.isGallery ? true : undefined} className={`phone template-${hero?.theme ?? "lavender"} ${template?.isGallery ? `template-${template.id}${![5, 6, 38].includes(template.sourceOrder) ? " rc-rebuilt" : ""}` : ""}`}><button className="close-phone" aria-label="Close preview">×</button><div className="phone-content">{!template?.isNew && <span className="phone-kicker">PREMIUM ACCESS</span>}{nodes.filter((node) => !parents.has(node.id)).map((node) => <PreviewElement key={node.id} node={node} children={children.get(node.id) ?? []} getChildren={(childId) => children.get(childId) ?? []} active={node.id === activeNode} activeNode={activeNode} onSelect={onSelect} onButtonAction={runButtonAction} onReorder={onReorder} pricePreviewMode={pricePreviewMode} toggleStates={previewToggles} onToggleChange={(id, enabled) => setPreviewToggles((current) => ({ ...current, [id]: enabled }))} screenIndex={screenIndex} onScreenChange={setScreenIndex} />)}</div>{overlay}</div>;
+  return <div data-no-translate={template?.isGallery ? true : undefined} className={`phone template-${hero?.theme ?? "lavender"} ${template?.isGallery ? `template-${template.id}${![5, 6, 38].includes(template.sourceOrder) ? " rc-rebuilt" : ""}` : ""}`}><button className="close-phone" aria-label="Close preview">×</button><div className="phone-content">{!template?.isNew && <span className="phone-kicker">PREMIUM ACCESS</span>}{nodes.filter((node) => !parents.has(node.id)).map((node) => <PreviewElement key={node.id} node={node} children={children.get(node.id) ?? []} getChildren={(childId) => children.get(childId) ?? []} active={node.id === activeNode} activeNode={activeNode} onSelect={onSelect} onButtonAction={runButtonAction} onReorder={onReorder} pricePreviewMode={pricePreviewMode} toggleStates={previewToggles} onToggleChange={(id, enabled) => setPreviewToggles((current) => ({ ...current, [id]: enabled }))} tabStates={previewTabs} onTabChange={(id, index) => setPreviewTabs((current) => ({ ...current, [id]: index }))} screenIndex={screenIndex} onScreenChange={setScreenIndex} />)}</div>{overlay}</div>;
 }
 
 function ButtonActionOverlay({ preview, onClose }) {
@@ -3482,7 +3486,7 @@ function previewClickArea(event) {
   return "component";
 }
 
-function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, onReorder, dragProps, reorderHandle, children = [], getChildren = () => [], pricePreviewMode = "1", toggleStates = {}, onToggleChange, screenIndex = 0, onScreenChange }) {
+function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, onReorder, dragProps, reorderHandle, children = [], getChildren = () => [], pricePreviewMode = "1", toggleStates = {}, onToggleChange, tabStates = {}, onTabChange, screenIndex = 0, onScreenChange }) {
   const select = (event) => {
     const indexed = event?.target instanceof Element ? event.target.closest("[data-inspector-slide], [data-inspector-row]") : null;
     const slideValue = indexed?.getAttribute(indexed.hasAttribute("data-inspector-row") ? "data-inspector-row" : "data-inspector-slide");
@@ -3510,7 +3514,7 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, on
   const textStyle = { color: config.color, fontSize: config.fontSize ? `${config.fontSize}px` : undefined, fontWeight: config.fontWeight, textAlign: config.textAlign };
   const buttonStyle = { backgroundColor: config.backgroundColor, color: config.color, borderRadius: config.radius === undefined ? undefined : `${config.radius}px` };
   const cardStyle = { backgroundColor: config.backgroundColor, borderRadius: config.radius === undefined ? undefined : `${config.radius}px`, boxShadow: config.shadow ? `0 ${Math.max(2, Math.round(config.shadow / 2))}px ${config.shadow}px #17172833` : undefined };
-  const renderChildren = (items = children) => items.map((child) => <PreviewElement key={child.id} node={child} children={getChildren(child.id)} getChildren={getChildren} active={child.id === activeNode} activeNode={activeNode} onSelect={onSelect} onButtonAction={onButtonAction} onReorder={onReorder} pricePreviewMode={pricePreviewMode} toggleStates={toggleStates} onToggleChange={onToggleChange} screenIndex={screenIndex} onScreenChange={onScreenChange} />);
+  const renderChildren = (items = children) => items.map((child) => <PreviewElement key={child.id} node={child} children={getChildren(child.id)} getChildren={getChildren} active={child.id === activeNode} activeNode={activeNode} onSelect={onSelect} onButtonAction={onButtonAction} onReorder={onReorder} pricePreviewMode={pricePreviewMode} toggleStates={toggleStates} onToggleChange={onToggleChange} tabStates={tabStates} onTabChange={onTabChange} screenIndex={screenIndex} onScreenChange={onScreenChange} />);
   const isTextLayer = isTextNodeType(node.type);
   const isListLayer = ["List", "Feature list", "Features"].includes(node.type) || /^List \d+$/.test(node.type);
   const isListItemLayer = node.type === "List item" || node.type === "Today" || /^Item \d+$/.test(node.type) || /^Day \d+$/.test(node.type);
@@ -3535,7 +3539,11 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, on
   }
   if (node.type === "Stars") return wrap(<div className="preview-stars">{node.content || "★★★★★"}</div>);
   if (node.type === "Discount") return wrap(<h2>{node.content || "Discount"}</h2>, "preview-headline");
-  if (isTextLayer) return wrap(node.variant === "headline" ? <h2 style={textStyle}><RichText node={node} fallback="Heading" interactive /></h2> : node.variant === "section" ? <h3 style={textStyle}><RichText node={node} interactive /></h3> : <p style={textStyle} className={node.variant === "boundary" ? "preview-boundary" : ""}><RichText node={node} fallback="Supporting text" interactive /></p>, node.variant === "headline" ? "preview-headline" : "preview-copy");
+  if (isTextLayer) {
+    const tabIndex = tabStates[config.linkedTabsId] ?? config.tabDefaultIndex ?? 0;
+    const visibleNode = Array.isArray(config.tabContents) ? { ...node, content: config.tabContents[tabIndex] ?? node.content, textRuns: undefined } : node;
+    return wrap(node.variant === "headline" ? <h2 style={textStyle}><RichText node={visibleNode} fallback="Heading" interactive /></h2> : node.variant === "section" ? <h3 style={textStyle}><RichText node={visibleNode} interactive /></h3> : <p style={textStyle} className={node.variant === "boundary" ? "preview-boundary" : ""}><RichText node={visibleNode} fallback="Supporting text" interactive /></p>, node.variant === "headline" ? "preview-headline" : "preview-copy");
+  }
   if (isListLayer && config.listVariant === "testimonials") return wrap(<div className="preview-testimonials">{(config.testimonialRows ?? []).map((row, index) => <article key={index} data-inspector-row={index}><strong>{row.title}</strong><span aria-label="5 星评价">★★★★★</span><p>{row.quote}</p>{row.author && <small>{row.author}</small>}</article>)}</div>, "preview-testimonials-wrap");
   if (isListLayer) {
     const rows = listRowsFor(node);
@@ -3545,7 +3553,7 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, on
   if (node.type === "Timeline") return config.enabled === false ? null : wrap(<ol className="preview-timeline" style={{ "--timeline-accent": config.accentColor ?? "#6a31e9", "--timeline-line": config.lineColor ?? "#d9cafa" }}>{listRowsFor(node).map((row, index) => <li key={index} data-inspector-row={index}><span className="timeline-marker">{row.marker === "lock" ? <LockKeyhole size={12} /> : row.marker === "bell" ? <Bell size={12} /> : row.marker === "star" ? <Star size={12} /> : index + 1}</span><span><strong>{row.title}</strong>{row.showCaption !== false && row.caption && <small>{row.caption}</small>}</span></li>)}</ol>, "preview-timeline-wrap");
   if (node.type === "Social Proof") return wrap(<div className="preview-social-proof">{config.leftDecorationSrc && <img className="preview-social-decoration preview-social-decoration-left" src={config.leftDecorationSrc} alt="" />}{config.rightDecorationSrc && <img className="preview-social-decoration preview-social-decoration-right" src={config.rightDecorationSrc} alt="" />}<div aria-label={`${config.rating ?? 5} 分`} style={{ color: config.accentColor ?? "#ffb40d" }}>{"★".repeat(Math.max(0, Math.min(5, Math.round(Number(config.rating ?? 5)))))}</div><strong>{config.count ?? "50,000+"}</strong><span>{config.caption ?? node.content}</span></div>, "preview-social-proof-wrap");
   if (node.type === "Award") return wrap(config.leftDecorationSrc && config.rightDecorationSrc ? <div className="preview-award preview-award-decorated"><img src={config.leftDecorationSrc} alt="" /><span><small>{config.source ?? "编辑推荐"}</small><strong>{config.title ?? node.content}</strong>{config.subtitle && <small>{config.subtitle}</small>}</span><img src={config.rightDecorationSrc} alt="" /></div> : <div className="preview-award"><Star size={20} fill={config.accentColor ?? "#f3a718"} color={config.accentColor ?? "#f3a718"} /><strong>{config.title ?? node.content}</strong>{config.subtitle && <span>{config.subtitle}</span>}<small>{config.source ?? "编辑推荐"}</small></div>, "preview-award-wrap");
-  if (node.type === "Tabs") return wrap(<PreviewTabs tabs={config.tabs ?? []} defaultTab={config.defaultTab ?? 0} config={config} />, "preview-tabs-wrap");
+  if (node.type === "Tabs") return wrap(<PreviewTabs tabs={config.tabs ?? []} selected={tabStates[node.id] ?? config.defaultTab ?? 0} onChange={(index) => onTabChange?.(node.id, index)} config={config} />, "preview-tabs-wrap");
   if (node.type === "Stack") return wrap(<div className="preview-stack" style={{ flexDirection: config.axis === "horizontal" ? "row" : "column", gap: `${config.gap ?? 8}px`, backgroundColor: config.backgroundColor }}>{renderChildren()}</div>, "preview-stack-wrap");
   if (node.type === "Icon") {
     const Icon = { star: Star, heart: Heart, check: Check, shield: ShieldCheck, users: Users, gift: Gift }[config.iconName] ?? Star;
@@ -3580,7 +3588,9 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, on
     }
     if (config.showCards === false) return null;
     const switched = Boolean(toggleStates[config.linkedToggleId]);
-    return wrap(<PreviewProducts key={config.linkedToggleId ? String(switched) : node.id} content={node.content} config={node.config} childrenNodes={children} priceMode={pricePreviewMode} switched={switched} onInspect={(event, index) => onSelect(node.id, previewClickArea(event), index + (switched ? Number(config.groupSize) || 0 : 0))} onChildSelect={(childId) => onSelect(childId, "row", 0)} onPurchase={(plan, index) => { onSelect(node.id, "price", index); onButtonAction?.({ type: "Purchase Button", config: { action: "Purchase" } }, plan); }} />, "preview-products-wrap");
+    const tabIndex = tabStates[config.linkedTabsId] ?? config.tabDefaultIndex ?? 0;
+    const groupOffset = config.linkedTabsId ? tabIndex * (Number(config.groupSize) || 0) : switched ? Number(config.groupSize) || 0 : 0;
+    return wrap(<PreviewProducts key={config.linkedTabsId ? `tab-${tabIndex}` : config.linkedToggleId ? String(switched) : node.id} content={node.content} config={node.config} childrenNodes={children} priceMode={pricePreviewMode} switched={switched} tabIndex={tabIndex} onInspect={(event, index) => onSelect(node.id, previewClickArea(event), index + groupOffset)} onChildSelect={(childId) => onSelect(childId, "row", 0)} onPurchase={(plan, index) => { onSelect(node.id, "price", index + groupOffset); onButtonAction?.({ type: "Purchase Button", config: { action: "Purchase" } }, plan); }} />, "preview-products-wrap");
   }
   if (node.type === "Toggle") return wrap(<PreviewToggle key={`${node.id}-${node.defaultState ?? "Off"}`} content={node.content} defaultState={node.defaultState} config={config} linkedEnabled={toggleStates[node.id]} onChange={(enabled) => onToggleChange?.(node.id, enabled)} />, "preview-toggle-wrap");
   if (["Toggle On", "Toggle Off"].includes(node.type)) return wrap(<div className="preview-toggle-anchor" />, "preview-toggle-anchor-wrap");
@@ -3629,11 +3639,11 @@ function PreviewCarousel({ content, config = {} }) {
   return <div className="preview-carousel"><span>★★★★★</span><p>{copy ? <><strong>{title}</strong><small>{copy}</small></> : slide}</p><div><button aria-label="Previous review" onClick={(event) => { event.stopPropagation(); setCurrent((index) => (index - 1 + slides.length) % slides.length); }}>‹</button><i style={{ gap: `${config.gap ?? 8}px` }}>{slides.map((_, index) => <b className={index === current ? "active" : ""} style={{ color: index === current ? config.accentColor : config.secondaryColor }} key={index}>•</b>)}</i><button aria-label="Next review" onClick={(event) => { event.stopPropagation(); setCurrent((index) => (index + 1) % slides.length); }}>›</button></div></div>;
 }
 
-function PreviewProducts({ content, config = {}, childrenNodes = [], priceMode = "1", switched = false, onInspect, onChildSelect, onPurchase }) {
+function PreviewProducts({ content, config = {}, childrenNodes = [], priceMode = "1", switched = false, tabIndex = 0, onInspect, onChildSelect, onPurchase }) {
   const source = content || childrenNodes.map((child) => child.content).filter(Boolean).join("\n");
   const allRows = productPackageRows({ content: source, config }, config.productTemplate);
   const groupSize = Math.max(1, Number(config.groupSize) || allRows.length);
-  const rows = config.linkedToggleId ? allRows.slice(switched ? groupSize : 0, switched ? groupSize * 2 : groupSize) : allRows;
+  const rows = config.linkedTabsId ? allRows.slice(tabIndex * groupSize, (tabIndex + 1) * groupSize) : config.linkedToggleId ? allRows.slice(switched ? groupSize : 0, switched ? groupSize * 2 : groupSize) : allRows;
   const layout = productLayout(config);
   const requestedChoice = config.linkedProducts && config.defaultSelected === -1 ? -1 : Math.min(Math.max(0, Number(config.defaultSelected) || 0), Math.max(0, rows.length - 1));
   const defaultChoice = config.linkedToggleId && (requestedChoice < 0 || rows[requestedChoice]?.emptySlot) ? rows.findIndex((row) => !row.emptySlot) : requestedChoice;
@@ -3652,11 +3662,9 @@ function PreviewToggle({ content, defaultState = "Off", config = {}, linkedEnabl
   return <button className={`preview-toggle ${enabled ? "enabled" : ""}`} role="switch" aria-checked={enabled} onClick={(event) => { event.stopPropagation(); const next = !enabled; setLocalEnabled(next); onChange?.(next); }}><span><strong>{title}</strong><small>{secondary}</small></span><i style={{ backgroundColor: enabled ? config.onColor : config.offColor }}><b /></i></button>;
 }
 
-function PreviewTabs({ tabs, defaultTab, config }) {
-  const [selected, setSelected] = useState(defaultTab);
-  useEffect(() => setSelected(Math.min(Math.max(0, Number(defaultTab) || 0), Math.max(0, tabs.length - 1))), [defaultTab, tabs.length]);
+function PreviewTabs({ tabs, selected, onChange, config }) {
   const active = tabs[selected];
-  return <div className="preview-tabs"><div role="tablist">{tabs.map((tab, index) => <button type="button" role="tab" aria-selected={index === selected} key={tab.id} style={index === selected ? { color: config.accentColor ?? "#6a31e9", borderColor: config.accentColor ?? "#6a31e9" } : undefined} onClick={(event) => { event.stopPropagation(); setSelected(index); }}>{tab.title}</button>)}</div><div role="tabpanel">{active?.description}</div></div>;
+  return <div className="preview-tabs"><div role="tablist">{tabs.map((tab, index) => <button type="button" role="tab" aria-selected={index === selected} key={tab.id} style={index === selected ? { color: config.accentColor ?? "#6a31e9", borderColor: config.accentColor ?? "#6a31e9" } : undefined} onClick={(event) => { event.stopPropagation(); onChange?.(index); }}>{tab.title}</button>)}</div><div role="tabpanel">{active?.description}</div></div>;
 }
 
 createRoot(document.getElementById("root")).render(<App />);

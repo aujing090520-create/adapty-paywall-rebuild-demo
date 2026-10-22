@@ -95,6 +95,21 @@ test("switch control is not rendered as a second standalone tabs component", () 
   assert.match(firstReview.title, /brown thumb green/);
 });
 
+test("multi-tier tabs preserve both source plan groups and linked heading", () => {
+  const node = (id, type, content, depth, options = {}) => ({ id, type, content, depth, ...options });
+  const tree = createSourceTemplateNodes(revenueCatGallery[11], node);
+  const tabs = tree.find((item) => item.type === "Tabs");
+  const heading = tree.find((item) => item.type === "Header");
+  const products = tree.find((item) => item.type === "Products");
+  assert.deepEqual(tabs.config.tabs.map((tab) => tab.title), ["Standard", "Premium"]);
+  assert.equal(tabs.config.defaultTab, 1);
+  assert.deepEqual(heading.config.tabContents, ["Get started with our Standard plan", "Unlock the universe with our Premium plan"]);
+  assert.equal(heading.config.linkedTabsId, tabs.id);
+  assert.equal(products.config.linkedTabsId, tabs.id);
+  assert.equal(products.config.groupSize, 2);
+  assert.deepEqual(products.config.packageRows.map((row) => [row.name, row.price]), [["Weekly", "$2.99/wk"], ["6 Months", "$39.99/6mo"], ["Yearly", "$69.99/yr"], ["Monthly", "$9.99/mo"]]);
+});
+
 test("testimonial, library, and concert layouts keep their observed first-screen hierarchy", () => {
   const node = (id, type, content, depth, options = {}) => ({ id, type, content, depth, ...options });
   const tree = (order) => createSourceTemplateNodes(revenueCatGallery[order - 1], node);
