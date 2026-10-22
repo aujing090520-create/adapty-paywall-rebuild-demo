@@ -1684,6 +1684,7 @@ textarea { min-height: 80px; resize: vertical; }
 .template-rc-source-21 .preview-products .ht-vertical-plan { padding-right: 25px; }
 .template-rc-source-21 .preview-products .ht-vertical-plan::after { content: ""; position: absolute; right: 8px; top: 13px; width: 14px; height: 14px; border: 1px solid #c7c7c7; border-radius: 50%; }
 .template-rc-source-21 .preview-products .ht-vertical-plan.chosen::after { border-color: #438cd6; background: #438cd6; box-shadow: inset 0 0 0 3px #fff; }
+.template-rc-source-21 .preview-products .ht-vertical-plan.chosen::after { content: "✓"; display: grid; place-items: center; color: #fff; font-size: 9px; box-shadow: none; }
 .template-rc-source-21 .preview-cta { border-radius: 4px; }
 .template-rc-source-22 .preview-award-wrap { margin: 10px 0; }
 .template-rc-source-22 .preview-list { width: 100%; }
@@ -1754,6 +1755,8 @@ textarea { min-height: 80px; resize: vertical; }
 .template-rc-source-25 .preview-products .ht-vertical-plan::after { content: ""; position: absolute; right: 8px; top: 13px; width: 14px; height: 14px; border: 1px solid #c7c7c7; border-radius: 50%; }
 .template-rc-source-25 .preview-products .ht-vertical-plan.chosen { background: #f5f2f8 !important; }
 .template-rc-source-25 .preview-products .ht-vertical-plan.chosen::after { border-color: #ad4bd6; background: #ad4bd6; box-shadow: inset 0 0 0 3px #fff; }
+.template-rc-source-25 .preview-products .ht-blue-plan.chosen::after { content: "✓"; position: absolute; top: 10px; right: 9px; width: 15px; height: 15px; display: grid; place-items: center; border-radius: 50%; background: #ad4bd6; color: #fff; font-size: 10px; }
+.template-rc-source-25 .preview-products .ht-blue-plan b { top: -9px; right: 50%; width: auto; padding: 2px 9px; border-radius: 99px; font-size: 8px; transform: translateX(50%); }
 .template-rc-source-26 [data-node-id$="-image"] { margin: -37px -13px 8px; }
 .template-rc-source-26 [data-node-id$="-image"] .preview-image { height: 148px !important; }
 .template-rc-source-26 .phone-content { text-align: center; }
@@ -1763,6 +1766,7 @@ textarea { min-height: 80px; resize: vertical; }
 .template-rc-source-26 .preview-timeline li:nth-child(3) .timeline-marker { background: #70acdb; }
 .template-rc-source-26 [data-node-id$="-copy-0"] { margin-top: auto; }
 .template-rc-source-26 .preview-button { width: 100%; margin-top: 0; }
+.template-rc-source-26 .preview-button { background: transparent !important; }
 .template-rc-source-26 .preview-cta { border-radius: 99px; }
 .template-rc-source-27 .phone-content { background: #f2f1f6; text-align: center; }
 .template-rc-source-27 .preview-headline h2 { max-width: 290px; margin: 2px auto 12px; font-size: 12px; font-weight: 500; }
