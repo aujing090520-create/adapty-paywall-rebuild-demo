@@ -78,6 +78,11 @@ test("switch control is not rendered as a second standalone tabs component", () 
   assert.equal(tree(7).find((item) => item.type === "Products").config.showRadio, true);
   assert.equal(tree(8).find((item) => item.type === "Products").config.cardContentLayout, "split-summary");
   assert.equal(tree(8).find((item) => item.type === "Products").config.packageRows[1].price, "$5.83/mo");
+  assert.equal(tree(8).find((item) => item.type === "Toggle").config.linkedProductsId, "rc-source-8-products");
+  assert.equal(tree(8).find((item) => item.type === "Products").config.linkedToggleId, "rc-source-8-toggle");
+  assert.equal(tree(8).find((item) => item.type === "Products").config.groupSize, 2);
+  assert.deepEqual(tree(8).find((item) => item.type === "Products").config.packageRows.map((row) => row.name), ["Monthly", "Yearly", "Monthly Family", "Yearly Family"]);
+  assert.equal(tree(8).find((item) => item.type === "Button").config.backgroundColor, "#ffa800");
   assert.deepEqual(tree(8).find((item) => item.type === "List").config.listRows.map((row) => row.leading), ["ticket", "activity", "running"]);
   const firstReview = tree(7).find((item) => item.type === "Carousel")?.config.slides[0];
   assert.match(firstReview.title, /brown thumb green/);

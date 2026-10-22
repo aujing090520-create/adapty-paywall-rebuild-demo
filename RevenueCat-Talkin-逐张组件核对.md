@@ -185,3 +185,5 @@
 第 40 张上线后读回发现年档两侧重复显示年价；已把右侧保留为商品主价，月均说明移到右侧次行，左下仍是优惠文案。该张的金额仍为来源预览示例，未绑定 Talkin 真实 SKU。
 
 共用链接组件补齐了逐项点击动作与配置入口：来源画面能确认第 7 张底部显示 Restore Purchases、Terms、Privacy，但尚未核实 Terms/Privacy 的真实 URL，因此默认留空，点击时提示配置，不臆造目标。Restore Purchases 在本地仅打开恢复购买说明，不请求商店。第 7 张本地构建器已实际点击 Terms 与 Restore Purchases，验证配置定位和反馈；这不代表来源的真实恢复购买和协议目标已通过验收。
+
+第 8 张进一步核对了来源编辑器的开关两态。Switch 的默认状态为 OFF；OFF 下是 Monthly、Yearly，ON 下是 Monthly Family、Yearly Family，两态均为两张商品卡，年档在 ON 画面中选中。ON 的年档说明为 `12 mo • $69.99`、右侧预览价为 `$5.83/mo`；购买按钮的 Open 属性为 Standard checkout，颜色属性为 `#FFA800`。ON 状态的 Package 属性明确提示需要先选择 offering，因此这四档金额只用作预览，不代表已绑定可购买 SKU。Demo 沿用共用开关和商品套餐组件，配置两组商品并联动；本地实际点击验证 OFF→ON→OFF 的文案切换。真实 offering、购买结果以及多视口视觉仍未验收。
