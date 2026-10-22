@@ -197,3 +197,5 @@
 第 11 张来源两档商品中的首档 Package 同样提示未选择 offering，主购买按钮为 Standard checkout；本地继续使用来源预览价格，不把它记为真实 SKU 验收。
 
 第 12 张在源编辑器切换标签复核：默认 Premium，标题为 `Unlock the universe with our Premium plan`，商品为 Yearly `$69.99/yr`、Monthly `$9.99/mo`；Standard 标题为 `Get started with our Standard plan`，商品为 Weekly `$2.99/wk`、6 Months `$39.99/6mo`。两态共用五条可见权益，按钮均为 Continue。本地用同一选项卡、标题和商品套餐组件联动两组配置；仅此模板新增 Standard 的商品预览行，来源 SKU 与购买结果仍未验收。
+
+第 13–15 张双渠道购买按钮属性复核：三张的第一个按钮均为 Standard checkout，第二个均为 Web checkout (browser)，且网页按钮的 Auto dismiss paywall 均开启。源编辑器确认第 13 张主按钮背景 `#F2F2F7`、网页按钮 `#B53231`、胶囊圆角；第 14 张分别为 `#F2F2F7` 和 `#454CF6`，两者圆角 16px；第 15 张分别为 `#F4F4F5` 和 `#D01FE7`，两者圆角 8px。第 14、15 张已改为在按钮组件配置中保存这些值，移除原先近似的 CSS 强制覆盖；本地第 14 张手机预览及配置读回通过。第 13 张首个 Package 属性显示尚未选择 offering。三张真实商品绑定、Billing 跳转和结账后关闭行为均未验收。

@@ -160,6 +160,25 @@ test("testimonial, library, and concert layouts keep their observed first-screen
   assert.equal(tree(39).find((item) => item.type === "Products").config.showCards, false);
 });
 
+test("web checkout templates retain distinct source button actions and appearance", () => {
+  const node = (id, type, content, depth, options = {}) => ({ id, type, content, depth, ...options });
+  for (const [order, primary, web, radius] of [
+    [13, "#f2f2f7", "#b53231", 99],
+    [14, "#f2f2f7", "#454cf6", 16],
+    [15, "#f4f4f5", "#d01fe7", 8],
+  ]) {
+    const tree = createSourceTemplateNodes(revenueCatGallery[order - 1], node);
+    const purchase = tree.find((item) => item.id.endsWith("-action"));
+    const browserCheckout = tree.find((item) => item.id.endsWith("-web-action"));
+    assert.equal(purchase.config.action, "Purchase");
+    assert.equal(purchase.config.backgroundColor, primary);
+    assert.equal(browserCheckout.config.action, "WebCheckout");
+    assert.equal(browserCheckout.config.autoDismiss, true);
+    assert.equal(browserCheckout.config.backgroundColor, web);
+    assert.equal(browserCheckout.config.radius, radius);
+  }
+});
+
 test("source background images missing from the text inventory remain editable image nodes", () => {
   const node = (id, type, content, depth, options = {}) => ({ id, type, content, depth, ...options });
   for (const [order, assetId] of [[30, "1181742_1738081702"], [35, "1181742_1734689045"]]) {

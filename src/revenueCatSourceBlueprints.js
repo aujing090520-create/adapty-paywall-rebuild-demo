@@ -340,8 +340,12 @@ export function createSourceTemplateNodes(template, node) {
     result.push(add("table", "Feature Table", "", { title: order === 27 ? at(7) : "", tableVariant: order === 27 ? "feature-list" : "comparison", ...(order === 27 ? { accentColor: "#25328d", backgroundColor: "#ffffff" } : {}), ...(order === 29 ? { firstColumnLabel: at(1) } : {}), columns: order === 29 ? [at(7), at(8)] : ["包含"], rows: pairedRows.map(([name, description], index) => ({ name, ...(order === 27 ? { icon: ["telescope", "rocket", "star", "orbit", "bell"][index] ?? "star" } : {}), values: order === 29 ? [index === 0 ? "✓" : "—", "✓"] : [description] })) }));
   }
   if (order === 29) result.push(add("copy-0", "Text", at(9)));
-  if (plan.cta !== undefined) result.push(order === 18 ? add("action", "Button", `${at(18)} ${at(19)}`, { action: "Purchase", backgroundColor: template.accent }) : button("action", plan.cta));
-  if (plan.webCta !== undefined) result.push(add("web-action", "Web Paywall Button", at(plan.webCta), { action: "WebCheckout", autoDismiss: true, backgroundColor: order === 13 ? "#b53231" : template.accent, ...(order === 13 ? { color: "#ffffff", radius: 99 } : {}) }));
+  if (plan.cta !== undefined) {
+    const action = order === 18 ? add("action", "Button", `${at(18)} ${at(19)}`, { action: "Purchase", backgroundColor: template.accent }) : button("action", plan.cta);
+    const sourceStyle = { 14: { backgroundColor: "#f2f2f7", color: "#111111", radius: 16 }, 15: { backgroundColor: "#f4f4f5", color: "#111111", radius: 8 } }[order];
+    result.push(sourceStyle ? { ...action, config: { ...action.config, ...sourceStyle } } : action);
+  }
+  if (plan.webCta !== undefined) result.push(add("web-action", "Web Paywall Button", at(plan.webCta), { action: "WebCheckout", autoDismiss: true, backgroundColor: { 13: "#b53231", 14: "#454cf6", 15: "#d01fe7" }[order] ?? template.accent, ...([13, 14, 15].includes(order) ? { color: "#ffffff", radius: order === 13 ? 99 : order === 14 ? 16 : 8 } : {}) }));
   (plan.afterCta ?? []).forEach((index, itemIndex) => result.push(add(`after-action-${itemIndex}`, "Text", at(index))));
   const footer = links();
   if (footer) result.push(footer);
