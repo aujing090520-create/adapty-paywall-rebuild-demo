@@ -356,11 +356,11 @@ function ProductPackageCard({ plan, index, config = {}, layout, selected, focuse
   const productStyle = { "--badge-background": productGradient(config.badgeGradient, ["#ff860a", "#ffb000", "#ffd10b"]), "--save-text-color": config.saveTextColor ?? "#ff8207", "--save-background-color": config.saveBackgroundColor ?? "transparent" };
   const configuredPriceSize = Number(modeStyle.mainFontSize) > 0 ? modeStyle.mainFontSize : config.priceFontSize;
   const compactPrice = priceView.main.length >= 6 && layout !== "compact";
-  const priceStyle = { ...(compactPrice ? { fontSize: `min(${Number(configuredPriceSize) > 0 ? `${configuredPriceSize}px` : "6cqw"}, 4cqw)` } : Number(configuredPriceSize) > 0 ? { fontSize: `${configuredPriceSize}px` } : {}), ...(modeStyle.mainColor ? { color: modeStyle.mainColor } : {}) };
-  const strikeStyle = { ...(Number(modeStyle.strikeFontSize) > 0 ? { fontSize: `${modeStyle.strikeFontSize}px` } : {}), ...(modeStyle.strikeColor ? { color: modeStyle.strikeColor } : {}) };
-  const frameStyle = { ...(Number(config.planWidth) > 0 ? { width: `${config.planWidth}%`, marginInline: "auto", justifySelf: "center" } : {}), ...(config.planHeight !== undefined && config.planHeight !== "" && Number.isFinite(Number(config.planHeight)) ? { minHeight: `${config.planHeight}px` } : {}), ...(config.planPadding !== "" && Number.isFinite(Number(config.planPadding)) && config.planPadding !== undefined ? { padding: `${config.planPadding}px` } : {}), ...Object.fromEntries(["Top", "Right", "Bottom", "Left"].filter((side) => config[`planPadding${side}`] !== undefined && config[`planPadding${side}`] !== "" && Number.isFinite(Number(config[`planPadding${side}`]))).map((side) => [`padding${side}`, `${config[`planPadding${side}`]}px`])) };
+  const priceStyle = { ...(compactPrice ? { fontSize: `min(${Number(configuredPriceSize) > 0 ? productFontSize(config, configuredPriceSize) : "6cqw"}, 4cqw)` } : Number(configuredPriceSize) > 0 ? { fontSize: productFontSize(config, configuredPriceSize) } : {}), ...(modeStyle.mainColor ? { color: modeStyle.mainColor } : {}) };
+  const strikeStyle = { ...(Number(modeStyle.strikeFontSize) > 0 ? { fontSize: productFontSize(config, modeStyle.strikeFontSize) } : {}), ...(modeStyle.strikeColor ? { color: modeStyle.strikeColor } : {}) };
+  const frameStyle = { ...(Number(config.planWidth) > 0 ? { width: `${config.planWidth}%`, marginInline: "auto", justifySelf: "center" } : {}), ...(config.planHeight !== undefined && config.planHeight !== "" && Number.isFinite(Number(config.planHeight)) ? { minHeight: productFontSize(config, config.planHeight) } : {}), ...(config.planPadding !== "" && Number.isFinite(Number(config.planPadding)) && config.planPadding !== undefined ? { padding: productFontSize(config, config.planPadding) } : {}), ...Object.fromEntries(["Top", "Right", "Bottom", "Left"].filter((side) => config[`planPadding${side}`] !== undefined && config[`planPadding${side}`] !== "" && Number.isFinite(Number(config[`planPadding${side}`]))).map((side) => [`padding${side}`, productFontSize(config, config[`planPadding${side}`])])) };
   const planStyle = { ...productStyle, ...selectedStyle, ...frameStyle, ...(config.planRadius !== undefined && config.planRadius !== "" ? { borderRadius: `${config.planRadius}px` } : {}) };
-  const partStyle = (part, base = {}) => ({ ...base, ...productPartStyle(config, part), ...(part === "price" && Number(modeStyle.mainFontSize) > 0 ? { fontSize: `${modeStyle.mainFontSize}px` } : {}), ...(part === "price" && validHexColor(modeStyle.mainColor) ? { color: modeStyle.mainColor } : {}), ...(part === "reference" && Number(modeStyle.strikeFontSize) > 0 ? { fontSize: `${modeStyle.strikeFontSize}px` } : {}), ...(part === "reference" && validHexColor(modeStyle.strikeColor) ? { color: modeStyle.strikeColor } : {}) });
+  const partStyle = (part, base = {}) => ({ ...base, ...productPartStyle(config, part), ...(part === "price" && Number(modeStyle.mainFontSize) > 0 ? { fontSize: productFontSize(config, modeStyle.mainFontSize) } : {}), ...(part === "price" && validHexColor(modeStyle.mainColor) ? { color: modeStyle.mainColor } : {}), ...(part === "reference" && Number(modeStyle.strikeFontSize) > 0 ? { fontSize: productFontSize(config, modeStyle.strikeFontSize) } : {}), ...(part === "reference" && validHexColor(modeStyle.strikeColor) ? { color: modeStyle.strikeColor } : {}) });
   const choose = (event) => { if (!interactive) return; event.stopPropagation(); onChoose?.(index); onInspect?.(event, index); };
   const keyboard = (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); choose(event); } };
   const cardProps = { style: planStyle, role: interactive ? "button" : undefined, tabIndex: interactive ? 0 : undefined, onClick: choose, onKeyDown: keyboard };
@@ -377,7 +377,7 @@ function ProductPackageCard({ plan, index, config = {}, layout, selected, focuse
         const offsetX = Number(settings.offsetX) || 0;
         const offsetY = Number(settings.offsetY) || 0;
         const fontStyle = partStyle(part, part === "price" ? priceStyle : part === "reference" ? strikeStyle : {});
-        if (part === "price") fontStyle.fontSize = `min(${Number(modeStyle.mainFontSize) > 0 ? `${modeStyle.mainFontSize}px` : Number(settings.fontSize) > 0 ? `${settings.fontSize}px` : Number(configuredPriceSize) > 0 ? `${configuredPriceSize}px` : "18px"}, ${Math.max(18, Math.floor(150 / parts[part].length))}cqi)`;
+        if (part === "price") fontStyle.fontSize = `min(${Number(modeStyle.mainFontSize) > 0 ? productFontSize(config, modeStyle.mainFontSize) : Number(settings.fontSize) > 0 ? productFontSize(config, settings.fontSize) : Number(configuredPriceSize) > 0 ? productFontSize(config, configuredPriceSize) : productFontSize(config, HT_PRODUCT_DESIGN_DEFAULTS[config.productTemplate]?.parts.price ?? 18)}, ${Math.max(18, Math.floor(150 / parts[part].length))}cqi)`;
         return <span key={part} className={`ht-custom-part ht-custom-${part}`} data-product-part={part} data-inspector-area={`product-${part}`} style={{ ...fontStyle, order: Number(settings.order) || position + 1, alignSelf: align === "left" ? "flex-start" : align === "right" ? "flex-end" : "center", textAlign: align, transform: offsetX || offsetY ? `translate(${offsetX}px, ${offsetY}px)` : undefined }}>{parts[part]}</span>;
       })}
       {selected && embeddedBenefits?.length > 0 && <ul className="ht-plan-embedded-benefits" onClick={(event) => { event.stopPropagation(); onBenefitInspect?.(event); }}>{embeddedBenefits.map((line, lineIndex) => <li key={`${line}-${lineIndex}`}><Check size={11} /><span>{line}</span></li>)}</ul>}
@@ -2215,7 +2215,7 @@ function HeroMediaContent({ active, updateNode, documentTemplate }) {
   const config = active.config ?? {};
   const hasEmbeddedCopy = config.copyPrefix !== undefined || config.copySuffix !== undefined || config.copyTitle !== undefined;
   const titleParts = heroTitleParts(config);
-  const documentSources = { "blue-privilege": "/figma-paywall-assets/blue-banner.png", "payment-recovery": "/figma-paywall-assets/recovery-bg.png", "sku-sheet": "/figma-paywall-assets/sku-art-alt.png" };
+  const documentSources = { "blue-privilege": "/ht-blue-stadium.png", "payment-recovery": "/figma-paywall-assets/recovery-bg.png", "sku-sheet": "/figma-paywall-assets/sku-art-alt.png" };
   return <><MediaUploadFields active={active} updateNode={updateNode} label="Hero media" sourceSrc={documentSources[documentTemplate] ?? ""} />{hasEmbeddedCopy && <section className="embedded-copy-editor"><h4>顶部横幅</h4><Field label="横幅跳转链接"><input value={config.deepLink ?? ""} placeholder="https://" onChange={(event) => updateNodeConfig(active, updateNode, { deepLink: event.target.value })} /></Field><HeroOverlayImageField active={active} updateNode={updateNode} /><h4>主视觉内嵌文案</h4><Field label="标题前缀"><input value={titleParts.prefix} onChange={(event) => updateNodeConfig(active, updateNode, { copyPrefix: event.target.value })} /></Field><Field label="标题后缀"><input value={titleParts.suffix} onChange={(event) => updateNodeConfig(active, updateNode, { copySuffix: event.target.value })} /></Field><Field label="辅助文案"><input value={config.copyCaption ?? ""} onChange={(event) => updateNodeConfig(active, updateNode, { copyCaption: event.target.value })} /></Field></section>}</>;
 }
 
@@ -2385,6 +2385,16 @@ function CarouselLayoutEditor({ active, updateNode }) {
 }
 
 const PRODUCT_PART_DEFAULT_SIZES = { name: 14, price: 18, reference: 10, monthly: 11, supporting: 11, saving: 10, save: 10, badge: 11 };
+const HT_PRODUCT_DESIGN_DEFAULTS = {
+  "blue-privilege": { parts: { name: 12, price: 18, reference: 14, monthly: 14, supporting: 14, saving: 12, save: 12, badge: 13 }, frame: { planHeight: 147, planPaddingTop: 20, planPaddingRight: 2, planPaddingBottom: 8, planPaddingLeft: 2 } },
+  "membership-plans": { parts: { name: 12, price: 20, reference: 14, monthly: 14, supporting: 14, saving: 12, save: 12, badge: 13 }, frame: { planHeight: 150, planPaddingTop: 10, planPaddingRight: 4, planPaddingBottom: 6, planPaddingLeft: 4 } },
+  "payment-recovery": { parts: { name: 17, price: 17, reference: 12, monthly: 17, supporting: 12, saving: 12, save: 10, badge: 10 }, frame: { planHeight: 73, planPaddingTop: 8, planPaddingRight: 12, planPaddingBottom: 8, planPaddingLeft: 12 } },
+  "sku-sheet": { parts: { name: 12, price: 18, reference: 14, monthly: 14, supporting: 12, saving: 12, save: 12, badge: 13 }, frame: { planHeight: 147, planPaddingTop: 10, planPaddingRight: 4, planPaddingBottom: 6, planPaddingLeft: 4 } },
+};
+
+function productFontSize(config, value) {
+  return HT_PRODUCT_DESIGN_DEFAULTS[config.productTemplate] ? `${Number(value) * 100 / 390}cqw` : `${value}px`;
+}
 
 function previewColor(value) {
   if (validHexColor(value)) return value.toLowerCase();
@@ -2395,6 +2405,11 @@ function previewColor(value) {
 function useProductPreviewDefaults(active, pricePreviewMode) {
   const [defaults, setDefaults] = useState({ parts: {}, frame: {} });
   useLayoutEffect(() => {
+    const design = HT_PRODUCT_DESIGN_DEFAULTS[active.config?.productTemplate];
+    if (design) {
+      setDefaults({ parts: Object.fromEntries(Object.entries(design.parts).map(([part, fontSize]) => [part, { fontSize }])), frame: design.frame });
+      return;
+    }
     const preview = document.querySelector(".phone .ht-paywall, .phone .preview-products-wrap");
     const card = preview?.querySelector(".ht-plan:not(.ht-plan-empty), .ht-vertical-plan:not(.ht-plan-empty), .preview-products-credit");
     if (!card) return;
@@ -2443,7 +2458,7 @@ const PRODUCT_PARTS = [
 function productPartStyle(config, part) {
   const value = config.productPartStyles?.[part] ?? {};
   return {
-    ...(Number(value.fontSize) > 0 ? { fontSize: `${value.fontSize}px` } : {}),
+    ...(Number(value.fontSize) > 0 ? { fontSize: productFontSize(config, value.fontSize) } : {}),
     ...(validHexColor(value.color) ? { color: value.color } : {}),
   };
 }
@@ -3492,7 +3507,7 @@ function HelloTalkPaywall({ variant, nodes, activeNode, onSelect, onButtonAction
     if (id === "offer-card") return <section className={nodeClass(id, "ht-recovery-sheet")} style={styleFor(id)} onClick={select(id)}><span className="ht-sheet-close">×</span>{renderChildren(id)}</section>;
     if (id === "sku-card") return <section className={nodeClass(id, "ht-sku-sheet")} style={styleFor(id)} onClick={select(id)}><span className="ht-sheet-close">×</span>{renderChildren(id)}</section>;
     if (id === "hero-image") {
-      if (variant === "blue-privilege") { const dimensions = mediaDimensions(heroConfig); return <section className={nodeClass(id, "ht-blue-hero") + " " + mediaClass(id)} style={heroStyleFor(id)} onClick={select(id)}><HeroMediaLayer config={heroConfig} sourceSrc="/figma-paywall-assets/blue-banner.png" /><div className="ht-source-art" /><button className="ht-back" type="button" aria-label="返回" onClick={(event) => { event.stopPropagation(); if (hasRetention) onOpenRetention?.(); }}>‹</button>{heroConfig.overlayImageEnabled !== false && <img data-inspector-area="overlay" className={"ht-hero-overlay-image" + (canDragHeroCopy ? " can-drag" : "")} src={heroConfig.overlayImageSrc || "/ht-vip-badge.svg"} alt="VIP 标识" style={{ left: `${((dimensions.width - 100) / 2 + Number(heroConfig.overlayImageLeft ?? 8)) * 100 / dimensions.width}%`, top: `${Number(heroConfig.overlayImageTop ?? 27) * 100 / dimensions.height}%`, width: `${Number(heroConfig.overlayImageWidth ?? 14) * 100 / dimensions.width}%` }} {...heroOverlayProps} />}<div className={"ht-blue-copy " + (canDragHeroCopy ? "can-drag" : "")} {...heroCopyProps}><h1 data-inspector-area="headline">{titleParts.prefix && <b>{titleParts.prefix}</b>}{titleParts.suffix}</h1><p data-inspector-area="caption">{caption}</p></div></section>; }
+      if (variant === "blue-privilege") { const dimensions = mediaDimensions(heroConfig); return <section className={nodeClass(id, "ht-blue-hero") + " " + mediaClass(id)} style={heroStyleFor(id)} onClick={select(id)}><HeroMediaLayer config={heroConfig} sourceSrc="/ht-blue-stadium.png" /><div className="ht-source-art" /><button className="ht-back" type="button" aria-label="返回" onClick={(event) => { event.stopPropagation(); if (hasRetention) onOpenRetention?.(); }}>‹</button>{heroConfig.overlayImageEnabled !== false && <img data-inspector-area="overlay" className={"ht-hero-overlay-image" + (canDragHeroCopy ? " can-drag" : "")} src={heroConfig.overlayImageSrc || "/ht-vip-badge.svg"} alt="VIP 标识" style={{ left: `${((dimensions.width - 100) / 2 + Number(heroConfig.overlayImageLeft ?? 8)) * 100 / dimensions.width}%`, top: `${Number(heroConfig.overlayImageTop ?? 27) * 100 / dimensions.height}%`, width: `${Number(heroConfig.overlayImageWidth ?? 14) * 100 / dimensions.width}%` }} {...heroOverlayProps} />}<div className={"ht-blue-copy " + (canDragHeroCopy ? "can-drag" : "")} {...heroCopyProps}><h1 data-inspector-area="headline">{titleParts.prefix && <b>{titleParts.prefix}</b>}{titleParts.suffix}</h1><p data-inspector-area="caption">{caption}</p></div></section>; }
       if (variant === "membership-plans") return <section className={nodeClass(id, "ht-member-hero") + " " + mediaClass(id)} style={heroStyleFor(id)} onClick={select(id)}><HeroMediaLayer config={heroConfig} sourceSrc="/figma-paywall-assets/member-hero.png" /><div className="ht-source-art"><div className="ht-eye-particles"><i /><i /><i /><i /></div><div className="ht-phone-illustration"><b>Visit Info</b><span>Visitors　Visited　Liked</span><div className="ht-phone-rows">{["Peggie", "Nilson", "Cookie", "Hampton"].map((name) => <p key={name}><i /><strong>{name}</strong><small>is <b>1km</b> away from you</small><em>Say Hi</em></p>)}</div></div></div></section>;
       if (variant === "payment-recovery") return <div className={nodeClass(id, "ht-offer-bundle") + " " + mediaClass(id)} style={heroStyleFor(id)} onClick={select(id)}><HeroMediaLayer config={heroConfig} sourceSrc="/figma-paywall-assets/recovery-bg.png" /><div className="ht-source-art"><span>30%<br />OFF</span><SoccerBall /></div></div>;
       return <section className={nodeClass(id, "ht-sku-promo") + " " + mediaClass(id)} style={heroStyleFor(id)} onClick={select(id)}><HeroMediaLayer config={heroConfig} sourceSrc="/figma-paywall-assets/sku-art-alt.png" /><div className="ht-source-art"><i>セール</i><b>VIP</b></div>{skuOverlayIds.map((copyId) => <React.Fragment key={copyId}>{renderSkuCopy(copyId)}</React.Fragment>)}</section>;

@@ -28,3 +28,22 @@ test("unprotected templates and invalid records do not override defaults", () =>
   store.setItem(`paywall-template-v1:${id}`, '{"version":1,"nodes":[{"id":"same","type":"Text"},{"id":"same","type":"Image"}]}');
   assert.equal(readTemplateNodes(store, id), null);
 });
+
+test("source image repair is one-time and preserves uploaded images and other settings", () => {
+  const store = storage();
+  const id = "ht-blue-privilege";
+  writeTemplateNodes(store, id, [
+    { id: "hero-image", type: "Hero Image", config: { mediaState: "removed", copyTitleSize: 28 } },
+    { id: "products", type: "Products", config: { productPartStyles: { name: { fontSize: 15 } } } },
+  ]);
+  const repaired = readTemplateNodes(store, id);
+  assert.equal(repaired[0].config.mediaState, "source");
+  assert.equal(repaired[0].config.copyTitleSize, 28);
+  assert.equal(repaired[1].config.productPartStyles.name.fontSize, 15);
+  writeTemplateNodes(store, id, [{ id: "hero-image", type: "Hero Image", config: { mediaState: "removed" } }]);
+  assert.equal(readTemplateNodes(store, id)[0].config.mediaState, "removed");
+
+  const custom = "ht-membership-plans";
+  writeTemplateNodes(store, custom, [{ id: "hero-image", type: "Hero Image", config: { mediaState: "custom", mediaSrc: "data:image/png;base64,AA==" } }]);
+  assert.equal(readTemplateNodes(store, custom)[0].config.mediaSrc, "data:image/png;base64,AA==");
+});

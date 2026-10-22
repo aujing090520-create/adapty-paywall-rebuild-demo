@@ -2132,3 +2132,21 @@ textarea { min-height: 80px; resize: vertical; }
   .product-part-align { grid-column: span 3; }
   .product-part-order, .product-part-offset { grid-column: span 1; }
 }
+
+/* The four HelloTalk templates use the 390px design canvas as their type scale. */
+.ht-blue-paywall .ht-blue-hero .ht-source-art { background-image: url('/ht-blue-stadium.png'); }
+.ht-blue-paywall .ht-plan-shell .ht-blue-plan > span strong,
+.ht-membership-paywall .ht-plan-shell .ht-plan strong,
+.ht-sku-paywall .ht-sku-plans .ht-plan strong { font-size: 3.077cqw; }
+.ht-blue-paywall .ht-plan-shell .ht-blue-plan .ht-blue-price em,
+.ht-sku-paywall .ht-sku-plans .ht-plan em { font-size: 4.103cqw; }
+.ht-blue-paywall .ht-plan-shell .ht-blue-plan.chosen .ht-blue-price em,
+.ht-sku-paywall .ht-sku-plans .ht-plan.chosen em { font-size: 4.615cqw; }
+.ht-membership-paywall .ht-plan-shell .ht-plan em { font-size: 4.103cqw; }
+.ht-membership-paywall .ht-plan-shell .ht-plan.chosen em { font-size: 5.128cqw; }
+.ht-recovery-paywall .ht-recovery-plans .ht-plan strong,
+.ht-recovery-paywall .ht-recovery-plans .ht-plan em { font-size: 4.359cqw; }
+.ht-blue-paywall .ht-plan-shell .ht-blue-plan > span b,
+.ht-membership-paywall .ht-plan-shell .ht-plan b,
+.ht-sku-paywall .ht-sku-plans .ht-plan b { font-size: 3.333cqw; }
+.ht-recovery-paywall .ht-recovery-plans .ht-plan small { font-size: 2.564cqw; }
