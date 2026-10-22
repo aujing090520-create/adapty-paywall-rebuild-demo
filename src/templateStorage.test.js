@@ -46,4 +46,8 @@ test("source image repair is one-time and preserves uploaded images and other se
   const custom = "ht-membership-plans";
   writeTemplateNodes(store, custom, [{ id: "hero-image", type: "Hero Image", config: { mediaState: "custom", mediaSrc: "data:image/png;base64,AA==" } }]);
   assert.equal(readTemplateNodes(store, custom)[0].config.mediaSrc, "data:image/png;base64,AA==");
+
+  const unverified = "ht-payment-recovery";
+  writeTemplateNodes(store, unverified, [{ id: "hero-image", type: "Hero Image", config: { mediaState: "removed" } }]);
+  assert.equal(readTemplateNodes(store, unverified)[0].config.mediaState, "removed");
 });

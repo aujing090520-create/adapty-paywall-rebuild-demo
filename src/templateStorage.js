@@ -16,7 +16,7 @@ export function readTemplateNodes(storage, templateId) {
     if (!saved.nodes.every((node) => node && typeof node.id === "string" && typeof node.type === "string")) return null;
     if (new Set(saved.nodes.map((node) => node.id)).size !== saved.nodes.length) return null;
     if (storage.getItem(SOURCE_IMAGE_REPAIR_PREFIX + templateId) === "done") return saved.nodes;
-    const nodes = saved.nodes.map((node) => node.id === "hero-image" && node.config?.mediaState === "removed"
+    const nodes = saved.nodes.map((node) => templateId === "ht-blue-privilege" && node.id === "hero-image" && node.config?.mediaState === "removed"
       ? { ...node, config: { ...node.config, mediaState: "source" } }
       : node);
     if (nodes.some((node, index) => node !== saved.nodes[index])) {
