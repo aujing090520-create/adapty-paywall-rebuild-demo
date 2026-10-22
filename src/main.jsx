@@ -363,12 +363,12 @@ function ProductPackageCard({ plan, index, config = {}, layout, selected, focuse
   }
   if (layout === "vertical") {
     const monthly = fields.monthly && fields.monthly !== priceView.main && fields.monthly !== priceView.strike ? fields.monthly : "";
-    if (config.cardContentLayout === "split-summary") return <div className={`${baseClass} ht-vertical-plan split-summary ${selected ? "chosen" : ""}`} {...cardProps}>
+    if (config.cardContentLayout === "split-summary") return <div className={`${baseClass} ht-vertical-plan split-summary ${config.showRadio ? "with-radio" : ""} ${selected ? "chosen" : ""}`} {...cardProps}>
       {hasBadge && <b data-inspector-area="badge" className="ht-vertical-badge">{plan.badgeText}</b>}
-      <div className="ht-split-summary-copy"><strong>{name} {saving && <small>{saving}</small>}</strong><span>{supportingCopy || priceView.main}</span></div>
+      <div className="ht-split-summary-copy"><strong>{name} {saving && <small>{saving}</small>}</strong>{(supportingCopy || (config.duplicatePriceAsDetail && priceView.main)) && <span>{supportingCopy || priceView.main}</span>}</div>
       <strong data-inspector-area="price" className="ht-split-summary-price" style={priceStyle}>{priceView.main}</strong>
     </div>;
-    return <div className={`${baseClass} ht-vertical-plan ${config.cardContentLayout === "radio-stacked" ? "radio-stacked" : ""} ${selected ? "chosen" : ""}`} {...cardProps}>
+    return <div className={`${baseClass} ht-vertical-plan ${config.cardContentLayout === "radio-stacked" ? "radio-stacked" : ""} ${config.showRadio ? "with-radio" : ""} ${selected ? "chosen" : ""}`} {...cardProps}>
       {hasBadge && <b data-inspector-area="badge" className="ht-vertical-badge" style={config.badgeFontSize ? { fontSize: `${config.badgeFontSize}px` } : undefined}>{plan.badgeText}</b>}
       <div className="ht-vertical-main"><strong style={config.nameFontSize ? { fontSize: `${config.nameFontSize}px` } : undefined}>{name}</strong><div className="ht-vertical-price-line" data-inspector-area="price"><span className="ht-vertical-total" style={priceStyle}>{priceView.main}</span>{priceView.strike && <del style={strikeStyle}>{priceView.strike}</del>}{saving && !fields.referenceTotal && <small className="ht-vertical-saving">{saving}</small>}</div>{(supportingCopy || saveText) && <div className="ht-vertical-detail">{supportingCopy && <small>{supportingCopy}</small>}{saveText && <small className="ht-plan-save-copy">{saveText}</small>}</div>}</div>
       <div className="ht-vertical-side">{monthly && <span>{monthly}</span>}{fields.months === 0 && fields.referenceTotal && !priceView.strike && <del style={strikeStyle}>{fields.referenceTotal}</del>}</div>

@@ -69,12 +69,17 @@ test("multi-step artwork and restore actions stay on their observed screens", ()
 
 test("switch control is not rendered as a second standalone tabs component", () => {
   const node = (id, type, content, depth, options = {}) => ({ id, type, content, depth, ...options });
+  const tree = (order) => createSourceTemplateNodes(revenueCatGallery[order - 1], node);
   for (const order of [7, 8, 9]) {
-    const tree = createSourceTemplateNodes(revenueCatGallery[order - 1], node);
-    assert.equal(tree.some((item) => item.type === "Tabs"), false);
-    assert.equal(tree.some((item) => item.type === "Toggle"), true);
+    const nodes = tree(order);
+    assert.equal(nodes.some((item) => item.type === "Tabs"), false);
+    assert.equal(nodes.some((item) => item.type === "Toggle"), true);
   }
-  const firstReview = createSourceTemplateNodes(revenueCatGallery[6], node).find((item) => item.type === "Carousel")?.config.slides[0];
+  assert.equal(tree(7).find((item) => item.type === "Products").config.showRadio, true);
+  assert.equal(tree(8).find((item) => item.type === "Products").config.cardContentLayout, "split-summary");
+  assert.equal(tree(8).find((item) => item.type === "Products").config.packageRows[1].price, "$5.83/mo");
+  assert.deepEqual(tree(8).find((item) => item.type === "List").config.listRows.map((row) => row.leading), ["ticket", "activity", "running"]);
+  const firstReview = tree(7).find((item) => item.type === "Carousel")?.config.slides[0];
   assert.match(firstReview.title, /brown thumb green/);
 });
 

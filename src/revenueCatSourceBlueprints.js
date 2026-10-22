@@ -11,7 +11,7 @@ export const sourceBlueprints = [
   { heading: 0, copy: [1, 2, 3, 4], cta: 5 },
   { heading: 0, copy: [1, 2, 3, 4], cta: 5 },
   { heading: 0, reviews: [1, 11], reviewStyle: "carousel", toggle: 11, products: ["Yearly|$5.83/mo|Only $5.83/mo", "Monthly|$9.99/mo|"], cta: 17 },
-  { heading: 0, features: [1, 4], toggle: 4, products: ["Monthly|$9.99/mo|", "Yearly|$69.99|$5.83/mo"], cta: 10 },
+  { heading: 0, features: [1, 4], toggle: 4, products: ["Monthly|$9.99/mo|", "Yearly|$5.83/mo|12 mo • $69.99"], cta: 10 },
   { heading: 0, copy: [1, 2, 3], toggle: 4, cta: 5 },
   { heading: 0, products: ["25 credits|$2.99|5 seconds of video", "50 credits|$9.99|10 seconds of video", "100 credits|$17.99|20 seconds of video", "250 credits|$24.99|50 seconds of video", "500 credits|$39.99|100 second of video"] },
   { heading: 0, features: [1, 6], social: [6, 7], products: ["6 Months|$39.99/6mo|Only $6.67/mo", "Month|$9.99/mo|"], cta: 14 },
@@ -51,7 +51,6 @@ export const sourceBlueprints = [
 // sample preview values until a real SKU is selected in the builder.
 const sourcePackageDetails = {
   4: { 0: { badgeText: "BEST VALUE", savingCopy: "(19% off)" } },
-  8: { 1: { supportingCopy: "12 mo • $69.99" } },
   11: { 0: { badgeText: "19% OFF" } },
   12: { 0: { badgeText: "SAVE 19%" } },
   13: { 0: { supportingCopy: "Full access for just $69.99/yr", badgeText: "19% OFF" }, 1: { supportingCopy: "Full access for just $9.99/mo" } },
@@ -133,7 +132,7 @@ export function createSourceTemplateNodes(template, node) {
   const button = (part, index, depth = 0) => add(part, "Button", at(index), { action: [5, 6].includes(order) ? "OfferCodeRedemption" : "Purchase", backgroundColor: order === 13 ? "#f2f2f7" : order === 1 ? ({ "screen-1-next": "#8b83f8", "screen-2-next": "#8b82f8", "screen-3-action": "#8b84f8" }[part] ?? template.accent) : template.accent, ...([5, 13].includes(order) ? { color: "#111111", radius: 99 } : {}) }, depth);
   const products = (depth = 0) => {
     const visibleRows = plan.products ?? [];
-    return add("products", "Products", visibleRows.join("\n") || "绑定商品||", { defaultSelected: [8, 14, 19, 22, 30, 32, 33, 34, 35, 36, 40].includes(order) ? 1 : 0, packageLayout: order === 18 ? "info-row" : [12, 14, 19, 22, 25, 30].includes(order) ? "horizontal" : "vertical", ...(order === 1 ? { cardContentLayout: "radio-stacked", planRadius: 12 } : {}), ...(order === 4 ? { cardContentLayout: "split-summary", planRadius: 8 } : {}), showOfferBadge: true, showCards: visibleRows.length > 0, sourcePackageCount: sourcePackageCount(order), purchasePerCard: order === 10, badgeGradient: [template.accent, template.accent, template.accent], selectedBorderGradient: [template.accent, template.accent, template.accent], ...(visibleRows.length ? { packageRows: sourceProductRows(order) } : {}) }, depth);
+    return add("products", "Products", visibleRows.join("\n") || "绑定商品||", { defaultSelected: [8, 14, 19, 22, 30, 32, 33, 34, 35, 36, 40].includes(order) ? 1 : 0, packageLayout: order === 18 ? "info-row" : [12, 14, 19, 22, 25, 30].includes(order) ? "horizontal" : "vertical", ...(order === 1 ? { cardContentLayout: "radio-stacked", planRadius: 12 } : {}), ...(order === 4 ? { cardContentLayout: "split-summary", duplicatePriceAsDetail: true, planRadius: 8 } : {}), ...(order === 8 ? { cardContentLayout: "split-summary", showRadio: true } : {}), ...(order === 7 ? { showRadio: true } : {}), showOfferBadge: true, showCards: visibleRows.length > 0, sourcePackageCount: sourcePackageCount(order), purchasePerCard: order === 10, badgeGradient: [template.accent, template.accent, template.accent], selectedBorderGradient: [template.accent, template.accent, template.accent], ...(visibleRows.length ? { packageRows: sourceProductRows(order) } : {}) }, depth);
   };
   const links = (depth = 0) => {
     const policyLines = lines.filter((line) => /^(Restore( Purchases| purchases)?|Terms( of Use| of service)?|Privacy( Policy| policy)?|Privacy policy)$/.test(line) && !(order === 40 && line === "Restore"));
@@ -290,7 +289,7 @@ export function createSourceTemplateNodes(template, node) {
   if (plan.award) result.push(add("award", "Award", "", { title: at(plan.award[1]), source: at(plan.award[0]), subtitle: at(plan.award[2]), accentColor: template.accent, ...([19, 22].includes(order) ? { leftDecorationSrc: source.assets[1], rightDecorationSrc: source.assets[2] } : {}) }));
   if (plan.tabs) result.push(add("tabs", "Tabs", "", { tabs: plan.tabs.map((index) => ({ id: `tier-${index}`, title: at(index), description: "" })), defaultTab: 1 }));
   if (plan.features) {
-    const sourceIcons = { 34: ["weight", "running", "clock"], 35: ["scan", "map", "help"], 37: ["blocks", "activity", "archive", "download"], 40: ["access", "noads", "running"] }[order];
+    const sourceIcons = { 8: ["ticket", "activity", "running"], 34: ["weight", "running", "clock"], 35: ["scan", "map", "help"], 37: ["blocks", "activity", "archive", "download"], 40: ["access", "noads", "running"] }[order];
     const accentColor = { 34: "#111111", 35: "#ffffff", 37: "#151515", 40: "#ffffff" }[order] ?? template.accent;
     result.push(add("features", "List", listContent(plan.features, plan.paired), { accentColor, ...(sourceIcons ? { listRows: sourceFeatureLines(order).map((line, index) => { const [title, caption = ""] = line.split("|"); return { title, caption, showCaption: Boolean(caption), leadingMode: "icon", leading: sourceIcons[index] }; }) } : {}) }));
   }
