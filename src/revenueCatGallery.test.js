@@ -111,6 +111,7 @@ test("testimonial, library, and concert layouts keep their observed first-screen
     const award = tree(order).find((item) => item.type === "Award");
     assert.equal(award.config.leftDecorationSrc, observedTemplate(order).assets[1]);
     assert.equal(award.config.rightDecorationSrc, observedTemplate(order).assets[2]);
+    assert.equal(tree(order).find((item) => item.type === "Products").config.cardContentLayout, "duration-grid");
   }
   assert.ok(tree(28).some((item) => item.id.endsWith("-copy-0") && /PREMIUM/.test(item.content)));
   assert.equal(tree(22).find((item) => item.id.endsWith("-reviews")).config.listVariant, "testimonials");
