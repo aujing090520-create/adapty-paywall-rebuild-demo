@@ -177,7 +177,7 @@ export function createSourceTemplateNodes(template, node) {
       { id: "community", title: at(4), caption: at(5), image: source.assets[3] },
       { id: "sleep", title: at(0), caption: at(1), image: source.assets[1] },
     ];
-    return [media("image"), add("reviews", "Carousel", "", { slides, initialSlide: 0, dotsVariant: "progress", accentColor: "#777777", secondaryColor: "#bcbcbc" }), products(), button("action", plan.cta), links()].filter(Boolean);
+    return [media("image"), add("reviews", "Carousel", "", { slides, initialSlide: 0, dotsVariant: "progress", gap: 3, accentColor: "#777777", secondaryColor: "#bcbcbc" }), products(), button("action", plan.cta), links()].filter(Boolean);
   }
 
   if (order === 9) {
