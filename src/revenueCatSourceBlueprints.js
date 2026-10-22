@@ -288,7 +288,7 @@ export function createSourceTemplateNodes(template, node) {
     result.push(add("back", "Button", "×", { action: "Dismiss", backgroundColor: "transparent", color: "#ffffff", radius: 0 }, 1));
     result.push(add("restore", "Button", "Restore", { action: "RestorePurchases", backgroundColor: "transparent", color: "#ffffff", radius: 0 }, 1));
   } else if (template.heroAsset && (["top", "full", "center", "icon"].includes(template.art) || [10, 11].includes(order))) {
-    if (order === 2) result.push(add("background", "Image", "Background art", { mediaSrc: "https://assets.pawwalls.com/1181742_1779226626_f5435198.webp", mediaFit: "cover", mediaWidth: 100, mediaHeight: 100 }));
+    if (order === 2) result.push(add("background", "Page Background", "", { mediaSrc: "https://assets.pawwalls.com/1181742_1779226626_f5435198.webp", mediaFit: "cover", mediaBackgroundColor: "#0c0920" }));
     result.push(media("image"));
   }
   result.push(header("title", plan.heading));

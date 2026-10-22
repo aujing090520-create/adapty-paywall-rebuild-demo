@@ -195,7 +195,7 @@ const templates = [
   { id: "ht-sku-sheet", title: "HelloTalk SKU 半窗", subtitle: "横版促销视觉与套餐选择", tags: ["2 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-sku", visual: "ht-sku", documentTemplate: "sku-sheet", prdScreenshot: "/ht-prd-screenshots/sku-sheet.jpg" },
 ];
 
-const componentCatalog = ["Text", "Header", "Image", "Video", "Icon", "Card", "Stack", "Screen Flow", "Web Paywall Button", "Button", "List", "Feature Table", "Timeline", "Social Proof", "Award", "Tabs", "Toggle", "Links", "Agreement", "Timer", "Carousel", "Products", "Footer"];
+const componentCatalog = ["Text", "Header", "Image", "Page Background", "Video", "Icon", "Card", "Stack", "Screen Flow", "Web Paywall Button", "Button", "List", "Feature Table", "Timeline", "Social Proof", "Award", "Tabs", "Toggle", "Links", "Agreement", "Timer", "Carousel", "Products", "Footer"];
 
 const sourceTreeObserved = new Set(["knowledge", "trial", "connection", "family", "premium-access", "document", "yoga", "black-friday", "black-friday-timer", "christmas", "halloween", "new-year", "report", "avatar", "mindfulness", "trial-white", "trial-blue", "fitness-trial", "access", "weather", "workout", "audiobooks", "herbs", "video-access", "design-life", "full-app", "item-placeholder", "item-placeholder-dark", "fantasy-access", "editing-plan", "training"]);
 const documentStyleTemplateIds = new Set(["ht-blue-privilege", "ht-membership-plans", "ht-payment-recovery", "ht-sku-sheet"]);
@@ -1080,7 +1080,7 @@ function createBuilderNodes(templateId = "knowledge") {
 
 function createComponentNode(type, index) {
   const contentByType = {
-    Text: "text", Header: "标题", Image: "", Video: "", Icon: "", Card: "", Stack: "", "Screen Flow": "", Screen: "新页面", "Feature Table": "", "Web Paywall Button": "Pay on web", Button: "button text", List: "", Timeline: "", "Social Proof": "超过 50,000 位用户选择了我们", Award: "年度精选应用", Tabs: "", Toggle: "启用免费试用|可随时取消", Footer: "可随时取消", "List item": "title|caption", Links: "Terms · Privacy · Restore · Login", Agreement: "我已阅读并同意", Timer: "04:59:59", Carousel: "", Products: "",
+    Text: "text", Header: "标题", Image: "", "Page Background": "", Video: "", Icon: "", Card: "", Stack: "", "Screen Flow": "", Screen: "新页面", "Feature Table": "", "Web Paywall Button": "Pay on web", Button: "button text", List: "", Timeline: "", "Social Proof": "超过 50,000 位用户选择了我们", Award: "年度精选应用", Tabs: "", Toggle: "启用免费试用|可随时取消", Footer: "可随时取消", "List item": "title|caption", Links: "Terms · Privacy · Restore · Login", Agreement: "我已阅读并同意", Timer: "04:59:59", Carousel: "", Products: "",
   };
   const configByType = {
     Timer: { enabled: true, format: "hh:mm:ss", separator: ":", prefix: "", suffix: "", resetMode: "Reset timer on every paywall view" },
@@ -1089,6 +1089,7 @@ function createComponentNode(type, index) {
     Button: { action: "Purchase" },
     Agreement: { showCheckbox: true, required: true, termsLabel: "服务条款", termsUrl: "", privacyLabel: "隐私政策", privacyUrl: "" },
     Icon: { iconName: "star", iconSize: 24, color: "#6a31e9" },
+    "Page Background": { mediaFit: "cover", mediaBackgroundColor: "#ffffff" },
     Timeline: { listRows: [{ title: "今天", caption: "立即解锁全部权益" }, { title: "第 2 天", caption: "收到订阅提醒" }, { title: "第 3 天", caption: "订阅开始，可随时取消" }] },
     Tabs: { tabs: [{ id: `tab-${index}-1`, title: "月度", description: "月度套餐" }, { id: `tab-${index}-2`, title: "年度", description: "年度套餐" }], defaultTab: 0 },
     Stack: { axis: "vertical", gap: 8 },
@@ -1107,7 +1108,7 @@ function isTextNodeType(type) {
 
 function BuilderNodeIcon({ type }) {
   const icons = { Timer: Clock3, Products: Package, Award: Star, Toggle: Check, Timeline: Clock3, Tabs: LayoutTemplate, "Screen Flow": LayoutTemplate, Screen: RectangleHorizontal, "Feature Table": List, "Social Proof": Users, Icon: Star, Stack: Blocks, Video: ImageIcon, Links: Link2, Agreement: Check, Carousel: GalleryHorizontal, Card: RectangleHorizontal, List, Footer: Type };
-  const Icon = icons[type] ?? (["Button", "Purchase Button", "Web Paywall Button"].includes(type) ? MousePointerClick : ["Hero Image", "Image"].includes(type) ? ImageIcon : isTextNodeType(type) ? Type : Blocks);
+  const Icon = icons[type] ?? (["Button", "Purchase Button", "Web Paywall Button"].includes(type) ? MousePointerClick : ["Hero Image", "Image", "Page Background"].includes(type) ? ImageIcon : isTextNodeType(type) ? Type : Blocks);
   return <Icon size={13} strokeWidth={2.15} />;
 }
 
@@ -1170,7 +1171,7 @@ const zhCopy = {
   "This template has a captured source visual, but its exact Builder layer tree has not been verified. Editing is intentionally unavailable until the source structure is collected.": "该模板已采集源端画面，但精确的构建器图层树尚未验证；在采集完成前，不开放伪造的编辑能力。",
   "The matching source visual is shown in the device preview. No generic editable nodes are substituted for this template.": "设备预览显示与模板卡一致的源端画面；不会用通用可编辑节点替代该模板。",
   "On": "开启", "Add element": "添加组件", "Localization": "本地化", "English": "英语", "French": "法语", "Simplified Chinese": "简体中文",
-  "Add locale": "添加语言", "Content": "内容", "Style": "样式", "Layout": "布局", "Text": "文本", "Image": "图片", "Card": "卡片",
+  "Add locale": "添加语言", "Content": "内容", "Style": "样式", "Layout": "布局", "Text": "文本", "Image": "图片", "Page Background": "页面背景", "Card": "卡片",
   "Web Paywall Button": "网页付费按钮", "Button": "按钮", "List": "特权列表", "Links": "链接", "Agreement": "同意协议", "Timer": "倒计时", "Carousel": "轮播图",
   "Toggle": "试用开关", "Toggle On": "开关开启状态", "Toggle Off": "开关关闭状态", "Default toggle state": "默认开关状态", "Active": "已开启",
   "Hero Image": "主视觉图片", "Header": "标题", "Headline": "主标题", "Subhead": "副标题", "Caption": "说明文案", "Legal": "法律说明", "Top Text": "顶部文案", "Feature list": "特权列表", "List item": "特权项", "Product": "产品", "Purchase Button": "购买按钮", "Stars": "星级", "Black Friday Image": "黑色星期五图片", "Footer": "底部区域", "Purchase": "购买", "Continue": "继续", "Terms of service": "服务条款",
@@ -1949,7 +1950,7 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
             {appliedTemplate !== null && previewMode === "editable" && <p className="source-preview-note">{templates[appliedTemplate].isGallery ? templates[appliedTemplate].editorVerified ? "已核对 RevenueCat 编辑器 Layers；本地是通用组件映射，SKU、字段和动作目标仍需核验。" : "仅有 RevenueCat 画廊预览证据；编辑器 Layers、SKU 与动作目标均未核实。" : templates[appliedTemplate].isNew ? "本地组合模板；组件和文案可在左侧选择后编辑。" : isEditableTemplate(templates[appliedTemplate]) ? "已采集样式与核心字段的本地可编辑复现。" : "精确节点树仍在采集。"}</p>}
             <p className="preview-disclaimer">All prices, titles, and offers displayed are placeholders. The actual data from App Store and Google Play will be shown in the app.</p>
           </div>
-          <aside className="property-panel"><div className="component-library-toolbar"><span>组件库</span><div><button type="button" className="icon" title="保存当前组件" aria-label="保存当前组件" disabled={!rawActive} onClick={() => { setLibraryName(""); setLibraryError(""); setLibraryMode("save"); }}><Save size={17} /></button><button type="button" className="icon" title="读取已保存组件" aria-label="读取已保存组件" disabled={!rawActive} onClick={() => { setLibrarySearch(""); setLibraryError(""); setLibraryMode("load"); }}><FolderOpen size={17} /></button></div></div><BuilderProperties active={active} previewFocus={previewFocus} markUnknown={markUnknown} boundary={builderBoundary} templateLinks={templateLinks} setTemplateLinks={setTemplateLinks} updateNode={updateNodeWithPreview} removeNode={deleteElement} addNestedNode={addNestedElement} isDocumentTemplate={isDocumentTemplate} pricePreviewMode={pricePreviewMode} setPricePreviewMode={setPricePreviewMode} retentionPreviewOpen={retentionPreviewOpen} onPreviewRetention={() => { setPreviewMode("editable"); setRetentionPreview((current) => current?.templateId === templates[appliedTemplate]?.id ? null : { templateId: templates[appliedTemplate]?.id }); }} /></aside>
+          <aside className="property-panel"><div className="component-library-toolbar"><span>组件库</span><div><button type="button" className="icon" title="保存当前组件" aria-label="保存当前组件" disabled={!rawActive} onClick={() => { setLibraryName(""); setLibraryError(""); setLibraryMode("save"); }}><Save size={17} /></button><button type="button" className="icon" title="读取已保存组件" aria-label="读取已保存组件" disabled={!rawActive} onClick={() => { setLibrarySearch(""); setLibraryError(""); setLibraryMode("load"); }}><FolderOpen size={17} /></button></div></div><BuilderProperties active={active} previewFocus={previewFocus} markUnknown={markUnknown} boundary={builderBoundary} templateLinks={templateLinks} setTemplateLinks={setTemplateLinks} updateNode={updateNodeWithPreview} removeNode={deleteElement} addNestedNode={addNestedElement} isDocumentTemplate={isDocumentTemplate} documentTemplate={templates[appliedTemplate]?.documentTemplate} pricePreviewMode={pricePreviewMode} setPricePreviewMode={setPricePreviewMode} retentionPreviewOpen={retentionPreviewOpen} onPreviewRetention={() => { setPreviewMode("editable"); setRetentionPreview((current) => current?.templateId === templates[appliedTemplate]?.id ? null : { templateId: templates[appliedTemplate]?.id }); }} /></aside>
         </div>
         <div className="builder-footer"><button className="secondary unknown-action" onClick={() => markUnknown(builderBoundary)}>Discard</button><button className="primary" onClick={() => setModal({ kind: appliedTemplate !== null ? "template-requirements" : "builder-save" })}>Save</button></div>
         {libraryMode && <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setLibraryMode(null); }}><section className="modal component-library-modal" role="dialog" aria-modal="true" aria-label={libraryMode === "save" ? "保存组件" : "读取组件"}><header><h2>{libraryMode === "save" ? "保存组件" : "读取组件"}</h2><button type="button" className="icon" title="关闭" aria-label="关闭" onClick={() => setLibraryMode(null)}><X size={19} /></button></header><div className="component-library-body"><p className="component-library-note">仅保存在当前浏览器中，不会同步到账号或其他设备。{rawActive?.type === "Products" && "商品套餐只保存样式配置，不保存 SKU、商品坑位和价格。"}</p>{libraryMode === "save" ? <Field label="组件名称"><input autoFocus maxLength={41} value={libraryName} placeholder="例如：蓝色特权页主视觉" onChange={(event) => { setLibraryName(event.target.value); setLibraryError(""); }} onKeyDown={(event) => { if (event.key === "Enter") saveCurrentComponent(); }} /></Field> : <><div className="component-library-search"><Search size={17} /><input autoFocus value={librarySearch} placeholder="搜索已保存组件" aria-label="搜索已保存组件" onChange={(event) => setLibrarySearch(event.target.value)} /></div><div className="component-library-list">{matchingRecords.length ? matchingRecords.map((record) => <button type="button" key={record.id} className="component-library-item" onClick={() => loadComponent(record)}><span><strong>{record.name}</strong><small>{new Date(record.createdAt).toLocaleString("zh-CN")}</small></span><ChevronRight size={17} /></button>) : <p className="component-library-empty">没有可用于当前组件的记录</p>}</div></>}{libraryError && <p className="component-library-error" role="alert">{libraryError}</p>}</div><div className="modal-actions"><button type="button" className="secondary" onClick={() => setLibraryMode(null)}>取消</button>{libraryMode === "save" && <button type="button" className="primary" onClick={saveCurrentComponent}>保存</button>}</div></section></div>}
@@ -1970,7 +1971,7 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
   );
 }
 
-function BuilderProperties({ active, previewFocus, markUnknown, boundary, templateLinks, setTemplateLinks, updateNode, removeNode, addNestedNode, isDocumentTemplate, pricePreviewMode, setPricePreviewMode, retentionPreviewOpen, onPreviewRetention }) {
+function BuilderProperties({ active, previewFocus, markUnknown, boundary, templateLinks, setTemplateLinks, updateNode, removeNode, addNestedNode, isDocumentTemplate, documentTemplate, pricePreviewMode, setPricePreviewMode, retentionPreviewOpen, onPreviewRetention }) {
   const [tab, setTab] = useState("content");
   useEffect(() => {
     if (previewFocus?.id !== active?.id) {
@@ -2042,7 +2043,7 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
   }
 
   if (active?.id === "hero-image") {
-    return <div className="property-scroll"><h3>Hero Image</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}{tab === "content" && <HeroMediaContent active={active} updateNode={updateNode} />}{tab === "style" && <HeroStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <HeroLayoutEditor active={active} updateNode={updateNode} />}</div>;
+    return <div className="property-scroll"><h3>Hero Image</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}{tab === "content" && <HeroMediaContent active={active} updateNode={updateNode} documentTemplate={documentTemplate} />}{tab === "style" && <HeroStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <HeroLayoutEditor active={active} updateNode={updateNode} />}</div>;
   }
 
   if (type === "List item" || type === "Today" || /^Item \d+$/.test(type) || /^Day \d+$/.test(type)) {
@@ -2051,6 +2052,10 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
 
   if (isTextNodeType(type)) {
     return <div className="property-scroll"><h3>Text</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}{tab === "content" && (Array.isArray(active.config?.tabContents) ? <section className="product-row-editor"><h4>标签切换文案</h4>{active.config.tabContents.map((value, index) => <Field key={index} label={`选项 ${index + 1} 文案`} required><input value={value} onChange={(event) => updateNodeConfig(active, updateNode, { tabContents: active.config.tabContents.map((item, position) => position === index ? event.target.value : item) })} /></Field>)}</section> : <TextContent active={active} updateNode={updateNode} />)}{tab === "style" && <TextStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <ElementLayoutEditor active={active} updateNode={updateNode} />}</div>;
+  }
+
+  if (type === "Page Background") {
+    return <div className="property-scroll"><h3>页面背景</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}{tab === "content" && <MediaUploadFields active={active} updateNode={updateNode} label="背景图片" accept="image/*" required />}{tab === "style" && <HeroStyleEditor active={active} updateNode={updateNode} />}{tab === "layout" && <Field label="图片位置"><select value={active.config?.mediaPosition ?? "center"} onChange={(event) => updateNodeConfig(active, updateNode, { mediaPosition: event.target.value })}><option value="top">顶部</option><option value="center">居中</option><option value="bottom">底部</option></select></Field>}</div>;
   }
 
   if (["Image", "Video", "Black Friday Image"].includes(type) || /^Image \d+$/.test(type)) {
@@ -2167,9 +2172,11 @@ function heroTitleParts(config) {
   };
 }
 
-function MediaUploadFields({ active, updateNode, label = "Media file", required = false, accept = "image/*,video/*" }) {
+function MediaUploadFields({ active, updateNode, label = "Media file", required = false, accept = "image/*,video/*", sourceSrc = "" }) {
   const inputRef = useRef(null);
   const config = active.config ?? {};
+  const currentSrc = config.mediaState === "removed" ? "" : config.mediaSrc || sourceSrc;
+  const isVideo = config.mediaType === "Video" || /^video\//.test(accept);
   const handleFile = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -2177,14 +2184,15 @@ function MediaUploadFields({ active, updateNode, label = "Media file", required 
     reader.onload = () => updateNodeConfig(active, updateNode, { mediaState: "custom", mediaSrc: reader.result, mediaName: file.name, mediaType: file.type.startsWith("video/") ? "Video" : "Image" });
     reader.readAsDataURL(file);
   };
-  return <><Field label={label} required={required}><input ref={inputRef} className="visually-hidden" type="file" accept={accept} onChange={handleFile} /><button className="upload" type="button" onClick={() => inputRef.current?.click()}><Upload size={18} /> {config.mediaName ? `Replace ${config.mediaName}` : "Upload image or video"}<small>PNG, JPG, WebP, MP4, max size 10MB.</small></button></Field>{config.mediaState !== "removed" ? <div className="media-actions"><span>{config.mediaName || "Source media"}</span><button type="button" className="secondary" onClick={() => updateNodeConfig(active, updateNode, { mediaState: "removed", mediaSrc: "", mediaName: "" })}>Remove media</button></div> : <div className="media-actions"><span>No media</span></div>}</>;
+  return <><Field label={label} required={required}>{currentSrc && <div className="current-media-preview">{isVideo ? <video src={currentSrc} muted playsInline controls /> : <img src={currentSrc} alt="当前素材预览" />}<span>{config.mediaName || "当前模板素材"}</span></div>}<input ref={inputRef} className="visually-hidden" type="file" accept={accept} onChange={handleFile} /><button className="upload" type="button" onClick={() => inputRef.current?.click()}><Upload size={18} /> {currentSrc ? "替换素材" : isVideo ? "上传视频" : accept === "image/*" ? "上传图片" : "上传图片或视频"}<small>{isVideo ? "MP4、MOV" : accept === "image/*" ? "PNG、JPG、WebP" : "PNG、JPG、WebP、MP4"}，最大 10MB</small></button></Field>{currentSrc && <div className="media-actions"><button type="button" className="secondary" onClick={() => updateNodeConfig(active, updateNode, { mediaState: "removed", mediaSrc: "", mediaName: "" })}>删除媒体</button></div>}</>;
 }
 
-function HeroMediaContent({ active, updateNode }) {
+function HeroMediaContent({ active, updateNode, documentTemplate }) {
   const config = active.config ?? {};
   const hasEmbeddedCopy = config.copyPrefix !== undefined || config.copySuffix !== undefined || config.copyTitle !== undefined;
   const titleParts = heroTitleParts(config);
-  return <><MediaUploadFields active={active} updateNode={updateNode} label="Hero media" />{hasEmbeddedCopy && <section className="embedded-copy-editor"><h4>顶部横幅</h4><Field label="横幅跳转链接"><input value={config.deepLink ?? ""} placeholder="https://" onChange={(event) => updateNodeConfig(active, updateNode, { deepLink: event.target.value })} /></Field><HeroOverlayImageField active={active} updateNode={updateNode} /><h4>主视觉内嵌文案</h4><Field label="标题前缀"><input value={titleParts.prefix} onChange={(event) => updateNodeConfig(active, updateNode, { copyPrefix: event.target.value })} /></Field><Field label="标题后缀"><input value={titleParts.suffix} onChange={(event) => updateNodeConfig(active, updateNode, { copySuffix: event.target.value })} /></Field><Field label="辅助文案"><input value={config.copyCaption ?? ""} onChange={(event) => updateNodeConfig(active, updateNode, { copyCaption: event.target.value })} /></Field></section>}</>;
+  const documentSources = { "blue-privilege": "/figma-paywall-assets/blue-banner.png", "payment-recovery": "/figma-paywall-assets/recovery-bg.png", "sku-sheet": "/figma-paywall-assets/sku-art-alt.png" };
+  return <><MediaUploadFields active={active} updateNode={updateNode} label="Hero media" sourceSrc={documentSources[documentTemplate] ?? ""} />{hasEmbeddedCopy && <section className="embedded-copy-editor"><h4>顶部横幅</h4><Field label="横幅跳转链接"><input value={config.deepLink ?? ""} placeholder="https://" onChange={(event) => updateNodeConfig(active, updateNode, { deepLink: event.target.value })} /></Field><HeroOverlayImageField active={active} updateNode={updateNode} /><h4>主视觉内嵌文案</h4><Field label="标题前缀"><input value={titleParts.prefix} onChange={(event) => updateNodeConfig(active, updateNode, { copyPrefix: event.target.value })} /></Field><Field label="标题后缀"><input value={titleParts.suffix} onChange={(event) => updateNodeConfig(active, updateNode, { copySuffix: event.target.value })} /></Field><Field label="辅助文案"><input value={config.copyCaption ?? ""} onChange={(event) => updateNodeConfig(active, updateNode, { copyCaption: event.target.value })} /></Field></section>}</>;
 }
 
 function HeroOverlayImageField({ active, updateNode }) {
@@ -3529,6 +3537,7 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, on
   const isListItemLayer = node.type === "List item" || node.type === "Today" || /^Item \d+$/.test(node.type) || /^Day \d+$/.test(node.type);
   const isImageLayer = ["Image", "Black Friday Image"].includes(node.type) || /^Image \d+$/.test(node.type);
   if (node.sourcePending) return wrap(<p className="preview-boundary">Source layer confirmed; field content pending</p>, "preview-copy");
+  if (node.type === "Page Background") return wrap(<div className="preview-page-background" style={{ backgroundColor: config.mediaBackgroundColor ?? "#ffffff" }}>{config.mediaState !== "removed" && config.mediaSrc && <img src={config.mediaSrc} alt="" style={{ objectFit: config.mediaFit ?? "cover", objectPosition: config.mediaPosition ?? "center" }} />}</div>, "preview-page-background-wrap");
   if (node.type === "Screen Flow") {
     const current = Math.min(Math.max(0, screenIndex), Math.max(0, children.length - 1));
     return wrap(<div className="preview-screen-flow" onClick={(event) => event.stopPropagation()}><div className="preview-screen-progress" aria-label={`第 ${current + 1} 页，共 ${children.length} 页`}>{children.map((child, index) => <button type="button" key={child.id} className={index === current ? "active" : ""} aria-label={`查看第 ${index + 1} 页`} aria-current={index === current ? "step" : undefined} onClick={(event) => { event.stopPropagation(); onScreenChange?.(index); }} />)}</div>{children[current] && renderChildren([children[current]])}</div>, "preview-screen-flow-wrap");

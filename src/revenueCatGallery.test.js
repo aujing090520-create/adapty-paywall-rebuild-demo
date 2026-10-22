@@ -75,10 +75,10 @@ test("multi-step artwork and restore actions stay on their observed screens", ()
 
 test("AstroApp keeps its source background separate from the lotus image", () => {
   const node = (id, type, content, depth, options = {}) => ({ id, type, content, depth, ...options });
-  const images = createSourceTemplateNodes(revenueCatGallery[1], node).filter((item) => item.type === "Image");
-  assert.deepEqual(images.map((item) => item.id), ["rc-source-2-background", "rc-source-2-image"]);
-  assert.match(images[0].config.mediaSrc, /1181742_1779226626_f5435198\.webp$/);
-  assert.equal(images[1].config.mediaSrc, observedTemplate(2).assets[0]);
+  const layers = createSourceTemplateNodes(revenueCatGallery[1], node).filter((item) => ["Page Background", "Image"].includes(item.type));
+  assert.deepEqual(layers.map((item) => [item.id, item.type]), [["rc-source-2-background", "Page Background"], ["rc-source-2-image", "Image"]]);
+  assert.match(layers[0].config.mediaSrc, /1181742_1779226626_f5435198\.webp$/);
+  assert.equal(layers[1].config.mediaSrc, observedTemplate(2).assets[0]);
 });
 
 test("source footer links keep their observed spacing", () => {

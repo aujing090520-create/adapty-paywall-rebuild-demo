@@ -1443,8 +1443,6 @@ textarea { min-height: 80px; resize: vertical; }
 
 /* Offer pages: the artwork and offer typography drive the hierarchy. */
 .template-rc-source-2 .phone-content { padding: 0 18px 18px; background: #0c0920; text-align: center; }
-.template-rc-source-2 [data-node-id$="-background"] { position: absolute; z-index: 0; inset: 0; margin: 0; }
-.template-rc-source-2 [data-node-id$="-background"] .preview-image, .template-rc-source-2 [data-node-id$="-background"] img { width: 100% !important; height: 100% !important; object-fit: cover !important; }
 .template-rc-source-2 [data-node-id$="-image"] { position: absolute; inset: 0; margin: 0; }
 .template-rc-source-2 [data-node-id$="-image"] .preview-image { height: 100% !important; }
 .template-rc-source-2 [data-node-id$="-image"] img { object-fit: cover !important; }
@@ -2070,3 +2068,20 @@ textarea { min-height: 80px; resize: vertical; }
 .link-action-fields { margin-top: 14px; padding-top: 10px; border-top: 1px solid #e8e5ed; }
 .link-action-fields h4 { margin: 0 0 8px; font-size: 12px; }
 .template-rc-source-41 .preview-cta { background: linear-gradient(90deg,#1824a1,#a31973) !important; border-radius: 22px; }
+
+.modal.wide:has(.template-modal) { width: min(1280px, calc(100vw - 32px)); height: min(860px, calc(100dvh - 24px)); max-height: calc(100dvh - 24px); }
+.template-modal { grid-template-columns: 190px minmax(0, 1fr); }
+.template-content, .template-scroll-content { min-width: 0; }
+.template-scroll-content { overflow-x: hidden; overflow-y: auto; }
+.rich-template-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.rich-template-grid .template { min-width: 0; max-width: 100%; }
+@media (max-width: 1000px) { .rich-template-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 720px) { .template-modal { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 520px) { .rich-template-grid { grid-template-columns: minmax(0, 1fr); } }
+
+.current-media-preview { margin-bottom: 10px; display: grid; gap: 6px; }
+.current-media-preview img, .current-media-preview video { display: block; width: 100%; max-height: 210px; border: 1px solid #e2e0e9; border-radius: 6px; background: #f7f7f9; object-fit: contain; }
+.current-media-preview span { color: #65626d; font-size: 11px; }
+
+.preview-page-background-wrap { position: absolute !important; inset: 0; z-index: 0; margin: 0 !important; }
+.preview-page-background, .preview-page-background img { display: block; width: 100%; height: 100%; }
