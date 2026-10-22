@@ -8,6 +8,9 @@ import { revenueCatGallery } from "./revenueCatGallery.js";
 import { createSourceTemplateNodes, observedTemplate, sourceBlueprints } from "./revenueCatSourceBlueprints.js";
 import {
   Activity,
+  AlignCenter,
+  AlignLeft,
+  AlignRight,
   Armchair,
   Archive,
   ArrowLeft,
@@ -373,7 +376,9 @@ function ProductPackageCard({ plan, index, config = {}, layout, selected, focuse
         const align = settings.align || defaultAlign;
         const offsetX = Number(settings.offsetX) || 0;
         const offsetY = Number(settings.offsetY) || 0;
-        return <span key={part} className={`ht-custom-part ht-custom-${part}`} data-product-part={part} data-inspector-area={`product-${part}`} style={{ ...partStyle(part, part === "price" ? priceStyle : part === "reference" ? strikeStyle : {}), order: Number(settings.order) || position + 1, alignSelf: align === "left" ? "flex-start" : align === "right" ? "flex-end" : "center", textAlign: align, transform: offsetX || offsetY ? `translate(${offsetX}px, ${offsetY}px)` : undefined }}>{parts[part]}</span>;
+        const fontStyle = partStyle(part, part === "price" ? priceStyle : part === "reference" ? strikeStyle : {});
+        if (part === "price") fontStyle.fontSize = `min(${Number(settings.fontSize) > 0 ? `${settings.fontSize}px` : Number(configuredPriceSize) > 0 ? `${configuredPriceSize}px` : "18px"}, ${Math.max(18, Math.floor(150 / parts[part].length))}cqi)`;
+        return <span key={part} className={`ht-custom-part ht-custom-${part}`} data-product-part={part} data-inspector-area={`product-${part}`} style={{ ...fontStyle, order: Number(settings.order) || position + 1, alignSelf: align === "left" ? "flex-start" : align === "right" ? "flex-end" : "center", textAlign: align, transform: offsetX || offsetY ? `translate(${offsetX}px, ${offsetY}px)` : undefined }}>{parts[part]}</span>;
       })}
       {selected && embeddedBenefits?.length > 0 && <ul className="ht-plan-embedded-benefits" onClick={(event) => { event.stopPropagation(); onBenefitInspect?.(event); }}>{embeddedBenefits.map((line, lineIndex) => <li key={`${line}-${lineIndex}`}><Check size={11} /><span>{line}</span></li>)}</ul>}
     </div>;
@@ -2012,7 +2017,7 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
     const list = active.type === "List" || /^List \d+$/.test(active.type) || ["Feature list", "Features"].includes(active.type);
     const listRow = list && tab === "content" && previewFocus.slideIndex != null ? (active.id === "benefits" && active.config?.bluePrivilege ? panel.querySelectorAll(".privilege-row-wrap")[previewFocus.slideIndex] : panel.querySelectorAll(".product-row-editor")[previewFocus.slideIndex]) : null;
     const timerField = active.type === "Timer" ? exactField(tab === "content" ? ["Start value"] : tab === "style" ? ["时间字体颜色"] : ["Vertical offset"]) : null;
-    const productStyle = products && tab === "style" ? panel.querySelector(".product-part-editor") : null;
+    const productStyle = products && tab === "style" ? panel.querySelector(`[data-product-part-row="${previewFocus.area?.replace(/^product-/, "")}"]`) ?? panel.querySelector(".product-part-editor") : null;
     const productLayout = products && tab === "layout" ? exactField(["布局类型"]) : null;
     const agreementRow = active.type === "Agreement" && tab === "content" && previewFocus.slideIndex != null ? panel.querySelectorAll(".agreement-segment-editor")[previewFocus.slideIndex] : null;
     const agreementField = active.type === "Agreement" ? tab === "content" ? [...panel.querySelectorAll(".switch-row")].find((field) => field.querySelector("strong")?.textContent?.trim() === "勾选后才能点击按钮") : exactField(tab === "style" ? previewFocus.area === "links" ? ["链接颜色"] : ["文字颜色"] : ["对齐方式"]) : null;
@@ -2387,7 +2392,7 @@ function ProductPriceModeStyleEditor({ active, updateNode, pricePreviewMode }) {
   const number = (label, key, max = 56) => <Field label={label}><input type="number" min="8" max={max} aria-label={`${label}（当前价格样式）`} placeholder="继承通用样式" value={current[key] ?? ""} onChange={(event) => patch({ [key]: event.target.value })} /></Field>;
   const color = (label, key, fallback) => <Field label={label}><div className="product-mode-color"><input type="color" aria-label={`${label}色块（当前价格样式）`} value={/^#[0-9a-fA-F]{6}$/.test(current[key] ?? "") ? current[key] : fallback} onChange={(event) => patch({ [key]: event.target.value })} /><input aria-label={`${label}（当前价格样式）`} placeholder="继承通用样式" value={current[key] ?? ""} onChange={(event) => patch({ [key]: event.target.value })} /></div></Field>;
   const hasStrike = ["3", "4", "6", "7"].includes(pricePreviewMode);
-  return <div className="product-mode-style"><div className="product-mode-style-heading"><h4>当前价格样式</h4><button type="button" className="text-action" disabled={!styles[pricePreviewMode]} onClick={() => { const next = { ...styles }; delete next[pricePreviewMode]; updateNodeConfig(active, updateNode, { priceModeStyles: next }); }}>恢复通用样式</button></div><div className="split-fields">{number("主价字号", "mainFontSize")}{color("主价颜色", "mainColor", "#161616")}</div>{hasStrike && <div className="split-fields">{number("划线价字号", "strikeFontSize", 40)}{color("划线价颜色", "strikeColor", "#999999")}</div>}</div>;
+  return <div className="product-mode-style"><div className="product-mode-style-heading"><h4>当前价格模式专属样式</h4><button type="button" className="text-action" disabled={!styles[pricePreviewMode]} onClick={() => { const next = { ...styles }; delete next[pricePreviewMode]; updateNodeConfig(active, updateNode, { priceModeStyles: next }); }}>恢复通用样式</button></div><div className="split-fields">{number("主价字号", "mainFontSize")}{color("主价颜色", "mainColor", "#161616")}</div>{hasStrike && <div className="split-fields">{number("划线价字号", "strikeFontSize", 40)}{color("划线价颜色", "strikeColor", "#999999")}</div>}</div>;
 }
 
 const PRODUCT_PARTS = [
@@ -2407,19 +2412,23 @@ function hasCustomProductPlacement(config) {
   return Object.values(config.productPartStyles ?? {}).some((value) => value.order || value.align || Number(value.offsetX) || Number(value.offsetY));
 }
 
-function ProductPartStyleEditor({ active, updateNode, previewFocus }) {
-  const requested = previewFocus?.id === active.id ? previewFocus.area?.replace(/^product-/, "") : null;
-  const [part, setPart] = useState("name");
-  useEffect(() => { if (PRODUCT_PARTS.some(([id]) => id === requested)) setPart(requested); }, [requested]);
+function ProductPartStyleEditor({ active, updateNode }) {
   const styles = active.config?.productPartStyles ?? {};
-  const current = styles[part] ?? {};
-  const patch = (key, value) => updateNodeConfig(active, updateNode, { productPartStyles: { ...styles, [part]: { ...current, [key]: value } } });
-  return <section className="product-part-editor" data-inspector-section="product-part"><h4>商品内元素</h4><Field label="编辑元素"><select value={part} onChange={(event) => setPart(event.target.value)}>{PRODUCT_PARTS.map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select></Field><div className="split-fields"><Field label="字号"><div className="number-unit"><input type="number" min="8" max="64" placeholder="继承模板" value={current.fontSize ?? ""} onChange={(event) => patch("fontSize", event.target.value)} /><span>px</span></div></Field><Field label="文字颜色"><div className="product-mode-color"><input type="color" aria-label="当前元素文字颜色色块" value={validHexColor(current.color) ? current.color : "#222222"} onChange={(event) => patch("color", event.target.value)} /><input aria-label="当前元素文字颜色" placeholder="继承模板" value={current.color ?? ""} onChange={(event) => patch("color", event.target.value)} /></div></Field></div><div className="split-fields"><Field label="水平位置"><select value={current.align ?? ""} onChange={(event) => patch("align", event.target.value)}><option value="">沿用当前布局</option><option value="left">居左</option><option value="center">居中</option><option value="right">居右</option></select></Field><Field label="上下顺序"><select value={current.order ?? ""} onChange={(event) => patch("order", event.target.value)}><option value="">沿用当前布局</option>{PRODUCT_PARTS.map(([, label], index) => <option key={index} value={index + 1}>第 {index + 1} 位</option>)}</select></Field></div><div className="split-fields"><Field label="水平偏移"><div className="number-unit"><input type="number" min="-120" max="120" value={current.offsetX ?? 0} onChange={(event) => patch("offsetX", event.target.value)} /><span>px</span></div></Field><Field label="垂直偏移"><div className="number-unit"><input type="number" min="-120" max="120" value={current.offsetY ?? 0} onChange={(event) => patch("offsetY", event.target.value)} /><span>px</span></div></Field></div></section>;
+  const patch = (part, key, value) => updateNodeConfig(active, updateNode, { productPartStyles: { ...styles, [part]: { ...styles[part], [key]: value } } });
+  const reset = (part) => { const next = { ...styles }; delete next[part]; updateNodeConfig(active, updateNode, { productPartStyles: next }); };
+  const groups = [["价格与名称", PRODUCT_PARTS.slice(0, 4)], ["说明与标签", PRODUCT_PARTS.slice(4)]];
+  return <section className="product-part-editor" data-inspector-section="product-part"><div className="product-part-editor-heading"><h4>商品文字与位置</h4><button type="button" className="text-action" disabled={!Object.keys(styles).length} onClick={() => updateNodeConfig(active, updateNode, { productPartStyles: {} })}>全部恢复模板</button></div>{groups.map(([heading, parts]) => <div className="product-part-group" key={heading}><h5>{heading}</h5>{parts.map(([part, label]) => {
+    const current = styles[part] ?? {};
+    return <div className="product-part-row" data-product-part-row={part} key={part}><div className="product-part-row-heading"><strong>{label}</strong><button type="button" className="product-part-reset" disabled={!styles[part]} title={`恢复${label}的模板样式`} aria-label={`恢复${label}的模板样式`} onClick={() => reset(part)}><RotateCw size={14} /></button></div><div className="product-part-row-fields"><label className="product-part-size"><span>字号</span><div className="number-unit"><input type="number" min="8" max="64" aria-label={`${label}字号`} placeholder="默认" value={current.fontSize ?? ""} onChange={(event) => patch(part, "fontSize", event.target.value)} /><span>px</span></div></label><label className="product-part-color"><span>颜色</span><div className="product-mode-color"><input type="color" aria-label={`${label}颜色色块`} title={`设置${label}颜色`} value={validHexColor(current.color) ? current.color : "#222222"} onChange={(event) => patch(part, "color", event.target.value)} /><input aria-label={`${label}颜色`} placeholder="默认" value={current.color ?? ""} onChange={(event) => patch(part, "color", event.target.value)} /></div></label><div className="product-part-align"><span>对齐</span><div className="product-part-align-options">{[["", "默认", null], ["left", "居左", AlignLeft], ["center", "居中", AlignCenter], ["right", "居右", AlignRight]].map(([value, title, Icon]) => <button type="button" key={title} className={(current.align ?? "") === value ? "active" : ""} title={title} aria-label={`${label}${title}`} aria-pressed={(current.align ?? "") === value} onClick={() => patch(part, "align", value)}>{Icon ? <Icon size={15} /> : "默认"}</button>)}</div></div><label className="product-part-order"><span>顺序</span><input type="number" min="1" max="8" aria-label={`${label}顺序`} placeholder="默认" value={current.order ?? ""} onChange={(event) => patch(part, "order", event.target.value)} /></label><label className="product-part-offset"><span>水平 X</span><input type="number" min="-120" max="120" aria-label={`${label}水平偏移`} value={current.offsetX ?? 0} onChange={(event) => patch(part, "offsetX", event.target.value)} /></label><label className="product-part-offset"><span>垂直 Y</span><input type="number" min="-120" max="120" aria-label={`${label}垂直偏移`} value={current.offsetY ?? 0} onChange={(event) => patch(part, "offsetY", event.target.value)} /></label></div></div>;
+  })}</div>)}</section>;
 }
 
 function ProductsStyleEditor({ active, updateNode, pricePreviewMode, previewFocus }) {
   const verticalBlue = productLayout(active.config) === "vertical";
   return <div className="product-color-settings">
+    <h4>商品框体</h4><div className="split-fields"><ConfigNumberField label="框体宽度" active={active} updateNode={updateNode} name="planWidth" fallback="" min={40} max={100} suffix="%" /><ConfigNumberField label="框体最小高度" active={active} updateNode={updateNode} name="planHeight" fallback="" min={30} max={300} suffix="px" /></div><ConfigNumberField label="框体内边距" active={active} updateNode={updateNode} name="planPadding" fallback="" min={0} max={40} suffix="px" />
+    <ProductPartStyleEditor active={active} updateNode={updateNode} />
+    <h4>选中态与标签颜色</h4>
     <ProductColorField label={verticalBlue ? "商品角标颜色" : "商品标签颜色"} active={active} updateNode={updateNode} name="badgeGradient" fallback={["#ff860a", "#ffb000", "#ffd10b"]} gradient />
     <ProductColorField label="商品选中框颜色" active={active} updateNode={updateNode} name="selectedBorderGradient" fallback={["#ff860a", "#ff860a", "#ff860a"]} gradient />
     <ProductColorField label="商品选中背景颜色" active={active} updateNode={updateNode} name="selectedBackground" fallback="#ffffff" />
@@ -2428,8 +2437,7 @@ function ProductsStyleEditor({ active, updateNode, pricePreviewMode, previewFocu
     {active.config?.saveBackgroundColor && <ProductColorField label="SAVE 背景颜色" active={active} updateNode={updateNode} name="saveBackgroundColor" fallback="#ffffff" />}
     <ProductColorField label="购买按钮文字颜色" active={active} updateNode={updateNode} name="purchaseTextGradient" fallback={["#ffffff", "#ffffff", "#ffffff"]} gradient />
     <ProductColorField label="购买按钮背景颜色" active={active} updateNode={updateNode} name="purchaseBackgroundGradient" fallback={["#ff8707", "#ffb000", "#ffd10b"]} gradient />
-    <h4>商品框体</h4><div className="split-fields"><ConfigNumberField label="框体宽度" active={active} updateNode={updateNode} name="planWidth" fallback="" min={40} max={100} suffix="%" /><ConfigNumberField label="框体最小高度" active={active} updateNode={updateNode} name="planHeight" fallback="" min={30} max={300} suffix="px" /></div><ConfigNumberField label="框体内边距" active={active} updateNode={updateNode} name="planPadding" fallback="" min={0} max={40} suffix="px" />
-    <ProductPartStyleEditor active={active} updateNode={updateNode} previewFocus={previewFocus} /><ProductPriceModeStyleEditor active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} />
+    <ProductPriceModeStyleEditor active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} />
   </div>;
 }
 
