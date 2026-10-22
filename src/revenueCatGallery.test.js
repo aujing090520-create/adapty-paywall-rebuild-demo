@@ -98,6 +98,7 @@ test("testimonial, library, and concert layouts keep their observed first-screen
   assert.deepEqual(tree(26).find((item) => item.type === "Timeline").config.listRows.map((row) => row.marker), ["lock", "bell", "star"]);
   assert.deepEqual(tree(24).filter((item) => item.type === "Image").map((item) => item.config.mediaSrc), observedTemplate(24).assets);
   assert.equal(tree(27).find((item) => item.type === "Feature Table").config.tableVariant, "feature-list");
+  assert.deepEqual(tree(27).find((item) => item.type === "Feature Table").config.rows.map((row) => row.icon), ["telescope", "rocket", "star", "orbit", "bell"]);
   assert.equal(tree(18).find((item) => item.type === "Products").config.packageLayout, "info-row");
   assert.equal(tree(25).find((item) => item.type === "Products").config.packageLayout, "horizontal");
   assert.equal(tree(12).find((item) => item.type === "Products").config.packageLayout, "horizontal");

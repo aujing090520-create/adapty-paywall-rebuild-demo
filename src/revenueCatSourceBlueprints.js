@@ -332,7 +332,7 @@ export function createSourceTemplateNodes(template, node) {
   if (plan.table) {
     const tableLines = lines.slice(...plan.table);
     const pairedRows = order === 27 ? Array.from({ length: Math.floor(tableLines.length / 2) }, (_, index) => tableLines.slice(index * 2, index * 2 + 2)) : tableLines.map((line) => [line, ""]);
-    result.push(add("table", "Feature Table", "", { title: order === 27 ? at(7) : "", tableVariant: order === 27 ? "feature-list" : "comparison", ...(order === 27 ? { accentColor: "#25328d", backgroundColor: "#ffffff" } : {}), ...(order === 29 ? { firstColumnLabel: at(1) } : {}), columns: order === 29 ? [at(7), at(8)] : ["包含"], rows: pairedRows.map(([name, description], index) => ({ name, values: order === 29 ? [index === 0 ? "✓" : "—", "✓"] : [description] })) }));
+    result.push(add("table", "Feature Table", "", { title: order === 27 ? at(7) : "", tableVariant: order === 27 ? "feature-list" : "comparison", ...(order === 27 ? { accentColor: "#25328d", backgroundColor: "#ffffff" } : {}), ...(order === 29 ? { firstColumnLabel: at(1) } : {}), columns: order === 29 ? [at(7), at(8)] : ["包含"], rows: pairedRows.map(([name, description], index) => ({ name, ...(order === 27 ? { icon: ["telescope", "rocket", "star", "orbit", "bell"][index] ?? "star" } : {}), values: order === 29 ? [index === 0 ? "✓" : "—", "✓"] : [description] })) }));
   }
   if (order === 29) result.push(add("copy-0", "Text", at(9)));
   if (plan.cta !== undefined) result.push(order === 18 ? add("action", "Button", `${at(18)} ${at(19)}`, { action: "Purchase", backgroundColor: template.accent }) : button("action", plan.cta));
