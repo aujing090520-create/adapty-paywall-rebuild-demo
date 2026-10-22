@@ -1338,6 +1338,13 @@ textarea { min-height: 80px; resize: vertical; }
 .rc-rebuilt .preview-products { margin: 0 0 9px; }
 .rc-rebuilt .preview-products.product-layout-vertical { gap: 7px; }
 .rc-rebuilt .preview-products .ht-vertical-plan { min-height: 49px; padding: 7px 10px; border-radius: 6px; background: #fff; }
+.rc-rebuilt .preview-products .ht-vertical-plan.radio-stacked { grid-template-columns: minmax(0, 1fr); min-height: 57px; padding: 9px 10px 9px 31px; border-radius: 12px; }
+.rc-rebuilt .preview-products .ht-vertical-plan.radio-stacked::before { content: ""; position: absolute; top: 50%; left: 10px; width: 12px; height: 12px; border: 1px solid #d4d5d8; border-radius: 50%; transform: translateY(-50%); }
+.rc-rebuilt .preview-products .ht-vertical-plan.radio-stacked.chosen::before { border-color: #8b84f8; background: #8b84f8; box-shadow: inset 0 0 0 3px #fff; }
+.rc-rebuilt .preview-products .ht-vertical-plan.radio-stacked .ht-vertical-main { display: flex; flex-direction: column; align-items: flex-start; }
+.rc-rebuilt .preview-products .ht-vertical-plan.radio-stacked .ht-vertical-price-line { display: flex; flex-direction: row; align-items: baseline; }
+.rc-rebuilt .preview-products .ht-vertical-plan.radio-stacked .ht-vertical-total { font-size: 10px; font-weight: 400; }
+.rc-rebuilt .preview-products .ht-vertical-plan.radio-stacked .ht-vertical-side { display: none; }
 .rc-rebuilt .preview-products .ht-vertical-main { gap: 2px; }
 .rc-rebuilt .preview-products .ht-vertical-main strong { font-size: 11px; }
 .rc-rebuilt .preview-products .ht-vertical-total { font-size: 14px; }
@@ -1373,11 +1380,16 @@ textarea { min-height: 80px; resize: vertical; }
 .template-rc-source-1 .preview-benefits li { padding: 0 3px; }
 .template-rc-source-1 .preview-benefits strong { color: #111; }
 .template-rc-source-1 .preview-benefits small { color: #737373; }
+.template-rc-source-1 [data-node-id$="screen-3-features"] .preview-benefits li > i { display: grid; place-items: center; width: 17px; height: 17px; border: 1px solid #b9d7c9; border-radius: 50%; color: #72a89f; }
+.template-rc-source-1 [data-node-id$="screen-3-features"] .preview-benefits li > i svg { width: 11px; height: 11px; }
+.template-rc-source-1 [data-node-id$="screen-3-features"] .preview-benefits li:nth-child(2) > i { border-color: #b8d1e8; color: #76abd0; }
+.template-rc-source-1 [data-node-id$="screen-3-features"] .preview-benefits li:nth-child(3) > i { border-color: #c9c3df; color: #9f92c6; }
 .template-rc-source-1 .preview-button { margin-top: auto; }
 .template-rc-source-1 .preview-cta { border-radius: 30px; }
 .template-rc-source-1 .preview-products-wrap { margin-top: auto; }
-.template-rc-source-1 .preview-products.product-layout-vertical { gap: 6px; }
+.template-rc-source-1 .preview-products.product-layout-vertical { gap: 8px; }
 .template-rc-source-1 .preview-products .ht-vertical-plan { min-height: 49px; background: #fff; }
+.template-rc-source-1 .preview-products .ht-vertical-plan.radio-stacked.chosen { box-shadow: 0 4px 8px #576cdb1a; }
 .rc-rebuilt:where(.template-rc-source-2,.template-rc-source-8,.template-rc-source-10,.template-rc-source-11,.template-rc-source-15,.template-rc-source-17,.template-rc-source-24,.template-rc-source-26,.template-rc-source-28,.template-rc-source-35,.template-rc-source-36,.template-rc-source-40,.template-rc-source-41) { --rc-ink: #fff; --rc-muted: #c7c4cd; --rc-surface: #090a13; }
 .rc-rebuilt:where(.template-rc-source-2,.template-rc-source-8,.template-rc-source-10,.template-rc-source-11,.template-rc-source-15,.template-rc-source-17,.template-rc-source-24,.template-rc-source-26,.template-rc-source-28,.template-rc-source-35,.template-rc-source-36,.template-rc-source-40,.template-rc-source-41) .close-phone { background: #34343b99; color: #fff; }
 .rc-rebuilt:where(.template-rc-source-2,.template-rc-source-8,.template-rc-source-15,.template-rc-source-17,.template-rc-source-26,.template-rc-source-28,.template-rc-source-35,.template-rc-source-41) [data-node-id$="-image"] .preview-image { width: 100% !important; height: 220px !important; }

@@ -46,6 +46,13 @@ test("multi-step artwork and restore actions stay on their observed screens", ()
   const assets = observedTemplate(1).assets;
   assert.deepEqual(flow.filter((item) => item.type === "Image").map((item) => item.config.mediaSrc), [assets[0], assets[2], assets[3]]);
   assert.equal(flow.find((item) => item.id.endsWith("screen-3-timeline")).config.enabled, false);
+  const products = flow.find((item) => item.type === "Products");
+  assert.equal(products.config.packageLayout, "vertical");
+  assert.equal(products.config.cardContentLayout, "radio-stacked");
+  assert.equal(products.config.planRadius, 12);
+  assert.deepEqual(flow.find((item) => item.id.endsWith("screen-3-features")).config.listRows.map((row) => row.leading), ["moon", "flower", "heart"]);
+  assert.deepEqual(flow.filter((item) => item.type === "Button").map((item) => item.config.action), ["NextScreen", "NextScreen", "Purchase"]);
+  assert.deepEqual(flow.filter((item) => item.type === "Button").map((item) => item.config.backgroundColor), ["#8b83f8", "#8b82f8", "#8b84f8"]);
   const dark = createSourceTemplateNodes(revenueCatGallery[39], node);
   assert.deepEqual(dark.filter((item) => ["Dismiss", "RestorePurchases"].includes(item.config?.action)).map((item) => item.content), ["×", "Restore"]);
 });
