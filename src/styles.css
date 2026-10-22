@@ -1600,10 +1600,12 @@ textarea { min-height: 80px; resize: vertical; }
 .template-rc-source-16 .preview-benefits { padding: 12px; border-radius: 8px; background: #f5f5f5; }
 .template-rc-source-16 [data-node-id$="-copy-1"] p { background: #faecd7; color: #a57730; }
 .template-rc-source-16 .preview-button { margin-top: 16px; }
+.template-rc-source-16 .preview-button, .template-rc-source-17 .preview-button { background: transparent !important; }
 .template-rc-source-16 .preview-cta { border-radius: 5px !important; }
 .template-rc-source-16 .preview-links { color: #d39b3f; }
 .template-rc-source-17 [data-node-id$="-image"] { position: absolute; inset: 0; margin: 0; }
 .template-rc-source-17 [data-node-id$="-image"] .preview-image { height: 100% !important; }
+.template-rc-source-17 [data-node-id$="-image"] .preview-image::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 42%, #0009 72%, #000 100%); pointer-events: none; }
 .template-rc-source-17 .phone-content > .preview-node:not([data-node-id$="-image"]) { z-index: 1; }
 .template-rc-source-17 .preview-headline { margin-top: 20px; }
 .template-rc-source-17 .preview-headline h2, .template-rc-source-17 .preview-copy p { color: #fff; }
