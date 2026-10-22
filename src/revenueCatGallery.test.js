@@ -80,6 +80,14 @@ test("AstroApp keeps its source background separate from the lotus image", () =>
   assert.equal(images[1].config.mediaSrc, observedTemplate(2).assets[0]);
 });
 
+test("source footer links keep their observed spacing", () => {
+  const node = (id, type, content, depth, options = {}) => ({ id, type, content, depth, ...options });
+  const links = (order) => createSourceTemplateNodes(revenueCatGallery[order - 1], node).find((item) => item.type === "Links");
+  assert.equal(links(7).config.spacedLinks, true);
+  assert.equal(links(22).config.spacedLinks, true);
+  assert.equal(links(30).config.spacedLinks, false);
+});
+
 test("switch control is not rendered as a second standalone tabs component", () => {
   const node = (id, type, content, depth, options = {}) => ({ id, type, content, depth, ...options });
   const tree = (order) => createSourceTemplateNodes(revenueCatGallery[order - 1], node);
