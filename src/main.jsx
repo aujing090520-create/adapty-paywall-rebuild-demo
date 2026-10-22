@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { linkActionFor, visibleLinkLabels } from "./linkActions.js";
 import { createRoot } from "react-dom/client";
 import { DEMO_SKUS, PRICE_DISPLAY_MODES, billingMonths, productPriceFields, resolveProductPrice, skuById, skuCopy, templateSkuId } from "./productPricing.js";
 import { applyComponent, captureComponent, componentKind, readComponentLibrary, writeComponentLibrary } from "./componentLibrary.js";
@@ -2446,8 +2447,18 @@ function safeButtonUrl(value) {
   try { const url = new URL(value); return ["https:", "http:"].includes(url.protocol) ? url.href : null; } catch { return null; }
 }
 
-function LinksContent({ active, updateNode, templateLinks, setTemplateLinks }) {
-  return <><Field label="Visible link labels" required><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field><p className="property-copy">服务条款、隐私政策与恢复购买的跳转逻辑未在当前预览中执行；链接 URL 不显示为无反馈输入。</p></>;
+function LinksContent({ active, updateNode }) {
+  const labels = visibleLinkLabels(active.content);
+  const actions = active.config?.linkActions ?? [];
+  const updateAction = (index, patch) => {
+    const next = [...actions];
+    next[index] = { ...linkActionFor(labels[index], next[index]), ...patch };
+    updateNodeConfig(active, updateNode, { linkActions: next });
+  };
+  return <><Field label="链接文案" required><input value={active.content ?? ""} onChange={(event) => updateNode(active.id, { content: event.target.value })} /></Field>{labels.map((label, index) => {
+    const item = linkActionFor(label, actions[index]);
+    return <div className="link-action-fields" key={`${index}-${label}`}><h4>{label}</h4><Field label="点击后"><select value={item.action} onChange={(event) => updateAction(index, { action: event.target.value })}><option value="OpenURL">打开链接</option><option value="RestorePurchases">恢复购买</option></select></Field>{item.action === "OpenURL" && <Field label="目标链接" required><input type="url" placeholder="https://" value={item.actionUrl ?? ""} aria-invalid={Boolean(item.actionUrl) && !safeButtonUrl(item.actionUrl)} onChange={(event) => updateAction(index, { actionUrl: event.target.value })} /></Field>}</div>;
+  })}<p className="property-copy">未填写目标链接时，预览会提示尚未配置；不会打开猜测的页面。恢复购买仅展示交互预览。</p></>;
 }
 
 function agreementSegmentsFor(node) {
@@ -3576,7 +3587,10 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, on
   if (node.type === "Footer Top Part") return wrap(<div className="preview-card-anchor" />, "preview-card-anchor-wrap");
   if (node.type === "Button and Links") { const [cta, links] = (node.content ?? "GET FULL ACCESS|Terms · Privacy · Restore").split("|"); return wrap(<><button className="preview-cta" style={buttonStyle}>{cta}</button><small className="preview-links" style={textStyle}>{links}</small></>, "preview-button"); }
   if (node.type === "Button" || node.type === "Web Paywall Button" || node.type === "Purchase Button") return wrap(<button className="preview-cta" style={buttonStyle} onClick={(event) => { event.stopPropagation(); select(event); onButtonAction?.(node); }}>{node.content ?? (node.type === "Web Paywall Button" ? "Pay on web" : node.type === "Button" ? "button text" : "Continue")}</button>, "preview-button");
-  if (node.type === "Links") return wrap(<small className="preview-links" style={textStyle}>{node.content ?? "Terms · Privacy · Restore · Login"}</small>);
+  if (node.type === "Links") {
+    const labels = visibleLinkLabels(node.content ?? "Terms · Privacy · Restore · Login");
+    return wrap(<small className="preview-links" style={textStyle}>{labels.map((label, index) => <React.Fragment key={`${index}-${label}`}>{index > 0 && " · "}<button type="button" data-inspector-area="links" data-inspector-row={index} onClick={(event) => { event.stopPropagation(); onSelect(node.id, "links", index); onButtonAction?.({ type: "Button", config: linkActionFor(label, config.linkActions?.[index]) }); }}>{label}</button></React.Fragment>)}</small>);
+  }
   if (node.type === "Footer") return wrap(<small className="preview-footer" style={textStyle}>{node.content}</small>);
   return wrap(<p>{node.content || node.type}</p>);
 }
