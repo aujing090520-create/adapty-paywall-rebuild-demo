@@ -132,7 +132,7 @@ export function createSourceTemplateNodes(template, node) {
   const button = (part, index, depth = 0) => add(part, "Button", at(index), { action: [5, 6].includes(order) ? "OfferCodeRedemption" : "Purchase", backgroundColor: order === 13 ? "#f2f2f7" : order === 8 ? "#ffa800" : order === 1 ? ({ "screen-1-next": "#8b83f8", "screen-2-next": "#8b82f8", "screen-3-action": "#8b84f8" }[part] ?? template.accent) : template.accent, ...([5, 13].includes(order) ? { color: "#111111", radius: 99 } : {}) }, depth);
   const products = (depth = 0) => {
     const visibleRows = plan.products ?? [];
-    return add("products", "Products", visibleRows.join("\n") || "绑定商品||", { defaultSelected: [8, 14, 19, 22, 30, 32, 33, 34, 35, 36, 40].includes(order) ? 1 : 0, packageLayout: order === 18 ? "info-row" : [12, 14, 19, 22, 25, 30].includes(order) ? "horizontal" : "vertical", ...(order === 1 ? { cardContentLayout: "radio-stacked", planRadius: 12 } : {}), ...(order === 4 ? { cardContentLayout: "split-summary", duplicatePriceAsDetail: true, planRadius: 8 } : {}), ...(order === 8 ? { cardContentLayout: "split-summary", showRadio: true, linkedToggleId: id("toggle"), groupSize: 2 } : {}), ...(order === 7 ? { showRadio: true } : {}), ...(order === 13 ? { showRadio: true, showMainPrice: false } : {}), ...([14, 19, 22].includes(order) ? { cardContentLayout: "duration-grid" } : {}), showOfferBadge: true, showCards: visibleRows.length > 0, sourcePackageCount: sourcePackageCount(order), purchasePerCard: order === 10, badgeGradient: order === 11 ? ["#d279de", "#d279de", "#d279de"] : [template.accent, template.accent, template.accent], selectedBorderGradient: [template.accent, template.accent, template.accent], ...(visibleRows.length ? { packageRows: order === 8 ? [...sourceProductRows(order), ...sourceProductRows(order).map((row) => ({ ...row, name: `${row.name} Family` }))] : sourceProductRows(order) } : {}) }, depth);
+    return add("products", "Products", visibleRows.join("\n") || "绑定商品||", { defaultSelected: [8, 14, 19, 22, 30, 32, 33, 34, 35, 36, 40].includes(order) ? 1 : 0, packageLayout: order === 18 ? "info-row" : [12, 14, 19, 22, 25, 30].includes(order) ? "horizontal" : "vertical", ...(order === 1 ? { cardContentLayout: "radio-stacked", planRadius: 12 } : {}), ...(order === 4 ? { cardContentLayout: "split-summary", duplicatePriceAsDetail: true, planRadius: 8 } : {}), ...(order === 8 ? { cardContentLayout: "split-summary" } : {}), ...([7, 8].includes(order) ? { showRadio: true, linkedToggleId: id("toggle"), groupSize: 2 } : {}), ...(order === 13 ? { showRadio: true, showMainPrice: false } : {}), ...([14, 19, 22].includes(order) ? { cardContentLayout: "duration-grid" } : {}), showOfferBadge: true, showCards: visibleRows.length > 0, sourcePackageCount: sourcePackageCount(order), purchasePerCard: order === 10, badgeGradient: order === 11 ? ["#d279de", "#d279de", "#d279de"] : [template.accent, template.accent, template.accent], selectedBorderGradient: [template.accent, template.accent, template.accent], ...(visibleRows.length ? { packageRows: [7, 8].includes(order) ? [...sourceProductRows(order), ...sourceProductRows(order).map((row) => ({ ...row, name: `${row.name} Family` }))] : sourceProductRows(order) } : {}) }, depth);
   };
   const links = (depth = 0) => {
     const policyLines = lines.filter((line) => /^(Restore( Purchases| purchases)?|Terms( of Use| of service)?|Privacy( Policy| policy)?|Privacy policy)$/.test(line) && !(order === 40 && line === "Restore"));
@@ -177,15 +177,16 @@ export function createSourceTemplateNodes(template, node) {
   }
 
   if (order === 9) {
+    const action = button("action", plan.cta);
     return [
       add("icon", "Image", "", { mediaSrc: source.assets[1], mediaFit: "contain", mediaWidth: 100, mediaHeight: 100, mediaBackgroundColor: "transparent" }),
       header("title", plan.heading),
       media("image"),
       add("copy-0", "Text", `${at(1)} ${at(2)}`),
       add("copy-1", "Text", at(3)),
-      add("toggle", "Toggle", at(plan.toggle), { onColor: template.accent }),
+      add("toggle", "Toggle", at(plan.toggle), { onColor: template.accent, onContent: "Family Sharing enabled" }),
       products(),
-      button("action", plan.cta),
+      { ...action, config: { ...action.config, linkedToggleId: id("toggle"), onContent: "Start 1 week free trial" } },
       links(),
     ].filter(Boolean);
   }
@@ -327,7 +328,7 @@ export function createSourceTemplateNodes(template, node) {
     }
   }
   if (plan.social) result.push(add("social", "Social Proof", "", { rating: Number.parseFloat(at(plan.social[0])) || 5, count: at(plan.social[1]), caption: at(plan.social[0]), accentColor: order === 41 ? "#ffe479" : template.accent, ...(order === 41 ? { leftDecorationSrc: source.assets[1], rightDecorationSrc: source.assets[2] } : {}) }));
-  if (plan.toggle !== undefined) result.push(add("toggle", "Toggle", at(plan.toggle), { onColor: template.accent, ...(order === 8 ? { linkedProductsId: id("products") } : {}) }));
+  if (plan.toggle !== undefined) result.push(add("toggle", "Toggle", at(plan.toggle), { onColor: order === 7 ? "#06bcd2" : template.accent, ...([7, 8].includes(order) ? { linkedProductsId: id("products") } : {}) }));
   if (sourcePackageCount(order)) result.push(products());
   if (plan.table) {
     const tableLines = lines.slice(...plan.table);

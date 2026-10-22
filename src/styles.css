@@ -1499,7 +1499,7 @@ textarea { min-height: 80px; resize: vertical; }
 .template-rc-source-8 .preview-products .ht-vertical-total { color: #fff; }
 .template-rc-source-8 .preview-products .ht-split-summary-copy > span { color: #dca523; }
 .template-rc-source-8 .preview-products .ht-split-summary-price { color: #fff; }
-.template-rc-source-8 .preview-cta { background: #dca523 !important; color: #10281f; border-radius: 20px !important; clip-path: inset(0 round 20px); }
+.template-rc-source-8 .preview-cta { background: #ffa800 !important; color: #10281f; border-radius: 20px !important; clip-path: inset(0 round 20px); }
 .template-rc-source-9 .phone-content { align-items: center; text-align: center; }
 .template-rc-source-9 .phone-content { padding-top: 20px; }
 .template-rc-source-9 [data-node-id$="-icon"] { order: 0; margin: 0 0 8px; }

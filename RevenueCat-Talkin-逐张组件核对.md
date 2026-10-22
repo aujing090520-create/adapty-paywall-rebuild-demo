@@ -187,3 +187,7 @@
 共用链接组件补齐了逐项点击动作与配置入口：来源画面能确认第 7 张底部显示 Restore Purchases、Terms、Privacy，但尚未核实 Terms/Privacy 的真实 URL，因此默认留空，点击时提示配置，不臆造目标。Restore Purchases 在本地仅打开恢复购买说明，不请求商店。第 7 张本地构建器已实际点击 Terms 与 Restore Purchases，验证配置定位和反馈；这不代表来源的真实恢复购买和协议目标已通过验收。
 
 第 8 张进一步核对了来源编辑器的开关两态。Switch 的默认状态为 OFF；OFF 下是 Monthly、Yearly，ON 下是 Monthly Family、Yearly Family，两态均为两张商品卡，年档在 ON 画面中选中。ON 的年档说明为 `12 mo • $69.99`、右侧预览价为 `$5.83/mo`；购买按钮的 Open 属性为 Standard checkout，颜色属性为 `#FFA800`。ON 状态的 Package 属性明确提示需要先选择 offering，因此这四档金额只用作预览，不代表已绑定可购买 SKU。Demo 沿用共用开关和商品套餐组件，配置两组商品并联动；本地实际点击验证 OFF→ON→OFF 的文案切换。真实 offering、购买结果以及多视口视觉仍未验收。
+
+第 9 张来源 Switch 默认 OFF：OFF 展示 `Enable Family Sharing` 与 `Continue`，ON 展示 `Family Sharing enabled` 与 `Start 1 week free trial`；ON 的 Purchase button 仍为 Standard checkout。共用开关与按钮新增可编辑的开启态文案联动，第 9 张本地实际点击验证两态文案与按钮支付预览。ON 的 Package 属性提示尚需选择 offering，故 `$69.99/year` 与试用时长仍只是来源预览文案，未验证真实 SKU、试用资格或交易结果。
+
+第 7 张来源 Switch 也有独立的 ON 商品组：OFF 为 Yearly、Monthly，ON 为 Yearly Family、Monthly Family，顺序和年档选中态不变。Switch control 在来源 ON 状态的 Track 色为 `#06BCD2`，按钮仍为 Continue。Demo 用同一个共用开关/商品套餐联动配置还原两组，已在本地点击确认 OFF→ON 显示对应两张家庭商品卡；来源中真实 SKU 绑定与交易仍未核对。

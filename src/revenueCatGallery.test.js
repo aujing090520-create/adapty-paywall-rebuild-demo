@@ -76,6 +76,10 @@ test("switch control is not rendered as a second standalone tabs component", () 
     assert.equal(nodes.some((item) => item.type === "Toggle"), true);
   }
   assert.equal(tree(7).find((item) => item.type === "Products").config.showRadio, true);
+  assert.equal(tree(7).find((item) => item.type === "Toggle").config.onColor, "#06bcd2");
+  assert.equal(tree(7).find((item) => item.type === "Toggle").config.linkedProductsId, "rc-source-7-products");
+  assert.equal(tree(7).find((item) => item.type === "Products").config.linkedToggleId, "rc-source-7-toggle");
+  assert.deepEqual(tree(7).find((item) => item.type === "Products").config.packageRows.map((row) => row.name), ["Yearly", "Monthly", "Yearly Family", "Monthly Family"]);
   assert.equal(tree(8).find((item) => item.type === "Products").config.cardContentLayout, "split-summary");
   assert.equal(tree(8).find((item) => item.type === "Products").config.packageRows[1].price, "$5.83/mo");
   assert.equal(tree(8).find((item) => item.type === "Toggle").config.linkedProductsId, "rc-source-8-products");
@@ -84,6 +88,9 @@ test("switch control is not rendered as a second standalone tabs component", () 
   assert.deepEqual(tree(8).find((item) => item.type === "Products").config.packageRows.map((row) => row.name), ["Monthly", "Yearly", "Monthly Family", "Yearly Family"]);
   assert.equal(tree(8).find((item) => item.type === "Button").config.backgroundColor, "#ffa800");
   assert.deepEqual(tree(8).find((item) => item.type === "List").config.listRows.map((row) => row.leading), ["ticket", "activity", "running"]);
+  assert.equal(tree(9).find((item) => item.type === "Toggle").config.onContent, "Family Sharing enabled");
+  assert.equal(tree(9).find((item) => item.type === "Button").config.linkedToggleId, "rc-source-9-toggle");
+  assert.equal(tree(9).find((item) => item.type === "Button").config.onContent, "Start 1 week free trial");
   const firstReview = tree(7).find((item) => item.type === "Carousel")?.config.slides[0];
   assert.match(firstReview.title, /brown thumb green/);
 });
