@@ -177,7 +177,7 @@ export function createSourceTemplateNodes(template, node) {
       { id: "community", title: at(4), caption: at(5), image: source.assets[3] },
       { id: "sleep", title: at(0), caption: at(1), image: source.assets[1] },
     ];
-    return [media("image"), add("reviews", "Carousel", "", { slides, initialSlide: 0 }), products(), button("action", plan.cta), links()].filter(Boolean);
+    return [media("image"), add("reviews", "Carousel", "", { slides, initialSlide: 0, dotsVariant: "progress", accentColor: "#777777", secondaryColor: "#bcbcbc" }), products(), button("action", plan.cta), links()].filter(Boolean);
   }
 
   if (order === 9) {
@@ -327,7 +327,7 @@ export function createSourceTemplateNodes(template, node) {
         const reviews = [[3, 4], [5, 6], [1, 2]].map(([title, caption], index) => ({ id: `source-review-${index + 1}`, image: "", title: at(title), caption: at(caption) }));
         result.push(add("reviews", "Carousel", "", { slides: reviews, initialSlide: 0, hideImageIfEmpty: true }));
       } else {
-      result.push(add("reviews", "Carousel", "", { slides, initialSlide: 0, hideImageIfEmpty: true, ...(order === 14 ? { dotsPlacement: "below" } : {}) }));
+      result.push(add("reviews", "Carousel", "", { slides, initialSlide: 0, hideImageIfEmpty: true, ...(order === 14 ? { dotsPlacement: "below" } : {}), ...(order === 19 ? { peekAdjacent: true } : {}) }));
       }
     }
   }
