@@ -3079,10 +3079,10 @@ function HeroMediaLayer({ config = {}, sourceSrc = "" }) {
   const src = config.mediaState === "removed" ? "" : config.mediaState === "custom" ? config.mediaSrc : sourceSrc;
   const dimensions = mediaDimensions(config);
   const resized = dimensions.width !== 100 || dimensions.height !== 100 || dimensions.imageScaleWidth !== 100 || dimensions.imageScaleHeight !== 100;
-  if ((scrollable || resized) && src && config.mediaType !== "Video") return <div className={`ht-hero-media ht-hero-media-frame${scrollable ? " ht-hero-media-scroll" : ""}`} data-inspector-area="media" style={{ backgroundColor: config.mediaBackgroundColor ?? "#f5f5f5" }}>{scrollable ? <ScrollImage src={src} alt="" dimensions={dimensions} /> : <img src={src} alt="" style={{ width: dimensions.imageWidth, height: dimensions.imageHeight, objectFit: config.mediaFit ?? "cover" }} />}</div>;
-  if (config.mediaState !== "custom" || !config.mediaSrc) return null;
-  if (config.mediaType === "Video") return <video className="ht-hero-media" src={config.mediaSrc} autoPlay loop muted playsInline style={{ objectFit: config.mediaFit ?? "cover" }} />;
-  return <img className="ht-hero-media" src={config.mediaSrc} alt="" style={{ objectFit: config.mediaFit ?? "cover" }} />;
+  // Uploaded images need a fixed frame even at 100% for object-fit: contain.
+  if ((scrollable || resized || config.mediaState === "custom") && src && config.mediaType !== "Video") return <div className={`ht-hero-media ht-hero-media-frame${scrollable ? " ht-hero-media-scroll" : ""}`} data-inspector-area="media" style={{ backgroundColor: config.mediaBackgroundColor ?? "#f5f5f5" }}>{scrollable ? <ScrollImage src={src} alt="" dimensions={dimensions} /> : <img src={src} alt="" style={{ width: dimensions.imageWidth, height: dimensions.imageHeight, objectFit: config.mediaFit ?? "cover" }} />}</div>;
+  if (config.mediaState === "custom" && config.mediaSrc && config.mediaType === "Video") return <video className="ht-hero-media" src={config.mediaSrc} autoPlay loop muted playsInline style={{ objectFit: config.mediaFit ?? "cover" }} />;
+  return null;
 }
 
 function RetentionPreview({ config, onClose }) {
