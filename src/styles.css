@@ -703,7 +703,7 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-blue-paywall .ht-legal { min-height: 15cqw; padding: 2.5cqw 0; }
 
 /* Blue privilege page: module-owned geometry calibrated to the supplied HT screen. */
-.ht-blue-paywall .ht-blue-hero { height: 58cqw; background: #07316b url('/ht-blue-stadium.png') left center / 115% 100% no-repeat; }
+.ht-blue-paywall .ht-blue-hero { height: 58cqw; background: #07316b url('/figma-paywall-assets/blue-banner.png') left center / 115% 100% no-repeat; }
 .ht-blue-paywall .ht-blue-hero::after { display: none; }
 .ht-blue-paywall .ht-blue-hero.media-custom { background-image: none; }
 .ht-blue-paywall .ht-blue-hero.media-removed { background-image: none; }
@@ -951,7 +951,7 @@ textarea { min-height: 80px; resize: vertical; }
 .ht-paywall .media-resized .ht-source-art { display: none; }
 .ht-blue-hero::after, .ht-offer-bundle::before, .ht-sku-promo::before, .ht-sku-promo::after { content: none; }
 .ht-blue-hero .ht-source-art {
-  background: #07316b url('/ht-blue-stadium.png') left center / 115% 100% no-repeat;
+  background: #07316b url('/figma-paywall-assets/blue-banner.png') left center / 115% 100% no-repeat;
 }
 .ht-blue-hero .ht-source-art::after { position: absolute; inset: 0; background: repeating-radial-gradient(ellipse at 52% 21%, transparent 0 8%, #d6f3ff12 8.3% 9.2%, transparent 9.5% 14%); content: ""; opacity: calc(.78 - var(--media-overlay, 0)); }
 .ht-member-hero { padding-top: 0; }
@@ -2134,7 +2134,7 @@ textarea { min-height: 80px; resize: vertical; }
 }
 
 /* The four HelloTalk templates use the 390px design canvas as their type scale. */
-.ht-blue-paywall .ht-blue-hero .ht-source-art { background-image: url('/ht-blue-stadium.png'); }
+.ht-blue-paywall .ht-blue-hero .ht-source-art { background-image: url('/figma-paywall-assets/blue-banner.png'); }
 .ht-blue-paywall .ht-plan-shell .ht-blue-plan > span strong,
 .ht-membership-paywall .ht-plan-shell .ht-plan strong,
 .ht-sku-paywall .ht-sku-plans .ht-plan strong { font-size: 3.077cqw; }
