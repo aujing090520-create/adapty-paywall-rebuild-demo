@@ -140,7 +140,7 @@ export function createSourceTemplateNodes(template, node) {
   };
   const links = (depth = 0) => {
     const policyLines = lines.filter((line) => /^(Restore( Purchases| purchases)?|Terms( of Use| of service)?|Privacy( Policy| policy)?|Privacy policy)$/.test(line) && !(order === 40 && line === "Restore"));
-    return policyLines.length ? add("links", "Links", [...new Set(policyLines)].join(" · "), {}, depth) : null;
+    return policyLines.length ? add("links", "Links", [...new Set(policyLines)].join(" · "), { spacedLinks: order !== 30 }, depth) : null;
   };
 
   if (order === 5 || order === 6) {
@@ -257,7 +257,7 @@ export function createSourceTemplateNodes(template, node) {
       node(id("screen-1"), "Screen", "权益介绍", 1),
       add("screen-1-image", "Image", "", { mediaSrc: source.assets[0], mediaFit: "contain", mediaBackgroundColor: "#ffffff", mediaWidth: 100, mediaHeight: 240 }, 2),
       header("screen-1-title", 0, 2),
-      add("screen-1-features", "List", listContent([1, 7], true), {}, 2),
+      add("screen-1-features", "List", listContent([1, 7], true), { listRows: [1, 3, 5].map((index, row) => ({ title: at(index), caption: at(index + 1), showCaption: true, leadingMode: "icon", leading: ["moon", "running", "flower"][row] })) }, 2),
       add("screen-1-proof", "Social Proof", "", { count: `${at(7)} · ${at(8)}`, caption: "" }, 2),
       button("screen-1-next", 9, 2),
       node(id("screen-2"), "Screen", "口碑与体验", 1),
@@ -287,7 +287,10 @@ export function createSourceTemplateNodes(template, node) {
     result.push(add("header-actions", "Stack", "", { axis: "horizontal", gap: 8 }));
     result.push(add("back", "Button", "×", { action: "Dismiss", backgroundColor: "transparent", color: "#ffffff", radius: 0 }, 1));
     result.push(add("restore", "Button", "Restore", { action: "RestorePurchases", backgroundColor: "transparent", color: "#ffffff", radius: 0 }, 1));
-  } else if (template.heroAsset && (["top", "full", "center", "icon"].includes(template.art) || [10, 11].includes(order))) result.push(media("image"));
+  } else if (template.heroAsset && (["top", "full", "center", "icon"].includes(template.art) || [10, 11].includes(order))) {
+    if (order === 2) result.push(add("background", "Image", "Background art", { mediaSrc: "https://assets.pawwalls.com/1181742_1779226626_f5435198.webp", mediaFit: "cover", mediaWidth: 100, mediaHeight: 100 }));
+    result.push(media("image"));
+  }
   result.push(header("title", plan.heading));
   if (order !== 37 && template.heroAsset && !["top", "full", "center", "icon"].includes(template.art) && ![10, 11].includes(order)) result.push(media("image"));
   if (![26, 29].includes(order)) (plan.copy ?? []).forEach((index, itemIndex) => result.push(add(`copy-${itemIndex}`, "Text", at(index))));

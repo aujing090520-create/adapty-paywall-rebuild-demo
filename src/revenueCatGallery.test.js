@@ -59,6 +59,7 @@ test("multi-step artwork and restore actions stay on their observed screens", ()
   const flow = createSourceTemplateNodes(revenueCatGallery[0], node);
   const assets = observedTemplate(1).assets;
   assert.deepEqual(flow.filter((item) => item.type === "Image").map((item) => item.config.mediaSrc), [assets[0], assets[2], assets[3]]);
+  assert.deepEqual(flow.find((item) => item.id.endsWith("screen-1-features")).config.listRows.map((row) => row.leading), ["moon", "running", "flower"]);
   assert.equal(flow.find((item) => item.id.endsWith("screen-3-timeline")).config.enabled, false);
   const products = flow.find((item) => item.type === "Products");
   assert.equal(products.config.packageLayout, "vertical");
@@ -69,6 +70,14 @@ test("multi-step artwork and restore actions stay on their observed screens", ()
   assert.deepEqual(flow.filter((item) => item.type === "Button").map((item) => item.config.backgroundColor), ["#8b83f8", "#8b82f8", "#8b84f8"]);
   const dark = createSourceTemplateNodes(revenueCatGallery[39], node);
   assert.deepEqual(dark.filter((item) => ["Dismiss", "RestorePurchases"].includes(item.config?.action)).map((item) => item.content), ["×", "Restore"]);
+});
+
+test("AstroApp keeps its source background separate from the lotus image", () => {
+  const node = (id, type, content, depth, options = {}) => ({ id, type, content, depth, ...options });
+  const images = createSourceTemplateNodes(revenueCatGallery[1], node).filter((item) => item.type === "Image");
+  assert.deepEqual(images.map((item) => item.id), ["rc-source-2-background", "rc-source-2-image"]);
+  assert.match(images[0].config.mediaSrc, /1181742_1779226626_f5435198\.webp$/);
+  assert.equal(images[1].config.mediaSrc, observedTemplate(2).assets[0]);
 });
 
 test("switch control is not rendered as a second standalone tabs component", () => {

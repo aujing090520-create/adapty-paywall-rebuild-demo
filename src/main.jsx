@@ -55,6 +55,7 @@ import {
   RectangleHorizontal,
   RotateCw,
   ScanSearch,
+  Signal,
   Type,
   Star,
   Heart,
@@ -66,6 +67,8 @@ import {
   Orbit,
   Users,
   Weight,
+  Wifi,
+  BatteryFull,
 } from "lucide-react";
 import "./styles.css";
 
@@ -3469,7 +3472,7 @@ function PaywallPreview({ nodes, template, mode, pricePreviewMode, activeNode, o
     latestAtDepth[depth] = node.id;
     latestAtDepth.length = depth + 1;
   });
-  return <div data-no-translate={template?.isGallery ? true : undefined} className={`phone template-${hero?.theme ?? "lavender"} ${template?.isGallery ? `template-${template.id}${![5, 6, 38].includes(template.sourceOrder) ? " rc-rebuilt" : ""}` : ""}`}><button className="close-phone" aria-label="Close preview">×</button><div className="phone-content">{!template?.isNew && <span className="phone-kicker">PREMIUM ACCESS</span>}{nodes.filter((node) => !parents.has(node.id)).map((node) => <PreviewElement key={node.id} node={node} children={children.get(node.id) ?? []} getChildren={(childId) => children.get(childId) ?? []} active={node.id === activeNode} activeNode={activeNode} onSelect={onSelect} onButtonAction={runButtonAction} onReorder={onReorder} pricePreviewMode={pricePreviewMode} toggleStates={previewToggles} onToggleChange={(id, enabled) => setPreviewToggles((current) => ({ ...current, [id]: enabled }))} tabStates={previewTabs} onTabChange={(id, index) => setPreviewTabs((current) => ({ ...current, [id]: index }))} screenIndex={screenIndex} onScreenChange={setScreenIndex} />)}</div>{overlay}</div>;
+  return <div data-no-translate={template?.isGallery ? true : undefined} className={`phone template-${hero?.theme ?? "lavender"} ${template?.isGallery ? `template-${template.id}${![5, 6, 38].includes(template.sourceOrder) ? " rc-rebuilt" : ""}` : ""}`}><button className="close-phone" aria-label="Close preview">×</button>{template?.isGallery && template.sourceOrder !== 38 && <div className="rc-statusbar" aria-hidden="true"><strong>9:41</strong><span className="rc-dynamic-island" /><span className="rc-status-icons"><Signal /><Wifi /><BatteryFull /></span></div>}<div className="phone-content">{!template?.isNew && <span className="phone-kicker">PREMIUM ACCESS</span>}{nodes.filter((node) => !parents.has(node.id)).map((node) => <PreviewElement key={node.id} node={node} children={children.get(node.id) ?? []} getChildren={(childId) => children.get(childId) ?? []} active={node.id === activeNode} activeNode={activeNode} onSelect={onSelect} onButtonAction={runButtonAction} onReorder={onReorder} pricePreviewMode={pricePreviewMode} toggleStates={previewToggles} onToggleChange={(id, enabled) => setPreviewToggles((current) => ({ ...current, [id]: enabled }))} tabStates={previewTabs} onTabChange={(id, index) => setPreviewTabs((current) => ({ ...current, [id]: index }))} screenIndex={screenIndex} onScreenChange={setScreenIndex} />)}</div>{overlay}</div>;
 }
 
 function ButtonActionOverlay({ preview, onClose }) {
@@ -3605,7 +3608,7 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, on
   if (node.type === "Button" || node.type === "Web Paywall Button" || node.type === "Purchase Button") return wrap(<button className="preview-cta" style={buttonStyle} onClick={(event) => { event.stopPropagation(); select(event); onButtonAction?.(node); }}>{config.linkedToggleId && toggleStates[config.linkedToggleId] && config.onContent ? config.onContent : node.content ?? (node.type === "Web Paywall Button" ? "Pay on web" : node.type === "Button" ? "button text" : "Continue")}</button>, "preview-button");
   if (node.type === "Links") {
     const labels = visibleLinkLabels(node.content ?? "Terms · Privacy · Restore · Login");
-    return wrap(<small className="preview-links" style={textStyle}>{labels.map((label, index) => <React.Fragment key={`${index}-${label}`}>{index > 0 && " · "}<button type="button" data-inspector-area="links" data-inspector-row={index} onClick={(event) => { event.stopPropagation(); onSelect(node.id, "links", index); onButtonAction?.({ type: "Button", config: linkActionFor(label, config.linkActions?.[index]) }); }}>{label}</button></React.Fragment>)}</small>);
+    return wrap(<small className={`preview-links${config.spacedLinks ? " preview-links-spaced" : ""}`} style={textStyle}>{labels.map((label, index) => <React.Fragment key={`${index}-${label}`}>{index > 0 && !config.spacedLinks && " · "}<button type="button" data-inspector-area="links" data-inspector-row={index} onClick={(event) => { event.stopPropagation(); onSelect(node.id, "links", index); onButtonAction?.({ type: "Button", config: linkActionFor(label, config.linkActions?.[index]) }); }}>{label}</button></React.Fragment>)}</small>);
   }
   if (node.type === "Footer") return wrap(<small className="preview-footer" style={textStyle}>{node.content}</small>);
   return wrap(<p>{node.content || node.type}</p>);
