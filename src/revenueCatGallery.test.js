@@ -102,6 +102,10 @@ test("testimonial, library, and concert layouts keep their observed first-screen
   assert.equal(tree(25).find((item) => item.type === "Products").config.packageLayout, "horizontal");
   assert.equal(tree(12).find((item) => item.type === "Products").config.packageLayout, "horizontal");
   assert.deepEqual(tree(11).find((item) => item.type === "Products").config.badgeGradient, ["#d279de", "#d279de", "#d279de"]);
+  assert.equal(tree(13).find((item) => item.type === "Products").config.showMainPrice, false);
+  assert.equal(tree(13).find((item) => item.type === "Products").config.showRadio, true);
+  assert.equal(tree(14).find((item) => item.type === "Products").config.cardContentLayout, "duration-grid");
+  assert.equal(tree(14).find((item) => item.type === "Carousel").config.dotsPlacement, "below");
   assert.equal(tree(14).find((item) => item.type === "Products").config.defaultSelected, 1);
   for (const order of [19, 22]) {
     const award = tree(order).find((item) => item.type === "Award");

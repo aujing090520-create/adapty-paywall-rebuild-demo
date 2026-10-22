@@ -370,12 +370,19 @@ function ProductPackageCard({ plan, index, config = {}, layout, selected, focuse
     </div>;
     return <div className={`${baseClass} ht-vertical-plan ${config.cardContentLayout === "radio-stacked" ? "radio-stacked" : ""} ${config.showRadio ? "with-radio" : ""} ${selected ? "chosen" : ""}`} {...cardProps}>
       {hasBadge && <b data-inspector-area="badge" className="ht-vertical-badge" style={config.badgeFontSize ? { fontSize: `${config.badgeFontSize}px` } : undefined}>{plan.badgeText}</b>}
-      <div className="ht-vertical-main"><strong style={config.nameFontSize ? { fontSize: `${config.nameFontSize}px` } : undefined}>{name}</strong><div className="ht-vertical-price-line" data-inspector-area="price"><span className="ht-vertical-total" style={priceStyle}>{priceView.main}</span>{priceView.strike && <del style={strikeStyle}>{priceView.strike}</del>}{saving && !fields.referenceTotal && <small className="ht-vertical-saving">{saving}</small>}</div>{(supportingCopy || saveText) && <div className="ht-vertical-detail">{supportingCopy && <small>{supportingCopy}</small>}{saveText && <small className="ht-plan-save-copy">{saveText}</small>}</div>}</div>
+      <div className="ht-vertical-main"><strong style={config.nameFontSize ? { fontSize: `${config.nameFontSize}px` } : undefined}>{name}</strong>{config.showMainPrice !== false && <div className="ht-vertical-price-line" data-inspector-area="price"><span className="ht-vertical-total" style={priceStyle}>{priceView.main}</span>{priceView.strike && <del style={strikeStyle}>{priceView.strike}</del>}{saving && !fields.referenceTotal && <small className="ht-vertical-saving">{saving}</small>}</div>}{(supportingCopy || saveText) && <div className="ht-vertical-detail">{supportingCopy && <small>{supportingCopy}</small>}{saveText && <small className="ht-plan-save-copy">{saveText}</small>}</div>}</div>
       <div className="ht-vertical-side">{monthly && <span>{monthly}</span>}{fields.months === 0 && fields.referenceTotal && !priceView.strike && <del style={strikeStyle}>{fields.referenceTotal}</del>}</div>
       {selected && embeddedBenefits?.length > 0 && <ul className="ht-plan-embedded-benefits" onClick={(event) => { event.stopPropagation(); onBenefitInspect?.(event); }}>{embeddedBenefits.map((line, lineIndex) => <li key={`${line}-${lineIndex}`}><Check size={11} /><span>{line}</span></li>)}</ul>}
     </div>;
   }
   const priceNode = <em data-inspector-area="price" className="ht-plan-main-price" style={priceStyle}>{priceView.main}</em>;
+  if (layout === "horizontal" && config.cardContentLayout === "duration-grid") {
+    const [amount, unit = ""] = name.toUpperCase() === "LIFETIME" ? ["∞", "LIFETIME"] : name.split(/\s+/, 2);
+    return <div className={`${baseClass} ht-plan ht-duration-plan ${selected ? "chosen" : ""}`} {...cardProps}>
+      <strong className="ht-duration-amount">{amount}</strong><span className="ht-duration-unit">{unit}</span>
+      <em data-inspector-area="price" className="ht-duration-price" style={priceStyle}>{priceView.main}</em>
+    </div>;
+  }
   if (layout === "horizontal") return <div className={`${baseClass} ht-plan ht-blue-plan ${selected ? "chosen" : ""} ${priceView.missing ? "price-missing" : ""}`} {...cardProps}>
     <span>{hasBadge && <b data-inspector-area="badge" style={config.badgeFontSize ? { fontSize: `${config.badgeFontSize}px` } : undefined}>{plan.badgeText}</b>}<strong style={config.nameFontSize ? { fontSize: `${config.nameFontSize}px` } : undefined}>{name}</strong></span>
     <div className="ht-blue-price" data-inspector-area="price">{priceView.strike && <del style={strikeStyle}>{priceView.strike}</del>}{priceNode}</div>
@@ -2360,7 +2367,18 @@ function ProductsStyleEditor({ active, updateNode, pricePreviewMode }) {
 
 function ProductsLayoutEditor({ active, updateNode }) {
   const config = active.config ?? {};
-  return <><h4>套餐布局</h4><label className="switch-row"><input type="checkbox" checked={config.showCards !== false} onChange={(event) => updateNodeConfig(active, updateNode, { showCards: event.target.checked })} /><span>{config.showCards === false ? "仅绑定" : "展示"}</span><strong>展示套餐选择卡</strong></label>{config.showCards !== false && <><Field label="布局类型"><select aria-label="布局类型" value={productLayout(config)} onChange={(event) => updateNodeConfig(active, updateNode, { packageLayout: event.target.value })}>{PRODUCT_LAYOUTS.map((layout) => <option key={layout.id} value={layout.id}>{layout.label}</option>)}</select></Field>{productLayout(config) === "vertical" && <Field label="卡片内容排列"><select aria-label="卡片内容排列" value={config.cardContentLayout ?? "standard"} onChange={(event) => updateNodeConfig(active, updateNode, { cardContentLayout: event.target.value })}><option value="standard">名称与价格分列</option><option value="radio-stacked">单选圆点、名称与价格纵排</option><option value="split-summary">名称和说明居左、价格居右</option></select></Field>}<ConfigNumberField label="套餐最小高度" active={active} updateNode={updateNode} name="planHeight" fallback="" min={30} max={300} suffix="px" /></>}<h4>组件位置</h4><ElementLayoutEditor active={active} updateNode={updateNode} /></>;
+  const layout = productLayout(config);
+  return <>
+    <h4>套餐布局</h4>
+    <label className="switch-row"><input type="checkbox" checked={config.showCards !== false} onChange={(event) => updateNodeConfig(active, updateNode, { showCards: event.target.checked })} /><span>{config.showCards === false ? "仅绑定" : "展示"}</span><strong>展示套餐选择卡</strong></label>
+    {config.showCards !== false && <>
+      <Field label="布局类型"><select aria-label="布局类型" value={layout} onChange={(event) => updateNodeConfig(active, updateNode, { packageLayout: event.target.value })}>{PRODUCT_LAYOUTS.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}</select></Field>
+      {(layout === "vertical" || layout === "horizontal") && <Field label="卡片内容排列"><select aria-label="卡片内容排列" value={config.cardContentLayout ?? "standard"} onChange={(event) => updateNodeConfig(active, updateNode, { cardContentLayout: event.target.value })}>{layout === "vertical" ? <><option value="standard">名称与价格分列</option><option value="radio-stacked">单选圆点、名称与价格纵排</option><option value="split-summary">名称和说明居左、价格居右</option></> : <><option value="standard">标准横向卡片</option><option value="duration-grid">数字、期限与价格纵排</option></>}</select></Field>}
+      {layout === "vertical" && <><label className="switch-row"><input type="checkbox" checked={config.showRadio === true} onChange={(event) => updateNodeConfig(active, updateNode, { showRadio: event.target.checked })} /><strong>显示单选圆点</strong></label><label className="switch-row"><input type="checkbox" checked={config.showMainPrice !== false} onChange={(event) => updateNodeConfig(active, updateNode, { showMainPrice: event.target.checked })} /><strong>显示主价格</strong></label></>}
+      <ConfigNumberField label="套餐最小高度" active={active} updateNode={updateNode} name="planHeight" fallback="" min={30} max={300} suffix="px" />
+    </>}
+    <h4>组件位置</h4><ElementLayoutEditor active={active} updateNode={updateNode} />
+  </>;
 }
 
 function ImageStyle() {
