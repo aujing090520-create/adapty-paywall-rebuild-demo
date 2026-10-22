@@ -44,6 +44,7 @@ test("wide badge review dots are configured below its card without changing othe
   const node = (id, type, content, depth, options = {}) => ({ id, type, content, depth, ...options });
   const carousel = (order) => createSourceTemplateNodes(revenueCatGallery[order - 1], node).find((item) => item.type === "Carousel");
   assert.equal(carousel(4).config.dotsPlacement, "below");
+  assert.equal(carousel(4).config.peekAdjacent, true);
   assert.equal(carousel(7).config.dotsPlacement, undefined);
   assert.equal(carousel(19).config.peekAdjacent, true);
   assert.equal(carousel(14).config.peekAdjacent, undefined);

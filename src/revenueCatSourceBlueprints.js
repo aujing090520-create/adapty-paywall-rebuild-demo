@@ -325,7 +325,7 @@ export function createSourceTemplateNodes(template, node) {
       });
       if (order === 4) {
         const reviews = [[4, 5, 6], [7, 8, 9], [1, 2, 3]].map(([title, caption, author], index) => ({ id: `source-review-${index + 1}`, image: "", title: at(title), caption: `${at(caption)}\n${at(author)}` }));
-        result.push(add("reviews", "Carousel", "", { slides: reviews, initialSlide: 0, hideImageIfEmpty: true, dotsPlacement: "below" }));
+        result.push(add("reviews", "Carousel", "", { slides: reviews, initialSlide: 0, hideImageIfEmpty: true, dotsPlacement: "below", peekAdjacent: true }));
       } else if (order === 7) {
         const reviews = [[3, 4], [5, 6], [1, 2]].map(([title, caption], index) => ({ id: `source-review-${index + 1}`, image: "", title: at(title), caption: at(caption) }));
         result.push(add("reviews", "Carousel", "", { slides: reviews, initialSlide: 0, hideImageIfEmpty: true }));
