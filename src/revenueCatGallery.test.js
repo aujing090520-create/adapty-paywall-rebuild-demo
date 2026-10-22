@@ -40,6 +40,16 @@ test("Mindful moments uses the observed first carousel page and preserves all th
   assert.equal(tree.some((item) => item.type === "Header"), false);
 });
 
+test("wide badge review dots are configured below its card without changing other carousels", () => {
+  const node = (id, type, content, depth, options = {}) => ({ id, type, content, depth, ...options });
+  const carousel = (order) => createSourceTemplateNodes(revenueCatGallery[order - 1], node).find((item) => item.type === "Carousel");
+  assert.equal(carousel(4).config.dotsPlacement, "below");
+  assert.equal(carousel(7).config.dotsPlacement, undefined);
+  const products = createSourceTemplateNodes(revenueCatGallery[3], node).find((item) => item.type === "Products");
+  assert.equal(products.config.packageLayout, "vertical");
+  assert.equal(products.config.cardContentLayout, "split-summary");
+});
+
 test("multi-step artwork and restore actions stay on their observed screens", () => {
   const node = (id, type, content, depth, options = {}) => ({ id, type, content, depth, ...options });
   const flow = createSourceTemplateNodes(revenueCatGallery[0], node);

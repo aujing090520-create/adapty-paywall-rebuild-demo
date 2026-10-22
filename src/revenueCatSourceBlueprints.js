@@ -133,7 +133,7 @@ export function createSourceTemplateNodes(template, node) {
   const button = (part, index, depth = 0) => add(part, "Button", at(index), { action: [5, 6].includes(order) ? "OfferCodeRedemption" : "Purchase", backgroundColor: order === 13 ? "#f2f2f7" : order === 1 ? ({ "screen-1-next": "#8b83f8", "screen-2-next": "#8b82f8", "screen-3-action": "#8b84f8" }[part] ?? template.accent) : template.accent, ...([5, 13].includes(order) ? { color: "#111111", radius: 99 } : {}) }, depth);
   const products = (depth = 0) => {
     const visibleRows = plan.products ?? [];
-    return add("products", "Products", visibleRows.join("\n") || "绑定商品||", { defaultSelected: [8, 14, 19, 22, 30, 32, 33, 34, 35, 36, 40].includes(order) ? 1 : 0, packageLayout: order === 18 ? "info-row" : [4, 12, 14, 19, 22, 25, 30].includes(order) ? "horizontal" : "vertical", ...(order === 1 ? { cardContentLayout: "radio-stacked", planRadius: 12 } : {}), showOfferBadge: true, showCards: visibleRows.length > 0, sourcePackageCount: sourcePackageCount(order), purchasePerCard: order === 10, badgeGradient: [template.accent, template.accent, template.accent], selectedBorderGradient: [template.accent, template.accent, template.accent], ...(visibleRows.length ? { packageRows: sourceProductRows(order) } : {}) }, depth);
+    return add("products", "Products", visibleRows.join("\n") || "绑定商品||", { defaultSelected: [8, 14, 19, 22, 30, 32, 33, 34, 35, 36, 40].includes(order) ? 1 : 0, packageLayout: order === 18 ? "info-row" : [12, 14, 19, 22, 25, 30].includes(order) ? "horizontal" : "vertical", ...(order === 1 ? { cardContentLayout: "radio-stacked", planRadius: 12 } : {}), ...(order === 4 ? { cardContentLayout: "split-summary", planRadius: 8 } : {}), showOfferBadge: true, showCards: visibleRows.length > 0, sourcePackageCount: sourcePackageCount(order), purchasePerCard: order === 10, badgeGradient: [template.accent, template.accent, template.accent], selectedBorderGradient: [template.accent, template.accent, template.accent], ...(visibleRows.length ? { packageRows: sourceProductRows(order) } : {}) }, depth);
   };
   const links = (depth = 0) => {
     const policyLines = lines.filter((line) => /^(Restore( Purchases| purchases)?|Terms( of Use| of service)?|Privacy( Policy| policy)?|Privacy policy)$/.test(line) && !(order === 40 && line === "Restore"));
@@ -318,7 +318,7 @@ export function createSourceTemplateNodes(template, node) {
       });
       if (order === 4) {
         const reviews = [[4, 5, 6], [7, 8, 9], [1, 2, 3]].map(([title, caption, author], index) => ({ id: `source-review-${index + 1}`, image: "", title: at(title), caption: `${at(caption)}\n${at(author)}` }));
-        result.push(add("reviews", "Carousel", "", { slides: reviews, initialSlide: 0, hideImageIfEmpty: true }));
+        result.push(add("reviews", "Carousel", "", { slides: reviews, initialSlide: 0, hideImageIfEmpty: true, dotsPlacement: "below" }));
       } else if (order === 7) {
         const reviews = [[3, 4], [5, 6], [1, 2]].map(([title, caption], index) => ({ id: `source-review-${index + 1}`, image: "", title: at(title), caption: at(caption) }));
         result.push(add("reviews", "Carousel", "", { slides: reviews, initialSlide: 0, hideImageIfEmpty: true }));
