@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { linkActionFor, visibleLinkLabels } from "./linkActions.js";
 import { createRoot } from "react-dom/client";
 import { DEMO_SKUS, PRICE_DISPLAY_MODES, billingMonths, productPriceFields, resolveProductPrice, skuById, skuCopy, templateSkuId } from "./productPricing.js";
@@ -340,7 +340,7 @@ function productPackageRows(productNode, variant) {
 }
 
 function ProductPackageCard({ plan, index, config = {}, layout, selected, focused = false, interactive = true, priceMode = "1", onChoose, onInspect, embeddedBenefits, onBenefitInspect }) {
-  const baseClass = `ht-node ${focused ? "selected" : ""} ${Number(config.planHeight) > 0 ? "ht-sized-plan" : ""}`;
+  const baseClass = `ht-node ${focused ? "selected" : ""} ${config.planHeight !== undefined && config.planHeight !== "" ? "ht-sized-plan" : ""}`;
   if (plan.emptySlot) return <div className={`${layout === "vertical" ? "ht-vertical-plan" : "ht-plan"} ht-plan-empty ${layout === "horizontal" ? "ht-blue-plan" : ""}`} aria-label={`套餐 ${index + 1} 空坑位`} />;
   const name = plan.name;
   const priceView = resolveProductPrice(plan, priceMode);
@@ -358,9 +358,9 @@ function ProductPackageCard({ plan, index, config = {}, layout, selected, focuse
   const compactPrice = priceView.main.length >= 6 && layout !== "compact";
   const priceStyle = { ...(compactPrice ? { fontSize: `min(${Number(configuredPriceSize) > 0 ? `${configuredPriceSize}px` : "6cqw"}, 4cqw)` } : Number(configuredPriceSize) > 0 ? { fontSize: `${configuredPriceSize}px` } : {}), ...(modeStyle.mainColor ? { color: modeStyle.mainColor } : {}) };
   const strikeStyle = { ...(Number(modeStyle.strikeFontSize) > 0 ? { fontSize: `${modeStyle.strikeFontSize}px` } : {}), ...(modeStyle.strikeColor ? { color: modeStyle.strikeColor } : {}) };
-  const frameStyle = { ...(Number(config.planWidth) > 0 ? { width: `${config.planWidth}%`, marginInline: "auto", justifySelf: "center" } : {}), ...(Number(config.planHeight) > 0 ? { minHeight: `${config.planHeight}px` } : {}), ...(config.planPadding !== "" && Number.isFinite(Number(config.planPadding)) && config.planPadding !== undefined ? { padding: `${config.planPadding}px` } : {}) };
+  const frameStyle = { ...(Number(config.planWidth) > 0 ? { width: `${config.planWidth}%`, marginInline: "auto", justifySelf: "center" } : {}), ...(config.planHeight !== undefined && config.planHeight !== "" && Number.isFinite(Number(config.planHeight)) ? { minHeight: `${config.planHeight}px` } : {}), ...(config.planPadding !== "" && Number.isFinite(Number(config.planPadding)) && config.planPadding !== undefined ? { padding: `${config.planPadding}px` } : {}), ...Object.fromEntries(["Top", "Right", "Bottom", "Left"].filter((side) => config[`planPadding${side}`] !== undefined && config[`planPadding${side}`] !== "" && Number.isFinite(Number(config[`planPadding${side}`]))).map((side) => [`padding${side}`, `${config[`planPadding${side}`]}px`])) };
   const planStyle = { ...productStyle, ...selectedStyle, ...frameStyle, ...(config.planRadius !== undefined && config.planRadius !== "" ? { borderRadius: `${config.planRadius}px` } : {}) };
-  const partStyle = (part, base = {}) => ({ ...base, ...productPartStyle(config, part) });
+  const partStyle = (part, base = {}) => ({ ...base, ...productPartStyle(config, part), ...(part === "price" && Number(modeStyle.mainFontSize) > 0 ? { fontSize: `${modeStyle.mainFontSize}px` } : {}), ...(part === "price" && validHexColor(modeStyle.mainColor) ? { color: modeStyle.mainColor } : {}), ...(part === "reference" && Number(modeStyle.strikeFontSize) > 0 ? { fontSize: `${modeStyle.strikeFontSize}px` } : {}), ...(part === "reference" && validHexColor(modeStyle.strikeColor) ? { color: modeStyle.strikeColor } : {}) });
   const choose = (event) => { if (!interactive) return; event.stopPropagation(); onChoose?.(index); onInspect?.(event, index); };
   const keyboard = (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); choose(event); } };
   const cardProps = { style: planStyle, role: interactive ? "button" : undefined, tabIndex: interactive ? 0 : undefined, onClick: choose, onKeyDown: keyboard };
@@ -377,7 +377,7 @@ function ProductPackageCard({ plan, index, config = {}, layout, selected, focuse
         const offsetX = Number(settings.offsetX) || 0;
         const offsetY = Number(settings.offsetY) || 0;
         const fontStyle = partStyle(part, part === "price" ? priceStyle : part === "reference" ? strikeStyle : {});
-        if (part === "price") fontStyle.fontSize = `min(${Number(settings.fontSize) > 0 ? `${settings.fontSize}px` : Number(configuredPriceSize) > 0 ? `${configuredPriceSize}px` : "18px"}, ${Math.max(18, Math.floor(150 / parts[part].length))}cqi)`;
+        if (part === "price") fontStyle.fontSize = `min(${Number(modeStyle.mainFontSize) > 0 ? `${modeStyle.mainFontSize}px` : Number(settings.fontSize) > 0 ? `${settings.fontSize}px` : Number(configuredPriceSize) > 0 ? `${configuredPriceSize}px` : "18px"}, ${Math.max(18, Math.floor(150 / parts[part].length))}cqi)`;
         return <span key={part} className={`ht-custom-part ht-custom-${part}`} data-product-part={part} data-inspector-area={`product-${part}`} style={{ ...fontStyle, order: Number(settings.order) || position + 1, alignSelf: align === "left" ? "flex-start" : align === "right" ? "flex-end" : "center", textAlign: align, transform: offsetX || offsetY ? `translate(${offsetX}px, ${offsetY}px)` : undefined }}>{parts[part]}</span>;
       })}
       {selected && embeddedBenefits?.length > 0 && <ul className="ht-plan-embedded-benefits" onClick={(event) => { event.stopPropagation(); onBenefitInspect?.(event); }}>{embeddedBenefits.map((line, lineIndex) => <li key={`${line}-${lineIndex}`}><Check size={11} /><span>{line}</span></li>)}</ul>}
@@ -386,7 +386,7 @@ function ProductPackageCard({ plan, index, config = {}, layout, selected, focuse
   if (layout === "info-row") {
     const [primaryName, secondaryName = ""] = name.split(" · ");
     const [primaryCopy, secondaryCopy = ""] = supportingCopy.split(" · ");
-    return <div className={`${baseClass} ht-info-row ${selected ? "chosen" : ""}`} {...cardProps} style={{ ...productStyle, ...frameStyle }}>
+    return <div className={`${baseClass} ht-info-row ${selected ? "chosen" : ""}`} {...cardProps} style={planStyle}>
       <span className="ht-info-row-marker" aria-hidden="true">◆</span>
       <span className="ht-info-row-main"><strong data-inspector-area="product-name" style={partStyle("name")}>{primaryName}</strong>{secondaryName && <small data-inspector-area="product-supporting" style={partStyle("supporting")}>{secondaryName}</small>}{primaryCopy && <small data-inspector-area="product-supporting" style={partStyle("supporting")}>{primaryCopy}</small>}</span>
       <span className="ht-info-row-price" data-inspector-area="product-price"><strong style={partStyle("price", priceStyle)}>{priceView.main}</strong>{secondaryCopy && <small data-inspector-area="product-supporting" style={partStyle("supporting")}>{secondaryCopy}</small>}</span>
@@ -2272,7 +2272,7 @@ const productGradient = (colors, fallback) => `linear-gradient(90deg, ${(Array.i
 function ProductColorInput({ value, onChange, label }) {
   const [draft, setDraft] = useState(value);
   useEffect(() => setDraft(value), [value]);
-  return <span className="product-color-input"><input type="color" aria-label={`${label}色块`} value={validHexColor(value) ? value : "#000000"} onChange={(event) => { setDraft(event.target.value); onChange(event.target.value); }} /><input aria-label={label} value={draft} onChange={(event) => setDraft(event.target.value)} onBlur={() => { if (validHexColor(draft)) onChange(draft); else setDraft(value); }} onKeyDown={(event) => { if (event.key === "Enter") event.currentTarget.blur(); }} /></span>;
+  return <span className="product-color-input"><input type="color" aria-label={`${label}色块`} value={validHexColor(value) ? value : "#000000"} onChange={(event) => { setDraft(event.target.value); onChange(event.target.value); }} /><input aria-label={label} value={draft} onChange={(event) => { const next = event.target.value; setDraft(next); if (validHexColor(next)) onChange(next); }} onBlur={() => { if (validHexColor(draft)) onChange(draft); else setDraft(value); }} onKeyDown={(event) => { if (event.key === "Enter") event.currentTarget.blur(); }} /></span>;
 }
 
 function ProductColorField({ label, active, updateNode, name, fallback, gradient = false }) {
@@ -2281,12 +2281,12 @@ function ProductColorField({ label, active, updateNode, name, fallback, gradient
   return <div className="product-color-field"><strong>{label}</strong><div className={gradient ? "product-color-stops" : "product-color-single"}>{colors.map((color, index) => <ProductColorInput key={`${name}-${index}`} label={gradient ? `${label} 第${index + 1}段` : label} value={color} onChange={(next) => updateNodeConfig(active, updateNode, { [name]: gradient ? colors.map((item, position) => position === index ? next : item) : next })} />)}</div></div>;
 }
 
-function ConfigNumberField({ label, active, updateNode, name, fallback, min = 0, max = 100, step = 1, suffix = "" }) {
+function ConfigNumberField({ label, active, updateNode, name, fallback, min = 0, max = 100, step = 1, suffix = "", clampOnBlur = false }) {
   const value = active.config?.[name] ?? fallback;
   const commit = (valueToCommit) => {
     if (valueToCommit === "") return updateNodeConfig(active, updateNode, { [name]: fallback });
     const parsed = Number(valueToCommit);
-    updateNodeConfig(active, updateNode, { [name]: Number.isFinite(parsed) ? parsed : fallback });
+    updateNodeConfig(active, updateNode, { [name]: Number.isFinite(parsed) ? clampOnBlur ? Math.min(max, Math.max(min, parsed)) : parsed : fallback });
   };
   return <Field label={label}><div className="number-unit"><input type="number" min={min} max={max} step={step} value={value} onChange={(event) => updateNodeConfig(active, updateNode, { [name]: event.target.value })} onBlur={(event) => commit(event.target.value)} /><span>{suffix}</span></div></Field>;
 }
@@ -2384,15 +2384,55 @@ function CarouselLayoutEditor({ active, updateNode }) {
   </>;
 }
 
-function ProductPriceModeStyleEditor({ active, updateNode, pricePreviewMode }) {
+const PRODUCT_PART_DEFAULT_SIZES = { name: 14, price: 18, reference: 10, monthly: 11, supporting: 11, saving: 10, save: 10, badge: 11 };
+
+function previewColor(value) {
+  if (validHexColor(value)) return value.toLowerCase();
+  const rgb = value?.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+  return rgb ? `#${rgb.slice(1).map((part) => Number(part).toString(16).padStart(2, "0")).join("")}` : "#222222";
+}
+
+function useProductPreviewDefaults(active, pricePreviewMode) {
+  const [defaults, setDefaults] = useState({ parts: {}, frame: {} });
+  useLayoutEffect(() => {
+    const preview = document.querySelector(".phone .ht-paywall, .phone .preview-products-wrap");
+    const card = preview?.querySelector(".ht-plan:not(.ht-plan-empty), .ht-vertical-plan:not(.ht-plan-empty), .preview-products-credit");
+    if (!card) return;
+    const parts = {};
+    PRODUCT_PARTS.forEach(([part]) => {
+      const element = card.querySelector(`[data-inspector-area="product-${part}"]`);
+      if (!element || !element.getClientRects().length) return;
+      const target = part === "price" && element.querySelector("strong") || element;
+      const style = getComputedStyle(target);
+      parts[part] = { fontSize: Math.round(parseFloat(style.fontSize) * 10) / 10, color: previewColor(style.color) };
+    });
+    const style = getComputedStyle(card);
+    const parentWidth = card.parentElement?.getBoundingClientRect().width || card.getBoundingClientRect().width;
+    setDefaults({ parts, frame: { planWidth: Math.round(card.getBoundingClientRect().width / parentWidth * 100), planHeight: Math.round(parseFloat(style.minHeight) || 0), ...Object.fromEntries(["Top", "Right", "Bottom", "Left"].map((side) => [`planPadding${side}`, Math.round((parseFloat(style[`padding${side}`]) || 0) * 10) / 10])) } });
+  }, [active.id, active.config, pricePreviewMode]);
+  return defaults;
+}
+
+function ProductPriceModeStyleEditor({ active, updateNode, pricePreviewMode, defaults }) {
   const config = active.config ?? {};
   const styles = config.priceModeStyles ?? {};
   const current = styles[pricePreviewMode] ?? {};
   const patch = (change) => updateNodeConfig(active, updateNode, { priceModeStyles: { ...styles, [pricePreviewMode]: { ...current, ...change } } });
-  const number = (label, key, max = 56) => <Field label={label}><input type="number" min="8" max={max} aria-label={`${label}（当前价格样式）`} placeholder="继承通用样式" value={current[key] ?? ""} onChange={(event) => patch({ [key]: event.target.value })} /></Field>;
-  const color = (label, key, fallback) => <Field label={label}><div className="product-mode-color"><input type="color" aria-label={`${label}色块（当前价格样式）`} value={/^#[0-9a-fA-F]{6}$/.test(current[key] ?? "") ? current[key] : fallback} onChange={(event) => patch({ [key]: event.target.value })} /><input aria-label={`${label}（当前价格样式）`} placeholder="继承通用样式" value={current[key] ?? ""} onChange={(event) => patch({ [key]: event.target.value })} /></div></Field>;
+  const commitNumber = (event) => {
+    const input = event.target;
+    if (input.type !== "number") return;
+    const key = input.getAttribute("aria-label")?.startsWith("划线价") ? "strikeFontSize" : "mainFontSize";
+    const parsed = Number(input.value);
+    if (!input.value || !Number.isFinite(parsed)) {
+      const next = { ...current };
+      delete next[key];
+      updateNodeConfig(active, updateNode, { priceModeStyles: { ...styles, [pricePreviewMode]: next } });
+    } else if (parsed < 8 || parsed > 64) patch({ [key]: Math.min(64, Math.max(8, parsed)) });
+  };
+  const number = (label, key, fallback, max = 64) => <Field label={label}><input type="number" min="8" max={max} aria-label={`${label}（当前价格样式）`} value={current[key] ?? fallback} onChange={(event) => patch({ [key]: event.target.value })} /></Field>;
+  const color = (label, key, fallback) => <Field label={label}><div className="product-mode-color"><ProductColorInput label={`${label}（当前价格样式）`} value={current[key] ?? fallback} onChange={(next) => patch({ [key]: next })} /></div></Field>;
   const hasStrike = ["3", "4", "6", "7"].includes(pricePreviewMode);
-  return <div className="product-mode-style"><div className="product-mode-style-heading"><h4>当前价格模式专属样式</h4><button type="button" className="text-action" disabled={!styles[pricePreviewMode]} onClick={() => { const next = { ...styles }; delete next[pricePreviewMode]; updateNodeConfig(active, updateNode, { priceModeStyles: next }); }}>恢复通用样式</button></div><div className="split-fields">{number("主价字号", "mainFontSize")}{color("主价颜色", "mainColor", "#161616")}</div>{hasStrike && <div className="split-fields">{number("划线价字号", "strikeFontSize", 40)}{color("划线价颜色", "strikeColor", "#999999")}</div>}</div>;
+  return <div className="product-mode-style" onBlurCapture={commitNumber}><div className="product-mode-style-heading"><h4>当前价格模式专属样式</h4><button type="button" className="text-action" disabled={!styles[pricePreviewMode]} onClick={() => { const next = { ...styles }; delete next[pricePreviewMode]; updateNodeConfig(active, updateNode, { priceModeStyles: next }); }}>恢复通用样式</button></div><small>这里的设置优先于上方主价格、参考价的通用设置。</small><div className="split-fields">{number("主价字号", "mainFontSize", defaults.price?.fontSize ?? PRODUCT_PART_DEFAULT_SIZES.price)}{color("主价颜色", "mainColor", defaults.price?.color ?? "#161616")}</div>{hasStrike && <div className="split-fields">{number("划线价字号", "strikeFontSize", defaults.reference?.fontSize ?? PRODUCT_PART_DEFAULT_SIZES.reference)}{color("划线价颜色", "strikeColor", defaults.reference?.color ?? "#999999")}</div>}</div>;
 }
 
 const PRODUCT_PARTS = [
@@ -2412,32 +2452,61 @@ function hasCustomProductPlacement(config) {
   return Object.values(config.productPartStyles ?? {}).some((value) => value.order || value.align || Number(value.offsetX) || Number(value.offsetY));
 }
 
-function ProductPartStyleEditor({ active, updateNode }) {
+function ProductPartStyleEditor({ active, updateNode, defaults }) {
   const styles = active.config?.productPartStyles ?? {};
   const patch = (part, key, value) => updateNodeConfig(active, updateNode, { productPartStyles: { ...styles, [part]: { ...styles[part], [key]: value } } });
   const reset = (part) => { const next = { ...styles }; delete next[part]; updateNodeConfig(active, updateNode, { productPartStyles: next }); };
+  const commitNumber = (event) => {
+    const input = event.target;
+    const part = input.closest("[data-product-part-row]")?.dataset.productPartRow;
+    if (!part) return;
+    if (input.type === "text" && input.getAttribute("aria-label")?.endsWith("颜色") && !validHexColor(input.value)) {
+      const next = { ...styles[part] };
+      delete next.color;
+      const all = { ...styles };
+      if (Object.keys(next).length) all[part] = next; else delete all[part];
+      updateNodeConfig(active, updateNode, { productPartStyles: all });
+      return;
+    }
+    if (input.type !== "number") return;
+    const label = input.getAttribute("aria-label") || "";
+    const key = label.endsWith("字号") ? "fontSize" : label.endsWith("顺序") ? "order" : label.endsWith("水平偏移") ? "offsetX" : "offsetY";
+    const min = Number(input.min);
+    const max = Number(input.max);
+    const parsed = Number(input.value);
+    if (!input.value || !Number.isFinite(parsed)) {
+      const next = { ...styles[part] };
+      delete next[key];
+      const all = { ...styles };
+      if (Object.keys(next).length) all[part] = next; else delete all[part];
+      updateNodeConfig(active, updateNode, { productPartStyles: all });
+    } else if (parsed < min || parsed > max) patch(part, key, Math.min(max, Math.max(min, parsed)));
+  };
   const groups = [["价格与名称", PRODUCT_PARTS.slice(0, 4)], ["说明与标签", PRODUCT_PARTS.slice(4)]];
-  return <section className="product-part-editor" data-inspector-section="product-part"><div className="product-part-editor-heading"><h4>商品文字与位置</h4><button type="button" className="text-action" disabled={!Object.keys(styles).length} onClick={() => updateNodeConfig(active, updateNode, { productPartStyles: {} })}>全部恢复模板</button></div>{groups.map(([heading, parts]) => <div className="product-part-group" key={heading}><h5>{heading}</h5>{parts.map(([part, label]) => {
+  return <section className="product-part-editor" data-inspector-section="product-part" onBlurCapture={commitNumber}><div className="product-part-editor-heading"><h4>商品文字与位置</h4><button type="button" className="text-action" disabled={!Object.keys(styles).length} onClick={() => updateNodeConfig(active, updateNode, { productPartStyles: {} })}>全部恢复模板</button></div>{groups.map(([heading, parts]) => <div className="product-part-group" key={heading}><h5>{heading}</h5>{parts.map(([part, label]) => {
     const current = styles[part] ?? {};
-    return <div className="product-part-row" data-product-part-row={part} key={part}><div className="product-part-row-heading"><strong>{label}</strong><button type="button" className="product-part-reset" disabled={!styles[part]} title={`恢复${label}的模板样式`} aria-label={`恢复${label}的模板样式`} onClick={() => reset(part)}><RotateCw size={14} /></button></div><div className="product-part-row-fields"><label className="product-part-size"><span>字号</span><div className="number-unit"><input type="number" min="8" max="64" aria-label={`${label}字号`} placeholder="默认" value={current.fontSize ?? ""} onChange={(event) => patch(part, "fontSize", event.target.value)} /><span>px</span></div></label><label className="product-part-color"><span>颜色</span><div className="product-mode-color"><input type="color" aria-label={`${label}颜色色块`} title={`设置${label}颜色`} value={validHexColor(current.color) ? current.color : "#222222"} onChange={(event) => patch(part, "color", event.target.value)} /><input aria-label={`${label}颜色`} placeholder="默认" value={current.color ?? ""} onChange={(event) => patch(part, "color", event.target.value)} /></div></label><div className="product-part-align"><span>对齐</span><div className="product-part-align-options">{[["", "默认", null], ["left", "居左", AlignLeft], ["center", "居中", AlignCenter], ["right", "居右", AlignRight]].map(([value, title, Icon]) => <button type="button" key={title} className={(current.align ?? "") === value ? "active" : ""} title={title} aria-label={`${label}${title}`} aria-pressed={(current.align ?? "") === value} onClick={() => patch(part, "align", value)}>{Icon ? <Icon size={15} /> : "默认"}</button>)}</div></div><label className="product-part-order"><span>顺序</span><input type="number" min="1" max="8" aria-label={`${label}顺序`} placeholder="默认" value={current.order ?? ""} onChange={(event) => patch(part, "order", event.target.value)} /></label><label className="product-part-offset"><span>水平 X</span><input type="number" min="-120" max="120" aria-label={`${label}水平偏移`} value={current.offsetX ?? 0} onChange={(event) => patch(part, "offsetX", event.target.value)} /></label><label className="product-part-offset"><span>垂直 Y</span><input type="number" min="-120" max="120" aria-label={`${label}垂直偏移`} value={current.offsetY ?? 0} onChange={(event) => patch(part, "offsetY", event.target.value)} /></label></div></div>;
+    const observed = defaults[part];
+    const fallbackSize = observed?.fontSize ?? PRODUCT_PART_DEFAULT_SIZES[part];
+    const fallbackColor = observed?.color ?? "#222222";
+    return <div className="product-part-row" data-product-part-row={part} key={part}><div className="product-part-row-heading"><strong>{label}</strong>{!observed && <small>当前预览未显示</small>}<button type="button" className="product-part-reset" disabled={!styles[part]} title={`恢复${label}的模板样式`} aria-label={`恢复${label}的模板样式`} onClick={() => reset(part)}><RotateCw size={14} /></button></div><div className="product-part-row-fields"><label className="product-part-size"><span>字号</span><div className="number-unit"><input type="number" min="8" max="64" aria-label={`${label}字号`} value={current.fontSize ?? fallbackSize} onChange={(event) => patch(part, "fontSize", event.target.value)} /><span>px</span></div></label><label className="product-part-color"><span>颜色</span><div className="product-mode-color"><input type="color" aria-label={`${label}颜色色块`} title={`设置${label}颜色`} value={validHexColor(current.color) ? current.color : fallbackColor} onChange={(event) => patch(part, "color", event.target.value)} /><input aria-label={`${label}颜色`} value={current.color ?? fallbackColor} onChange={(event) => patch(part, "color", event.target.value)} /></div></label><div className="product-part-align"><span>对齐</span><div className="product-part-align-options">{[["", "模板", null], ["left", "居左", AlignLeft], ["center", "居中", AlignCenter], ["right", "居右", AlignRight]].map(([value, title, Icon]) => <button type="button" key={title} className={(current.align ?? "") === value ? "active" : ""} title={title} aria-label={`${label}${title}`} aria-pressed={(current.align ?? "") === value} onClick={() => patch(part, "align", value)}>{Icon ? <Icon size={15} /> : "模板"}</button>)}</div></div><label className="product-part-order"><span>顺序</span><input type="number" min="1" max="8" aria-label={`${label}顺序`} value={current.order ?? PRODUCT_PARTS.findIndex(([id]) => id === part) + 1} onChange={(event) => patch(part, "order", event.target.value)} /></label><label className="product-part-offset"><span>水平 X</span><input type="number" min="-120" max="120" aria-label={`${label}水平偏移`} value={current.offsetX ?? 0} onChange={(event) => patch(part, "offsetX", event.target.value)} /></label><label className="product-part-offset"><span>垂直 Y</span><input type="number" min="-120" max="120" aria-label={`${label}垂直偏移`} value={current.offsetY ?? 0} onChange={(event) => patch(part, "offsetY", event.target.value)} /></label></div></div>;
   })}</div>)}</section>;
 }
 
 function ProductsStyleEditor({ active, updateNode, pricePreviewMode, previewFocus }) {
   const verticalBlue = productLayout(active.config) === "vertical";
-  return <div className="product-color-settings">
-    <h4>商品框体</h4><div className="split-fields"><ConfigNumberField label="框体宽度" active={active} updateNode={updateNode} name="planWidth" fallback="" min={40} max={100} suffix="%" /><ConfigNumberField label="框体最小高度" active={active} updateNode={updateNode} name="planHeight" fallback="" min={30} max={300} suffix="px" /></div><ConfigNumberField label="框体内边距" active={active} updateNode={updateNode} name="planPadding" fallback="" min={0} max={40} suffix="px" />
-    <ProductPartStyleEditor active={active} updateNode={updateNode} />
-    <h4>选中态与标签颜色</h4>
+  const defaults = useProductPreviewDefaults(active, pricePreviewMode);
+  return <div className="product-color-settings" data-product-layout={active.config?.purchasePerCard ? "credit" : "plan"}>
+    <h4>商品框体</h4><div className="split-fields"><ConfigNumberField label="框体宽度" active={active} updateNode={updateNode} name="planWidth" fallback={100} min={40} max={100} suffix="%" clampOnBlur /><ConfigNumberField label="框体最小高度" active={active} updateNode={updateNode} name="planHeight" fallback={defaults.frame.planHeight ?? 0} min={0} max={300} suffix="px" clampOnBlur /></div><div className="split-fields"><ConfigNumberField label="上内边距" active={active} updateNode={updateNode} name="planPaddingTop" fallback={defaults.frame.planPaddingTop ?? 0} min={0} max={40} step={0.1} suffix="px" clampOnBlur /><ConfigNumberField label="右内边距" active={active} updateNode={updateNode} name="planPaddingRight" fallback={defaults.frame.planPaddingRight ?? 0} min={0} max={40} step={0.1} suffix="px" clampOnBlur /><ConfigNumberField label="下内边距" active={active} updateNode={updateNode} name="planPaddingBottom" fallback={defaults.frame.planPaddingBottom ?? 0} min={0} max={40} step={0.1} suffix="px" clampOnBlur /><ConfigNumberField label="左内边距" active={active} updateNode={updateNode} name="planPaddingLeft" fallback={defaults.frame.planPaddingLeft ?? 0} min={0} max={40} step={0.1} suffix="px" clampOnBlur /></div>
+    <ProductPartStyleEditor active={active} updateNode={updateNode} defaults={defaults.parts} />
+    {!active.config?.purchasePerCard && <><h4>选中态与标签颜色</h4>
     <ProductColorField label={verticalBlue ? "商品角标颜色" : "商品标签颜色"} active={active} updateNode={updateNode} name="badgeGradient" fallback={["#ff860a", "#ffb000", "#ffd10b"]} gradient />
     <ProductColorField label="商品选中框颜色" active={active} updateNode={updateNode} name="selectedBorderGradient" fallback={["#ff860a", "#ff860a", "#ff860a"]} gradient />
     <ProductColorField label="商品选中背景颜色" active={active} updateNode={updateNode} name="selectedBackground" fallback="#ffffff" />
     <ProductColorField label={verticalBlue ? "优惠信息文字颜色" : "商品SAVE文字颜色"} active={active} updateNode={updateNode} name="saveTextColor" fallback="#ff8207" />
     <label className="switch-row"><input type="checkbox" checked={Boolean(active.config?.saveBackgroundColor)} onChange={(event) => updateNodeConfig(active, updateNode, { saveBackgroundColor: event.target.checked ? "#ffffff" : "" })} /><span>{active.config?.saveBackgroundColor ? "开启" : "关闭"}</span><strong>SAVE 背景</strong></label>
-    {active.config?.saveBackgroundColor && <ProductColorField label="SAVE 背景颜色" active={active} updateNode={updateNode} name="saveBackgroundColor" fallback="#ffffff" />}
-    <ProductColorField label="购买按钮文字颜色" active={active} updateNode={updateNode} name="purchaseTextGradient" fallback={["#ffffff", "#ffffff", "#ffffff"]} gradient />
-    <ProductColorField label="购买按钮背景颜色" active={active} updateNode={updateNode} name="purchaseBackgroundGradient" fallback={["#ff8707", "#ffb000", "#ffd10b"]} gradient />
-    <ProductPriceModeStyleEditor active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} />
+    {active.config?.saveBackgroundColor && <ProductColorField label="SAVE 背景颜色" active={active} updateNode={updateNode} name="saveBackgroundColor" fallback="#ffffff" />}</>}
+    {(active.config?.bluePrivilege || active.config?.productColors) ? <><ProductColorField label="购买按钮文字颜色" active={active} updateNode={updateNode} name="purchaseTextGradient" fallback={["#ffffff", "#ffffff", "#ffffff"]} gradient /><ProductColorField label="购买按钮背景颜色" active={active} updateNode={updateNode} name="purchaseBackgroundGradient" fallback={["#ff8707", "#ffb000", "#ffd10b"]} gradient /></> : <small>购买按钮的颜色在左侧选择「按钮」组件后设置。</small>}
+    <ProductPriceModeStyleEditor active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} defaults={defaults.parts} />
   </div>;
 }
 
@@ -3732,8 +3801,8 @@ function PreviewProducts({ content, config = {}, childrenNodes = [], priceMode =
   if (config.purchasePerCard) return <div className="preview-products-credit-list">{rows.map((row, index) => {
     const custom = hasCustomProductPlacement(config);
     const part = (id) => config.productPartStyles?.[id] ?? {};
-    const partPlacement = (id, order) => ({ ...productPartStyle(config, id), ...(custom ? { order: Number(part(id).order) || order, alignSelf: part(id).align === "right" ? "flex-end" : part(id).align === "center" ? "center" : "flex-start", transform: Number(part(id).offsetX) || Number(part(id).offsetY) ? `translate(${Number(part(id).offsetX) || 0}px, ${Number(part(id).offsetY) || 0}px)` : undefined } : {}) });
-    return <div className={`preview-products-credit${custom ? " custom" : ""}`} key={`${row.skuId || row.name}-${index}`} onClick={(event) => onInspect?.(event, index)} style={{ ...(Number(config.planWidth) > 0 ? { width: `${config.planWidth}%`, marginInline: "auto" } : {}), ...(Number(config.planHeight) > 0 ? { minHeight: `${config.planHeight}px` } : {}), ...(config.planPadding !== "" && config.planPadding !== undefined ? { padding: `${config.planPadding}px` } : {}) }}><span className="preview-credit-copy"><strong data-inspector-area="product-name" style={partPlacement("name", 1)}>{row.name}</strong>{row.supportingCopy && <small data-inspector-area="product-supporting" style={partPlacement("supporting", 3)}>{row.supportingCopy}</small>}</span><button type="button" data-inspector-area="product-price" style={partPlacement("price", 2)} onClick={(event) => { event.stopPropagation(); onPurchase?.(row, index); }}>{resolveProductPrice(row, priceMode).main}</button></div>;
+    const partPlacement = (id, order) => ({ ...productPartStyle(config, id), ...(id === "price" && Number(config.priceModeStyles?.[priceMode]?.mainFontSize) > 0 ? { fontSize: `${config.priceModeStyles[priceMode].mainFontSize}px` } : {}), ...(id === "price" && validHexColor(config.priceModeStyles?.[priceMode]?.mainColor) ? { color: config.priceModeStyles[priceMode].mainColor } : {}), ...(custom ? { order: Number(part(id).order) || order, alignSelf: part(id).align === "right" ? "flex-end" : part(id).align === "center" ? "center" : "flex-start", transform: Number(part(id).offsetX) || Number(part(id).offsetY) ? `translate(${Number(part(id).offsetX) || 0}px, ${Number(part(id).offsetY) || 0}px)` : undefined } : {}) });
+    return <div className={`preview-products-credit${custom ? " custom" : ""}`} key={`${row.skuId || row.name}-${index}`} onClick={(event) => onInspect?.(event, index)} style={{ ...(Number(config.planWidth) > 0 ? { width: `${config.planWidth}%`, marginInline: "auto" } : {}), ...(config.planHeight !== undefined && config.planHeight !== "" ? { minHeight: `${config.planHeight}px` } : {}), ...(config.planPadding !== "" && config.planPadding !== undefined ? { padding: `${config.planPadding}px` } : {}), ...Object.fromEntries(["Top", "Right", "Bottom", "Left"].filter((side) => config[`planPadding${side}`] !== undefined && config[`planPadding${side}`] !== "").map((side) => [`padding${side}`, `${config[`planPadding${side}`]}px`])) }}><span className="preview-credit-copy"><strong data-inspector-area="product-name" style={partPlacement("name", 1)}>{row.name}</strong>{row.supportingCopy && <small data-inspector-area="product-supporting" style={partPlacement("supporting", 3)}>{row.supportingCopy}</small>}</span><button type="button" data-inspector-area="product-price" style={partPlacement("price", 2)} onClick={(event) => { event.stopPropagation(); onPurchase?.(row, index); }}>{resolveProductPrice(row, priceMode).main}</button></div>;
   })}</div>;
   return <div className={`preview-products product-layout-${layout} product-count-${Math.min(rows.length, 3)}`}>{rows.map((row, index) => <ProductPackageCard key={`${row.skuId || row.name}-${index}`} plan={row} index={index} config={config} layout={layout} selected={index === chosen} priceMode={priceMode} onChoose={setChosen} onInspect={onInspect} embeddedBenefits={embeddedBenefits} onBenefitInspect={embeddedList ? () => onChildSelect?.(embeddedList.id) : undefined} />)}</div>;
 }
