@@ -73,7 +73,7 @@ const sourcePackageDetails = {
   34: { 1: { badgeText: "SAVE 19%" } },
   35: { 0: { supportingCopy: "Cancel anytime" }, 1: { badgeText: "Save 19%" } },
   37: { 0: { supportingCopy: "$69.99/yr ($5.83/mo)", badgeText: "SAVE 19%" } },
-  40: { 1: { supportingCopy: "$69.99/yr ($5.83/mo)", badgeText: "Save 19% (only $5.83/mo)" } },
+  40: { 1: { supportingCopy: "($5.83/mo)", badgeText: "Save 19% (only $5.83/mo)" } },
 };
 
 export function sourceProductRows(order) {

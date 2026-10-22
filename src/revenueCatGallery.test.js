@@ -196,6 +196,7 @@ test("observed package badges, subtitles, and bilingual labels stay with their p
   assert.equal(sourceProductRows(18)[0].name, "一月 · Monthly Path");
   assert.equal(sourceProductRows(18)[2].supportingCopy, "月から月へ · full year");
   assert.equal(sourceProductRows(40)[1].badgeText, "Save 19% (only $5.83/mo)");
+  assert.equal(sourceProductRows(40)[1].supportingCopy, "($5.83/mo)");
   assert.deepEqual(tree(19).find((item) => item.type === "Award").config, {
     title: "App of the Year", source: "The Download", subtitle: "for 2025", accentColor: revenueCatGallery[18].accent,
     leftDecorationSrc: observedTemplate(19).assets[1], rightDecorationSrc: observedTemplate(19).assets[2],
@@ -226,13 +227,14 @@ test("40 source editor layer inventories remain distinct from the unverified tem
   }
 });
 
-test("all visible preview copy from verified source templates has a mapped node field", () => {
+test("all visible preview copy from verified source templates has mapped node fields", () => {
   const node = (id, type, content, depth, options = {}) => ({ id, type, content, depth, ...options });
   for (const template of revenueCatGallery.filter((item) => item.editorVerified)) {
     const serialized = JSON.stringify(createSourceTemplateNodes(template, node));
+    const combinedPriceLines = sourceProductRows(template.sourceOrder).map((row) => `${row.price} ${row.supportingCopy}`.trim());
     for (const line of observedTemplate(template.sourceOrder).text.split("\n").filter(Boolean)) {
       const escaped = JSON.stringify(line).slice(1, -1);
-      assert.ok(serialized.includes(line) || serialized.includes(escaped), `${template.title}: ${line}`);
+      assert.ok(serialized.includes(line) || serialized.includes(escaped) || combinedPriceLines.includes(line), `${template.title}: ${line}`);
     }
   }
 });
