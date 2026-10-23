@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Check, LockKeyhole, Star, Bell, Moon, Heart, Users, Clock3, Gift, ChevronRight, Dumbbell, Download, MapPin, Flower2, Activity, Ticket, Ban, Blocks, Archive, Shirt, Armchair, ScanSearch, CircleHelp, LogIn, PersonStanding } from 'lucide-react';
 import { componentProps, resolveComponentText, indexDocument } from './componentDocument.js';
+import { isUnconfiguredDetailPage } from './componentTree.js';
 
 const PreviewContext = createContext(null);
 const TimerContext = createContext(null);
@@ -73,7 +74,8 @@ export function NativeComponent({ node, packageNode = null, floating = false }) 
   }
   if (['Button','TabButton','PurchaseButton'].includes(node.type)) {
     const active = node.type === 'TabButton' && (runtime[props.target] ?? context.nodeIndex.get(props.target)?.props.defaultIndex ?? 0) === props.index;
-    return <div {...attributes} role="button" tabIndex={0} style={{ ...style, ...containerStyle(node), ...(active ? { background: props.selectedBackground ?? '#167aff', color: props.selectedColor ?? '#ffffff' } : {}) }} onClick={(event) => { select(event); if (node.type === 'TabButton') setRuntime((current) => ({ ...current, [props.target]: props.index })); else if (!editing) { event.stopPropagation(); runAction(node); } }} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); if (editing) onSelect(node.id); else if (node.type === 'TabButton') setRuntime((current) => ({ ...current, [props.target]: props.index })); else runAction(node); } }}>{children()}</div>;
+    const blocked = props.action?.action === 'OpenPage' && isUnconfiguredDetailPage(context.nodeIndex.get(props.action.actionPage));
+    return <div {...attributes} role="button" tabIndex={0} aria-disabled={!editing && blocked || undefined} style={{ ...style, ...containerStyle(node), ...(!editing&&blocked?{cursor:'default'}:{}), ...(active ? { background: props.selectedBackground ?? '#167aff', color: props.selectedColor ?? '#ffffff' } : {}) }} onClick={(event) => { select(event); if (node.type === 'TabButton') setRuntime((current) => ({ ...current, [props.target]: props.index })); else if (!editing) { event.stopPropagation(); runAction(node); } }} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); if (editing) onSelect(node.id); else if (node.type === 'TabButton') setRuntime((current) => ({ ...current, [props.target]: props.index })); else runAction(node); } }}>{children()}</div>;
   }
   if(node.type==='Screen'&&node.children.some((child)=>['Header','Footer'].includes(child.type)))return <div {...attributes} style={{...style,display:'flex',flexDirection:'column',minHeight:844}}>{children(node.children.filter((child)=>child.type==='Header'))}<div className="nc-screen-content" style={{...containerStyle(node),flex:'1 0 auto',minWidth:0}}>{children(node.children.filter((child)=>!['Header','Footer'].includes(child.type)))}</div>{children(node.children.filter((child)=>child.type==='Footer'))}</div>;
   return <div {...attributes} style={{ ...style, ...containerStyle(node), ...(['Header','Footer'].includes(node.type)?{position:'sticky',[node.type==='Header'?'top':'bottom']:0,zIndex:4}:{} ) }}>{node.type === 'Timeline' ? node.children.map((child, index) => <div className="nc-timeline-step" key={child.id} style={{ borderColor: props.lineColor ?? '#d6d2e8' }}><NativeComponent node={child} packageNode={currentPackage} />{index < node.children.length - 1 && <span className="nc-timeline-line" />}</div>) : children()}</div>;
@@ -114,6 +116,7 @@ export default function ComponentPreview({ document, selectedId, onSelect, editi
       else onStatus('请填写有效的 http 或 https 链接');
     } else if (action.action === 'OpenPage') {
       const { nodes, parents } = indexDocument(document), target = nodes.get(action.actionPage), owner = nodes.get(parents.get(target?.id));
+      if (isUnconfiguredDetailPage(target)) { onStatus('该权益详情内容待补充，暂不开放跳转'); return; }
       if (owner?.type === 'Flow') { const next = { [owner.id]: owner.children.findIndex((item) => item.id === target.id) }; setRuntime((current) => ({ ...current, ...next })); onNavigate?.(next); if (viewport.current) viewport.current.scrollTop = 0; }
       else onStatus('尚未配置有效的目标页面');
     } else if (action.action === 'NextScreen') {

@@ -1,5 +1,27 @@
 import { COMPONENT_NAMES } from './componentDocument.js';
 
+export function pageContext(document, navigation = {}) {
+  const flows = document.root.children.filter((node) => node.type === 'Flow');
+  const flow = flows.length === 1 ? flows[0] : null;
+  const pages = flow?.children ?? [document.root];
+  const active = flow ? treeChildren(flow, navigation)[0] ?? document.root : document.root;
+  return { flow, pages, active, shared: flow ? document.root.children.filter((node) => node !== flow) : [] };
+}
+
+export function isUnconfiguredDetailPage(page) {
+  if (!page || page.type !== 'Screen' || !/\/detail-screen-\d+$/.test(page.id)) return false;
+  const meaningful = (node) => {
+    if (node.props.hidden) return false;
+    if (node.type === 'Button' && /\/back$/.test(node.id)) return false;
+    if (node.type === 'Text' && node.id === `${page.id}/title`) return false;
+    if (['Image', 'Video'].includes(node.type) && node.props.src) return true;
+    if (node.type === 'Custom' && node.props.html?.trim()) return true;
+    if (node.type === 'Text' && (node.props.text?.trim() || node.props.runs?.some((run) => run.text?.trim()))) return true;
+    return node.children.some(meaningful);
+  };
+  return !page.children.some(meaningful);
+}
+
 export function treeChildren(node, navigation = {}) {
   if (node.type !== 'Flow') return node.children;
   const index = navigation[node.id] ?? node.props.defaultIndex ?? 0;
