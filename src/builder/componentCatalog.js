@@ -1,4 +1,4 @@
-import { component, createNativeComponent, canContain } from './componentDocument.js';
+import { component, createNativeComponent, canContain, indexDocument } from './componentDocument.js';
 
 // Public picker entries are building blocks or transparent Stack compositions.
 // Structural children are offered only by their owning container.
@@ -41,7 +41,7 @@ export function createCatalogComponent(type, id = crypto.randomUUID()) {
     component(`${id}/controls-${at}`,'TabControl','标签按钮组',{axis:'horizontal',gap:4},[0,1].map((index)=>component(`${id}/tab-button-${at}-${index}`,'TabButton',`标签 ${index+1}`,{target:id,index,background:'#f0eef7',selectedBackground:'#167aff',selectedColor:'#ffffff',...pad(10),radius:6},[t(`${id}/tab-label-${at}-${index}`,`标签 ${index+1}`,{textAlign:'center'})]))),t(`${id}/tab-content-${at}`,`标签 ${at+1} 的内容`),
   ])));
   if(type==='Carousel')return component(id,type,'轮播',{defaultIndex:0},[0,1].map((at)=>component(`${id}/slide-${at}`,'Slide',`第 ${at+1} 页`,{gap:12},[t(`${id}/slide-title-${at}`,`第 ${at+1} 页`,{fontSize:22,fontWeight:700,textAlign:'center'}),t(`${id}/slide-copy-${at}`,'内容',{textAlign:'center'})])));
-  if (type === 'Countdown') return component(id,type,'倒计时',{start:'00:10:00',previewState:'auto'},[
+  if (type === 'Countdown') return component(id,type,'倒计时',{deadline:new Date(Date.now()+10*60*1000).toISOString(),countFrom:'hours',previewState:'auto'},[
     component(`${id}/active`,'CountdownState','计时内容',{state:'active',axis:'horizontal',justify:'center',gap:2},[
       t(`${id}/hours`,'',{timerField:'hours',widthMode:'fit',fontSize:24,fontWeight:700}), t(`${id}/separator-1`,':',{widthMode:'fit',fontSize:24}), t(`${id}/minutes`,'',{timerField:'minutes',widthMode:'fit',fontSize:24,fontWeight:700}), t(`${id}/separator-2`,':',{widthMode:'fit',fontSize:24}), t(`${id}/seconds`,'',{timerField:'seconds',widthMode:'fit',fontSize:24,fontWeight:700}),
     ]),
@@ -66,7 +66,16 @@ export function createCatalogComponent(type, id = crypto.randomUUID()) {
 
 export function upgradeCanonicalComponents(document) {
   let changed=false;
+  const ids = new Set(indexDocument(document).nodes.keys());
   const visit=(node)=>{
+    if(node.type==='Icon' && (node.props.widthMode==='fill' || node.props.heightMode==='fill')){
+      changed=true;
+      let id=`${node.id}/layout`,index=1;while(ids.has(id))id=`${node.id}/layout-${index++}`;ids.add(id);
+      const {icon,number,iconSize,fontSize,color,iconBackground,iconRadius,...layout}=node.props;
+      const size=iconSize??fontSize??14;
+      const glyph=Object.fromEntries(Object.entries({icon,number,fontSize,color,widthMode:'fixed',width:size,heightMode:'fixed',height:size,radius:0,iconBackground:'transparent'}).filter(([,value])=>value!==undefined));
+      return component(id,'Stack','图标单元格',{...layout,axis:'vertical',gap:0,align:'center',justify:'center',background:iconBackground&&iconBackground!=='transparent'?iconBackground:layout.background??'transparent'},[{...node,props:glyph,children:[]}]);
+    }
     if(node.type==='Countdown'&&!node.children.length){
       changed=true;
       const native=createCatalogComponent('Countdown'),props=node.props,size=props.fontSize??24;

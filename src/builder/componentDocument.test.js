@@ -99,8 +99,8 @@ test('canonical persistence is independent of v1, invalid records are preserved 
 });
 test('intrinsic controls do not claim leftover horizontal width', () => {
   assert.equal(componentProps(component('checkbox','Toggle','勾选框')).widthMode,'fit');
-  assert.equal(componentProps(component('icon','Icon','图标')).widthMode,'fit');
-  assert.equal(componentProps(component('cell','Icon','单元格',{widthMode:'fill'})).widthMode,'fill');
+  assert.equal(componentProps(component('icon','Icon','图标')).widthMode,'fixed');
+  assert.equal(componentProps(component('cell','Icon','单元格',{widthMode:'fill'})).widthMode,'fixed');
 });
 test('library text captures its package price mode and copied flows target copied pages', () => {
   let document = load('ht-blue-privilege');

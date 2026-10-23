@@ -6,8 +6,10 @@ import { createServer } from 'vite';
 import { component, componentProps, indexDocument, updateComponent, saveComponentDocument, readComponentDocument, COMPONENT_TYPES, cloneComponent, resolveComponentText } from '../src/builder/componentDocument.js';
 import { DEMO_SKUS } from '../src/productPricing.js';
 import { copyStyles, pasteStyles } from '../src/builder/componentOperations.js';
-import { createCatalogComponent } from '../src/builder/componentCatalog.js';
+import { createCatalogComponent, upgradeCanonicalComponents } from '../src/builder/componentCatalog.js';
 import { textPropertyPatch, countdownSeconds, defaultPackagePatch } from '../src/builder/propertyModel.js';
+import { templates, createBuilderNodes } from '../src/templates/templateDefinitions.js';
+import { importComponentDocument, validDocument } from '../src/builder/componentDocument.js';
 
 let server, Properties, Preview, Editor;
 const mounted = new Set();
@@ -47,7 +49,8 @@ async function mount(node, { editing = true, source } = {}) {
     async click(name) { const button = fields(name, 'button')[0] ?? renderer.root.findAll((item) => item.type === 'button' && item.children.join('') === name)[0]; assert.ok(button, `缺少按钮 ${name}`); await act(async () => button.props.onClick(event())); },
     async segment(label, choice) { const field = renderer.root.findAll((item) => item.type === 'label' && item.children.some((child) => typeof child === 'object' && child.type === 'span' && child.children.join('') === label))[0]; assert.ok(field, `缺少分段 ${label}`); await act(async () => field.findAllByType('button').find((item) => item.props['aria-label'] === choice).props.onClick()); },
     async optional(title) { const section = renderer.root.findAll((item) => item.type === 'section' && item.findAllByType('strong').some((child) => child.children.join('') === title))[0]; assert.ok(section, `缺少模块 ${title}`); await act(async () => section.findAllByType('button').find((item) => item.props.className?.includes('rc-optional-toggle')).props.onClick()); },
-    async select(name, value) { const input = fields(name, 'select')[0]; assert.ok(input, `缺少选择 ${name}`); await act(async () => input.props.onChange(event(value))); },
+    async select(name, value) { const input = fields(name, 'select')[0]; assert.ok(input, `缺少选择 ${name}`); assert.ok(input.findAllByType('option').some((option)=>String(option.props.value)===String(value)),`选项不存在 ${name}:${value}`); await act(async () => input.props.onChange(event(value))); },
+    async limit(axis, bound) { await this.click(`添加${axis}约束`); await this.click(`添加${bound}${axis}`); },
     async close() { await act(async () => renderer.unmount()); mounted.delete(renderer); },
   };
 }
@@ -60,20 +63,26 @@ for (const type of COMPONENT_TYPES) {
     node.props.hidden = false;
     if (type === 'Text') node.props.text = '文字';
     const h = await mount(node);
-    await h.select('形状', 'rectangle');
+    if(type === 'Icon') await h.optional('图标背景');
+    if(type !== 'Text') {
+    if(type !== 'Icon') {
+    await h.select(type === 'Image' ? '遮罩' : '形状', 'rectangle');
+    }
     await h.change('圆角', '9');
     assert.equal(h.node().props.style.borderRadius, 9);
-    await h.select('形状', 'pill'); assert.equal(h.node().props.style.borderRadius, 999);
-    await h.select('形状', 'circle'); assert.equal(h.node().props.style.borderRadius, '50%');
-    await h.select('形状', 'rectangle');
-    await h.segment('宽度', '固定'); await h.change('固定宽度', '120');
+    if (type === 'Image') { await h.select('遮罩', 'circle'); assert.equal(h.node().props.style.borderRadius, '50%'); await h.select('遮罩', 'rectangle'); }
+    else if(type !== 'Icon') { await h.select('形状', 'pill'); assert.equal(h.node().props.style.borderRadius, 999); await h.select('形状', 'rectangle'); }
+    }
+    if(type !== 'Icon') await h.segment('宽度', '固定'); await h.change(type === 'Icon' ? '宽度' : '固定宽度', '120');
     assert.equal(h.node().props.style.width, '120px');
-    await h.segment('高度', '固定'); await h.change('固定高度', '80');
+    if(type !== 'Icon') await h.segment('高度', '固定'); await h.change(type === 'Icon' ? '高度' : '固定高度', '80');
     assert.equal(h.node().props.style.height, '80px');
-    await h.segment('宽度', '填满'); await h.change('最小宽度', '20'); await h.change('最大宽度', '180');
+    if(type !== 'Icon') {
+    await h.segment('宽度', '填满'); await h.limit('宽度', '最小'); await h.limit('宽度', '最大'); await h.change('最小宽度', '20'); await h.change('最大宽度', '180');
     assert.equal(h.node().props.style.minWidth, 20); assert.equal(h.node().props.style.maxWidth, 180);
-    await h.change('最小高度', '30'); await h.change('最大高度', '160');
+    await h.segment('高度', '填满'); await h.limit('高度', '最小'); await h.limit('高度', '最大'); await h.change('最小高度', '30'); await h.change('最大高度', '160');
     assert.equal(h.node().props.style.minHeight, 30); assert.equal(h.node().props.style.maxHeight, 160);
+    }
     await h.change('内边距纵向', '7');
     await h.change('内边距横向', '11');
     assert.equal(h.node().props.style.padding, '7px 11px');
@@ -87,15 +96,19 @@ for (const type of COMPONENT_TYPES) {
     await h.click('外边距切换为四边配置'); await h.change('外边距右', '14');
     assert.equal(h.node().props.style.margin, '-7px 14px -7px 9px');
     await h.click('外边距切换为轴向配置'); assert.equal(h.node().props.style.margin, '-7px 14px');
+    if(type !== 'Text') {
     await h.change('透明度', '35');
     assert.equal(h.node().props.style.opacity, .35);
-    if (!Number(indexDocument(h.document()).nodes.get('sample').props.borderWidth)) await h.optional('边框');
+    if (type !== 'Icon' && !Number(indexDocument(h.document()).nodes.get('sample').props.borderWidth)) await h.optional('边框');
     await h.change('边框宽度', '3'); await h.change('边框颜色值', '#456789');
     assert.equal(h.node().props.style.border, '3px solid #456789');
-    await h.optional('边框'); assert.equal(h.node().props.style.border, undefined);
+    if(type === 'Icon') await h.change('边框宽度','0'); else await h.optional('边框'); assert.equal(h.node().props.style.border, undefined);
+    if(type !== 'Icon') {
     await h.optional('阴影'); await h.change('X 偏移', '-4'); await h.change('Y 偏移', '6'); await h.change('模糊', '12'); await h.change('阴影颜色值', '#123456');
     assert.equal(h.node().props.style.boxShadow, '-4px 6px 12px #123456');
     await h.optional('阴影'); assert.equal(h.node().props.style.boxShadow, undefined);
+    }
+    }
     const store = new Map();
     const storage = { getItem: (key) => store.get(key) ?? null, setItem: (key, value) => store.set(key, value) };
     assert.ok(saveComponentDocument(storage, h.document()));
@@ -161,23 +174,29 @@ test('carousel: automatic advance, loop and manual page changes execute in inter
   node.props = { ...node.props, autoPlay: true, autoPlayInterval: 250, loop: false };
   const h = await mount(node, { editing: false });
   assert.ok(h.node('sample/slide-0'));
+  const active = (renderer) => renderer.root.findAll((item) => item.type === 'div' && item.props['data-carousel-page'] !== undefined && item.props['aria-hidden'] === false)[0].props['data-carousel-page'];
+  assert.equal(active(h.renderer), 0);
   await act(async () => new Promise((resolve) => setTimeout(resolve, 280)));
   assert.ok(h.node('sample/slide-1'));
+  assert.equal(active(h.renderer), 1);
   await act(async () => new Promise((resolve) => setTimeout(resolve, 280)));
   assert.ok(h.node('sample/slide-1'));
+  assert.equal(active(h.renderer), 1);
   await h.click('第 1 页');
   assert.ok(h.node('sample/slide-0'));
+  assert.equal(active(h.renderer), 0);
   await h.close();
   node.props.loop = true;
   node.props.defaultIndex = 1;
   const loop = await mount(node, { editing: false });
   await act(async () => new Promise((resolve) => setTimeout(resolve, 280)));
   assert.ok(loop.node('sample/slide-0'));
+  assert.equal(active(loop.renderer), 0);
   await loop.close();
 });
 
 test('countdown: malformed values use fallback; zero duration uses ended state', async () => {
-  const node = createCatalogComponent('Countdown', 'sample'); node.props.start = 'invalid';
+  const node = createCatalogComponent('Countdown', 'sample'); node.props.start = 'invalid'; delete node.props.deadline;
   const h = await mount(node);
   assert.ok(h.node('sample/fallback'));
   assert.equal(countdownSeconds('00:61:00'), null);
@@ -217,7 +236,8 @@ test('switch and checkout preview states expose only the selected real child bra
 });
 
 test('text content, font family, alignment and background reach the rendered text', async () => {
-  const h = await mount(component('sample', 'Text', '标题', { text: '旧内容', textBackground: '#ff0000' }));
+  const h = await mount(component('sample', 'Text', '标题', { text: '旧内容', textBackground: '#ff0000', fillEnabled: false }));
+  assert.equal(h.node().props.style.background, 'transparent');
   await h.change('文字内容', '新内容', 'textarea');
   assert.ok(h.node().children.includes('新内容'));
   await h.select('字体', 'serif'); assert.equal(h.node().props.style.fontFamily, 'Georgia, serif');
@@ -229,8 +249,8 @@ test('text content, font family, alignment and background reach the rendered tex
 test('icon dimensions affect the SVG and radius is not a second conflicting configuration', async () => {
   const h = await mount(component('sample', 'Icon', '图标', { icon: 'check', iconRadius: 8 }));
   assert.equal(h.node().props.style.borderRadius, 8);
-  await h.segment('宽度', '固定'); await h.change('固定宽度', '32');
-  await h.segment('高度', '固定'); await h.change('固定高度', '24');
+  await h.change('宽度', '32');
+  await h.change('高度', '24');
   const svg = h.node().findByType('svg'); assert.equal(svg.props.width, 32); assert.equal(svg.props.height, 24);
   await h.change('背景颜色值', '#ff00ff'); assert.equal(h.node().props.style.background, '#ff00ff');
   await h.change('圆角', '0'); assert.equal(h.node().props.style.borderRadius, 0);
@@ -241,7 +261,7 @@ test('image and video sources, fit, masks and image overlays reach media output'
   const h = await mount(component('sample', 'Image', '图片', { src: '/first.png' }));
   await h.change('素材地址', '/next.png'); assert.equal(h.node().findByType('img').props.src, '/next.png');
   await h.select('素材适配', 'contain'); assert.equal(h.node().findByType('img').props.style.objectFit, 'contain');
-  await h.segment('遮罩', '圆角'); assert.equal(h.node().props.style.overflow, 'hidden'); assert.equal(h.node().props.style.borderRadius, 12);
+  await h.select('遮罩', 'rectangle'); await h.change('圆角','12'); assert.equal(h.node().props.style.overflow, 'hidden'); assert.equal(h.node().props.style.borderRadius, 12);
   await h.change('叠加层颜色值', '#ff0000'); assert.equal(h.node().findAllByType('span').at(-1).props.style.background, '#ff0000');
   await h.close();
   const v = await mount(component('sample', 'Video', '视频', { src: '/a.mp4' }));
@@ -294,7 +314,7 @@ test('fixed width is not constrained by inactive fill bounds; page height is not
   assert.equal(h.node().props.style.width, '250px'); assert.equal(h.node().props.style.maxWidth, undefined);
   await h.segment('高度', '固定'); await h.change('固定高度', '400');
   assert.equal(h.node().props.style.minHeight, 0);
-  await h.change('最小高度', '100'); assert.equal(h.node().props.style.minHeight, 100);
+  await h.segment('高度','填满'); await h.limit('高度','最小'); await h.change('最小高度', '100'); assert.equal(h.node().props.style.minHeight, 100);
   await h.close();
 });
 
@@ -318,7 +338,7 @@ test('tabs: target, page index, selected colors and inherited child text follow 
   const button = component('sample', 'TabButton', '标签', { target: 'tabs', index: 1 }, [component('label', 'Text', '文字', { text: '第二页' })]);
   const source = fixture(component('row', 'Stack', '', {}, [button, tabs]));
   const h = await mount(button, { source, editing: false });
-  await h.change('选中背景值', '#ff00ff'); await h.change('选中文字值', '#123456');
+  await h.click('选中'); await h.change('背景颜色值', '#ff00ff'); await h.change('文字颜色值', '#123456');
   await act(async () => h.node().props.onKeyDown({ ...event(), key: 'Enter' }));
   assert.ok(h.node('tabs/tab-1')); assert.equal(h.node('tabs/tab-0'), undefined);
   assert.equal(h.node().props.style.color, '#123456'); assert.equal(h.node().props.style.background, '#ff00ff');
@@ -334,7 +354,7 @@ test('actions: no-op, safe URL and invalid URL use the configured behavior', asy
   try {
     const h = await mount(component('sample', 'Button', '', { action: { action: 'None' } }), { editing: false });
     await act(async () => h.node().props.onClick(event())); assert.equal(h.status(), undefined);
-    await h.select('点击动作', 'OpenURL'); await h.change('链接地址', 'https://example.com/path');
+    await h.select('点击动作', 'NavigateTo'); await h.select('导航目标','OpenURL'); await h.change('链接地址', 'https://example.com/path');
     await act(async () => h.node().props.onKeyDown({ ...event(), key: ' ' }));
     assert.deepEqual(opened, [['https://example.com/path', '_blank', 'noopener,noreferrer']]);
     await h.change('链接地址', 'javascript:alert(1)'); await act(async () => h.node().props.onClick(event()));
@@ -463,4 +483,143 @@ test('invalid color drafts are marked and cannot overwrite the previous effectiv
     await h.change('文字颜色值', '#abcdef'); assert.equal(h.node().props.style.color, '#abcdef');
     await h.close();
   } finally { globalThis.CSS = previous; }
+});
+
+test('reference panels: text and icon do not expose redundant generic appearance or duplicate size controls', async () => {
+  const text = await mount(component('sample','Text','文字',{text:'A'}));
+  assert.equal(text.renderer.root.findAll((item)=>item.type==='select'&&item.props['aria-label']==='形状').length,0);
+  assert.equal(text.renderer.root.findAll((item)=>item.type==='strong'&&['外观','填充','边框','阴影'].includes(item.children.join(''))).length,0);
+  assert.equal(text.renderer.root.findAll((item)=>item.type==='input'&&item.props['aria-label']==='背景颜色值').length,1);
+  await text.close();
+  const icon = await mount(component('sample','Icon','图标',{icon:'check'}));
+  assert.equal(icon.renderer.root.findAll((item)=>item.type==='input'&&['宽度','高度'].includes(item.props['aria-label'])).length,2);
+  assert.equal(icon.renderer.root.findAll((item)=>item.type==='label'&&item.props.className==='rc-field'&&item.findAllByType('button').some((button)=>button.props['aria-label']==='填满')).length,0);
+  assert.equal(icon.renderer.root.findAll((item)=>item.type==='input'&&item.props['aria-label']==='背景颜色值').length,0);
+  await icon.optional('图标背景'); await icon.change('背景颜色值','#abcdef'); assert.equal(icon.node().props.style.background,'#abcdef');
+  await icon.optional('图标背景'); assert.equal(icon.node().props.style.background,'transparent');
+  await icon.close();
+});
+
+test('fill limits: adding, removing, reloading and leaving Fill preserve one canonical limit', async () => {
+  const h = await mount(component('sample','Stack'));
+  assert.equal(h.renderer.root.findAll((item)=>item.type==='input'&&item.props['aria-label']==='最小宽度').length,0);
+  await h.limit('宽度','最小'); await h.change('最小宽度','35'); await h.limit('宽度','最大'); await h.change('最大宽度','240');
+  assert.equal(indexDocument(h.document()).nodes.get('sample').props.minWidthEnabled,true);
+  await h.click('移除最小宽度'); assert.equal(h.node().props.style.minWidth,0);
+  await h.segment('宽度','固定'); assert.equal(indexDocument(h.document()).nodes.get('sample').props.maxWidth,0);
+  await h.segment('宽度','填满'); assert.equal(h.renderer.root.findAll((item)=>item.type==='input'&&item.props['aria-label']==='最大宽度').length,0);
+  await h.close();
+});
+
+test('optional fill can disable an image without deleting its source and re-enable the exact source', async () => {
+  const h=await mount(component('sample','Stack','容器',{backgroundImage:'/background.png',background:'#123456'}));
+  await h.optional('填充'); assert.equal(h.node().props.style.backgroundImage,undefined); assert.equal(h.node().props.style.background,'transparent');
+  assert.equal(indexDocument(h.document()).nodes.get('sample').props.backgroundImage,'/background.png');
+  await h.optional('填充'); assert.ok(h.node().props.style.backgroundImage.includes('/background.png'));
+  await h.close();
+});
+
+test('video configuration maps all playback flags and prevents a video with no way to start', async () => {
+  const h=await mount(component('sample','Video','视频',{src:'/video.mp4'}));
+  await h.segment('自动播放','开启'); await h.segment('循环播放','开启'); await h.segment('静音','关闭'); await h.segment('播放控件','关闭');
+  let video=h.node().findByType('video'); assert.equal(video.props.autoPlay,true);assert.equal(video.props.loop,true);assert.equal(video.props.muted,false);assert.equal(video.props.controls,false);
+  await h.segment('自动播放','关闭'); video=h.node().findByType('video'); assert.equal(video.props.autoPlay,false);assert.equal(video.props.controls,true);
+  await h.segment('播放控件','关闭'); assert.equal(h.node().findByType('video').props.autoPlay,true);
+  await h.close();
+});
+
+test('font weight selection and bold shortcut cannot leave two conflicting effective weights', async () => {
+  const h=await mount(component('sample','Text','文字',{text:'A',bold:true,fontWeight:700,runs:[{text:'A',bold:true,fontWeight:700}]}));
+  await h.select('字重','500');assert.equal(h.node().props.style.fontWeight,500);assert.equal(h.node().findByType('span').props.style.fontWeight,500);
+  await h.click('粗体');assert.equal(h.node().props.style.fontWeight,700);
+  await h.click('粗体');assert.equal(h.node().props.style.fontWeight,400);
+  await h.close();
+});
+
+test('tab button selected state has full standard styling without a second selected-color form', async () => {
+  const button=component('sample','TabButton','标签',{target:'tabs',index:0,background:'#ffffff'},[component('label','Text','文字',{text:'标签'})]);
+  const h=await mount(button,{source:fixture(component('row','Stack','',{},[button,createCatalogComponent('Tabs','tabs')]))});
+  await h.click('选中');await h.change('透明度','60');await h.optional('边框');await h.change('边框宽度','3');await h.change('边框颜色值','#abcdef');
+  assert.equal(h.node().props.style.opacity,.6);assert.equal(h.node().props.style.border,'3px solid #abcdef');
+  assert.equal(h.renderer.root.findAll((item)=>item.type==='input'&&item.props['aria-label']==='选中背景值').length,0);
+  await h.click('默认');assert.equal(h.node().props.style.border,undefined);assert.equal(h.node().props.style.opacity,1);
+  await h.close();
+});
+
+test('carousel spacing, peek and page-control fields change the actual rail, slide and controller', async () => {
+  const h=await mount(createCatalogComponent('Carousel','sample'));
+  await h.change('页面间距','18');await h.change('邻页露出','24');await h.select('分页器位置','top');await h.change('分页指示器颜色值','#123456');await h.change('当前分页颜色值','#abcdef');
+  const track=h.node().findAll((item)=>item.type==='div'&&item.props.className==='nc-carousel-track')[0];
+  assert.equal(track.props.style.gap,18);assert.equal(track.findAll((item)=>item.type==='div'&&item.props['data-carousel-page']===0)[0].props.style.flex,'0 0 calc(100% - 48px)');
+  const direct=h.node().children.filter((item)=>typeof item==='object'&&typeof item.type==='string');assert.equal(direct[0].props.className,'nc-pagination');
+  const buttons=direct[0].findAllByType('button');assert.equal(buttons[0].props.style.color,'#abcdef');assert.equal(buttons[1].props.style.color,'#123456');
+  await h.segment('循环播放','开启');assert.equal(indexDocument(h.document()).nodes.get('sample').props.loop,true);
+  assert.equal(h.renderer.root.findAll((item)=>item.type==='input'&&item.props['aria-label']==='子项间距').length,0);
+  await h.close();
+});
+
+test('countdown date, count-from units and padded variables update the configured branches', async () => {
+  const original=Date.now;const now=Date.parse('2026-10-24T00:00:00Z');Date.now=()=>now;
+  try{
+    const timer=createCatalogComponent('Countdown','sample');timer.props.deadline='2026-10-26T03:04:05Z';
+    const h=await mount(timer);await h.select('计时单位','days');assert.deepEqual(h.node('sample/hours').children,['03']);
+    await h.select('计时单位','hours');assert.deepEqual(h.node('sample/hours').children,['51']);
+    await h.select('计时单位','minutes');assert.deepEqual(h.node('sample/minutes').children,['3064']);
+    await h.change('目标时间（UTC）','2026-10-23T00:00:00Z');assert.ok(h.node('sample/ended'));
+    await h.change('目标时间（UTC）','invalid');assert.ok(h.node('sample/fallback'));
+    await h.close();
+  }finally{Date.now=original;}
+});
+
+test('product variables refer to the owning package inside and the selected package outside', async () => {
+  const variable=component('sample','Text','价格',{text:'{{ product.price }} · {{ product.price_per_month }}'});
+  const first=component('p1','Package','年付',{dataKey:'sample',group:'plans',defaultSelected:true},[component('inside','Text','价格',{text:'{{ product.price }}'})]);
+  const second=component('p2','Package','终身',{dataKey:'lifetime',group:'plans'});
+  const source=fixture(component('row','Stack','',{},[variable,first,second]));source.products.lifetime={name:'终身',price:'¥200',billingMonths:0};
+  const h=await mount(variable,{source,editing:false});assert.ok(h.node().children.join('').includes('¥100'));assert.deepEqual(h.node('inside').children,['¥100']);
+  await act(async()=>h.node('p2').props.onClick(event()));assert.deepEqual(h.node().children,['¥200 · ¥200']);assert.deepEqual(h.node('inside').children,['¥100']);
+  assert.equal(h.renderer.root.findByType('textarea').props.value,'{{ product.price }} · {{ product.price_per_month }}');
+  await h.change('文字内容','', 'textarea');await h.click('插入变量');await h.click('商品总价');assert.deepEqual(h.node().children,['¥200']);
+  await h.close();
+});
+
+test('legacy fill icons become real cell stacks with a fixed glyph without losing layout ownership', () => {
+  const original=fixture(component('icon','Icon','权益图标',{widthMode:'fill',heightMode:'fill',flexGrow:.76,background:'#ffffff',color:'#ffb400',icon:'check',iconSize:22,fontSize:17}));
+  const next=upgradeCanonicalComponents(original),{nodes,parents}=indexDocument(next),icon=nodes.get('icon'),cell=nodes.get(parents.get('icon'));
+  assert.equal(cell.type,'Stack');assert.equal(cell.props.widthMode,'fill');assert.equal(cell.props.flexGrow,.76);assert.equal(cell.props.background,'#ffffff');
+  assert.equal(icon.props.width,22);assert.equal(icon.props.height,22);assert.equal(icon.props.color,'#ffb400');assert.equal(icon.props.icon,'check');
+  assert.equal(upgradeCanonicalComponents(next),next);assert.deepEqual(next.products,original.products);assert.equal(original.root.children[0].type,'Icon');
+});
+
+test('all 45 templates preserve original copy, media and product data after fixed-icon migration', () => {
+  for(const template of templates){
+    const source=importComponentDocument(createBuilderNodes(template.id),template),next=upgradeCanonicalComponents(source),before=indexDocument(source).nodes,after=indexDocument(next).nodes;
+    assert.ok(validDocument(next),template.id);assert.deepEqual(next.products,source.products);
+    for(const [id,node] of before){
+      const current=after.get(id);assert.ok(current,`${template.id}:${id}`);
+      if(node.type==='Countdown'&&!node.children.length)continue;
+      for(const key of ['text','runs','src','binding','action','dataKey'])assert.deepEqual(current.props[key],node.props[key],`${template.id}:${id}:${key}`);
+      if(node.type==='Icon'&&(node.props.widthMode==='fill'||node.props.heightMode==='fill')){
+        const parent=after.get(indexDocument(next).parents.get(id));assert.equal(parent.props.widthMode,node.props.widthMode);assert.equal(parent.props.flexGrow,node.props.flexGrow);
+      }
+    }
+    assert.equal(upgradeCanonicalComponents(next),next);
+  }
+});
+
+test('ordinary button navigation and purchase checkout use separate property flows', async () => {
+  const b=await mount(component('sample','Button','按钮',{action:{action:'None'}}),{editing:false});
+  const select=b.renderer.root.findAll((item)=>item.type==='select'&&item.props['aria-label']==='点击动作')[0];
+  assert.deepEqual(select.findAllByType('option').map((option)=>option.props.value),['None','RestorePurchases','NavigateBack','NavigateTo']);
+  await b.select('点击动作','NavigateTo');await b.select('导航目标','OpenSheet');
+  assert.equal(indexDocument(b.document()).nodes.get('sample').props.action.action,'OpenSheet');await b.close();
+  const purchase=await mount(createCatalogComponent('PurchaseButton','sample'),{editing:false});
+  assert.equal(purchase.renderer.root.findAll((item)=>item.type==='select'&&item.props['aria-label']==='点击动作').length,0);
+  await purchase.select('打开方式','WebCheckout');await act(async()=>purchase.node().props.onClick(event()));assert.equal(purchase.status(),'网页结账预览');await purchase.close();
+});
+
+test('navigate back returns within the current flow before falling back to the mock close action', async () => {
+  const button=component('sample','Button','返回',{action:{action:'NavigateBack'}});
+  const source=fixture(component('flow','Flow','',{defaultIndex:1},[component('p1','Screen'),component('p2','Screen','',{},[button])]));
+  const h=await mount(button,{source,editing:false});await act(async()=>h.node().props.onClick(event()));assert.ok(h.node('p1'));assert.equal(h.node('p2'),undefined);await h.close();
 });

@@ -54,3 +54,4 @@
 .rc-icon-segmented button:focus-visible,.rc-spacing-toggle:focus-visible{outline:2px solid #586bdf;outline-offset:2px}
 .nc-node{isolation:isolate}.rc-rich-run{padding-top:10px;border-top:1px solid #e7e5ed}
 .nc-node.nc-screen[data-height=fixed]{min-height:0}
+.rc-size-field{position:relative}.rc-size-field>.ne-icon{margin-left:auto;display:flex}.rc-limit-menu{display:flex;flex-direction:column;border:1px solid #dedee3;background:white;border-radius:6px;padding:4px}.rc-limit-menu button{border:0;background:none;text-align:left;padding:7px 10px;color:#30303b}.rc-limit-menu button:hover{background:#f2f1f6}.rc-limit-row{display:flex;align-items:center;gap:6px}.rc-limit-row>.rc-field{flex:1;min-width:0}

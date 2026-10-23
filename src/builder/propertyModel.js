@@ -1,5 +1,6 @@
 export const STATE_STYLE_KEYS = ['axis','gap','align','justify','wrap','widthMode','width','minWidth','maxWidth','heightMode','height','minHeight','maxHeight','paddingMode','paddingTop','paddingRight','paddingBottom','paddingLeft','paddingVertical','paddingHorizontal','marginMode','marginTop','marginRight','marginBottom','marginLeft','marginVertical','marginHorizontal','background','backgroundImage','backgroundVideo','backgroundFit','backgroundPosition','backgroundRepeat','fillType','color','opacity','radius','shape','borderWidth','borderColor','shadowX','shadowY','shadowBlur','shadowColor'];
 export const selectedStyleKey = (key) => `selected${key[0].toUpperCase()}${key.slice(1)}`;
+STATE_STYLE_KEYS.push('minWidthEnabled', 'maxWidthEnabled', 'minHeightEnabled', 'maxHeightEnabled', 'fillEnabled');
 
 export function defaultPackagePatch(document, id, enabled) {
   const group = (node) => node.props.group ?? node.id;
@@ -38,6 +39,12 @@ export function spacingModePatch(props, prefix) {
 
 export function textPropertyPatch(node, patch) {
   const next = { ...patch };
+  if (node.type === 'Video') {
+    if (patch.autoPlay === false && !(patch.controls ?? node.props.controls ?? true)) next.controls = true;
+    if (patch.controls === false && !(patch.autoPlay ?? node.props.autoPlay ?? false)) next.autoPlay = true;
+  }
+  if (node.type === 'Image' && patch.mask !== undefined) next.shape = 'rectangle';
+  if (node.type === 'Text' && patch.fontWeight !== undefined) next.bold = false;
   for (const prefix of ['', 'selected']) {
     for (const axis of ['Width', 'Height']) {
       const minKey = prefix ? `${prefix}Min${axis}` : `min${axis}`;
@@ -50,7 +57,7 @@ export function textPropertyPatch(node, patch) {
       }
     }
   }
-  if (node.type === 'Text' && patch.background !== undefined) next.textBackground = 'transparent';
+  if (node.type === 'Text' && patch.background !== undefined) { next.textBackground = 'transparent'; next.fillEnabled = true; }
   if (patch.bold !== undefined) next.fontWeight = patch.bold ? 700 : 400;
   if (node.type !== 'Text' || !node.props.runs?.length || patch.runs !== undefined) return next;
   const keys = ['fontSize', 'color', 'fontWeight', 'bold', 'italic', 'underline'];
@@ -59,11 +66,34 @@ export function textPropertyPatch(node, patch) {
   return next;
 }
 
+export function dimensionModePatch(axis, mode) {
+  const name = axis[0].toUpperCase() + axis.slice(1);
+  return { [`${axis}Mode`]: mode, ...(mode !== 'fill' ? { [`min${name}`]: 0, [`max${name}`]: 0, [`min${name}Enabled`]: false, [`max${name}Enabled`]: false } : {}) };
+}
+
+export function imageMask(props) {
+  if (props.mask && props.mask !== 'none') return props.mask === 'rounded' ? 'rectangle' : props.mask;
+  return props.shape === 'circle' ? 'circle' : 'rectangle';
+}
+
+export function countdownValues(seconds, countFrom = 'hours') {
+  const days = Math.floor(seconds / 86400);
+  const hours = countFrom === 'days' ? Math.floor(seconds / 3600) % 24 : Math.floor(seconds / 3600);
+  const minutes = countFrom === 'minutes' ? Math.floor(seconds / 60) : Math.floor(seconds / 60) % 60;
+  const raw = { days, hours, minutes, seconds: seconds % 60 };
+  return Object.fromEntries(Object.entries(raw).flatMap(([key, value]) => [[key, String(value).padStart(2, '0')], [`${key}WithoutZero`, String(value)]]));
+}
+
 export function countdownSeconds(start) {
   const values = String(start ?? '').split(':');
   if (values.length !== 3 || values.some((value) => !/^\d+$/.test(value))) return null;
   const [h, m, s] = values.map(Number);
   return m < 60 && s < 60 ? h * 3600 + m * 60 + s : null;
+}
+
+export function countdownDeadline(value) {
+  const utc = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?$/.test(value) ? `${value}Z` : value;
+  return Date.parse(utc);
 }
 
 export function effectiveFillType(props) {

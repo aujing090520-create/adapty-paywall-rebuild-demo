@@ -11,7 +11,7 @@ export const COMPONENT_NAMES = { Screen: '页面', Stack: '布局容器', Text: 
 export const CONTAINER_TYPES = new Set(['Screen', 'Stack', 'Header', 'Footer', 'Package', 'PurchaseButton', 'BottomSheet', 'ExpressCheckout', 'CheckoutState', 'Button', 'Tabs', 'Tab', 'TabControl', 'TabButton', 'Carousel', 'Slide', 'Timeline', 'TimelineItem', 'Switch', 'SwitchCase', 'Countdown', 'CountdownState', 'Flow']);
 export const DEFAULT_PROPS = { axis: 'vertical', gap: 8, align: 'stretch', justify: 'start', widthMode: 'fill', width: 160, minWidth: 0, maxWidth: 0, heightMode: 'fit', height: 160, minHeight: 0, maxHeight: 0, paddingTop: 0, paddingRight: 0, paddingBottom: 0, paddingLeft: 0, paddingVertical: 0, paddingHorizontal: 0, paddingMode: 'axis', marginTop: 0, marginRight: 0, marginBottom: 0, marginLeft: 0, marginVertical: 0, marginHorizontal: 0, marginMode: 'axis', background: 'transparent', color: '#171717', radius: 0, borderWidth: 0, borderColor: '#dedee3', fontSize: 14, fontWeight: 400, textAlign: 'left', objectFit: 'contain', opacity: 100, alignSelf: 'auto', shadowX: 0, shadowY: 0, shadowBlur: 0, shadowColor: '#000000', shape: 'rectangle', fillType: 'color', mask: 'none', overlayColor: 'transparent', iconBackground: 'transparent', iconRadius: 0 };
 export const componentProps = (node) => {
-  const props = { ...DEFAULT_PROPS, color: node.type === 'Screen' ? '#171717' : 'inherit', ...(['Toggle', 'Icon'].includes(node.type) ? { widthMode: 'fit' } : {}), ...node.props };
+  const props = { ...DEFAULT_PROPS, color: node.type === 'Screen' ? '#171717' : 'inherit', ...(['Toggle', 'Icon'].includes(node.type) ? { widthMode: 'fit' } : {}), ...(node.type === 'TabButton' ? { selectedBackground: '#167aff', selectedColor: '#ffffff' } : {}), ...node.props };
   props.fillType = effectiveFillType(node.props);
   if (node.type === 'Icon' && node.props.radius === undefined) props.radius = node.props.iconRadius ?? props.radius;
   for (const prefix of ['padding', 'margin']) {
@@ -22,6 +22,15 @@ export const componentProps = (node) => {
     props[`${prefix}Mode`] = source[`${prefix}Mode`] === 'individual' || (asymmetric && source[`${prefix}Vertical`] === undefined && source[`${prefix}Horizontal`] === undefined) ? 'individual' : source[`${prefix}Mode`] ?? 'axis';
     props[`${prefix}Vertical`] = vertical;
     props[`${prefix}Horizontal`] = horizontal;
+  }
+  if (node.type === 'Icon') {
+    const glyph = props.iconSize ?? props.fontSize;
+    const sides = (prefix, axis) => props[`${prefix}Mode`] === 'individual' ? Number(props[`${prefix}${axis === 'width' ? 'Left' : 'Top'}`]) + Number(props[`${prefix}${axis === 'width' ? 'Right' : 'Bottom'}`]) : 2 * Number(props[`${prefix}${axis === 'width' ? 'Horizontal' : 'Vertical'}`]);
+    for (const axis of ['width', 'height']) {
+      const name = axis[0].toUpperCase() + axis.slice(1);
+      if (props[`${axis}Mode`] !== 'fixed') props[axis] = Math.max(Number(glyph) + sides('padding', axis) + 2 * Number(props.borderWidth), Number(props[`min${name}`]) || 0);
+      props[`${axis}Mode`] = 'fixed';
+    }
   }
   return props;
 };

@@ -2,7 +2,7 @@ import { component, componentProps, cloneComponent, indexDocument, insertCompone
 import { STATE_STYLE_KEYS, selectedStyleKey } from './propertyModel.js';
 
 const STYLE_KEYS = new Set(['axis','gap','align','justify','wrap','widthMode','width','minWidth','maxWidth','heightMode','height','minHeight','maxHeight','paddingMode','paddingTop','paddingRight','paddingBottom','paddingLeft','paddingVertical','paddingHorizontal','marginMode','marginTop','marginRight','marginBottom','marginLeft','marginVertical','marginHorizontal','background','backgroundImage','backgroundFit','backgroundVideo','fillType','color','radius','shape','borderWidth','borderColor','fontSize','fontWeight','fontFamily','fontStyle','textAlign','objectFit','opacity','alignSelf','strike','bold','italic','underline','textBackground','iconSize','iconBackground','iconRadius','selectedBorder','selectedBackground','selectedColor','shadowX','shadowY','shadowBlur','shadowColor']);
-for (const key of [...STATE_STYLE_KEYS, ...STATE_STYLE_KEYS.map(selectedStyleKey), 'lineHeight', 'flexGrow', 'mask', 'overlayColor']) STYLE_KEYS.add(key);
+for (const key of [...STATE_STYLE_KEYS, ...STATE_STYLE_KEYS.map(selectedStyleKey), 'lineHeight', 'flexGrow', 'mask', 'overlayColor', 'pageSpacing', 'pagePeek', 'pageControlPosition', 'dotColor', 'activeDotColor']) STYLE_KEYS.add(key);
 export const copyStyles = (node) => Object.fromEntries(Object.entries(componentProps(node)).filter(([key]) => STYLE_KEYS.has(key)));
 export function pasteStyles(document, id, styles) {
   return updateComponent(document,id,{props:Object.fromEntries(Object.entries(styles ?? {}).filter(([key])=>STYLE_KEYS.has(key)))});
