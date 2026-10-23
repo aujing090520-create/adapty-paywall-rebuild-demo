@@ -4,6 +4,7 @@ import { createRoot } from "react-dom/client";
 import { DEMO_SKUS, PRICE_DISPLAY_MODES, billingMonths, productPriceFields, resolveProductPrice, skuById, skuCopy, templateSkuId } from "./productPricing.js";
 import { applyComponent, captureComponent, componentKind, readComponentLibrary, writeComponentLibrary } from "./componentLibrary.js";
 import { clearLocalDemoSettings, protectedTemplateIds, readTemplateNodes, writeTemplateNodes } from "./templateStorage.js";
+import { productOffset, productTranslation } from "./productPlacement.js";
 import { revenueCatGallery } from "./revenueCatGallery.js";
 import { createSourceTemplateNodes, observedTemplate, sourceBlueprints } from "./revenueCatSourceBlueprints.js";
 import {
@@ -339,7 +340,35 @@ function productPackageRows(productNode, variant) {
   });
 }
 
-function ProductPackageCard({ plan, index, config = {}, layout, selected, focused = false, interactive = true, priceMode = "1", onChoose, onInspect, embeddedBenefits, onBenefitInspect }) {
+function useProductCardPlacement(config) {
+  const ref = useRef(null);
+  useLayoutEffect(() => {
+    const card = ref.current;
+    if (!card) return;
+    const place = () => {
+      const cardRect = card.getBoundingClientRect();
+      const cssScale = cardRect.width / card.offsetWidth || 1;
+      const canvas = card.closest(".ht-paywall");
+      const unitScale = HT_PRODUCT_DESIGN_DEFAULTS[config.productTemplate] && canvas ? canvas.getBoundingClientRect().width / 390 : cssScale;
+      card.dataset.productUnitScale = String(unitScale);
+      card.querySelectorAll('[data-inspector-area^="product-"]').forEach((element) => {
+        element.style.translate = "none";
+        const part = element.dataset.inspectorArea.replace("product-", "");
+        const settings = config.productPartStyles?.[part] ?? {};
+        const translation = productTranslation({ alignment: settings.align, offsetX: settings.offsetX, offsetY: settings.offsetY, card: cardRect, element: element.getBoundingClientRect(), unitScale, cssScale });
+        element.style.translate = `${translation.x}px ${translation.y}px`;
+      });
+    };
+    place();
+    const observer = new ResizeObserver(place);
+    observer.observe(card);
+    return () => observer.disconnect();
+  });
+  return ref;
+}
+
+function ProductPackageCard({ plan, index, config = {}, layout, selected, focused = false, interactive = true, priceMode = "1", onChoose, onInspect, embeddedBenefits, onBenefitInspect, nodeId = "products" }) {
+  const cardRef = useProductCardPlacement(config);
   const baseClass = `ht-node ${focused ? "selected" : ""} ${config.planHeight !== undefined && config.planHeight !== "" ? "ht-sized-plan" : ""}`;
   if (plan.emptySlot) return <div className={`${layout === "vertical" ? "ht-vertical-plan" : "ht-plan"} ht-plan-empty ${layout === "horizontal" ? "ht-blue-plan" : ""}`} aria-label={`套餐 ${index + 1} 空坑位`} />;
   const name = plan.name;
@@ -363,48 +392,37 @@ function ProductPackageCard({ plan, index, config = {}, layout, selected, focuse
   const frameStyle = { ...(Number(config.planWidth) > 0 ? { width: `${config.planWidth}%`, marginInline: "auto", justifySelf: "center" } : {}), ...(config.planHeight !== undefined && config.planHeight !== "" && Number.isFinite(Number(config.planHeight)) ? { minHeight: productFontSize(config, config.planHeight) } : {}), ...(config.planPadding !== "" && Number.isFinite(Number(config.planPadding)) && config.planPadding !== undefined ? { padding: productFontSize(config, config.planPadding) } : {}), ...Object.fromEntries(["Top", "Right", "Bottom", "Left"].filter((side) => config[`planPadding${side}`] !== undefined && config[`planPadding${side}`] !== "" && Number.isFinite(Number(config[`planPadding${side}`]))).map((side) => [`padding${side}`, productFontSize(config, config[`planPadding${side}`])])) };
   const planStyle = { ...productStyle, ...selectedStyle, ...frameStyle, ...(config.planRadius !== undefined && config.planRadius !== "" ? { borderRadius: `${config.planRadius}px` } : {}) };
   const partStyle = (part, base = {}) => {
-    const placement = config.productPartStyles?.[part] ?? {};
-    const align = placement.align === "left" ? "flex-start" : placement.align === "right" ? "flex-end" : placement.align === "center" ? "center" : undefined;
-    const offsetX = Number(placement.offsetX) || 0;
-    const offsetY = Number(placement.offsetY) || 0;
-    return { ...base, ...productPartStyle(config, part), ...(align ? { alignSelf: align, justifySelf: align, textAlign: placement.align } : {}), ...(offsetX || offsetY ? { transform: `translate(${offsetX}px, ${offsetY}px)` } : {}), ...(part === "price" && Number(modeStyle.mainFontSize) > 0 ? { fontSize: productFontSize(config, modeStyle.mainFontSize) } : {}), ...(part === "price" && validHexColor(modeStyle.mainColor) ? { color: modeStyle.mainColor } : {}), ...(part === "reference" && Number(modeStyle.strikeFontSize) > 0 ? { fontSize: productFontSize(config, modeStyle.strikeFontSize) } : {}), ...(part === "reference" && validHexColor(modeStyle.strikeColor) ? { color: modeStyle.strikeColor } : {}) };
+    return { ...base, ...productPartStyle(config, part), ...(part === "price" && Number(modeStyle.mainFontSize) > 0 ? { fontSize: productFontSize(config, modeStyle.mainFontSize) } : {}), ...(part === "price" && validHexColor(modeStyle.mainColor) ? { color: modeStyle.mainColor } : {}), ...(part === "reference" && Number(modeStyle.strikeFontSize) > 0 ? { fontSize: productFontSize(config, modeStyle.strikeFontSize) } : {}), ...(part === "reference" && validHexColor(modeStyle.strikeColor) ? { color: modeStyle.strikeColor } : {}) };
   };
   const choose = (event) => { if (!interactive) return; event.stopPropagation(); onChoose?.(index); onInspect?.(event, index); };
   const keyboard = (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); choose(event); } };
-  const cardProps = { style: planStyle, role: interactive ? "button" : undefined, tabIndex: interactive ? 0 : undefined, onClick: choose, onKeyDown: keyboard };
-  if (hasCustomProductPlacement(config)) {
-    const monthly = (layout === "vertical" || config.productPartStyles?.monthly) && fields.monthly && fields.monthly !== priceView.main && fields.monthly !== priceView.strike ? fields.monthly : "";
-    const reference = priceView.strike || ((layout === "vertical" && fields.months === 0 || config.productPartStyles?.reference) ? fields.referenceTotal : "");
-    const parts = { name, price: config.showMainPrice === false ? "" : priceView.main, reference, monthly, supporting: supportingCopy, saving, save: saveText, badge: hasBadge ? plan.badgeText : "" };
-    const defaultAlign = ["vertical", "compact", "info-row"].includes(layout) ? "left" : "center";
-    return <div className={`${baseClass} ${layout === "vertical" ? "ht-vertical-plan" : layout === "info-row" ? "ht-info-row" : "ht-plan"} ht-custom-plan ${selected ? "chosen" : ""}`} {...cardProps}>
-      {PRODUCT_PARTS.map(([part], position) => {
-        if (!parts[part]) return null;
-        const settings = config.productPartStyles?.[part] ?? {};
-        const align = settings.align || defaultAlign;
-        const offsetX = Number(settings.offsetX) || 0;
-        const offsetY = Number(settings.offsetY) || 0;
-        const fontStyle = partStyle(part, part === "price" ? priceStyle : part === "reference" ? strikeStyle : {});
-        if (part === "price") fontStyle.fontSize = `min(${Number(modeStyle.mainFontSize) > 0 ? productFontSize(config, modeStyle.mainFontSize) : Number(settings.fontSize) > 0 ? productFontSize(config, settings.fontSize) : Number(configuredPriceSize) > 0 ? productFontSize(config, configuredPriceSize) : productFontSize(config, HT_PRODUCT_DESIGN_DEFAULTS[config.productTemplate]?.parts.price ?? 18)}, ${Math.max(18, Math.floor(150 / parts[part].length))}cqi)`;
-        return <span key={part} className={`ht-custom-part ht-custom-${part} ${part === "badge" && !settings.order ? "ht-custom-badge-default" : ""}`} data-product-part={part} data-inspector-area={`product-${part}`} style={{ ...fontStyle, order: Number(settings.order) || position + 1, alignSelf: align === "left" ? "flex-start" : align === "right" ? "flex-end" : "center", textAlign: align, transform: offsetX || offsetY ? `translate(${offsetX}px, ${offsetY}px)` : undefined }}>{parts[part]}</span>;
-      })}
-      {selected && embeddedBenefits?.length > 0 && <ul className="ht-plan-embedded-benefits" onClick={(event) => { event.stopPropagation(); onBenefitInspect?.(event); }}>{embeddedBenefits.map((line, lineIndex) => <li key={`${line}-${lineIndex}`}><Check size={11} /><span>{line}</span></li>)}</ul>}
-    </div>;
-  }
+  const cardProps = { ref: cardRef, "data-product-card": true, "data-product-node-id": nodeId, "data-product-index": index, style: planStyle, role: interactive ? "button" : undefined, tabIndex: interactive ? 0 : undefined, onClick: choose, onKeyDown: keyboard };
   if (layout === "info-row") {
     const [primaryName, secondaryName = ""] = name.split(" · ");
     const [primaryCopy, secondaryCopy = ""] = supportingCopy.split(" · ");
     return <div className={`${baseClass} ht-info-row ${selected ? "chosen" : ""}`} {...cardProps} style={planStyle}>
-      <span className="ht-info-row-marker" aria-hidden="true">◆</span>
-      <span className="ht-info-row-main"><strong data-inspector-area="product-name" style={partStyle("name")}>{primaryName}</strong>{secondaryName && <small data-inspector-area="product-supporting" style={partStyle("supporting")}>{secondaryName}</small>}{primaryCopy && <small data-inspector-area="product-supporting" style={partStyle("supporting")}>{primaryCopy}</small>}</span>
-      <span className="ht-info-row-price" data-inspector-area="product-price"><strong style={partStyle("price", priceStyle)}>{priceView.main}</strong>{secondaryCopy && <small data-inspector-area="product-supporting" style={partStyle("supporting")}>{secondaryCopy}</small>}</span>
+      <span className="ht-info-row-marker" data-inspector-area="product-marker" style={partStyle("marker")} aria-hidden="true">◆</span>
+      <span className="ht-info-row-main"><strong data-inspector-area="product-name" style={partStyle("name")}>{primaryName}</strong>{secondaryName && <small data-inspector-area="product-secondaryName" style={partStyle("secondaryName")}>{secondaryName}</small>}{primaryCopy && <small data-inspector-area="product-supporting" style={partStyle("supporting")}>{primaryCopy}</small>}</span>
+      <span className="ht-info-row-price"><strong data-inspector-area="product-price" style={partStyle("price", priceStyle)}>{priceView.main}</strong>{secondaryCopy && <small data-inspector-area="product-billing" style={partStyle("billing")}>{secondaryCopy}</small>}</span>
     </div>;
   }
+  if (layout === "compact") return <div className={`${baseClass} ht-plan ht-compact-plan ${selected ? "chosen" : ""}`} {...cardProps}>
+    {hasBadge && <b className="ht-compact-badge" data-inspector-area="product-badge" style={partStyle("badge")}>{plan.badgeText}</b>}
+    <strong className="ht-compact-name" data-inspector-area="product-name" style={partStyle("name")}>{name}</strong>
+    <div className="ht-compact-price"><span data-inspector-area="product-price" style={partStyle("price", priceStyle)}>{priceView.main}</span>{priceView.strike && <del data-inspector-area="product-reference" style={partStyle("reference", strikeStyle)}>{priceView.strike}</del>}{saving && <small data-inspector-area="product-saving" style={partStyle("saving")}>{saving}</small>}{supportingCopy && <small data-inspector-area="product-supporting" style={partStyle("supporting")}>{supportingCopy}</small>}{saveText && <small data-inspector-area="product-save" style={partStyle("save")}>{saveText}</small>}</div>
+  </div>;
+  if (usesDesignDefaults && ["horizontal", "standard"].includes(layout)) return <div className={`${baseClass} ht-plan ht-source-plan ${selected ? "chosen" : ""}`} {...cardProps}>
+    {hasBadge && <b className="ht-source-badge" data-inspector-area="product-badge" style={partStyle("badge")}>{plan.badgeText}</b>}
+    <strong className="ht-source-name" data-inspector-area="product-name" style={partStyle("name")}>{name}</strong>
+    <em className="ht-source-price" data-inspector-area="product-price" style={partStyle("price", priceStyle)}>{priceView.main}</em>
+    <div className="ht-source-detail">{saving && <small data-inspector-area="product-saving" style={partStyle("saving")}>{saving}</small>}{saveText && <small data-inspector-area="product-save" style={partStyle("save")}>{saveText}</small>}</div>
+    <div className="ht-source-foot">{priceView.strike ? <del data-inspector-area="product-reference" style={partStyle("reference", strikeStyle)}>{priceView.strike}</del> : supportingCopy ? <small data-inspector-area="product-supporting" style={partStyle("supporting")}>{supportingCopy}</small> : null}</div>
+  </div>;
   if (layout === "vertical") {
     const monthly = fields.monthly && fields.monthly !== priceView.main && fields.monthly !== priceView.strike ? fields.monthly : "";
     if (config.cardContentLayout === "split-summary") return <div className={`${baseClass} ht-vertical-plan split-summary ${config.showRadio ? "with-radio" : ""} ${selected ? "chosen" : ""}`} {...cardProps}>
       {hasBadge && <b data-inspector-area="product-badge" className="ht-vertical-badge" style={partStyle("badge")}>{plan.badgeText}</b>}
-      <div className="ht-split-summary-copy"><strong data-inspector-area="product-name" style={partStyle("name")}>{name} {saving && <small data-inspector-area="product-saving" style={partStyle("saving")}>{saving}</small>}</strong>{(supportingCopy || (config.duplicatePriceAsDetail && priceView.main)) && <span data-inspector-area="product-supporting" style={partStyle("supporting")}>{supportingCopy || priceView.main}</span>}</div>
+      <div className="ht-split-summary-copy"><div className="ht-split-summary-name"><strong data-inspector-area="product-name" style={partStyle("name")}>{name}</strong>{saving && <small data-inspector-area="product-saving" style={partStyle("saving")}>{saving}</small>}</div>{(supportingCopy || (config.duplicatePriceAsDetail && priceView.main)) && <span data-inspector-area="product-supporting" style={partStyle("supporting")}>{supportingCopy || priceView.main}</span>}</div>
       <strong data-inspector-area="product-price" className="ht-split-summary-price" style={partStyle("price", priceStyle)}>{priceView.main}</strong>
     </div>;
     return <div className={`${baseClass} ht-vertical-plan ${config.cardContentLayout === "radio-stacked" ? "radio-stacked" : ""} ${config.showRadio ? "with-radio" : ""} ${selected ? "chosen" : ""}`} {...cardProps}>
@@ -418,7 +436,7 @@ function ProductPackageCard({ plan, index, config = {}, layout, selected, focuse
   if (layout === "horizontal" && config.cardContentLayout === "duration-grid") {
     const [amount, unit = ""] = name.toUpperCase() === "LIFETIME" ? ["∞", "LIFETIME"] : name.split(/\s+/, 2);
     return <div className={`${baseClass} ht-plan ht-duration-plan ${selected ? "chosen" : ""}`} {...cardProps}>
-      <strong className="ht-duration-amount" data-inspector-area="product-name" style={partStyle("name")}>{amount}</strong><span className="ht-duration-unit" data-inspector-area="product-name" style={partStyle("name")}>{unit}</span>
+      <strong className="ht-duration-amount" data-inspector-area="product-name" style={partStyle("name")}>{amount}</strong><span className="ht-duration-unit" data-inspector-area="product-durationUnit" style={partStyle("durationUnit")}>{unit}</span>
       <em data-inspector-area="product-price" className="ht-duration-price" style={partStyle("price", priceStyle)}>{priceView.main}</em>
     </div>;
   }
@@ -1782,6 +1800,9 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
   const [pricePreviewMode, setPricePreviewMode] = useState("1");
   const [retentionPreview, setRetentionPreview] = useState(null);
   const [previewFocus, setPreviewFocus] = useState(null);
+  const [productPositionEditing, setProductPositionEditing] = useState(false);
+  const productPositionDrag = useRef(null);
+  const productPositionClick = useRef(false);
   const retentionPreviewOpen = retentionPreview?.templateId === templates[appliedTemplate]?.id;
   const [dragState, setDragState] = useState(null);
   const previewDragSource = useRef(null);
@@ -1793,15 +1814,6 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
   const linkedNodes = builderNodes.map((item) => item.type === "Products" && (!galleryTemplate || galleryProductPreview === "selected") ? linkedPackageNode(item, linkedOfferRows, linkedDefaultProductId, item.config?.productTemplate ?? (item.config?.bluePrivilege ? "blue-privilege" : templates[appliedTemplate]?.documentTemplate)) : item);
   const updateNodeWithPreview = (id, patch) => {
     updateBuilderNode(id, patch);
-    if (id === "products" && patch.config?.packageLayout === "vertical") setBuilderNodes((current) => {
-      const productIndex = current.findIndex((node) => node.id === "products");
-      const benefitsIndex = current.findIndex((node) => node.id === "benefits");
-      if (productIndex < 0 || benefitsIndex < 0 || productIndex < benefitsIndex) return current;
-      const reordered = [...current];
-      const [products] = reordered.splice(productIndex, 1);
-      reordered.splice(benefitsIndex, 0, products);
-      return reordered;
-    });
     if (appliedTemplate !== null && isEditableTemplate(templates[appliedTemplate])) setPreviewMode("editable");
   };
   const updateHeroCopyPosition = (position) => setBuilderNodes((current) => current.map((node) => node.id === "hero-image" ? { ...node, config: { ...node.config, ...position } } : node));
@@ -1812,12 +1824,11 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
   useEffect(() => {
     document.querySelectorAll(".phone .preview-subzone-selected").forEach((item) => item.classList.remove("preview-subzone-selected"));
     if (!previewFocus || previewFocus.area === "component") return;
-    const selected = previewFocus.id === "products"
-      ? document.querySelector(".phone .ht-plan.selected, .phone .ht-vertical-plan.selected")
-      : document.querySelector(".phone .ht-node.selected, .phone .preview-node.selected");
-    const zone = selected?.querySelector(`[data-inspector-area="${previewFocus.area}"]`);
-    zone?.classList.add("preview-subzone-selected");
-    return () => zone?.classList.remove("preview-subzone-selected");
+    const cards = [...document.querySelectorAll(".phone [data-product-card]")].filter((card) => card.dataset.productNodeId === previewFocus.id);
+    const selected = document.querySelector(".phone .ht-node.selected, .phone .preview-node.selected");
+    const zones = cards.length ? cards.flatMap((card) => [...card.querySelectorAll(`[data-inspector-area="${previewFocus.area}"]`)]) : [selected?.querySelector(`[data-inspector-area="${previewFocus.area}"]`)].filter(Boolean);
+    zones.forEach((zone) => zone.classList.add("preview-subzone-selected"));
+    return () => zones.forEach((zone) => zone.classList.remove("preview-subzone-selected"));
   }, [previewFocus, builderNodes]);
   useEffect(() => setPreviewMode(Array.isArray(linkedOfferRows) || (appliedTemplate !== null && (templates[appliedTemplate]?.documentTemplate || templates[appliedTemplate]?.isNew)) ? "editable" : "source"), [appliedTemplate, Boolean(linkedOfferRows)]);
   useEffect(() => setGalleryProductPreview("source"), [appliedTemplate]);
@@ -1830,6 +1841,49 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
   if (view === "builder") {
     const active = linkedNodes.find((node) => node.id === activeNode);
     const rawActive = builderNodes.find((node) => node.id === activeNode);
+    const positionEvents = {
+      onPointerDownCapture: (event) => {
+        productPositionClick.current = false;
+        if (!productPositionEditing || active?.type !== "Products" || event.button !== 0) return;
+        const target = event.target.closest?.('[data-inspector-area^="product-"]');
+        const card = target?.closest("[data-product-card]");
+        if (!card || card.dataset.productNodeId !== active.id) return;
+        const part = target.dataset.inspectorArea.replace("product-", "");
+        const settings = active.config?.productPartStyles?.[part] ?? {};
+        const peers = [...event.currentTarget.querySelectorAll(`[data-inspector-area="product-${part}"]`)].filter((element) => element.closest("[data-product-card]")?.dataset.productNodeId === active.id);
+        const unitScale = Number(card.dataset.productUnitScale) || 1;
+        productPositionDrag.current = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, part, unitScale, x: productOffset(settings.offsetX), y: productOffset(settings.offsetY), config: active.config, nodeId: active.id, peers: peers.map((element) => ({ element, translate: getComputedStyle(element).translate, scale: card.getBoundingClientRect().width / card.offsetWidth || 1 })) };
+        productPositionClick.current = true;
+        event.currentTarget.setPointerCapture(event.pointerId);
+        event.preventDefault();
+        event.stopPropagation();
+        selectPreviewNode(active.id, `product-${part}`, Number(card.dataset.productIndex));
+      },
+      onPointerMoveCapture: (event) => {
+        const drag = productPositionDrag.current;
+        if (!drag || drag.pointerId !== event.pointerId) return;
+        const dx = event.clientX - drag.startX;
+        const dy = event.clientY - drag.startY;
+        drag.peers.forEach(({ element, translate, scale }) => {
+          const [x = 0, y = 0] = translate === "none" ? [0, 0] : translate.split(" ").map(parseFloat);
+          element.style.translate = `${x + dx / scale}px ${y + dy / scale}px`;
+        });
+        event.preventDefault();
+        event.stopPropagation();
+      },
+      onPointerUpCapture: (event) => {
+        const drag = productPositionDrag.current;
+        if (!drag || drag.pointerId !== event.pointerId) return;
+        productPositionDrag.current = null;
+        if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+        const styles = drag.config?.productPartStyles ?? {};
+        updateNodeWithPreview(drag.nodeId, { config: { ...drag.config, productPartStyles: { ...styles, [drag.part]: { ...styles[drag.part], offsetX: Math.round(productOffset(drag.x + (event.clientX - drag.startX) / drag.unitScale)), offsetY: Math.round(productOffset(drag.y + (event.clientY - drag.startY) / drag.unitScale)) } } } });
+        event.preventDefault();
+        event.stopPropagation();
+      },
+      onPointerCancelCapture: () => { productPositionDrag.current?.peers.forEach(({ element, translate }) => { element.style.translate = translate; }); productPositionDrag.current = null; },
+      onClickCapture: (event) => { if (productPositionClick.current) { productPositionClick.current = false; event.preventDefault(); event.stopPropagation(); } },
+    };
     const matchingRecords = componentRecords.filter((record) => record.kind === componentKind(rawActive?.type) && record.name.toLocaleLowerCase().includes(librarySearch.trim().toLocaleLowerCase())).sort((a, b) => b.createdAt - a.createdAt);
     const saveCurrentComponent = () => {
       const name = libraryName.trim();
@@ -1967,7 +2021,7 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
               return <button type="button" data-node-id={node.id} style={{ paddingLeft: `${7 + (node.depth ?? 0) * 15}px` }} className={`node ${activeNode === node.id ? "selected" : ""} ${isDragging ? "dragging" : ""} ${dropClass}`} onPointerDown={(event) => beginNodeDrag(event, node.id)} onPointerMove={updateNodeDropTarget} onPointerUp={dropNode} onPointerCancel={() => setDragState(null)} onClick={() => { setActiveNode(node.id); setPreviewFocus(null); }} key={node.id} aria-grabbed={isDragging}><span className="drag-handle" aria-hidden="true"><GripVertical size={14} /></span><i><BuilderNodeIcon type={node.type} /></i><strong>{node.config?.retention ? "挽留弹窗" : isTextNodeType(node.type) ? "Text" : node.type === "Agreement" ? zhCopy[node.type] : node.type}</strong><small>{node.config?.retention ? "" : node.label}</small></button>;
             })}</div>
           </aside>
-          <div className="canvas-area">
+          <div className={`canvas-area${productPositionEditing && active?.type === "Products" ? " product-position-editing" : ""}`} {...positionEvents}>
             <div className="device-controls">
               <button className="unknown-action" onClick={() => markUnknown(builderBoundary)}><Smartphone size={16} /> iPhone 15 Pro <ChevronDown size={14} /></button>
               {appliedTemplate !== null && !templates[appliedTemplate].isNew && <div className="preview-mode" aria-label="Preview mode">
@@ -1983,7 +2037,7 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
             {appliedTemplate !== null && previewMode === "editable" && <p className="source-preview-note">{templates[appliedTemplate].isGallery ? templates[appliedTemplate].editorVerified ? "已核对 RevenueCat 编辑器 Layers；本地是通用组件映射，SKU、字段和动作目标仍需核验。" : "仅有 RevenueCat 画廊预览证据；编辑器 Layers、SKU 与动作目标均未核实。" : templates[appliedTemplate].isNew ? "本地组合模板；组件和文案可在左侧选择后编辑。" : isEditableTemplate(templates[appliedTemplate]) ? "已采集样式与核心字段的本地可编辑复现。" : "精确节点树仍在采集。"}</p>}
             <p className="preview-disclaimer">All prices, titles, and offers displayed are placeholders. The actual data from App Store and Google Play will be shown in the app.</p>
           </div>
-          <aside className="property-panel"><div className="component-library-toolbar"><span>组件库</span><div><button type="button" className="icon" title="保存当前组件" aria-label="保存当前组件" disabled={!rawActive} onClick={() => { setLibraryName(""); setLibraryError(""); setLibraryMode("save"); }}><Save size={17} /></button><button type="button" className="icon" title="读取已保存组件" aria-label="读取已保存组件" disabled={!rawActive} onClick={() => { setLibrarySearch(""); setLibraryError(""); setLibraryMode("load"); }}><FolderOpen size={17} /></button></div></div><BuilderProperties active={active} previewFocus={previewFocus} markUnknown={markUnknown} boundary={builderBoundary} templateLinks={templateLinks} setTemplateLinks={setTemplateLinks} updateNode={updateNodeWithPreview} removeNode={deleteElement} addNestedNode={addNestedElement} isDocumentTemplate={isDocumentTemplate} documentTemplate={templates[appliedTemplate]?.documentTemplate} pricePreviewMode={pricePreviewMode} setPricePreviewMode={setPricePreviewMode} retentionPreviewOpen={retentionPreviewOpen} onPreviewRetention={() => { setPreviewMode("editable"); setRetentionPreview((current) => current?.templateId === templates[appliedTemplate]?.id ? null : { templateId: templates[appliedTemplate]?.id }); }} /></aside>
+          <aside className="property-panel"><div className="component-library-toolbar"><span>组件库</span><div><button type="button" className="icon" title="保存当前组件" aria-label="保存当前组件" disabled={!rawActive} onClick={() => { setLibraryName(""); setLibraryError(""); setLibraryMode("save"); }}><Save size={17} /></button><button type="button" className="icon" title="读取已保存组件" aria-label="读取已保存组件" disabled={!rawActive} onClick={() => { setLibrarySearch(""); setLibraryError(""); setLibraryMode("load"); }}><FolderOpen size={17} /></button></div></div><BuilderProperties active={active} previewFocus={previewFocus} onSelectProductPart={(part) => selectPreviewNode(active.id, `product-${part}`, previewFocus?.slideIndex)} onProductPositionEditing={setProductPositionEditing} markUnknown={markUnknown} boundary={builderBoundary} templateLinks={templateLinks} setTemplateLinks={setTemplateLinks} updateNode={updateNodeWithPreview} removeNode={deleteElement} addNestedNode={addNestedElement} isDocumentTemplate={isDocumentTemplate} documentTemplate={templates[appliedTemplate]?.documentTemplate} pricePreviewMode={pricePreviewMode} setPricePreviewMode={setPricePreviewMode} retentionPreviewOpen={retentionPreviewOpen} onPreviewRetention={() => { setPreviewMode("editable"); setRetentionPreview((current) => current?.templateId === templates[appliedTemplate]?.id ? null : { templateId: templates[appliedTemplate]?.id }); }} /></aside>
         </div>
         <div className="builder-footer"><button className="secondary unknown-action" onClick={() => markUnknown(builderBoundary)}>Discard</button><button className="primary" onClick={() => setModal({ kind: appliedTemplate !== null ? "template-requirements" : "builder-save" })}>Save</button></div>
         {libraryMode && <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setLibraryMode(null); }}><section className="modal component-library-modal" role="dialog" aria-modal="true" aria-label={libraryMode === "save" ? "保存组件" : "读取组件"}><header><h2>{libraryMode === "save" ? "保存组件" : "读取组件"}</h2><button type="button" className="icon" title="关闭" aria-label="关闭" onClick={() => setLibraryMode(null)}><X size={19} /></button></header><div className="component-library-body"><p className="component-library-note">仅保存在当前浏览器中，不会同步到账号或其他设备。{rawActive?.type === "Products" && "商品套餐只保存样式配置，不保存 SKU、商品坑位和价格。"}</p>{libraryMode === "save" ? <Field label="组件名称"><input autoFocus maxLength={41} value={libraryName} placeholder="例如：蓝色特权页主视觉" onChange={(event) => { setLibraryName(event.target.value); setLibraryError(""); }} onKeyDown={(event) => { if (event.key === "Enter") saveCurrentComponent(); }} /></Field> : <><div className="component-library-search"><Search size={17} /><input autoFocus value={librarySearch} placeholder="搜索已保存组件" aria-label="搜索已保存组件" onChange={(event) => setLibrarySearch(event.target.value)} /></div><div className="component-library-list">{matchingRecords.length ? matchingRecords.map((record) => <button type="button" key={record.id} className="component-library-item" onClick={() => loadComponent(record)}><span><strong>{record.name}</strong><small>{new Date(record.createdAt).toLocaleString("zh-CN")}</small></span><ChevronRight size={17} /></button>) : <p className="component-library-empty">没有可用于当前组件的记录</p>}</div></>}{libraryError && <p className="component-library-error" role="alert">{libraryError}</p>}</div><div className="modal-actions"><button type="button" className="secondary" onClick={() => setLibraryMode(null)}>取消</button>{libraryMode === "save" && <button type="button" className="primary" onClick={saveCurrentComponent}>保存</button>}</div></section></div>}
@@ -2004,8 +2058,9 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
   );
 }
 
-function BuilderProperties({ active, previewFocus, markUnknown, boundary, templateLinks, setTemplateLinks, updateNode, removeNode, addNestedNode, isDocumentTemplate, documentTemplate, pricePreviewMode, setPricePreviewMode, retentionPreviewOpen, onPreviewRetention }) {
+function BuilderProperties({ active, previewFocus, onSelectProductPart, onProductPositionEditing, markUnknown, boundary, templateLinks, setTemplateLinks, updateNode, removeNode, addNestedNode, isDocumentTemplate, documentTemplate, pricePreviewMode, setPricePreviewMode, retentionPreviewOpen, onPreviewRetention }) {
   const [tab, setTab] = useState("content");
+  useEffect(() => { onProductPositionEditing?.(active?.type === "Products" && tab === "position"); return () => onProductPositionEditing?.(false); }, [active?.id, active?.type, tab, onProductPositionEditing]);
   useEffect(() => {
     if (previewFocus?.id !== active?.id) {
       const panel = document.querySelector(".property-panel .property-scroll");
@@ -2157,7 +2212,7 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
   }
 
   if (type === "Products") {
-    return <div className="property-scroll"><h3>商品套餐</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}<div className="product-price-mode-control"><Field label="价格样式预览"><select aria-label="价格样式预览" value={pricePreviewMode} onChange={(event) => setPricePreviewMode(event.target.value)}>{PRICE_DISPLAY_MODES.map((mode) => <option key={mode.id} value={mode.id}>{mode.id} · {mode.label}</option>)}</select></Field><small>仅切换编辑预览，实际展示由分发样式开关决定</small></div>{tab === "content" && <ProductsContent active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} />}{tab === "style" && <ProductsStyleEditor active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} previewFocus={previewFocus} />}{tab === "layout" && <ProductsLayoutEditor active={active} updateNode={updateNode} />}{tab === "position" && <ProductsPositionEditor active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} />}</div>;
+    return <div className="property-scroll"><h3>商品套餐</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}<div className="product-price-mode-control"><Field label="价格样式预览"><select aria-label="价格样式预览" value={pricePreviewMode} onChange={(event) => setPricePreviewMode(event.target.value)}>{PRICE_DISPLAY_MODES.map((mode) => <option key={mode.id} value={mode.id}>{mode.id} · {mode.label}</option>)}</select></Field><small>仅切换编辑预览，实际展示由分发样式开关决定</small></div>{tab === "content" && <ProductsContent active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} />}{tab === "style" && <ProductsStyleEditor active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} previewFocus={previewFocus} />}{tab === "layout" && <ProductsLayoutEditor active={active} updateNode={updateNode} />}{tab === "position" && <ProductsPositionEditor active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} selectedPart={previewFocus?.area?.replace(/^product-/, "")} onSelectPart={onSelectProductPart} />}</div>;
   }
 
   if (type === "Toggle") {
@@ -2414,21 +2469,18 @@ function previewColor(value) {
 function useProductPreviewDefaults(active, pricePreviewMode) {
   const [defaults, setDefaults] = useState({ parts: {}, frame: {} });
   useLayoutEffect(() => {
-    const design = HT_PRODUCT_DESIGN_DEFAULTS[active.config?.productTemplate];
-    if (design) {
-      setDefaults({ parts: Object.fromEntries(Object.entries(design.parts).map(([part, fontSize]) => [part, { fontSize }])), frame: design.frame });
-      return;
-    }
-    const preview = document.querySelector(".phone .ht-paywall, .phone .preview-products-wrap");
-    const card = preview?.querySelector(".ht-plan:not(.ht-plan-empty), .ht-vertical-plan:not(.ht-plan-empty), .preview-products-credit");
+    const cards = [...document.querySelectorAll(".phone [data-product-card]")].filter((card) => card.dataset.productNodeId === active.id);
+    const card = cards.find((item) => item.classList.contains("chosen")) ?? cards[0];
     if (!card) return;
+    const design = HT_PRODUCT_DESIGN_DEFAULTS[active.config?.productTemplate];
+    const scale = design ? card.closest(".ht-paywall").clientWidth / 390 : 1;
     const parts = {};
     PRODUCT_PARTS.forEach(([part]) => {
-      const element = card.querySelector(`[data-inspector-area="product-${part}"]`);
+      const element = card.querySelector(`[data-inspector-area="product-${part}"]`) ?? cards.map((item) => item.querySelector(`[data-inspector-area="product-${part}"]`)).find(Boolean);
       if (!element || !element.getClientRects().length) return;
       const target = part === "price" && element.querySelector("strong") || element;
       const style = getComputedStyle(target);
-      parts[part] = { fontSize: Math.round(parseFloat(style.fontSize) * 10) / 10, color: previewColor(style.color) };
+      parts[part] = { fontSize: Math.round(parseFloat(style.fontSize) / scale * 10) / 10, color: previewColor(style.color) };
     });
     const style = getComputedStyle(card);
     const parentWidth = card.parentElement?.getBoundingClientRect().width || card.getBoundingClientRect().width;
@@ -2462,6 +2514,7 @@ function ProductPriceModeStyleEditor({ active, updateNode, pricePreviewMode, def
 const PRODUCT_PARTS = [
   ["name", "商品名称"], ["price", "主价格"], ["reference", "参考价"], ["monthly", "月均价"],
   ["supporting", "辅助文案"], ["saving", "优惠信息"], ["save", "SAVE 文案"], ["badge", "商品角标"],
+  ["secondaryName", "副名称"], ["billing", "计费说明"], ["marker", "选择标记"], ["durationUnit", "期限单位"],
 ];
 
 function productPartStyle(config, part) {
@@ -2472,56 +2525,25 @@ function productPartStyle(config, part) {
   };
 }
 
-function hasCustomProductPlacement(config) {
-  return PRODUCT_PARTS.some(([part], index) => {
-    const order = Number(config.productPartStyles?.[part]?.order);
-    return order > 0 && order !== index + 1;
-  });
-}
-
 function ProductPartStyleEditor({ active, updateNode, defaults }) {
   const styles = active.config?.productPartStyles ?? {};
   const patch = (part, key, value) => updateNodeConfig(active, updateNode, { productPartStyles: { ...styles, [part]: { ...styles[part], [key]: value } } });
-  const reset = (part) => { const next = { ...styles }; delete next[part]; updateNodeConfig(active, updateNode, { productPartStyles: next }); };
-  const commitNumber = (event) => {
-    const input = event.target;
-    const part = input.closest("[data-product-part-row]")?.dataset.productPartRow;
-    if (!part) return;
-    if (input.type === "text" && input.getAttribute("aria-label")?.endsWith("颜色") && !validHexColor(input.value)) {
-      const next = { ...styles[part] };
-      delete next.color;
-      const all = { ...styles };
-      if (Object.keys(next).length) all[part] = next; else delete all[part];
-      updateNodeConfig(active, updateNode, { productPartStyles: all });
-      return;
-    }
-    if (input.type !== "number") return;
-    const label = input.getAttribute("aria-label") || "";
-    const key = label.endsWith("字号") ? "fontSize" : label.endsWith("顺序") ? "order" : label.endsWith("水平偏移") ? "offsetX" : "offsetY";
-    const min = Number(input.min);
-    const max = Number(input.max);
-    const parsed = Number(input.value);
-    if (!input.value || !Number.isFinite(parsed)) {
-      const next = { ...styles[part] };
-      delete next[key];
-      const all = { ...styles };
-      if (Object.keys(next).length) all[part] = next; else delete all[part];
-      updateNodeConfig(active, updateNode, { productPartStyles: all });
-    } else if (parsed < min || parsed > max) patch(part, key, Math.min(max, Math.max(min, parsed)));
-  };
-  const groups = [["价格与名称", PRODUCT_PARTS.slice(0, 4)], ["说明与标签", PRODUCT_PARTS.slice(4)]];
-  return <section className="product-part-editor" data-inspector-section="product-part" onBlurCapture={commitNumber}><div className="product-part-editor-heading"><h4>商品文字与位置</h4><button type="button" className="text-action" disabled={!Object.keys(styles).length} onClick={() => updateNodeConfig(active, updateNode, { productPartStyles: {} })}>全部恢复模板</button></div>{groups.map(([heading, parts]) => <div className="product-part-group" key={heading}><h5>{heading}</h5>{parts.map(([part, label]) => {
+  return <section className="product-part-editor"><h4>商品文字</h4>{PRODUCT_PARTS.filter(([part]) => defaults[part]).map(([part, label]) => {
     const current = styles[part] ?? {};
-    const observed = defaults[part];
-    const fallbackSize = observed?.fontSize ?? PRODUCT_PART_DEFAULT_SIZES[part];
-    const fallbackColor = observed?.color ?? "#222222";
-    return <div className="product-part-row" data-product-part-row={part} key={part}><div className="product-part-row-heading"><strong>{label}</strong>{!observed && <small>当前预览未显示</small>}<button type="button" className="product-part-reset" disabled={!styles[part]} title={`恢复${label}的模板样式`} aria-label={`恢复${label}的模板样式`} onClick={() => reset(part)}><RotateCw size={14} /></button></div><div className="product-part-row-fields"><label className="product-part-size"><span>字号</span><div className="number-unit"><input type="number" min="8" max="64" aria-label={`${label}字号`} value={current.fontSize ?? fallbackSize} onChange={(event) => patch(part, "fontSize", event.target.value)} /><span>px</span></div></label><label className="product-part-color"><span>颜色</span><div className="product-mode-color"><input type="color" aria-label={`${label}颜色色块`} title={`设置${label}颜色`} value={validHexColor(current.color) ? current.color : fallbackColor} onChange={(event) => patch(part, "color", event.target.value)} /><input aria-label={`${label}颜色`} value={current.color ?? fallbackColor} onChange={(event) => patch(part, "color", event.target.value)} /></div></label><div className="product-part-align"><span>对齐</span><div className="product-part-align-options">{[["", "模板", null], ["left", "居左", AlignLeft], ["center", "居中", AlignCenter], ["right", "居右", AlignRight]].map(([value, title, Icon]) => <button type="button" key={title} className={(current.align ?? "") === value ? "active" : ""} title={title} aria-label={`${label}${title}`} aria-pressed={(current.align ?? "") === value} onClick={() => patch(part, "align", value)}>{Icon ? <Icon size={15} /> : "模板"}</button>)}</div></div><label className="product-part-order"><span>顺序</span><input type="number" min="1" max="8" aria-label={`${label}顺序`} value={current.order ?? PRODUCT_PARTS.findIndex(([id]) => id === part) + 1} onChange={(event) => patch(part, "order", event.target.value)} /></label><label className="product-part-offset"><span>水平 X</span><input type="number" min="-120" max="120" aria-label={`${label}水平偏移`} value={current.offsetX ?? 0} onChange={(event) => patch(part, "offsetX", event.target.value)} /></label><label className="product-part-offset"><span>垂直 Y</span><input type="number" min="-120" max="120" aria-label={`${label}垂直偏移`} value={current.offsetY ?? 0} onChange={(event) => patch(part, "offsetY", event.target.value)} /></label></div></div>;
-  })}</div>)}</section>;
+    return <div className="product-part-row" data-product-part-row={part} key={part}><div className="product-part-row-heading"><strong>{label}</strong><button type="button" className="product-part-reset" title={`恢复${label}文字样式`} aria-label={`恢复${label}文字样式`} disabled={!current.fontSize && !current.color} onClick={() => { const next = { ...current }; delete next.fontSize; delete next.color; updateNodeConfig(active, updateNode, { productPartStyles: { ...styles, [part]: next } }); }}><RotateCw size={14} /></button></div><div className="split-fields"><label><span>字号</span><div className="number-unit"><input type="number" min="8" max="64" aria-label={`${label}字号`} value={current.fontSize ?? defaults[part].fontSize} onChange={(event) => patch(part, "fontSize", event.target.value)} onBlur={(event) => patch(part, "fontSize", Math.max(8, Math.min(64, Number(event.target.value) || defaults[part].fontSize)))} /><span>px</span></div></label><label><span>颜色</span><div className="product-mode-color"><ProductColorInput label={`${label}颜色`} value={current.color ?? defaults[part].color} onChange={(color) => patch(part, "color", color)} /></div></label></div></div>;
+  })}</section>;
 }
 
-function ProductsPositionEditor({ active, updateNode, pricePreviewMode }) {
+function ProductsPositionEditor({ active, updateNode, pricePreviewMode, selectedPart, onSelectPart }) {
   const defaults = useProductPreviewDefaults(active, pricePreviewMode);
-  return <ProductPartStyleEditor active={active} updateNode={updateNode} defaults={defaults.parts} />;
+  const available = PRODUCT_PARTS.filter(([part]) => defaults.parts[part]);
+  const part = available.some(([id]) => id === selectedPart) ? selectedPart : available[0]?.[0];
+  const label = PRODUCT_PARTS.find(([id]) => id === part)?.[1] ?? "";
+  const styles = active.config?.productPartStyles ?? {};
+  const current = styles[part] ?? {};
+  const patch = (changes) => updateNodeConfig(active, updateNode, { productPartStyles: { ...styles, [part]: { ...current, ...changes } } });
+  const resetPosition = () => { const next = { ...current }; delete next.align; delete next.offsetX; delete next.offsetY; delete next.order; updateNodeConfig(active, updateNode, { productPartStyles: { ...styles, [part]: next } }); };
+  return <section className="product-position-editor"><h4>编辑元素</h4><div className="product-position-elements">{available.map(([id, title]) => <button type="button" className={part === id ? "active" : ""} aria-pressed={part === id} key={id} onClick={() => onSelectPart(id)}>{title}</button>)}</div>{part && <div className="product-position-controls"><div className="product-part-row-heading"><h4>{label}</h4><button type="button" className="product-part-reset" title="恢复模板位置" aria-label="恢复当前元素位置" onClick={resetPosition}><RotateCw size={15} /></button></div><div className="split-fields"><label><span>水平位置 X</span><div className="number-unit"><input type="number" aria-label={`${label}水平位置`} value={current.offsetX ?? 0} onChange={(event) => patch({ offsetX: event.target.value })} onBlur={(event) => patch({ offsetX: productOffset(event.target.value) })} /><span>px</span></div></label><label><span>垂直位置 Y</span><div className="number-unit"><input type="number" aria-label={`${label}垂直位置`} value={current.offsetY ?? 0} onChange={(event) => patch({ offsetY: event.target.value })} onBlur={(event) => patch({ offsetY: productOffset(event.target.value) })} /><span>px</span></div></label></div><div className="product-position-alignment"><span>相对商品框</span><div className="product-part-align-options">{[["", "模板位置", null], ["left", "靠左", AlignLeft], ["center", "居中", AlignCenter], ["right", "靠右", AlignRight]].map(([value, title, Icon]) => <button type="button" key={value} title={title} aria-label={`${label}${title}`} aria-pressed={(current.align ?? "") === value} className={(current.align ?? "") === value ? "active" : ""} onClick={() => patch({ align: value, offsetX: 0 })}>{Icon ? <Icon size={16} /> : <RotateCw size={14} />}</button>)}</div></div></div>}</section>;
 }
 
 function ProductsStyleEditor({ active, updateNode, pricePreviewMode, previewFocus }) {
@@ -2529,6 +2551,7 @@ function ProductsStyleEditor({ active, updateNode, pricePreviewMode, previewFocu
   const defaults = useProductPreviewDefaults(active, pricePreviewMode);
   return <div className="product-color-settings" data-product-layout={active.config?.purchasePerCard ? "credit" : "plan"}>
     <h4>商品框体</h4><div className="split-fields"><ConfigNumberField label="框体宽度" active={active} updateNode={updateNode} name="planWidth" fallback={100} min={40} max={100} suffix="%" clampOnBlur /><ConfigNumberField label="框体最小高度" active={active} updateNode={updateNode} name="planHeight" fallback={defaults.frame.planHeight ?? 0} min={0} max={300} suffix="px" clampOnBlur /></div><div className="split-fields"><ConfigNumberField label="上内边距" active={active} updateNode={updateNode} name="planPaddingTop" fallback={defaults.frame.planPaddingTop ?? 0} min={0} max={40} step={0.1} suffix="px" clampOnBlur /><ConfigNumberField label="右内边距" active={active} updateNode={updateNode} name="planPaddingRight" fallback={defaults.frame.planPaddingRight ?? 0} min={0} max={40} step={0.1} suffix="px" clampOnBlur /><ConfigNumberField label="下内边距" active={active} updateNode={updateNode} name="planPaddingBottom" fallback={defaults.frame.planPaddingBottom ?? 0} min={0} max={40} step={0.1} suffix="px" clampOnBlur /><ConfigNumberField label="左内边距" active={active} updateNode={updateNode} name="planPaddingLeft" fallback={defaults.frame.planPaddingLeft ?? 0} min={0} max={40} step={0.1} suffix="px" clampOnBlur /></div>
+    <ProductPartStyleEditor active={active} updateNode={updateNode} defaults={defaults.parts} />
     {!active.config?.purchasePerCard && <><h4>选中态与标签颜色</h4>
     <ProductColorField label={verticalBlue ? "商品角标颜色" : "商品标签颜色"} active={active} updateNode={updateNode} name="badgeGradient" fallback={["#ff860a", "#ffb000", "#ffd10b"]} gradient />
     <ProductColorField label="商品选中框颜色" active={active} updateNode={updateNode} name="selectedBorderGradient" fallback={["#ff860a", "#ff860a", "#ff860a"]} gradient />
@@ -3438,7 +3461,6 @@ function HelloTalkPaywall({ variant, nodes, activeNode, onSelect, onButtonAction
     onPointerCancel: () => { heroOverlayDrag.current = null; },
   } : {};
   const nodeClass = (id, name = "") => `ht-node ${activeNode === id ? "selected" : ""} ${name}`;
-  const Plan = ({ plan, index }) => <ProductPackageCard plan={plan} index={index} config={productConfig} layout={packageLayout} selected={index === selectedPlan} focused={activeNode === "products" && index === selectedPlan} interactive={interactive} priceMode={pricePreviewMode} onChoose={setSelectedPlan} onInspect={(event, row) => onSelect?.("products", previewClickArea(event), row)} />;
   const Status = () => <div className="ht-status"><b>{variant === "sku-sheet" ? "4:52" : variant === "blue-privilege" ? "15:48" : "16:48"}</b><span>••• ◔ ▰</span></div>;
   const Timer = ({ dragProps, reorderHandle } = {}) => {
     const startValue = timerSeconds(timer);
@@ -3553,9 +3575,9 @@ function HelloTalkPaywall({ variant, nodes, activeNode, onSelect, onButtonAction
       </section>;
     }
     if (id === "products") {
-      const plans = <>{visiblePlans.map((plan, index) => <Plan plan={plan} index={index} key={index} />)}</>;
+      const plans = <>{visiblePlans.map((plan, index) => <ProductPackageCard key={index} plan={plan} index={index} config={productConfig} layout={packageLayout} selected={index === selectedPlan} focused={activeNode === "products" && index === selectedPlan} interactive={interactive} priceMode={pricePreviewMode} onChoose={setSelectedPlan} onInspect={(event, row) => onSelect?.("products", previewClickArea(event), row)} />)}</>;
       const shellClass = `product-layout-${packageLayout} product-count-${Math.min(visiblePlans.length, 3)} ${packageLayout === "vertical" ? "ht-vertical-products" : packageLayout === "compact" ? "ht-recovery-plans" : packageLayout === "standard" && variant === "sku-sheet" ? "ht-sku-plans" : "ht-plan-shell"}`;
-      const shell = <section className={shellClass} style={styleFor("products")} onClick={select("products")}>{packageLayout === "vertical" && visiblePlans.length > 1 && <h3>选择套餐</h3>}{plans}</section>;
+      const shell = <section className={shellClass} style={styleFor("products")} onClick={select("products")}>{plans}</section>;
       return variant === "membership-plans" ? <div className="ht-member-products"><header className="ht-plan-heading"><b>选择套餐</b><span>特权对比 ›</span></header>{shell}</div> : shell;
     }
     if (id === "timer") return <Timer />;
@@ -3752,7 +3774,7 @@ function PreviewElement({ node, active, activeNode, onSelect, onButtonAction, on
     const switched = Boolean(toggleStates[config.linkedToggleId]);
     const tabIndex = tabStates[config.linkedTabsId] ?? config.tabDefaultIndex ?? 0;
     const groupOffset = config.linkedTabsId ? tabIndex * (Number(config.groupSize) || 0) : switched ? Number(config.groupSize) || 0 : 0;
-    return wrap(<PreviewProducts key={config.linkedTabsId ? `tab-${tabIndex}` : config.linkedToggleId ? String(switched) : node.id} content={node.content} config={node.config} childrenNodes={children} priceMode={pricePreviewMode} switched={switched} tabIndex={tabIndex} onInspect={(event, index) => onSelect(node.id, previewClickArea(event), index + groupOffset)} onChildSelect={(childId) => onSelect(childId, "row", 0)} onPurchase={(plan, index) => { onSelect(node.id, "price", index + groupOffset); onButtonAction?.({ type: "Purchase Button", config: { action: "Purchase" } }, plan); }} />, "preview-products-wrap");
+    return wrap(<PreviewProducts nodeId={node.id} key={config.linkedTabsId ? `tab-${tabIndex}` : config.linkedToggleId ? String(switched) : node.id} content={node.content} config={node.config} childrenNodes={children} priceMode={pricePreviewMode} switched={switched} tabIndex={tabIndex} onInspect={(event, index) => onSelect(node.id, previewClickArea(event), index + groupOffset)} onChildSelect={(childId) => onSelect(childId, "row", 0)} onPurchase={(plan, index) => { onSelect(node.id, "price", index + groupOffset); onButtonAction?.({ type: "Purchase Button", config: { action: "Purchase" } }, plan); }} />, "preview-products-wrap");
   }
   if (node.type === "Toggle") return wrap(<PreviewToggle key={`${node.id}-${node.defaultState ?? "Off"}`} content={node.content} defaultState={node.defaultState} config={config} linkedEnabled={toggleStates[node.id]} onChange={(enabled) => onToggleChange?.(node.id, enabled)} />, "preview-toggle-wrap");
   if (["Toggle On", "Toggle Off"].includes(node.type)) return wrap(<div className="preview-toggle-anchor" />, "preview-toggle-anchor-wrap");
@@ -3816,7 +3838,12 @@ function PreviewCarousel({ content, config = {} }) {
   return <div className="preview-carousel"><span>★★★★★</span><p>{copy ? <><strong>{title}</strong><small>{copy}</small></> : slide}</p><div><button aria-label="Previous review" onClick={(event) => { event.stopPropagation(); setCurrent((index) => (index - 1 + slides.length) % slides.length); }}>‹</button><i style={{ gap: `${config.gap ?? 8}px` }}>{slides.map((_, index) => <b className={index === current ? "active" : ""} style={{ color: index === current ? config.accentColor : config.secondaryColor }} key={index}>•</b>)}</i><button aria-label="Next review" onClick={(event) => { event.stopPropagation(); setCurrent((index) => (index + 1) % slides.length); }}>›</button></div></div>;
 }
 
-function PreviewProducts({ content, config = {}, childrenNodes = [], priceMode = "1", switched = false, tabIndex = 0, onInspect, onChildSelect, onPurchase }) {
+function CreditProductCard({ row, index, config, priceMode, nodeId, onInspect, onPurchase }) {
+  const ref = useProductCardPlacement(config);
+  return <div ref={ref} className="preview-products-credit" data-product-card data-product-node-id={nodeId} data-product-index={index} onClick={(event) => onInspect?.(event, index)} style={{ ...(Number(config.planWidth) > 0 ? { width: `${config.planWidth}%`, marginInline: "auto" } : {}), ...(config.planHeight !== undefined && config.planHeight !== "" ? { minHeight: `${config.planHeight}px` } : {}), ...(config.planPadding !== "" && config.planPadding !== undefined ? { padding: `${config.planPadding}px` } : {}), ...Object.fromEntries(["Top", "Right", "Bottom", "Left"].filter((side) => config[`planPadding${side}`] !== undefined && config[`planPadding${side}`] !== "").map((side) => [`padding${side}`, `${config[`planPadding${side}`]}px`])) }}><span className="preview-credit-copy"><strong data-inspector-area="product-name" style={productPartStyle(config, "name")}>{row.name}</strong>{row.supportingCopy && <small data-inspector-area="product-supporting" style={productPartStyle(config, "supporting")}>{row.supportingCopy}</small>}</span><button type="button" data-inspector-area="product-price" style={{ ...productPartStyle(config, "price"), ...(Number(config.priceModeStyles?.[priceMode]?.mainFontSize) > 0 ? { fontSize: `${config.priceModeStyles[priceMode].mainFontSize}px` } : {}), ...(validHexColor(config.priceModeStyles?.[priceMode]?.mainColor) ? { color: config.priceModeStyles[priceMode].mainColor } : {}) }} onClick={(event) => { event.stopPropagation(); onPurchase?.(row, index); }}>{resolveProductPrice(row, priceMode).main}</button></div>;
+}
+
+function PreviewProducts({ content, config = {}, childrenNodes = [], priceMode = "1", switched = false, tabIndex = 0, onInspect, onChildSelect, onPurchase, nodeId }) {
   const source = content || childrenNodes.map((child) => child.content).filter(Boolean).join("\n");
   const allRows = productPackageRows({ content: source, config }, config.productTemplate);
   const groupSize = Math.max(1, Number(config.groupSize) || allRows.length);
@@ -3828,13 +3855,8 @@ function PreviewProducts({ content, config = {}, childrenNodes = [], priceMode =
   useEffect(() => setChosen(defaultChoice), [defaultChoice]);
   const embeddedList = childrenNodes.find((child) => child.type === "List");
   const embeddedBenefits = embeddedList?.config?.listRows?.map((row) => row.title).filter(Boolean) ?? embeddedList?.content?.split("\n").map((line) => line.split("|")[0]).filter(Boolean);
-  if (config.purchasePerCard) return <div className="preview-products-credit-list">{rows.map((row, index) => {
-    const custom = hasCustomProductPlacement(config);
-    const part = (id) => config.productPartStyles?.[id] ?? {};
-    const partPlacement = (id, order) => ({ ...productPartStyle(config, id), ...(id === "price" && Number(config.priceModeStyles?.[priceMode]?.mainFontSize) > 0 ? { fontSize: `${config.priceModeStyles[priceMode].mainFontSize}px` } : {}), ...(id === "price" && validHexColor(config.priceModeStyles?.[priceMode]?.mainColor) ? { color: config.priceModeStyles[priceMode].mainColor } : {}), ...(custom ? { order: Number(part(id).order) || order, alignSelf: part(id).align === "right" ? "flex-end" : part(id).align === "center" ? "center" : "flex-start", transform: Number(part(id).offsetX) || Number(part(id).offsetY) ? `translate(${Number(part(id).offsetX) || 0}px, ${Number(part(id).offsetY) || 0}px)` : undefined } : {}) });
-    return <div className={`preview-products-credit${custom ? " custom" : ""}`} key={`${row.skuId || row.name}-${index}`} onClick={(event) => onInspect?.(event, index)} style={{ ...(Number(config.planWidth) > 0 ? { width: `${config.planWidth}%`, marginInline: "auto" } : {}), ...(config.planHeight !== undefined && config.planHeight !== "" ? { minHeight: `${config.planHeight}px` } : {}), ...(config.planPadding !== "" && config.planPadding !== undefined ? { padding: `${config.planPadding}px` } : {}), ...Object.fromEntries(["Top", "Right", "Bottom", "Left"].filter((side) => config[`planPadding${side}`] !== undefined && config[`planPadding${side}`] !== "").map((side) => [`padding${side}`, `${config[`planPadding${side}`]}px`])) }}><span className="preview-credit-copy"><strong data-inspector-area="product-name" style={partPlacement("name", 1)}>{row.name}</strong>{row.supportingCopy && <small data-inspector-area="product-supporting" style={partPlacement("supporting", 3)}>{row.supportingCopy}</small>}</span><button type="button" data-inspector-area="product-price" style={partPlacement("price", 2)} onClick={(event) => { event.stopPropagation(); onPurchase?.(row, index); }}>{resolveProductPrice(row, priceMode).main}</button></div>;
-  })}</div>;
-  return <div className={`preview-products product-layout-${layout} product-count-${Math.min(rows.length, 3)}`}>{rows.map((row, index) => <ProductPackageCard key={`${row.skuId || row.name}-${index}`} plan={row} index={index} config={config} layout={layout} selected={index === chosen} priceMode={priceMode} onChoose={setChosen} onInspect={onInspect} embeddedBenefits={embeddedBenefits} onBenefitInspect={embeddedList ? () => onChildSelect?.(embeddedList.id) : undefined} />)}</div>;
+  if (config.purchasePerCard) return <div className="preview-products-credit-list">{rows.map((row, index) => <CreditProductCard key={`${row.skuId || row.name}-${index}`} row={row} index={index} config={config} priceMode={priceMode} nodeId={nodeId} onInspect={onInspect} onPurchase={onPurchase} />)}</div>;
+  return <div className={`preview-products product-layout-${layout} product-count-${Math.min(rows.length, 3)}`}>{rows.map((row, index) => <ProductPackageCard nodeId={nodeId} key={`${row.skuId || row.name}-${index}`} plan={row} index={index} config={config} layout={layout} selected={index === chosen} priceMode={priceMode} onChoose={setChosen} onInspect={onInspect} embeddedBenefits={embeddedBenefits} onBenefitInspect={embeddedList ? () => onChildSelect?.(embeddedList.id) : undefined} />)}</div>;
 }
 
 function PreviewToggle({ content, defaultState = "Off", config = {}, linkedEnabled, onChange }) {
