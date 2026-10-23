@@ -10,6 +10,7 @@ import { editorClipboard, copyFragment, pasteFragment, copyStyles, pasteStyles, 
 import { treeChildren, compositionSummary, initialCollapsed, pageContext, isUnconfiguredDetailPage } from './componentTree.js';
 import './componentEditor.css';
 import RevenueCatProperties from './RevenueCatProperties.jsx';
+import { migrateTemplateVisuals } from './templateVisuals.js';
 
 const libraryKey = 'paywall-component-library-v3';
 const fieldNames = { name: '商品名称', price: '主价格', reference: '参考价', supportingCopy: '辅助文案', savingCopy: '优惠说明', saveCopy: 'SAVE 文案', badgeText: '标签文字' };
@@ -21,7 +22,16 @@ function ColorField({ label, value, onChange }) { return <Field label={label}><d
 function readLibrary() { try { const value = JSON.parse(localStorage.getItem(libraryKey) ?? '[]'); return Array.isArray(value) ? value.filter((item) => item?.name && validDocument({ version: 3, products: {}, root: { id: '$library', type: 'Screen', props: {}, children: [item.node] } })) : []; } catch { return []; } }
 
 export default function ComponentEditor({ template, initialNodes }) {
-  const [initial] = useState(() => { try { return { document: upgradeCanonicalComponents(readComponentDocument(localStorage, template?.id ?? 'blank') ?? importComponentDocument(initialNodes, template)), error: '' }; } catch (error) { return { document: upgradeCanonicalComponents(importComponentDocument(initialNodes, template)), error: error.message }; } });
+  const [initial] = useState(() => {
+    try {
+      const saved = readComponentDocument(localStorage, template?.id ?? 'blank');
+      const defaults = importComponentDocument(initialNodes, template);
+      const document = saved ? migrateTemplateVisuals(saved, importComponentDocument(initialNodes, template, false), defaults) : defaults;
+      return { document: upgradeCanonicalComponents(document), error: '' };
+    } catch (error) {
+      return { document: upgradeCanonicalComponents(importComponentDocument(initialNodes, template)), error: error.message };
+    }
+  });
   const [document, setDocument] = useState(initial.document);
   const [saveError, setSaveError] = useState(initial.error);
   const blockedSave = Boolean(initial.error);

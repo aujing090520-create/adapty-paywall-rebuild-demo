@@ -12,11 +12,12 @@ const dimension = (mode, value) => mode === 'fixed' ? `${Math.max(0, Number(valu
 export function componentStyle(node) {
   const props = componentProps(node);
   const numeric = (key, fallback = 0) => Number.isFinite(Number(props[key])) ? Number(props[key]) : fallback;
+  const horizontalMargin = props.marginMode === 'individual' ? numeric('marginLeft') + numeric('marginRight') : 2 * numeric('marginHorizontal');
   return {
-    width: dimension(props.widthMode, props.width), height: props.heightMode === 'fixed' ? dimension('fixed', props.height) : props.heightMode === 'fill' ? '100%' : undefined,
+    width: props.widthMode === 'fill' && horizontalMargin ? `calc(100% - ${horizontalMargin}px)` : dimension(props.widthMode, props.width), height: props.heightMode === 'fixed' ? dimension('fixed', props.height) : props.heightMode === 'fill' ? '100%' : undefined,
     minWidth: props.minWidth > 0 ? props.minWidth : 0, maxWidth: props.maxWidth > 0 ? props.maxWidth : undefined, flexShrink: 0, boxSizing: 'border-box',
     minHeight: props.minHeight > 0 ? props.minHeight : undefined, maxHeight: props.maxHeight > 0 ? props.maxHeight : undefined, background: props.background,
-    color: props.color, fontSize: numeric('fontSize', 14), fontWeight: props.bold ? 700 : props.fontWeight, fontStyle: props.italic ? 'italic' : undefined, fontFamily: props.fontFamily === 'serif' ? 'Georgia, serif' : props.fontFamily === 'mono' ? 'ui-monospace, monospace' : undefined,
+    color: props.color, flexGrow: props.flexGrow, fontSize: numeric('fontSize', 14), lineHeight: props.lineHeight, fontWeight: props.bold ? 700 : props.fontWeight, fontStyle: props.italic ? 'italic' : undefined, fontFamily: props.fontFamily === 'serif' ? 'Georgia, serif' : props.fontFamily === 'mono' ? 'ui-monospace, monospace' : undefined,
     textAlign: props.textAlign, opacity: numeric('opacity', 100) / 100, borderRadius: props.shape === 'pill' ? 999 : props.shape === 'circle' ? '50%' : numeric('radius'),
     border: props.borderWidth ? `${numeric('borderWidth')}px solid ${props.borderColor}` : undefined,
     boxShadow: props.shadowBlur || props.shadowX || props.shadowY ? `${numeric('shadowX')}px ${numeric('shadowY')}px ${numeric('shadowBlur')}px ${props.shadowColor ?? '#000000'}` : undefined,
@@ -24,7 +25,7 @@ export function componentStyle(node) {
     margin: props.marginMode === 'individual' ? ['Top', 'Right', 'Bottom', 'Left'].map((side) => `${numeric(`margin${side}`)}px`).join(' ') : `${numeric('marginVertical', numeric('marginTop'))}px ${numeric('marginHorizontal', numeric('marginRight'))}px`,
     alignSelf: props.alignSelf === 'auto' ? undefined : props.alignSelf,
     ...(props.textBackground ? { background: props.textBackground } : {}),
-    ...(props.backgroundImage ? { backgroundImage: `url(${JSON.stringify(safeMediaSource(props.backgroundImage))})`, backgroundSize: props.backgroundFit ?? 'cover', backgroundPosition: 'center' } : {}),
+    ...(props.backgroundImage ? { backgroundImage: `url(${JSON.stringify(safeMediaSource(props.backgroundImage))})`, backgroundSize: props.backgroundFit ?? 'cover', backgroundPosition: 'center top', backgroundRepeat: props.backgroundRepeat ?? 'no-repeat' } : {}),
   };
 }
 function containerStyle(node) {
@@ -47,7 +48,7 @@ export function NativeComponent({ node, packageNode = null, floating = false }) 
   if (node.type === 'Text') {
     const value = props.timerField && timer ? timer[props.timerField] ?? '' : resolveComponentText(node, document, currentPackage);
     if (node.props.binding && !value) return null;
-    return <div {...attributes} style={{ ...style, textDecoration: props.strike ? 'line-through' : props.underline ? 'underline' : undefined, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', lineHeight: 1.35 }}>{node.props.runs?.length && !node.props.binding ? node.props.runs.map((run, index) => <React.Fragment key={index}>{run.breakBefore && <br />}<span style={{ color: run.color, fontSize: run.fontSize ? Number(run.fontSize) : undefined, fontWeight: run.fontWeight ?? (run.bold ? 700 : undefined), fontStyle: run.italic ? 'italic' : undefined, textDecoration: run.strikethrough ? 'line-through' : run.underline || run.link !== undefined ? 'underline' : undefined }} onClick={!editing && /^https?:\/\//i.test(run.link ?? '') ? (event) => { event.stopPropagation(); window.open(run.link, '_blank', 'noopener,noreferrer'); } : undefined}>{run.text}</span></React.Fragment>) : value}</div>;
+    return <div {...attributes} style={{ ...style, textDecoration: props.strike ? 'line-through' : props.underline ? 'underline' : undefined, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', lineHeight: props.lineHeight ?? 1.35 }}>{node.props.runs?.length && !node.props.binding ? node.props.runs.map((run, index) => <React.Fragment key={index}>{run.breakBefore && <br />}<span style={{ color: run.color, fontSize: run.fontSize ? Number(run.fontSize) : undefined, fontWeight: run.fontWeight ?? (run.bold ? 700 : undefined), fontStyle: run.italic ? 'italic' : undefined, textDecoration: run.strikethrough ? 'line-through' : run.underline || run.link !== undefined ? 'underline' : undefined }} onClick={!editing && /^https?:\/\//i.test(run.link ?? '') ? (event) => { event.stopPropagation(); window.open(run.link, '_blank', 'noopener,noreferrer'); } : undefined}>{run.text}</span></React.Fragment>) : value}</div>;
   }
   if (node.type === 'Image' || node.type === 'Video') {
     const src = safeMediaSource(props.src);

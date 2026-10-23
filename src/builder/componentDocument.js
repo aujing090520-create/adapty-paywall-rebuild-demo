@@ -2,13 +2,26 @@ import { productPackageRows, listRowsFor, privilegeRowsFor, agreementSegmentsFor
 import { resolveProductPrice, skuById, skuCopy } from '../productPricing.js';
 import { linkActionFor, visibleLinkLabels } from '../linkActions.js';
 import { HT_PRODUCT_DESIGN_DEFAULTS } from '../products/productStyleModel.js';
+import { calibrateTemplateVisuals } from './templateVisuals.js';
 
 export const DOCUMENT_VERSION = 3;
 export const COMPONENT_TYPES = ['Screen', 'Stack', 'Text', 'Image', 'Video', 'Icon', 'Custom', 'Header', 'Footer', 'Package', 'PurchaseButton', 'BottomSheet', 'ExpressCheckout', 'CheckoutState', 'Wallet', 'Button', 'Tabs', 'Tab', 'TabControl', 'TabButton', 'Carousel', 'Slide', 'Timeline', 'TimelineItem', 'Switch', 'SwitchCase', 'Toggle', 'Countdown', 'CountdownState', 'Flow'];
 export const COMPONENT_NAMES = { Screen: '页面', Stack: '布局容器', Text: '文字', Image: '图片', Video: '视频', Icon: '图标', Custom: '自定义网页', Header: '页头', Footer: '页脚', Package: '商品', PurchaseButton: '购买按钮', BottomSheet: '底部弹层', ExpressCheckout: '快捷结账', CheckoutState: '结账状态内容', Wallet: '钱包按钮', Button: '按钮', Tabs: '标签页', Tab: '标签页面', TabControl: '标签按钮组', TabButton: '标签按钮', Carousel: '轮播', Slide: '轮播页', Timeline: '时间线', TimelineItem: '时间节点', Switch: '开关', SwitchCase: '开关状态内容', Toggle: '开关控件', Countdown: '倒计时', CountdownState: '倒计时状态内容', Flow: '多页面流程' };
 export const CONTAINER_TYPES = new Set(['Screen', 'Stack', 'Header', 'Footer', 'Package', 'PurchaseButton', 'BottomSheet', 'ExpressCheckout', 'CheckoutState', 'Button', 'Tabs', 'Tab', 'TabControl', 'TabButton', 'Carousel', 'Slide', 'Timeline', 'TimelineItem', 'Switch', 'SwitchCase', 'Countdown', 'CountdownState', 'Flow']);
 export const DEFAULT_PROPS = { axis: 'vertical', gap: 8, align: 'stretch', justify: 'start', widthMode: 'fill', width: 160, minWidth: 0, maxWidth: 0, heightMode: 'fit', height: 160, minHeight: 0, maxHeight: 0, paddingTop: 0, paddingRight: 0, paddingBottom: 0, paddingLeft: 0, paddingVertical: 0, paddingHorizontal: 0, paddingMode: 'axis', marginTop: 0, marginRight: 0, marginBottom: 0, marginLeft: 0, marginVertical: 0, marginHorizontal: 0, marginMode: 'axis', background: 'transparent', color: '#171717', radius: 0, borderWidth: 0, borderColor: '#dedee3', fontSize: 14, fontWeight: 400, textAlign: 'left', objectFit: 'contain', opacity: 100, alignSelf: 'auto', shadowX: 0, shadowY: 0, shadowBlur: 0, shadowColor: '#000000', shape: 'rectangle', fillType: 'color', mask: 'none', overlayColor: 'transparent', iconBackground: 'transparent', iconRadius: 0 };
-export const componentProps = (node) => ({ ...DEFAULT_PROPS, ...(['Toggle', 'Icon'].includes(node.type) ? { widthMode: 'fit' } : {}), ...node.props });
+export const componentProps = (node) => {
+  const props = { ...DEFAULT_PROPS, ...(['Toggle', 'Icon'].includes(node.type) ? { widthMode: 'fit' } : {}), ...node.props };
+  for (const prefix of ['padding', 'margin']) {
+    const source = node.props;
+    const vertical = source[`${prefix}Vertical`] ?? props[`${prefix}Top`];
+    const horizontal = source[`${prefix}Horizontal`] ?? props[`${prefix}Right`];
+    const asymmetric = props[`${prefix}Top`] !== props[`${prefix}Bottom`] || props[`${prefix}Left`] !== props[`${prefix}Right`];
+    props[`${prefix}Mode`] = source[`${prefix}Mode`] === 'individual' || (asymmetric && source[`${prefix}Vertical`] === undefined && source[`${prefix}Horizontal`] === undefined) ? 'individual' : source[`${prefix}Mode`] ?? 'axis';
+    props[`${prefix}Vertical`] = vertical;
+    props[`${prefix}Horizontal`] = horizontal;
+  }
+  return props;
+};
 export const component = (id, type, name, props = {}, children = []) => ({ id, type, name: name || COMPONENT_NAMES[type], props, children });
 const text = (id, value, props = {}) => component(id, 'Text', '', { text: String(value ?? ''), ...props });
 const stack = (id, name, children, props = {}) => component(id, 'Stack', name, props, children.filter(Boolean));
@@ -82,7 +95,7 @@ export function resolveComponentText(node, document, packageNode) {
 }
 
 // Legacy configuration is consumed once. Runtime edits never compile back to it.
-export function importComponentDocument(nodes, template = {}) {
+export function importComponentDocument(nodes, template = {}, calibrate = true) {
   const products = {};
   const detailScreens = [];
   const byParent = new Map(), latest = [], byId = new Map(nodes.map((node) => [node.id, node]));
@@ -200,7 +213,8 @@ export function importComponentDocument(nodes, template = {}) {
   const sheet = ['sku-sheet', 'payment-recovery'].includes(template.documentTemplate);
   const content = detailScreens.length ? [component('$pages', 'Flow', '付费墙与权益详情', { gap: 0 }, [component('$main', 'Screen', '特权首页', { gap: 0 }, rootNodes), ...detailScreens])] : rootNodes;
   const root = component('$screen', 'Screen', '付费墙页面', { background: dark ? '#10101c' : '#ffffff', color: foreground, gap: template.documentTemplate ? 0 : 18, ...insets(template.documentTemplate ? 0 : 20), backgroundImage: background?.config?.mediaSrc ?? '', backgroundFit: background?.config?.mediaFit ?? 'cover', ...(sheet ? { background: '#e6e6e6', paddingTop: template.documentTemplate === 'sku-sheet' ? 300 : 100 } : {}) }, content);
-  return { version: DOCUMENT_VERSION, templateId: template.id ?? 'blank', root, products };
+  const document = { version: DOCUMENT_VERSION, templateId: template.id ?? 'blank', root, products };
+  return calibrate ? calibrateTemplateVisuals(document, template, nodes) : document;
 }
 function indexDocumentId(id, suffix) { return id + suffix; }
 function gradient(colors, fallback) { return Array.isArray(colors) && colors.length ? `linear-gradient(90deg, ${colors.join(', ')})` : fallback; }
