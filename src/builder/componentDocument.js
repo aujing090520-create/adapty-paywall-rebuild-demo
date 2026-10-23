@@ -3,6 +3,7 @@ import { resolveProductPrice, skuById, skuCopy } from '../productPricing.js';
 import { linkActionFor, visibleLinkLabels } from '../linkActions.js';
 import { HT_PRODUCT_DESIGN_DEFAULTS } from '../products/productStyleModel.js';
 import { calibrateTemplateVisuals } from './templateVisuals.js';
+import { effectiveFillType } from './propertyModel.js';
 
 export const DOCUMENT_VERSION = 3;
 export const COMPONENT_TYPES = ['Screen', 'Stack', 'Text', 'Image', 'Video', 'Icon', 'Custom', 'Header', 'Footer', 'Package', 'PurchaseButton', 'BottomSheet', 'ExpressCheckout', 'CheckoutState', 'Wallet', 'Button', 'Tabs', 'Tab', 'TabControl', 'TabButton', 'Carousel', 'Slide', 'Timeline', 'TimelineItem', 'Switch', 'SwitchCase', 'Toggle', 'Countdown', 'CountdownState', 'Flow'];
@@ -10,7 +11,9 @@ export const COMPONENT_NAMES = { Screen: '页面', Stack: '布局容器', Text: 
 export const CONTAINER_TYPES = new Set(['Screen', 'Stack', 'Header', 'Footer', 'Package', 'PurchaseButton', 'BottomSheet', 'ExpressCheckout', 'CheckoutState', 'Button', 'Tabs', 'Tab', 'TabControl', 'TabButton', 'Carousel', 'Slide', 'Timeline', 'TimelineItem', 'Switch', 'SwitchCase', 'Countdown', 'CountdownState', 'Flow']);
 export const DEFAULT_PROPS = { axis: 'vertical', gap: 8, align: 'stretch', justify: 'start', widthMode: 'fill', width: 160, minWidth: 0, maxWidth: 0, heightMode: 'fit', height: 160, minHeight: 0, maxHeight: 0, paddingTop: 0, paddingRight: 0, paddingBottom: 0, paddingLeft: 0, paddingVertical: 0, paddingHorizontal: 0, paddingMode: 'axis', marginTop: 0, marginRight: 0, marginBottom: 0, marginLeft: 0, marginVertical: 0, marginHorizontal: 0, marginMode: 'axis', background: 'transparent', color: '#171717', radius: 0, borderWidth: 0, borderColor: '#dedee3', fontSize: 14, fontWeight: 400, textAlign: 'left', objectFit: 'contain', opacity: 100, alignSelf: 'auto', shadowX: 0, shadowY: 0, shadowBlur: 0, shadowColor: '#000000', shape: 'rectangle', fillType: 'color', mask: 'none', overlayColor: 'transparent', iconBackground: 'transparent', iconRadius: 0 };
 export const componentProps = (node) => {
-  const props = { ...DEFAULT_PROPS, ...(['Toggle', 'Icon'].includes(node.type) ? { widthMode: 'fit' } : {}), ...node.props };
+  const props = { ...DEFAULT_PROPS, color: node.type === 'Screen' ? '#171717' : 'inherit', ...(['Toggle', 'Icon'].includes(node.type) ? { widthMode: 'fit' } : {}), ...node.props };
+  props.fillType = effectiveFillType(node.props);
+  if (node.type === 'Icon' && node.props.radius === undefined) props.radius = node.props.iconRadius ?? props.radius;
   for (const prefix of ['padding', 'margin']) {
     const source = node.props;
     const vertical = source[`${prefix}Vertical`] ?? props[`${prefix}Top`];
@@ -86,7 +89,7 @@ export function moveComponent(document, id, parentId, at = Infinity) {
 }
 export function resolveComponentText(node, document, packageNode) {
   const binding = node.props.binding;
-  if (!binding) return node.props.text ?? '';
+  if (!binding) return node.props.runs?.length ? node.props.runs.map((run) => `${run.breakBefore ? '\n' : ''}${run.text ?? ''}`).join('') : node.props.text ?? '';
   const row = document.products[packageNode?.props.dataKey ?? binding.key] ?? {};
   const sku = skuById(row.skuId);
   const value = sku ? { ...row, ...skuCopy(sku.id), name: sku.displayName } : row;
@@ -245,7 +248,7 @@ export function saveComponentDocument(storage, document) {
 export function cloneComponent(node) {
   const ids = new Map();
   const collect = (entry) => { ids.set(entry.id, crypto.randomUUID()); entry.children.forEach(collect); }; collect(node);
-  const visit = (entry) => ({ ...entry, id: ids.get(entry.id), props: { ...entry.props, ...(ids.has(entry.props.target) ? { target: ids.get(entry.props.target) } : {}), ...(ids.has(entry.props.action?.actionPage) ? { action: { ...entry.props.action, actionPage: ids.get(entry.props.action.actionPage) } } : {}), ...(ids.has(entry.props.group) ? { group: ids.get(entry.props.group) } : {}), ...(entry.type === 'Package' && !ids.has(entry.props.group) ? { defaultSelected: false } : {}), ...(entry.props.visibleWhen && ids.has(entry.props.visibleWhen.id) ? { visibleWhen: { ...entry.props.visibleWhen, id: ids.get(entry.props.visibleWhen.id) } } : {}) }, children: entry.children.map(visit) });
+  const visit = (entry) => ({ ...entry, id: ids.get(entry.id), props: { ...entry.props, ...(ids.has(entry.props.target) ? { target: ids.get(entry.props.target) } : {}), ...(ids.has(entry.props.switchTarget) ? { switchTarget: ids.get(entry.props.switchTarget) } : {}), ...(ids.has(entry.props.action?.actionPage) ? { action: { ...entry.props.action, actionPage: ids.get(entry.props.action.actionPage) } } : {}), ...(ids.has(entry.props.group) ? { group: ids.get(entry.props.group) } : {}), ...(entry.type === 'Package' && !ids.has(entry.props.group) ? { defaultSelected: false } : {}), ...(entry.props.visibleWhen && ids.has(entry.props.visibleWhen.id) ? { visibleWhen: { ...entry.props.visibleWhen, id: ids.get(entry.props.visibleWhen.id) } } : {}) }, children: entry.children.map(visit) });
   return visit(node);
 }
 

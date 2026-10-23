@@ -52,3 +52,5 @@
 .rc-spacing-toggle:hover,.rc-spacing-toggle[aria-pressed=true]{background:#f0f0f4;color:#586bdf}
 .rc-spacing-field .rc-four-values{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
 .rc-icon-segmented button:focus-visible,.rc-spacing-toggle:focus-visible{outline:2px solid #586bdf;outline-offset:2px}
+.nc-node{isolation:isolate}.rc-rich-run{padding-top:10px;border-top:1px solid #e7e5ed}
+.nc-node.nc-screen[data-height=fixed]{min-height:0}
