@@ -1115,6 +1115,9 @@ textarea { min-height: 80px; resize: vertical; }
   width: 100%;
   min-width: 0;
 }
+.ht-blue-paywall .ht-plan-shell .ht-blue-plan > span:has(> b) {
+  margin-top: 3cqw;
+}
 .ht-blue-paywall .ht-plan-shell .ht-blue-plan .ht-blue-price {
   align-self: center;
   min-width: 0;
