@@ -102,3 +102,15 @@ test('intrinsic controls do not claim leftover horizontal width', () => {
   assert.equal(componentProps(component('icon','Icon','图标')).widthMode,'fit');
   assert.equal(componentProps(component('cell','Icon','单元格',{widthMode:'fill'})).widthMode,'fill');
 });
+test('library text captures its package price mode and copied flows target copied pages', () => {
+  let document = load('ht-blue-privilege');
+  document = updateComponent(document,'products/package-1',{props:{priceMode:'0'}});
+  const text = indexDocument(document).nodes.get('products/package-1-price');
+  assert.ok(captureNativeComponent(document,text).props.text.includes('40.67'));
+  const flow = cloneComponent(document.root.children[0]);
+  const next = { ...document, root: component('test-root','Screen','页面',{},[flow]) };
+  const nodes = [...indexDocument(next).nodes.values()];
+  const action = nodes.find((node) => node.props.action?.action === 'OpenPage');
+  assert.ok(nodes.some((node) => node.id === action.props.action.actionPage));
+  assert.ok(!action.props.action.actionPage.startsWith('benefits/'));
+});

@@ -226,15 +226,18 @@ export function saveComponentDocument(storage, document) {
 export function cloneComponent(node) {
   const ids = new Map();
   const collect = (entry) => { ids.set(entry.id, crypto.randomUUID()); entry.children.forEach(collect); }; collect(node);
-  const visit = (entry) => ({ ...entry, id: ids.get(entry.id), props: { ...entry.props, ...(ids.has(entry.props.target) ? { target: ids.get(entry.props.target) } : {}), ...(ids.has(entry.props.group) ? { group: ids.get(entry.props.group) } : {}), ...(entry.type === 'Package' && !ids.has(entry.props.group) ? { defaultSelected: false } : {}), ...(entry.props.visibleWhen && ids.has(entry.props.visibleWhen.id) ? { visibleWhen: { ...entry.props.visibleWhen, id: ids.get(entry.props.visibleWhen.id) } } : {}) }, children: entry.children.map(visit) });
+  const visit = (entry) => ({ ...entry, id: ids.get(entry.id), props: { ...entry.props, ...(ids.has(entry.props.target) ? { target: ids.get(entry.props.target) } : {}), ...(ids.has(entry.props.action?.actionPage) ? { action: { ...entry.props.action, actionPage: ids.get(entry.props.action.actionPage) } } : {}), ...(ids.has(entry.props.group) ? { group: ids.get(entry.props.group) } : {}), ...(entry.type === 'Package' && !ids.has(entry.props.group) ? { defaultSelected: false } : {}), ...(entry.props.visibleWhen && ids.has(entry.props.visibleWhen.id) ? { visibleWhen: { ...entry.props.visibleWhen, id: ids.get(entry.props.visibleWhen.id) } } : {}) }, children: entry.children.map(visit) });
   return visit(node);
 }
 
 export function captureNativeComponent(document, node) {
+  const { nodes, parents } = indexDocument(document);
+  let parentPackage = nodes.get(parents.get(node.id));
+  while (parentPackage && parentPackage.type !== 'Package') parentPackage = nodes.get(parents.get(parentPackage.id));
   const visit = (entry, parentPackage) => {
     const currentPackage = entry.type === 'Package' ? entry : parentPackage;
     const { binding, dataKey, group, visibleWhen, ...props } = entry.props;
     return { ...entry, props: { ...props, ...(binding ? { text: resolveComponentText(entry, document, currentPackage) } : {}) }, children: entry.children.map((child) => visit(child, currentPackage)) };
   };
-  return visit(node, null);
+  return visit(node, parentPackage);
 }
