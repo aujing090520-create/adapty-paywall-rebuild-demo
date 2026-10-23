@@ -5,7 +5,8 @@ import { DEMO_SKUS, PRICE_DISPLAY_MODES, billingMonths, productPriceFields, reso
 import { applyComponent, captureComponent, componentKind, readComponentLibrary, writeComponentLibrary } from "./componentLibrary.js";
 import { clearLocalDemoSettings, protectedTemplateIds, readTemplateNodes, writeTemplateNodes } from "./templateStorage.js";
 import { productTranslation } from "./productPlacement.js";
-import { PRODUCT_ARRANGEMENTS, productArrangement, updateProductArrangement } from "./productArrangement.js";
+import { productArrangement } from "./productArrangement.js";
+import { PRODUCT_REGIONS, contentRegions, moveContentPart, contentSlot } from "./productContentOrder.js";
 import { revenueCatGallery } from "./revenueCatGallery.js";
 import { createSourceTemplateNodes, observedTemplate, sourceBlueprints } from "./revenueCatSourceBlueprints.js";
 import {
@@ -16,6 +17,8 @@ import {
   Armchair,
   Archive,
   ArrowLeft,
+  ArrowUp,
+  ArrowDown,
   BarChart3,
   Ban,
   Bell,
@@ -347,6 +350,7 @@ function useProductCardPlacement(config) {
     const card = ref.current;
     if (!card) return;
     const place = () => {
+      if (!card.classList.contains("product-content-sorted")) card.style.gridTemplateRows = "";
       const cardRect = card.getBoundingClientRect();
       const cssScale = cardRect.width / card.offsetWidth || 1;
       const canvas = card.closest(".ht-paywall");
@@ -355,11 +359,21 @@ function useProductCardPlacement(config) {
       card.querySelectorAll('[data-inspector-area^="product-"]').forEach((element) => {
         element.style.translate = "none";
         const part = element.dataset.inspectorArea.replace("product-", "");
-        const managed = config.productArrangements?.[card.dataset.productLayout];
+        const managed = config.productContentOrders?.[card.dataset.productLayout] || config.productArrangements?.[card.dataset.productLayout];
         const settings = managed ? {} : config.productPartStyles?.[part] ?? {};
         const translation = productTranslation({ alignment: settings.align, offsetX: settings.offsetX, offsetY: settings.offsetY, card: cardRect, element: element.getBoundingClientRect(), unitScale, cssScale });
         element.style.translate = `${translation.x}px ${translation.y}px`;
       });
+      if (card.classList.contains("product-content-sorted")) {
+        const peers = [...card.parentElement.querySelectorAll("[data-product-card].product-content-sorted")].filter((item) => item.dataset.productNodeId === card.dataset.productNodeId);
+        const heights = [];
+        peers.forEach((peer) => peer.querySelectorAll('[data-inspector-area^="product-"]').forEach((element) => {
+          const row = Number(element.style.gridRow);
+          if (row > 0) heights[row - 1] = Math.max(heights[row - 1] ?? 0, element.getBoundingClientRect().height / cssScale);
+        }));
+        const tracks = Array.from({ length: heights.length }, (_, index) => `${heights[index] ?? 0}px`).join(" ");
+        peers.forEach((peer) => { if (peer.style.gridTemplateRows !== tracks) peer.style.gridTemplateRows = tracks; });
+      }
     };
     place();
     const observer = new ResizeObserver(place);
@@ -373,7 +387,8 @@ function ProductPackageCard({ plan, index, config = {}, layout, selected, focuse
   const arrangement = productArrangement(config, layout);
   if (layout === "vertical" && arrangement.cardContentLayout !== "source") config = { ...config, cardContentLayout: arrangement.cardContentLayout, showRadio: arrangement.cardContentLayout === "radio-stacked" };
   const cardRef = useProductCardPlacement(config);
-  const baseClass = `ht-node ${focused ? "selected" : ""} ${config.planHeight !== undefined && config.planHeight !== "" ? "ht-sized-plan" : ""}`;
+  let contentOrder = config.productContentOrders?.[layout];
+  const baseClass = `ht-node ${focused ? "selected" : ""} ${contentOrder ? "product-content-sorted" : ""} ${config.planHeight !== undefined && config.planHeight !== "" ? "ht-sized-plan" : ""}`;
   if (plan.emptySlot) return <div className={`${layout === "vertical" ? "ht-vertical-plan" : "ht-plan"} ht-plan-empty ${layout === "horizontal" ? "ht-blue-plan" : ""}`} aria-label={`套餐 ${index + 1} 空坑位`} />;
   const name = plan.name;
   const priceView = resolveProductPrice(plan, priceMode);
@@ -385,6 +400,12 @@ function ProductPackageCard({ plan, index, config = {}, layout, selected, focuse
   const extraSave = saveText && primaryDetail !== saveText ? saveText : "";
   const saving = plan.showSavingCopy ? plan.savingCopy : "";
   const hasBadge = Boolean(plan.showBadge && plan.badgeText);
+  if (contentOrder) {
+    const present = { name, price: priceView.main, reference: priceView.strike, monthly: layout === "vertical" && fields.monthly !== priceView.main && fields.monthly !== priceView.strike ? fields.monthly : "", supporting: supportingCopy, save: saveText, saving, badge: hasBadge, marker: layout === "info-row" };
+    const inventory = Object.fromEntries(Object.entries(present).filter(([, value]) => value).map(([part], sequence) => [part, { sequence, region: ["horizontal", "standard"].includes(layout) ? "body" : part === "badge" && layout !== "info-row" ? "heading" : part === "marker" ? "marker" : ["name", "supporting", "secondaryName"].includes(part) ? "left" : "right" }]));
+    Object.entries(contentOrder).forEach(([region, items]) => items.forEach((part) => { inventory[part] ??= { region }; }));
+    contentOrder = contentRegions(layout, inventory, contentOrder);
+  }
   const selectedStyle = selected ? { borderColor: "transparent", background: `${productGradient([config.selectedBackground ?? "#ffffff", config.selectedBackground ?? "#ffffff", config.selectedBackground ?? "#ffffff"], ["#ffffff", "#ffffff", "#ffffff"])} padding-box, ${productGradient(config.selectedBorderGradient, ["#ff860a", "#ff860a", "#ff860a"])} border-box` } : {};
   const productStyle = { "--badge-background": productGradient(config.badgeGradient, ["#ff860a", "#ffb000", "#ffd10b"]), "--save-text-color": config.saveTextColor ?? "#ff8207", "--save-background-color": config.saveBackgroundColor ?? "transparent" };
   const usesDesignDefaults = Boolean(HT_PRODUCT_DESIGN_DEFAULTS[config.productTemplate]);
@@ -394,9 +415,9 @@ function ProductPackageCard({ plan, index, config = {}, layout, selected, focuse
   const priceStyle = { ...(compactPrice ? { fontSize: `min(${Number(configuredPriceSize) > 0 ? productFontSize(config, configuredPriceSize) : "6cqw"}, 4cqw)` } : Number(configuredPriceSize) > 0 ? { fontSize: productFontSize(config, configuredPriceSize) } : {}), ...(modeStyle.mainColor ? { color: modeStyle.mainColor } : {}) };
   const strikeStyle = { ...(Number(modeStyle.strikeFontSize) > 0 ? { fontSize: productFontSize(config, modeStyle.strikeFontSize) } : {}), ...(modeStyle.strikeColor ? { color: modeStyle.strikeColor } : {}) };
   const frameStyle = { ...(Number(config.planWidth) > 0 ? { width: `${config.planWidth}%`, marginInline: "auto", justifySelf: "center" } : {}), ...(config.planHeight !== undefined && config.planHeight !== "" && Number.isFinite(Number(config.planHeight)) ? { minHeight: productFontSize(config, config.planHeight) } : {}), ...(config.planPadding !== "" && Number.isFinite(Number(config.planPadding)) && config.planPadding !== undefined ? { padding: productFontSize(config, config.planPadding) } : {}), ...Object.fromEntries(["Top", "Right", "Bottom", "Left"].filter((side) => config[`planPadding${side}`] !== undefined && config[`planPadding${side}`] !== "" && Number.isFinite(Number(config[`planPadding${side}`]))).map((side) => [`padding${side}`, productFontSize(config, config[`planPadding${side}`])])) };
-  const planStyle = { ...productStyle, ...selectedStyle, ...frameStyle, ...(config.planRadius !== undefined && config.planRadius !== "" ? { borderRadius: `${config.planRadius}px` } : {}) };
+  const planStyle = { ...productStyle, "--product-frame-top": frameStyle.paddingTop ?? frameStyle.padding ?? "0px", ...selectedStyle, ...frameStyle, ...(config.planRadius !== undefined && config.planRadius !== "" ? { borderRadius: `${config.planRadius}px` } : {}) };
   const partStyle = (part, base = {}) => {
-    return { ...base, ...productPartStyle(config, part), ...(part === "price" && Number(modeStyle.mainFontSize) > 0 ? { fontSize: productFontSize(config, modeStyle.mainFontSize) } : {}), ...(part === "price" && validHexColor(modeStyle.mainColor) ? { color: modeStyle.mainColor } : {}), ...(part === "reference" && Number(modeStyle.strikeFontSize) > 0 ? { fontSize: productFontSize(config, modeStyle.strikeFontSize) } : {}), ...(part === "reference" && validHexColor(modeStyle.strikeColor) ? { color: modeStyle.strikeColor } : {}) };
+    return { ...base, ...(["saving", "save"].includes(part) && validHexColor(config.saveTextColor) ? { color: config.saveTextColor } : {}), ...productPartStyle(config, part), ...(contentOrder ? contentSlot(contentOrder, part, layout) : {}), ...(part === "price" && Number(modeStyle.mainFontSize) > 0 ? { fontSize: productFontSize(config, modeStyle.mainFontSize) } : {}), ...(part === "price" && validHexColor(modeStyle.mainColor) ? { color: modeStyle.mainColor } : {}), ...(part === "reference" && Number(modeStyle.strikeFontSize) > 0 ? { fontSize: productFontSize(config, modeStyle.strikeFontSize) } : {}), ...(part === "reference" && validHexColor(modeStyle.strikeColor) ? { color: modeStyle.strikeColor } : {}) };
   };
   const choose = (event) => { if (!interactive) return; event.stopPropagation(); onChoose?.(index); onInspect?.(event, index); };
   const keyboard = (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); choose(event); } };
@@ -407,10 +428,10 @@ function ProductPackageCard({ plan, index, config = {}, layout, selected, focuse
     return <div className={`${baseClass} ht-info-row ${selected ? "chosen" : ""}`} {...cardProps} style={planStyle}>
       <span className="ht-info-row-marker" data-inspector-area="product-marker" style={partStyle("marker")} aria-hidden="true">◆</span>
       <span className="ht-info-row-main"><strong data-inspector-area="product-name" style={partStyle("name")}>{primaryName}</strong>{secondaryName && <small data-inspector-area="product-secondaryName" style={partStyle("secondaryName")}>{secondaryName}</small>}{primaryCopy && <small data-inspector-area="product-supporting" style={partStyle("supporting")}>{primaryCopy}</small>}</span>
-      <span className="ht-info-row-price"><strong data-inspector-area="product-price" style={partStyle("price", priceStyle)}>{priceView.main}</strong>{secondaryCopy && <small data-inspector-area="product-billing" style={partStyle("billing")}>{secondaryCopy}</small>}</span>
+      <span className="ht-info-row-price">{hasBadge && <small data-inspector-area="product-badge" style={partStyle("badge")}>{plan.badgeText}</small>}{priceView.strike && <del data-inspector-area="product-reference" style={partStyle("reference", strikeStyle)}>{priceView.strike}</del>}<strong data-inspector-area="product-price" style={partStyle("price", priceStyle)}>{priceView.main}</strong>{saving && <small data-inspector-area="product-saving" style={partStyle("saving")}>{saving}</small>}{saveText && <small data-inspector-area="product-save" style={partStyle("save")}>{saveText}</small>}{secondaryCopy && <small data-inspector-area="product-billing" style={partStyle("billing")}>{secondaryCopy}</small>}</span>
     </div>;
   }
-  if (layout === "compact") return <div className={`${baseClass} ht-plan ht-compact-plan ${selected ? "chosen" : ""}`} {...cardProps}>
+  if (layout === "compact") return <div className={`${baseClass} ht-plan ht-compact-plan ${hasBadge ? "has-product-badge" : ""} ${selected ? "chosen" : ""}`} {...cardProps}>
     {hasBadge && <b className="ht-compact-badge" data-inspector-area="product-badge" style={partStyle("badge")}>{plan.badgeText}</b>}
     <strong className="ht-compact-name" data-inspector-area="product-name" style={partStyle("name")}>{name}</strong>
     <div className="ht-compact-price"><span data-inspector-area="product-price" style={partStyle("price", priceStyle)}>{priceView.main}</span>{priceView.strike && <del data-inspector-area="product-reference" style={partStyle("reference", strikeStyle)}>{priceView.strike}</del>}{saving && <small data-inspector-area="product-saving" style={partStyle("saving")}>{saving}</small>}{supportingCopy && <small data-inspector-area="product-supporting" style={partStyle("supporting")}>{supportingCopy}</small>}{saveText && <small data-inspector-area="product-save" style={partStyle("save")}>{saveText}</small>}</div>
@@ -2437,7 +2458,11 @@ function useProductPreviewDefaults(active, pricePreviewMode) {
       if (!element || !element.getClientRects().length) return;
       const target = part === "price" && element.querySelector("strong") || element;
       const style = getComputedStyle(target);
-      parts[part] = { fontSize: Math.round(parseFloat(style.fontSize) / scale * 10) / 10, color: previewColor(style.color) };
+      const layout = productLayout(active.config);
+      const parent = element.closest("[data-product-card]");
+      const stacked = ["horizontal", "standard"].includes(layout);
+      const region = stacked ? "body" : part === "marker" ? "marker" : part === "badge" && layout !== "info-row" ? "heading" : element.closest(".ht-info-row-main, .ht-vertical-main, .ht-split-summary-copy") || element.classList.contains("ht-compact-name") ? "left" : "right";
+      parts[part] = { fontSize: Math.round(parseFloat(style.fontSize) / scale * 10) / 10, color: previewColor(style.color), region, sequence: element.getBoundingClientRect().top - parent.getBoundingClientRect().top };
     });
     const style = getComputedStyle(card);
     const parentWidth = card.parentElement?.getBoundingClientRect().width || card.getBoundingClientRect().width;
@@ -2493,11 +2518,21 @@ function ProductPartStyleEditor({ active, updateNode, defaults }) {
 
 function ProductsPositionEditor({ active, updateNode, pricePreviewMode }) {
   const { parts } = useProductPreviewDefaults(active, pricePreviewMode);
+  const drag = useRef(null);
+  const [dragging, setDragging] = useState(null);
   const layout = productLayout(active.config);
-  const current = productArrangement(active.config ?? {}, layout);
-  const fields = (PRODUCT_ARRANGEMENTS[layout] ?? []).filter(({ key }) => key === "referenceOrder" ? parts.reference : key === "priceOrder" ? parts.saving || parts.save || parts.supporting : true);
+  const regions = contentRegions(layout, parts, active.config?.productContentOrders?.[layout]);
+  const labels = Object.fromEntries(PRODUCT_PARTS);
   const label = PRODUCT_LAYOUTS.find((item) => item.id === layout)?.label;
-  return <section className="product-arrangement-editor"><div className="product-part-row-heading"><h4>{label}</h4><button type="button" className="icon" title="恢复当前布局排布" aria-label="恢复当前布局排布" onClick={() => { const next = { ...active.config?.productArrangements }; delete next[layout]; updateNodeConfig(active, updateNode, { productArrangements: next }); }}><RotateCw size={15} /></button></div>{fields.map((field) => <fieldset key={field.key}><legend>{field.label}</legend><div className="product-arrangement-options">{field.options.map(([value, title]) => <label key={value} className={current[field.key] === value ? "active" : ""}><input type="radio" name={`${active.id}-${layout}-${field.key}`} aria-label={title} checked={current[field.key] === value} onChange={() => updateNode(active.id, { config: updateProductArrangement(active.config ?? {}, layout, field.key, value) })} /><span>{title}</span></label>)}</div></fieldset>)}</section>;
+  const move = (part, region, index) => updateNodeConfig(active, updateNode, { productContentOrders: { ...active.config?.productContentOrders, [layout]: moveContentPart(regions, part, region, index) } });
+  const dropTarget = (event) => {
+    const target = document.elementFromPoint(event.clientX, event.clientY)?.closest("[data-content-part], [data-content-region]");
+    if (!target || !event.currentTarget.contains(target)) return null;
+    const region = target.dataset.contentRegion ?? target.closest("[data-content-region]")?.dataset.contentRegion;
+    const targetPart = target.dataset.contentPart;
+    return region ? { region, index: targetPart ? regions[region].indexOf(targetPart) : regions[region].length } : null;
+  };
+  return <section className="product-arrangement-editor product-content-order" onPointerMove={(event) => { if (drag.current) drag.current.target = dropTarget(event); }} onPointerUp={(event) => { const source = drag.current; if (!source) return; const target = dropTarget(event) ?? source.target; drag.current = null; setDragging(null); if (target) move(source.part, target.region, target.index); }} onPointerCancel={() => { drag.current = null; setDragging(null); }}><div className="product-part-row-heading"><h4>{label}</h4><button type="button" className="icon" title="恢复当前布局排布" aria-label="恢复当前布局排布" onClick={() => { const next = { ...active.config?.productContentOrders }; delete next[layout]; updateNodeConfig(active, updateNode, { productContentOrders: next }); }}><RotateCw size={15} /></button></div>{(PRODUCT_REGIONS[layout] ?? []).map(([region, title]) => <section className="product-content-region" data-content-region={region} key={region}><h4>{title}</h4>{regions[region].map((part, index) => <div className={`product-content-order-row${dragging === part ? " dragging" : ""}`} data-content-part={part} key={part}><button type="button" className="content-sort-grip" aria-label={`拖动${labels[part]}`} title={`拖动${labels[part]}`} onPointerDown={(event) => { event.preventDefault(); drag.current = { part }; setDragging(part); event.currentTarget.closest(".product-content-order").setPointerCapture(event.pointerId); }}><GripVertical size={16} /></button><span>{labels[part]}</span>{Object.keys(regions).length > 1 && part !== "marker" && <select aria-label={`${labels[part]}所在分区`} value={region} onChange={(event) => move(part, event.target.value, regions[event.target.value].length)}>{(PRODUCT_REGIONS[layout] ?? []).filter(([id]) => id !== "marker").map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select>}<button type="button" className="icon" title="上移" aria-label={`上移${labels[part]}`} disabled={index === 0} onClick={() => move(part, region, index - 1)}><ArrowUp size={14} /></button><button type="button" className="icon" title="下移" aria-label={`下移${labels[part]}`} disabled={index === regions[region].length - 1} onClick={() => move(part, region, index + 1)}><ArrowDown size={14} /></button></div>)}</section>)}</section>;
 }
 
 function ProductsStyleEditor({ active, updateNode, pricePreviewMode, previewFocus }) {
