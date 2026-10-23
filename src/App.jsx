@@ -2225,5 +2225,3 @@ function PreviewTabs({ tabs, selected, onChange, config }) {
   const active = tabs[selected];
   return <div className="preview-tabs"><div role="tablist">{tabs.map((tab, index) => <button type="button" role="tab" aria-selected={index === selected} key={tab.id} style={index === selected ? { color: config.accentColor ?? "#6a31e9", borderColor: config.accentColor ?? "#6a31e9" } : undefined} onClick={(event) => { event.stopPropagation(); onChange?.(index); }}>{tab.title}</button>)}</div><div role="tabpanel">{active?.description}</div></div>;
 }
-
-

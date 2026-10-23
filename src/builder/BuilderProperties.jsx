@@ -777,5 +777,3 @@ export function Field({ label, children, required = false, optional = false }) {
   const displayLabel = label?.endsWith(" *") ? label.slice(0, -2) : label;
   return <label className={`form-field${isRequired ? " required" : ""}`}><span aria-label={isRequired ? `${displayLabel}，必填` : undefined}>{displayLabel}</span>{children}</label>;
 }
-
-
