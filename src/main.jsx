@@ -4,7 +4,8 @@ import { createRoot } from "react-dom/client";
 import { DEMO_SKUS, PRICE_DISPLAY_MODES, billingMonths, productPriceFields, resolveProductPrice, skuById, skuCopy, templateSkuId } from "./productPricing.js";
 import { applyComponent, captureComponent, componentKind, readComponentLibrary, writeComponentLibrary } from "./componentLibrary.js";
 import { clearLocalDemoSettings, protectedTemplateIds, readTemplateNodes, writeTemplateNodes } from "./templateStorage.js";
-import { productOffset, productTranslation } from "./productPlacement.js";
+import { productTranslation } from "./productPlacement.js";
+import { PRODUCT_ARRANGEMENTS, productArrangement, updateProductArrangement } from "./productArrangement.js";
 import { revenueCatGallery } from "./revenueCatGallery.js";
 import { createSourceTemplateNodes, observedTemplate, sourceBlueprints } from "./revenueCatSourceBlueprints.js";
 import {
@@ -354,7 +355,8 @@ function useProductCardPlacement(config) {
       card.querySelectorAll('[data-inspector-area^="product-"]').forEach((element) => {
         element.style.translate = "none";
         const part = element.dataset.inspectorArea.replace("product-", "");
-        const settings = config.productPartStyles?.[part] ?? {};
+        const managed = config.productArrangements?.[card.dataset.productLayout];
+        const settings = managed ? {} : config.productPartStyles?.[part] ?? {};
         const translation = productTranslation({ alignment: settings.align, offsetX: settings.offsetX, offsetY: settings.offsetY, card: cardRect, element: element.getBoundingClientRect(), unitScale, cssScale });
         element.style.translate = `${translation.x}px ${translation.y}px`;
       });
@@ -368,6 +370,8 @@ function useProductCardPlacement(config) {
 }
 
 function ProductPackageCard({ plan, index, config = {}, layout, selected, focused = false, interactive = true, priceMode = "1", onChoose, onInspect, embeddedBenefits, onBenefitInspect, nodeId = "products" }) {
+  const arrangement = productArrangement(config, layout);
+  if (layout === "vertical" && arrangement.cardContentLayout !== "source") config = { ...config, cardContentLayout: arrangement.cardContentLayout, showRadio: arrangement.cardContentLayout === "radio-stacked" };
   const cardRef = useProductCardPlacement(config);
   const baseClass = `ht-node ${focused ? "selected" : ""} ${config.planHeight !== undefined && config.planHeight !== "" ? "ht-sized-plan" : ""}`;
   if (plan.emptySlot) return <div className={`${layout === "vertical" ? "ht-vertical-plan" : "ht-plan"} ht-plan-empty ${layout === "horizontal" ? "ht-blue-plan" : ""}`} aria-label={`套餐 ${index + 1} 空坑位`} />;
@@ -396,7 +400,7 @@ function ProductPackageCard({ plan, index, config = {}, layout, selected, focuse
   };
   const choose = (event) => { if (!interactive) return; event.stopPropagation(); onChoose?.(index); onInspect?.(event, index); };
   const keyboard = (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); choose(event); } };
-  const cardProps = { ref: cardRef, "data-product-card": true, "data-product-node-id": nodeId, "data-product-index": index, style: planStyle, role: interactive ? "button" : undefined, tabIndex: interactive ? 0 : undefined, onClick: choose, onKeyDown: keyboard };
+  const cardProps = { ref: cardRef, "data-product-card": true, "data-product-node-id": nodeId, "data-product-index": index, "data-product-layout": layout, ...Object.fromEntries(Object.entries(arrangement).map(([key, value]) => [`data-arrange-${key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`, value])), style: planStyle, role: interactive ? "button" : undefined, tabIndex: interactive ? 0 : undefined, onClick: choose, onKeyDown: keyboard };
   if (layout === "info-row") {
     const [primaryName, secondaryName = ""] = name.split(" · ");
     const [primaryCopy, secondaryCopy = ""] = supportingCopy.split(" · ");
@@ -1800,9 +1804,6 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
   const [pricePreviewMode, setPricePreviewMode] = useState("1");
   const [retentionPreview, setRetentionPreview] = useState(null);
   const [previewFocus, setPreviewFocus] = useState(null);
-  const [productPositionEditing, setProductPositionEditing] = useState(false);
-  const productPositionDrag = useRef(null);
-  const productPositionClick = useRef(false);
   const retentionPreviewOpen = retentionPreview?.templateId === templates[appliedTemplate]?.id;
   const [dragState, setDragState] = useState(null);
   const previewDragSource = useRef(null);
@@ -1841,49 +1842,6 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
   if (view === "builder") {
     const active = linkedNodes.find((node) => node.id === activeNode);
     const rawActive = builderNodes.find((node) => node.id === activeNode);
-    const positionEvents = {
-      onPointerDownCapture: (event) => {
-        productPositionClick.current = false;
-        if (!productPositionEditing || active?.type !== "Products" || event.button !== 0) return;
-        const target = event.target.closest?.('[data-inspector-area^="product-"]');
-        const card = target?.closest("[data-product-card]");
-        if (!card || card.dataset.productNodeId !== active.id) return;
-        const part = target.dataset.inspectorArea.replace("product-", "");
-        const settings = active.config?.productPartStyles?.[part] ?? {};
-        const peers = [...event.currentTarget.querySelectorAll(`[data-inspector-area="product-${part}"]`)].filter((element) => element.closest("[data-product-card]")?.dataset.productNodeId === active.id);
-        const unitScale = Number(card.dataset.productUnitScale) || 1;
-        productPositionDrag.current = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, part, unitScale, x: productOffset(settings.offsetX), y: productOffset(settings.offsetY), config: active.config, nodeId: active.id, peers: peers.map((element) => ({ element, translate: getComputedStyle(element).translate, scale: card.getBoundingClientRect().width / card.offsetWidth || 1 })) };
-        productPositionClick.current = true;
-        event.currentTarget.setPointerCapture(event.pointerId);
-        event.preventDefault();
-        event.stopPropagation();
-        selectPreviewNode(active.id, `product-${part}`, Number(card.dataset.productIndex));
-      },
-      onPointerMoveCapture: (event) => {
-        const drag = productPositionDrag.current;
-        if (!drag || drag.pointerId !== event.pointerId) return;
-        const dx = event.clientX - drag.startX;
-        const dy = event.clientY - drag.startY;
-        drag.peers.forEach(({ element, translate, scale }) => {
-          const [x = 0, y = 0] = translate === "none" ? [0, 0] : translate.split(" ").map(parseFloat);
-          element.style.translate = `${x + dx / scale}px ${y + dy / scale}px`;
-        });
-        event.preventDefault();
-        event.stopPropagation();
-      },
-      onPointerUpCapture: (event) => {
-        const drag = productPositionDrag.current;
-        if (!drag || drag.pointerId !== event.pointerId) return;
-        productPositionDrag.current = null;
-        if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
-        const styles = drag.config?.productPartStyles ?? {};
-        updateNodeWithPreview(drag.nodeId, { config: { ...drag.config, productPartStyles: { ...styles, [drag.part]: { ...styles[drag.part], offsetX: Math.round(productOffset(drag.x + (event.clientX - drag.startX) / drag.unitScale)), offsetY: Math.round(productOffset(drag.y + (event.clientY - drag.startY) / drag.unitScale)) } } } });
-        event.preventDefault();
-        event.stopPropagation();
-      },
-      onPointerCancelCapture: () => { productPositionDrag.current?.peers.forEach(({ element, translate }) => { element.style.translate = translate; }); productPositionDrag.current = null; },
-      onClickCapture: (event) => { if (productPositionClick.current) { productPositionClick.current = false; event.preventDefault(); event.stopPropagation(); } },
-    };
     const matchingRecords = componentRecords.filter((record) => record.kind === componentKind(rawActive?.type) && record.name.toLocaleLowerCase().includes(librarySearch.trim().toLocaleLowerCase())).sort((a, b) => b.createdAt - a.createdAt);
     const saveCurrentComponent = () => {
       const name = libraryName.trim();
@@ -2021,7 +1979,7 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
               return <button type="button" data-node-id={node.id} style={{ paddingLeft: `${7 + (node.depth ?? 0) * 15}px` }} className={`node ${activeNode === node.id ? "selected" : ""} ${isDragging ? "dragging" : ""} ${dropClass}`} onPointerDown={(event) => beginNodeDrag(event, node.id)} onPointerMove={updateNodeDropTarget} onPointerUp={dropNode} onPointerCancel={() => setDragState(null)} onClick={() => { setActiveNode(node.id); setPreviewFocus(null); }} key={node.id} aria-grabbed={isDragging}><span className="drag-handle" aria-hidden="true"><GripVertical size={14} /></span><i><BuilderNodeIcon type={node.type} /></i><strong>{node.config?.retention ? "挽留弹窗" : isTextNodeType(node.type) ? "Text" : node.type === "Agreement" ? zhCopy[node.type] : node.type}</strong><small>{node.config?.retention ? "" : node.label}</small></button>;
             })}</div>
           </aside>
-          <div className={`canvas-area${productPositionEditing && active?.type === "Products" ? " product-position-editing" : ""}`} {...positionEvents}>
+          <div className="canvas-area">
             <div className="device-controls">
               <button className="unknown-action" onClick={() => markUnknown(builderBoundary)}><Smartphone size={16} /> iPhone 15 Pro <ChevronDown size={14} /></button>
               {appliedTemplate !== null && !templates[appliedTemplate].isNew && <div className="preview-mode" aria-label="Preview mode">
@@ -2037,7 +1995,7 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
             {appliedTemplate !== null && previewMode === "editable" && <p className="source-preview-note">{templates[appliedTemplate].isGallery ? templates[appliedTemplate].editorVerified ? "已核对 RevenueCat 编辑器 Layers；本地是通用组件映射，SKU、字段和动作目标仍需核验。" : "仅有 RevenueCat 画廊预览证据；编辑器 Layers、SKU 与动作目标均未核实。" : templates[appliedTemplate].isNew ? "本地组合模板；组件和文案可在左侧选择后编辑。" : isEditableTemplate(templates[appliedTemplate]) ? "已采集样式与核心字段的本地可编辑复现。" : "精确节点树仍在采集。"}</p>}
             <p className="preview-disclaimer">All prices, titles, and offers displayed are placeholders. The actual data from App Store and Google Play will be shown in the app.</p>
           </div>
-          <aside className="property-panel"><div className="component-library-toolbar"><span>组件库</span><div><button type="button" className="icon" title="保存当前组件" aria-label="保存当前组件" disabled={!rawActive} onClick={() => { setLibraryName(""); setLibraryError(""); setLibraryMode("save"); }}><Save size={17} /></button><button type="button" className="icon" title="读取已保存组件" aria-label="读取已保存组件" disabled={!rawActive} onClick={() => { setLibrarySearch(""); setLibraryError(""); setLibraryMode("load"); }}><FolderOpen size={17} /></button></div></div><BuilderProperties active={active} previewFocus={previewFocus} onSelectProductPart={(part) => selectPreviewNode(active.id, `product-${part}`, previewFocus?.slideIndex)} onProductPositionEditing={setProductPositionEditing} markUnknown={markUnknown} boundary={builderBoundary} templateLinks={templateLinks} setTemplateLinks={setTemplateLinks} updateNode={updateNodeWithPreview} removeNode={deleteElement} addNestedNode={addNestedElement} isDocumentTemplate={isDocumentTemplate} documentTemplate={templates[appliedTemplate]?.documentTemplate} pricePreviewMode={pricePreviewMode} setPricePreviewMode={setPricePreviewMode} retentionPreviewOpen={retentionPreviewOpen} onPreviewRetention={() => { setPreviewMode("editable"); setRetentionPreview((current) => current?.templateId === templates[appliedTemplate]?.id ? null : { templateId: templates[appliedTemplate]?.id }); }} /></aside>
+          <aside className="property-panel"><div className="component-library-toolbar"><span>组件库</span><div><button type="button" className="icon" title="保存当前组件" aria-label="保存当前组件" disabled={!rawActive} onClick={() => { setLibraryName(""); setLibraryError(""); setLibraryMode("save"); }}><Save size={17} /></button><button type="button" className="icon" title="读取已保存组件" aria-label="读取已保存组件" disabled={!rawActive} onClick={() => { setLibrarySearch(""); setLibraryError(""); setLibraryMode("load"); }}><FolderOpen size={17} /></button></div></div><BuilderProperties active={active} previewFocus={previewFocus} markUnknown={markUnknown} boundary={builderBoundary} templateLinks={templateLinks} setTemplateLinks={setTemplateLinks} updateNode={updateNodeWithPreview} removeNode={deleteElement} addNestedNode={addNestedElement} isDocumentTemplate={isDocumentTemplate} documentTemplate={templates[appliedTemplate]?.documentTemplate} pricePreviewMode={pricePreviewMode} setPricePreviewMode={setPricePreviewMode} retentionPreviewOpen={retentionPreviewOpen} onPreviewRetention={() => { setPreviewMode("editable"); setRetentionPreview((current) => current?.templateId === templates[appliedTemplate]?.id ? null : { templateId: templates[appliedTemplate]?.id }); }} /></aside>
         </div>
         <div className="builder-footer"><button className="secondary unknown-action" onClick={() => markUnknown(builderBoundary)}>Discard</button><button className="primary" onClick={() => setModal({ kind: appliedTemplate !== null ? "template-requirements" : "builder-save" })}>Save</button></div>
         {libraryMode && <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setLibraryMode(null); }}><section className="modal component-library-modal" role="dialog" aria-modal="true" aria-label={libraryMode === "save" ? "保存组件" : "读取组件"}><header><h2>{libraryMode === "save" ? "保存组件" : "读取组件"}</h2><button type="button" className="icon" title="关闭" aria-label="关闭" onClick={() => setLibraryMode(null)}><X size={19} /></button></header><div className="component-library-body"><p className="component-library-note">仅保存在当前浏览器中，不会同步到账号或其他设备。{rawActive?.type === "Products" && "商品套餐只保存样式配置，不保存 SKU、商品坑位和价格。"}</p>{libraryMode === "save" ? <Field label="组件名称"><input autoFocus maxLength={41} value={libraryName} placeholder="例如：蓝色特权页主视觉" onChange={(event) => { setLibraryName(event.target.value); setLibraryError(""); }} onKeyDown={(event) => { if (event.key === "Enter") saveCurrentComponent(); }} /></Field> : <><div className="component-library-search"><Search size={17} /><input autoFocus value={librarySearch} placeholder="搜索已保存组件" aria-label="搜索已保存组件" onChange={(event) => setLibrarySearch(event.target.value)} /></div><div className="component-library-list">{matchingRecords.length ? matchingRecords.map((record) => <button type="button" key={record.id} className="component-library-item" onClick={() => loadComponent(record)}><span><strong>{record.name}</strong><small>{new Date(record.createdAt).toLocaleString("zh-CN")}</small></span><ChevronRight size={17} /></button>) : <p className="component-library-empty">没有可用于当前组件的记录</p>}</div></>}{libraryError && <p className="component-library-error" role="alert">{libraryError}</p>}</div><div className="modal-actions"><button type="button" className="secondary" onClick={() => setLibraryMode(null)}>取消</button>{libraryMode === "save" && <button type="button" className="primary" onClick={saveCurrentComponent}>保存</button>}</div></section></div>}
@@ -2058,9 +2016,8 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
   );
 }
 
-function BuilderProperties({ active, previewFocus, onSelectProductPart, onProductPositionEditing, markUnknown, boundary, templateLinks, setTemplateLinks, updateNode, removeNode, addNestedNode, isDocumentTemplate, documentTemplate, pricePreviewMode, setPricePreviewMode, retentionPreviewOpen, onPreviewRetention }) {
+function BuilderProperties({ active, previewFocus, markUnknown, boundary, templateLinks, setTemplateLinks, updateNode, removeNode, addNestedNode, isDocumentTemplate, documentTemplate, pricePreviewMode, setPricePreviewMode, retentionPreviewOpen, onPreviewRetention }) {
   const [tab, setTab] = useState("content");
-  useEffect(() => { onProductPositionEditing?.(active?.type === "Products" && tab === "position"); return () => onProductPositionEditing?.(false); }, [active?.id, active?.type, tab, onProductPositionEditing]);
   useEffect(() => {
     if (previewFocus?.id !== active?.id) {
       const panel = document.querySelector(".property-panel .property-scroll");
@@ -2118,7 +2075,7 @@ function BuilderProperties({ active, previewFocus, onSelectProductPart, onProduc
     unknown: "Live preview propagation, validation, persistence, and any field not captured verbatim remain unverified.",
   };
 
-  const tabBar = <div className="property-tabs"><button className={tab === "content" ? "active" : ""} onClick={() => setTab("content")}>Content</button><button className={tab === "style" ? "active" : ""} onClick={() => setTab("style")}>Style</button><button className={tab === "layout" ? "active" : ""} onClick={() => setTab("layout")}>Layout</button>{type === "Products" && <button className={tab === "position" ? "active" : ""} onClick={() => setTab("position")}>内容位置</button>}</div>;
+  const tabBar = <div className="property-tabs"><button className={tab === "content" ? "active" : ""} onClick={() => setTab("content")}>Content</button><button className={tab === "style" ? "active" : ""} onClick={() => setTab("style")}>Style</button><button className={tab === "layout" ? "active" : ""} onClick={() => setTab("layout")}>Layout</button>{type === "Products" && <button className={tab === "position" ? "active" : ""} onClick={() => setTab("position")}>内容排布</button>}</div>;
   const canEditStructure = Boolean(active);
   const nodeEditor = <EditableNodeControls active={active} updateNode={updateNode} removeNode={removeNode} canRemove={canEditStructure} />;
 
@@ -2212,7 +2169,7 @@ function BuilderProperties({ active, previewFocus, onSelectProductPart, onProduc
   }
 
   if (type === "Products") {
-    return <div className="property-scroll"><h3>商品套餐</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}<div className="product-price-mode-control"><Field label="价格样式预览"><select aria-label="价格样式预览" value={pricePreviewMode} onChange={(event) => setPricePreviewMode(event.target.value)}>{PRICE_DISPLAY_MODES.map((mode) => <option key={mode.id} value={mode.id}>{mode.id} · {mode.label}</option>)}</select></Field><small>仅切换编辑预览，实际展示由分发样式开关决定</small></div>{tab === "content" && <ProductsContent active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} />}{tab === "style" && <ProductsStyleEditor active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} previewFocus={previewFocus} />}{tab === "layout" && <ProductsLayoutEditor active={active} updateNode={updateNode} />}{tab === "position" && <ProductsPositionEditor active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} selectedPart={previewFocus?.area?.replace(/^product-/, "")} onSelectPart={onSelectProductPart} />}</div>;
+    return <div className="property-scroll"><h3>商品套餐</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}<div className="product-price-mode-control"><Field label="价格样式预览"><select aria-label="价格样式预览" value={pricePreviewMode} onChange={(event) => setPricePreviewMode(event.target.value)}>{PRICE_DISPLAY_MODES.map((mode) => <option key={mode.id} value={mode.id}>{mode.id} · {mode.label}</option>)}</select></Field><small>仅切换编辑预览，实际展示由分发样式开关决定</small></div>{tab === "content" && <ProductsContent active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} />}{tab === "style" && <ProductsStyleEditor active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} previewFocus={previewFocus} />}{tab === "layout" && <ProductsLayoutEditor active={active} updateNode={updateNode} />}{tab === "position" && <ProductsPositionEditor active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} />}</div>;
   }
 
   if (type === "Toggle") {
@@ -2534,23 +2491,20 @@ function ProductPartStyleEditor({ active, updateNode, defaults }) {
   })}</section>;
 }
 
-function ProductsPositionEditor({ active, updateNode, pricePreviewMode, selectedPart, onSelectPart }) {
-  const defaults = useProductPreviewDefaults(active, pricePreviewMode);
-  const available = PRODUCT_PARTS.filter(([part]) => defaults.parts[part]);
-  const part = available.some(([id]) => id === selectedPart) ? selectedPart : available[0]?.[0];
-  const label = PRODUCT_PARTS.find(([id]) => id === part)?.[1] ?? "";
-  const styles = active.config?.productPartStyles ?? {};
-  const current = styles[part] ?? {};
-  const patch = (changes) => updateNodeConfig(active, updateNode, { productPartStyles: { ...styles, [part]: { ...current, ...changes } } });
-  const resetPosition = () => { const next = { ...current }; delete next.align; delete next.offsetX; delete next.offsetY; delete next.order; updateNodeConfig(active, updateNode, { productPartStyles: { ...styles, [part]: next } }); };
-  return <section className="product-position-editor"><h4>编辑元素</h4><div className="product-position-elements">{available.map(([id, title]) => <button type="button" className={part === id ? "active" : ""} aria-pressed={part === id} key={id} onClick={() => onSelectPart(id)}>{title}</button>)}</div>{part && <div className="product-position-controls"><div className="product-part-row-heading"><h4>{label}</h4><button type="button" className="product-part-reset" title="恢复模板位置" aria-label="恢复当前元素位置" onClick={resetPosition}><RotateCw size={15} /></button></div><div className="split-fields"><label><span>水平位置 X</span><div className="number-unit"><input type="number" aria-label={`${label}水平位置`} value={current.offsetX ?? 0} onChange={(event) => patch({ offsetX: event.target.value })} onBlur={(event) => patch({ offsetX: productOffset(event.target.value) })} /><span>px</span></div></label><label><span>垂直位置 Y</span><div className="number-unit"><input type="number" aria-label={`${label}垂直位置`} value={current.offsetY ?? 0} onChange={(event) => patch({ offsetY: event.target.value })} onBlur={(event) => patch({ offsetY: productOffset(event.target.value) })} /><span>px</span></div></label></div><div className="product-position-alignment"><span>相对商品框</span><div className="product-part-align-options">{[["", "模板位置", null], ["left", "靠左", AlignLeft], ["center", "居中", AlignCenter], ["right", "靠右", AlignRight]].map(([value, title, Icon]) => <button type="button" key={value} title={title} aria-label={`${label}${title}`} aria-pressed={(current.align ?? "") === value} className={(current.align ?? "") === value ? "active" : ""} onClick={() => patch({ align: value, offsetX: 0 })}>{Icon ? <Icon size={16} /> : <RotateCw size={14} />}</button>)}</div></div></div>}</section>;
+function ProductsPositionEditor({ active, updateNode, pricePreviewMode }) {
+  const { parts } = useProductPreviewDefaults(active, pricePreviewMode);
+  const layout = productLayout(active.config);
+  const current = productArrangement(active.config ?? {}, layout);
+  const fields = (PRODUCT_ARRANGEMENTS[layout] ?? []).filter(({ key }) => key === "referenceOrder" ? parts.reference : key === "priceOrder" ? parts.saving || parts.save || parts.supporting : true);
+  const label = PRODUCT_LAYOUTS.find((item) => item.id === layout)?.label;
+  return <section className="product-arrangement-editor"><div className="product-part-row-heading"><h4>{label}</h4><button type="button" className="icon" title="恢复当前布局排布" aria-label="恢复当前布局排布" onClick={() => { const next = { ...active.config?.productArrangements }; delete next[layout]; updateNodeConfig(active, updateNode, { productArrangements: next }); }}><RotateCw size={15} /></button></div>{fields.map((field) => <fieldset key={field.key}><legend>{field.label}</legend><div className="product-arrangement-options">{field.options.map(([value, title]) => <label key={value} className={current[field.key] === value ? "active" : ""}><input type="radio" name={`${active.id}-${layout}-${field.key}`} aria-label={title} checked={current[field.key] === value} onChange={() => updateNode(active.id, { config: updateProductArrangement(active.config ?? {}, layout, field.key, value) })} /><span>{title}</span></label>)}</div></fieldset>)}</section>;
 }
 
 function ProductsStyleEditor({ active, updateNode, pricePreviewMode, previewFocus }) {
   const verticalBlue = productLayout(active.config) === "vertical";
   const defaults = useProductPreviewDefaults(active, pricePreviewMode);
   return <div className="product-color-settings" data-product-layout={active.config?.purchasePerCard ? "credit" : "plan"}>
-    <h4>商品框体</h4><div className="split-fields"><ConfigNumberField label="框体宽度" active={active} updateNode={updateNode} name="planWidth" fallback={100} min={40} max={100} suffix="%" clampOnBlur /><ConfigNumberField label="框体最小高度" active={active} updateNode={updateNode} name="planHeight" fallback={defaults.frame.planHeight ?? 0} min={0} max={300} suffix="px" clampOnBlur /></div><div className="split-fields"><ConfigNumberField label="上内边距" active={active} updateNode={updateNode} name="planPaddingTop" fallback={defaults.frame.planPaddingTop ?? 0} min={0} max={40} step={0.1} suffix="px" clampOnBlur /><ConfigNumberField label="右内边距" active={active} updateNode={updateNode} name="planPaddingRight" fallback={defaults.frame.planPaddingRight ?? 0} min={0} max={40} step={0.1} suffix="px" clampOnBlur /><ConfigNumberField label="下内边距" active={active} updateNode={updateNode} name="planPaddingBottom" fallback={defaults.frame.planPaddingBottom ?? 0} min={0} max={40} step={0.1} suffix="px" clampOnBlur /><ConfigNumberField label="左内边距" active={active} updateNode={updateNode} name="planPaddingLeft" fallback={defaults.frame.planPaddingLeft ?? 0} min={0} max={40} step={0.1} suffix="px" clampOnBlur /></div>
+    <h4>商品框体</h4><div className="split-fields"><ConfigNumberField label="框体宽度" active={active} updateNode={updateNode} name="planWidth" fallback={100} min={40} max={100} suffix="%" clampOnBlur /><ConfigNumberField label="框体最小高度" active={active} updateNode={updateNode} name="planHeight" fallback={defaults.frame.planHeight ?? 0} min={0} max={300} suffix="px" clampOnBlur /></div>
     <ProductPartStyleEditor active={active} updateNode={updateNode} defaults={defaults.parts} />
     {!active.config?.purchasePerCard && <><h4>选中态与标签颜色</h4>
     <ProductColorField label={verticalBlue ? "商品角标颜色" : "商品标签颜色"} active={active} updateNode={updateNode} name="badgeGradient" fallback={["#ff860a", "#ffb000", "#ffd10b"]} gradient />
@@ -2572,8 +2526,6 @@ function ProductsLayoutEditor({ active, updateNode }) {
     <label className="switch-row"><input type="checkbox" checked={config.showCards !== false} onChange={(event) => updateNodeConfig(active, updateNode, { showCards: event.target.checked })} /><span>{config.showCards === false ? "仅绑定" : "展示"}</span><strong>展示套餐选择卡</strong></label>
     {config.showCards !== false && <>
       <Field label="布局类型"><select aria-label="布局类型" value={layout} onChange={(event) => updateNodeConfig(active, updateNode, { packageLayout: event.target.value })}>{PRODUCT_LAYOUTS.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}</select></Field>
-      {(layout === "vertical" || layout === "horizontal") && <Field label="卡片内容排列"><select aria-label="卡片内容排列" value={config.cardContentLayout ?? "standard"} onChange={(event) => updateNodeConfig(active, updateNode, { cardContentLayout: event.target.value })}>{layout === "vertical" ? <><option value="standard">名称与价格分列</option><option value="radio-stacked">单选圆点、名称与价格纵排</option><option value="split-summary">名称和说明居左、价格居右</option></> : <><option value="standard">标准横向卡片</option><option value="duration-grid">数字、期限与价格纵排</option></>}</select></Field>}
-      {layout === "vertical" && <><label className="switch-row"><input type="checkbox" checked={config.showRadio === true} onChange={(event) => updateNodeConfig(active, updateNode, { showRadio: event.target.checked })} /><strong>显示单选圆点</strong></label><label className="switch-row"><input type="checkbox" checked={config.showMainPrice !== false} onChange={(event) => updateNodeConfig(active, updateNode, { showMainPrice: event.target.checked })} /><strong>显示主价格</strong></label></>}
     </>}
     <h4>组件位置</h4><ElementLayoutEditor active={active} updateNode={updateNode} />
   </>;
