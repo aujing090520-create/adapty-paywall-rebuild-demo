@@ -6,22 +6,22 @@ import { isUnconfiguredDetailPage } from './componentTree.js';
 const PreviewContext = createContext(null);
 const TimerContext = createContext(null);
 const icons = { check: Check, lock: LockKeyhole, star: Star, bell: Bell, moon: Moon, heart: Heart, group: Users, clock: Clock3, gift: Gift, arrow: ChevronRight, dumbbell: Dumbbell, weight: Dumbbell, running: PersonStanding, download: Download, map: MapPin, flower: Flower2, activity: Activity, ticket: Ticket, noads: Ban, blocks: Blocks, archive: Archive, shirt: Shirt, seat: Armchair, scan: ScanSearch, help: CircleHelp, access: LogIn };
-const statefulPackageKeys = ['axis', 'gap', 'align', 'justify', 'wrap', 'widthMode', 'width', 'minWidth', 'maxWidth', 'heightMode', 'height', 'minHeight', 'maxHeight', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft', 'background', 'backgroundFit', 'fillType', 'color', 'radius', 'shape', 'borderWidth', 'borderColor', 'shadowX', 'shadowY', 'shadowBlur', 'shadowColor'];
+const statefulPackageKeys = ['axis', 'gap', 'align', 'justify', 'wrap', 'widthMode', 'width', 'minWidth', 'maxWidth', 'heightMode', 'height', 'minHeight', 'maxHeight', 'paddingMode', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'paddingVertical', 'paddingHorizontal', 'marginMode', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft', 'marginVertical', 'marginHorizontal', 'background', 'backgroundImage', 'backgroundFit', 'fillType', 'color', 'radius', 'shape', 'borderWidth', 'borderColor', 'shadowX', 'shadowY', 'shadowBlur', 'shadowColor'];
 export const safeMediaSource = (url) => /^(https?:\/\/|\/(?!\/)|data:(image|video)\/)/i.test(url ?? '') ? url : '';
 const dimension = (mode, value) => mode === 'fixed' ? `${Math.max(0, Number(value) || 0)}px` : mode === 'fit' ? 'fit-content' : '100%';
 export function componentStyle(node) {
   const props = componentProps(node);
   const numeric = (key, fallback = 0) => Number.isFinite(Number(props[key])) ? Number(props[key]) : fallback;
   return {
-    width: dimension(props.widthMode, props.width), height: props.heightMode === 'fixed' ? dimension('fixed', props.height) : undefined,
+    width: dimension(props.widthMode, props.width), height: props.heightMode === 'fixed' ? dimension('fixed', props.height) : props.heightMode === 'fill' ? '100%' : undefined,
     minWidth: props.minWidth > 0 ? props.minWidth : 0, maxWidth: props.maxWidth > 0 ? props.maxWidth : undefined, flexShrink: 0, boxSizing: 'border-box',
     minHeight: props.minHeight > 0 ? props.minHeight : undefined, maxHeight: props.maxHeight > 0 ? props.maxHeight : undefined, background: props.background,
     color: props.color, fontSize: numeric('fontSize', 14), fontWeight: props.bold ? 700 : props.fontWeight, fontStyle: props.italic ? 'italic' : undefined, fontFamily: props.fontFamily === 'serif' ? 'Georgia, serif' : props.fontFamily === 'mono' ? 'ui-monospace, monospace' : undefined,
     textAlign: props.textAlign, opacity: numeric('opacity', 100) / 100, borderRadius: props.shape === 'pill' ? 999 : props.shape === 'circle' ? '50%' : numeric('radius'),
     border: props.borderWidth ? `${numeric('borderWidth')}px solid ${props.borderColor}` : undefined,
     boxShadow: props.shadowBlur || props.shadowX || props.shadowY ? `${numeric('shadowX')}px ${numeric('shadowY')}px ${numeric('shadowBlur')}px ${props.shadowColor ?? '#000000'}` : undefined,
-    padding: ['Top', 'Right', 'Bottom', 'Left'].map((side) => `${numeric(`padding${side}`)}px`).join(' '),
-    margin: ['Top', 'Right', 'Bottom', 'Left'].map((side) => `${numeric(`margin${side}`)}px`).join(' '),
+    padding: props.paddingMode === 'individual' ? ['Top', 'Right', 'Bottom', 'Left'].map((side) => `${numeric(`padding${side}`)}px`).join(' ') : `${numeric('paddingVertical', numeric('paddingTop'))}px ${numeric('paddingHorizontal', numeric('paddingRight'))}px`,
+    margin: props.marginMode === 'individual' ? ['Top', 'Right', 'Bottom', 'Left'].map((side) => `${numeric(`margin${side}`)}px`).join(' ') : `${numeric('marginVertical', numeric('marginTop'))}px ${numeric('marginHorizontal', numeric('marginRight'))}px`,
     alignSelf: props.alignSelf === 'auto' ? undefined : props.alignSelf,
     ...(props.textBackground ? { background: props.textBackground } : {}),
     ...(props.backgroundImage ? { backgroundImage: `url(${JSON.stringify(safeMediaSource(props.backgroundImage))})`, backgroundSize: props.backgroundFit ?? 'cover', backgroundPosition: 'center' } : {}),
@@ -70,9 +70,12 @@ export function NativeComponent({ node, packageNode = null, floating = false }) 
     const group = props.group ?? node.id;
     const selected = runtime[`package:${group}`] ? runtime[`package:${group}`] === node.id : Boolean(props.defaultSelected);
     const state = (key) => selected && props[`selected${key[0].toUpperCase()}${key.slice(1)}`] !== undefined ? props[`selected${key[0].toUpperCase()}${key.slice(1)}`] : props[key];
-    const stateStyle = { ...style, width: dimension(state('widthMode'), state('width')), height: state('heightMode') === 'fixed' ? dimension('fixed', state('height')) : undefined, minWidth: state('minWidth') > 0 ? state('minWidth') : style.minWidth, maxWidth: state('maxWidth') > 0 ? state('maxWidth') : style.maxWidth, minHeight: state('minHeight') > 0 ? state('minHeight') : style.minHeight, maxHeight: state('maxHeight') > 0 ? state('maxHeight') : style.maxHeight, background: state('background'), borderRadius: state('shape') === 'pill' ? 999 : state('shape') === 'circle' ? '50%' : state('radius'), border: state('borderWidth') ? `${Number(state('borderWidth'))}px solid ${state('borderColor')}` : style.border, boxShadow: state('shadowBlur') || state('shadowX') || state('shadowY') ? `${Number(state('shadowX') || 0)}px ${Number(state('shadowY') || 0)}px ${Number(state('shadowBlur') || 0)}px ${state('shadowColor') || '#000'}` : style.boxShadow, padding: ['Top', 'Right', 'Bottom', 'Left'].map((side) => `${Number(state(`padding${side}`) || 0)}px`).join(' '), margin: ['Top', 'Right', 'Bottom', 'Left'].map((side) => `${Number(state(`margin${side}`) || 0)}px`).join(' ') };
-    const stateNode = { ...node, props: { ...props, ...Object.fromEntries(statefulPackageKeys.map((key) => [key, state(key)])) } };
-    return <div {...attributes} role="button" tabIndex={0} aria-pressed={selected} style={{ ...stateStyle, ...containerStyle(stateNode), ...(selected ? { borderColor: state('borderColor') ?? props.selectedBorder ?? '#167aff', background: state('background') ?? props.selectedBackground ?? '#ffffff', color: props.selectedColor ?? stateStyle.color } : {}) }} onClick={(event) => { select(event); setRuntime((current) => ({ ...current, [`package:${group}`]: node.id })); }} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setRuntime((current) => ({ ...current, [`package:${group}`]: node.id })); } }}>{children()}</div>;
+    const stateProps = { ...props, ...Object.fromEntries(statefulPackageKeys.map((key) => [key, state(key)])) };
+    if (selected && props.selectedBackground !== undefined && props.background === undefined) stateProps.background = props.selectedBackground;
+    if (selected && props.selectedBorder !== undefined && props.borderColor === undefined) stateProps.borderColor = props.selectedBorder;
+    const stateNode = { ...node, props: stateProps };
+    const stateStyle = componentStyle(stateNode);
+    return <div {...attributes} role="button" tabIndex={0} aria-pressed={selected} style={{ ...stateStyle, ...containerStyle(stateNode), ...(selected ? { borderColor: props.selectedBorder ?? stateStyle.borderColor, background: props.selectedBackground ?? stateStyle.background, color: props.selectedColor ?? stateStyle.color } : {}) }} onClick={(event) => { select(event); setRuntime((current) => ({ ...current, [`package:${group}`]: node.id })); }} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setRuntime((current) => ({ ...current, [`package:${group}`]: node.id })); } }}>{children()}</div>;
   }
   if (['Tabs', 'Carousel', 'Flow'].includes(node.type)) {
     const chosen = Math.max(0, Math.min(node.children.length - 1, runtime[node.id] ?? props.defaultIndex ?? 0));
