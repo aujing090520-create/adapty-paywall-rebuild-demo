@@ -1109,18 +1109,18 @@ textarea { min-height: 80px; resize: vertical; }
   align-items: stretch;
   gap: 0;
   padding: 5cqw .6cqw 2cqw;
+  border-width: 1.2cqw;
+}
+.ht-blue-paywall .ht-plan-shell .ht-blue-plan:has(> span > b) { z-index: 3; }
+.ht-blue-paywall .ht-plan-shell .ht-blue-plan > span > b {
+  top: -4.8cqw;
+  border-radius: 1.5cqw;
 }
 .ht-blue-paywall .ht-plan-shell .ht-blue-plan > span {
   align-self: start;
   width: 100%;
   min-width: 0;
-  margin-top: 3cqw;
-}
-.ht-blue-paywall .ht-plan-shell .ht-blue-plan.chosen > span {
   margin-top: 2.2cqw;
-}
-.ht-blue-paywall .ht-plan-shell .ht-blue-plan.chosen > span > b {
-  top: -4.8cqw;
 }
 .ht-blue-paywall .ht-plan-shell .ht-blue-plan .ht-blue-price {
   align-self: center;
@@ -2121,7 +2121,8 @@ textarea { min-height: 80px; resize: vertical; }
 .product-part-align-options button:last-child { border-right: 0; }
 .product-part-align-options button.active { background: #eee8ff; color: #6224dd; }
 .product-part-row-fields input::placeholder { color: #aaa5b0; }
-.ht-blue-paywall .ht-plan-shell:has(> :is(.ht-custom-plan, .ht-sized-plan)), .ht-membership-paywall .ht-plan-shell:has(> :is(.ht-custom-plan, .ht-sized-plan)) { height: auto; min-height: 0; overflow-y: visible; }
+.ht-blue-paywall .ht-plan-shell:has(> :is(.ht-custom-plan, .ht-sized-plan)) { height: auto; min-height: 41cqw; overflow-y: visible; }
+.ht-membership-paywall .ht-plan-shell:has(> :is(.ht-custom-plan, .ht-sized-plan)) { height: auto; min-height: 0; overflow-y: visible; }
 .preview-products.product-layout-horizontal:has(> :is(.ht-custom-plan, .ht-sized-plan)), .preview-products.product-layout-standard:has(> :is(.ht-custom-plan, .ht-sized-plan)) { height: auto; min-height: 0; }
 :is(.ht-paywall, .preview-products) .ht-custom-plan { display: flex !important; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 3px; box-sizing: border-box; container-type: inline-size; min-width: 0; max-width: 100%; height: auto !important; text-align: inherit; }
 :is(.ht-paywall, .preview-products) .ht-custom-plan .ht-custom-part { position: static !important; display: block !important; width: max-content; max-width: 100%; min-width: 0; margin: 0; padding: 0; background: transparent; box-shadow: none; line-height: 1.15; overflow-wrap: anywhere; white-space: normal; }
