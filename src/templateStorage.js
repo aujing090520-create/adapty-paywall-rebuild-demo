@@ -44,7 +44,7 @@ export function clearLocalDemoSettings(storage) {
   try {
     for (let index = storage.length - 1; index >= 0; index -= 1) {
       const key = storage.key(index);
-      if (key?.startsWith(PREFIX) || key?.startsWith(SOURCE_IMAGE_REPAIR_PREFIX) || key === COMPONENT_LIBRARY_KEY) storage.removeItem(key);
+      if (key?.startsWith(PREFIX) || key?.startsWith(SOURCE_IMAGE_REPAIR_PREFIX) || key?.startsWith('paywall-component-document-v3:') || key === 'paywall-component-library-v3' || key === COMPONENT_LIBRARY_KEY) storage.removeItem(key);
     }
     return true;
   } catch {

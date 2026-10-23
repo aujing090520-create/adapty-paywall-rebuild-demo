@@ -1,18 +1,14 @@
-import { Field, BuilderProperties, MediaUploadFields } from './builder/BuilderProperties.jsx';
+import ComponentEditor from './builder/ComponentEditor.jsx';
+import { Field } from './builder/BuilderProperties.jsx';
 import { isTextNodeType, productPackageRows, zhCopy, listRowsFor, privilegeRowsFor, agreementSegmentsFor, textRunsFor, validTextLink, helloTalkTemplateDefaults, heroTitleParts, privilegeColumnsFor, safeButtonUrl } from './builder/fieldModels.js';
 import { PRODUCT_LAYOUTS, productLayout, PRODUCT_PART_DEFAULT_SIZES, HT_PRODUCT_DESIGN_DEFAULTS, PRODUCT_PARTS, productFontSize, validHexColor, productGradient, productPartStyle } from './products/productStyleModel.js';
 import { useProductCardPlacement } from './products/useProductCardPlacement.js';
 import { ProductPackageCard } from './products/ProductPackageCard.jsx';
-import LayerTree from './builder/LayerTree.jsx';
-import LayerFieldInspector from './builder/LayerFieldInspector.jsx';
-import { buildLayerTree, editLayerArray, reparentNode, NATIVE_CONTAINERS } from './builder/layerModel.js';
-import { collectProductLayerInventory } from './builder/productLayerInventory.js';
 import { createBuilderNodes, templates, node, initialPrivilegeRows, documentProductColors, initialPrivilegeOrder, knownPrivilegeValues, referencePrivilegeIcon, privilegeNames } from './templates/templateDefinitions.js';
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { linkActionFor, visibleLinkLabels } from "./linkActions.js";
 
 import { DEMO_SKUS, PRICE_DISPLAY_MODES, billingMonths, productPriceFields, resolveProductPrice, skuById, skuCopy, templateSkuId } from "./productPricing.js";
-import { applyComponent, captureComponent, componentKind, readComponentLibrary, writeComponentLibrary } from "./componentLibrary.js";
 import { clearLocalDemoSettings, protectedTemplateIds, readTemplateNodes, writeTemplateNodes } from "./templateStorage.js";
 import { productTranslation } from "./productPlacement.js";
 import { productArrangement } from "./productArrangement.js";
@@ -788,264 +784,20 @@ function CreatePaywall({ draft, setDraft, setView, setModal }) {
 }
 
 function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setView, duplicate, setModal, markUnknown, builderNodes, setBuilderNodes, updateBuilderNode, removeBuilderNode, activeNode, setActiveNode, appliedTemplate, templateSaveError, templateLinks, setTemplateLinks, notify }) {
-  const [componentRecords, setComponentRecords] = useState(() => readComponentLibrary(window.localStorage));
-  const [libraryMode, setLibraryMode] = useState(null);
-  const [libraryName, setLibraryName] = useState("");
-  const [librarySearch, setLibrarySearch] = useState("");
-  const [libraryError, setLibraryError] = useState("");
-  const [addElementOpen, setAddElementOpen] = useState(false);
+
   const [productPickerOpen, setProductPickerOpen] = useState(false);
   const [transientProducts, setTransientProducts] = useState([]);
-  const [previewMode, setPreviewMode] = useState("source");
-  const [galleryProductPreview, setGalleryProductPreview] = useState("source");
-  const [pricePreviewMode, setPricePreviewMode] = useState("1");
-  const [retentionPreview, setRetentionPreview] = useState(null);
-  const [previewFocus, setPreviewFocus] = useState(null);
-  const [selectedLayerId, setSelectedLayerId] = useState(null);
-  const [layerContext, setLayerContext] = useState(null);
-  const [productLayerInventory, setProductLayerInventory] = useState({});
-  const retentionPreviewOpen = retentionPreview?.templateId === templates[appliedTemplate]?.id;
-  const [dragState, setDragState] = useState(null);
-  const previewDragSource = useRef(null);
-  const previewDropMarker = useRef(null);
-  const linkedOfferRows = isNew ? draft.offerRows : selected.config?.offerRows;
-  const linkedDefaultProductId = isNew ? draft.defaultProductId : selected.config?.defaultProductId;
-  const galleryTemplate = appliedTemplate !== null && templates[appliedTemplate]?.isGallery;
-  const galleryHasProducts = galleryTemplate && builderNodes.some((item) => item.type === "Products");
-  const linkedNodes = useMemo(() => builderNodes.map((item) => item.type === "Products" && (!galleryTemplate || galleryProductPreview === "selected") ? linkedPackageNode(item, linkedOfferRows, linkedDefaultProductId, item.config?.productTemplate ?? (item.config?.bluePrivilege ? "blue-privilege" : templates[appliedTemplate]?.documentTemplate)) : item), [builderNodes, galleryTemplate, galleryProductPreview, linkedOfferRows, linkedDefaultProductId, appliedTemplate]);
-  useLayoutEffect(() => {
-    const root = document.querySelector(".phone");
-    const next = root ? collectProductLayerInventory(root) : {};
-    setProductLayerInventory((current) => JSON.stringify(current) === JSON.stringify(next) ? current : next);
-  }, [linkedNodes, pricePreviewMode, layerContext, previewMode]);
-  const layerTree = useMemo(() => buildLayerTree(linkedNodes, { productRows: (item) => productPackageRows(item, templates[appliedTemplate]?.documentTemplate), priceMode: pricePreviewMode, productInventory: productLayerInventory, listRows: listRowsFor, privilegeRows: privilegeRowsFor, agreementSegments: agreementSegmentsFor }), [linkedNodes, appliedTemplate, pricePreviewMode, productLayerInventory]);
-  const selectedLayer = layerTree.entries.get(selectedLayerId);
-  useEffect(() => { setSelectedLayerId(null); setLayerContext(null); }, [appliedTemplate]);
-  const updateNodeWithPreview = (id, patch) => {
-    updateBuilderNode(id, patch);
-    if (appliedTemplate !== null && isEditableTemplate(templates[appliedTemplate])) setPreviewMode("editable");
-  };
-  const updateHeroCopyPosition = (position) => setBuilderNodes((current) => current.map((node) => node.id === "hero-image" ? { ...node, config: { ...node.config, ...position } } : node));
-  const selectPreviewNode = (id, area = "component", slideIndex = null) => {
-    setActiveNode(id);
-    setSelectedLayerId(id);
-    setPreviewFocus({ id, area, slideIndex, key: Date.now() + Math.random() });
-  };
-  useEffect(() => {
-    document.querySelectorAll(".phone .preview-subzone-selected").forEach((item) => item.classList.remove("preview-subzone-selected"));
-    if (!previewFocus || previewFocus.area === "component") return;
-    const cards = [...document.querySelectorAll(".phone [data-product-card]")].filter((card) => card.dataset.productNodeId === previewFocus.id);
-    const selected = document.querySelector(".phone .ht-node.selected, .phone .preview-node.selected");
-    const zones = cards.length ? cards.flatMap((card) => [...card.querySelectorAll(`[data-inspector-area="${previewFocus.area}"]`)]) : [selected?.querySelector(`[data-inspector-area="${previewFocus.area}"]`)].filter(Boolean);
-    zones.forEach((zone) => zone.classList.add("preview-subzone-selected"));
-    return () => zones.forEach((zone) => zone.classList.remove("preview-subzone-selected"));
-  }, [previewFocus, builderNodes]);
-  useEffect(() => setPreviewMode(Array.isArray(linkedOfferRows) || (appliedTemplate !== null && (templates[appliedTemplate]?.documentTemplate || templates[appliedTemplate]?.isNew)) ? "editable" : "source"), [appliedTemplate, Boolean(linkedOfferRows)]);
-  useEffect(() => setGalleryProductPreview("source"), [appliedTemplate]);
-  useEffect(() => {
-    if (!activeNode?.startsWith("added-")) return;
-    const scroll = document.querySelector(".ht-template-scroll");
-    const selectedNode = scroll?.querySelector(".preview-node.selected");
-    if (selectedNode) scroll.scrollTop += selectedNode.getBoundingClientRect().top - scroll.getBoundingClientRect().top - 16;
-  }, [activeNode, builderNodes]);
   if (view === "builder") {
-    const active = linkedNodes.find((node) => node.id === activeNode);
-    const rawActive = builderNodes.find((node) => node.id === activeNode);
-    const matchingRecords = componentRecords.filter((record) => record.kind === componentKind(rawActive?.type) && record.name.toLocaleLowerCase().includes(librarySearch.trim().toLocaleLowerCase())).sort((a, b) => b.createdAt - a.createdAt);
-    const saveCurrentComponent = () => {
-      const name = libraryName.trim();
-      if (!name) return setLibraryError("请输入组件名称");
-      if (name.length > 40) return setLibraryError("名称最多 40 个字");
-      const record = captureComponent(builderNodes, activeNode, name);
-      if (!record) return setLibraryError("当前组件已不存在");
-      if (componentRecords.some((item) => item.kind === record.kind && item.name === name)) return setLibraryError("该类型下已有同名组件，请换一个名称");
-      const next = [record, ...componentRecords];
-      if (!writeComponentLibrary(window.localStorage, next)) return setLibraryError("本地存储空间不足，未能保存。请尝试缩小图片文件。");
-      setComponentRecords(next);
-      setLibraryMode(null);
-      notify(`“${name}”已保存到浏览器本地组件库。`);
-    };
-    const loadComponent = (record) => {
-      setBuilderNodes((current) => applyComponent(current, activeNode, record));
-      if (appliedTemplate !== null && isEditableTemplate(templates[appliedTemplate])) setPreviewMode("editable");
-      setLibraryMode(null);
-      notify(`已将“${record.name}”应用到当前组件。`);
-    };
-    const builderBoundary = missingItems.find((item) => item.id === "B-01");
-    const isDocumentTemplate = appliedTemplate !== null && Boolean(templates[appliedTemplate]?.documentTemplate);
-    const deleteElement = (id) => {
-      removeBuilderNode(id);
-      setPreviewFocus(null);
-      if (appliedTemplate !== null && isEditableTemplate(templates[appliedTemplate])) setPreviewMode("editable");
-    };
-    const addElement = (type) => {
-      const next = createComponentNode(type, builderNodes.filter((node) => node.id.startsWith("added-")).length + 1);
-      setBuilderNodes((current) => [...current, next]);
-      setActiveNode(next.id);
-      setAddElementOpen(false);
-      if (appliedTemplate !== null && isEditableTemplate(templates[appliedTemplate])) setPreviewMode("editable");
-      notify(`${zhCopy[type] ?? type} 组件已添加到构建器，并可在右侧继续编辑。`);
-    };
-    const addNestedElement = (parentId, type) => {
-      const nextId = `added-${type.toLowerCase().replace(/[^a-z]+/g, "-")}-${builderNodes.filter((node) => node.id.startsWith("added-")).length + 1}`;
-      setBuilderNodes((current) => {
-        const parentIndex = current.findIndex((node) => node.id === parentId);
-        if (parentIndex < 0) return current;
-        const parent = current[parentIndex];
-        const next = { ...createComponentNode(type, current.filter((node) => node.id.startsWith("added-")).length + 1), depth: (parent.depth ?? 0) + 1, parentId };
-        let insertAt = parentIndex + 1;
-        while (insertAt < current.length && (current[insertAt].depth ?? 0) > (parent.depth ?? 0)) insertAt += 1;
-        return [...current.slice(0, insertAt), next, ...current.slice(insertAt)];
-      });
-      setActiveNode(nextId);
-      if (appliedTemplate !== null && isEditableTemplate(templates[appliedTemplate])) setPreviewMode("editable");
-      const parent = builderNodes.find((node) => node.id === parentId);
-      notify(`${zhCopy[type] ?? type} 已作为 ${zhCopy[parent?.type] ?? "容器"} 子组件添加。`);
-    };
-    const getNodeDropTarget = (clientX, clientY, sourceId) => {
-      const target = document.elementFromPoint(clientX, clientY)?.closest("[data-node-id]");
-      const targetId = target?.dataset.nodeId;
-      if (!targetId || !canMoveBuilderNode(builderNodes, sourceId, targetId)) return null;
-      const { top, height } = target.getBoundingClientRect();
-      return { targetId, position: clientY < top + height / 2 ? "before" : "after" };
-    };
-    const beginNodeDrag = (event, id) => {
-      if (event.button !== 0) return;
-      event.currentTarget.setPointerCapture(event.pointerId);
-      setDragState({ id, targetId: null, position: null });
-      setActiveNode(id);
-      if (appliedTemplate !== null && isEditableTemplate(templates[appliedTemplate])) setPreviewMode("editable");
-    };
-    const updateNodeDropTarget = (event) => {
-      const sourceId = dragState?.id;
-      if (!sourceId) return;
-      const nextTarget = getNodeDropTarget(event.clientX, event.clientY, sourceId);
-      if (!nextTarget) return;
-      event.preventDefault();
-      setDragState({ id: sourceId, ...nextTarget });
-    };
-    const dropNode = (event) => {
-      const sourceId = dragState?.id;
-      const nextTarget = sourceId ? getNodeDropTarget(event.clientX, event.clientY, sourceId) : null;
-      if (sourceId && nextTarget) {
-        setBuilderNodes((current) => moveBuilderNode(current, sourceId, nextTarget.targetId, nextTarget.position));
-        setActiveNode(sourceId);
-      }
-      setDragState(null);
-    };
-    const previewReorder = {
-      start: (id, event) => {
-        previewDragSource.current = id;
-        event.dataTransfer.effectAllowed = "move";
-        event.dataTransfer.setData("text/plain", id);
-        const component = event.currentTarget.parentElement;
-        if (component) event.dataTransfer.setDragImage(component, 12, 12);
-      },
-      over: (id, event) => {
-        const sourceId = previewDragSource.current;
-        if (!sourceId || !canMoveBuilderNode(builderNodes, sourceId, id)) return;
-        event.preventDefault();
-        event.stopPropagation();
-        event.dataTransfer.dropEffect = "move";
-        const { top, height } = event.currentTarget.getBoundingClientRect();
-        const marker = event.clientY < top + height / 2 ? "preview-drop-before" : "preview-drop-after";
-        if (previewDropMarker.current?.element === event.currentTarget && previewDropMarker.current?.className === marker) return;
-        if (previewDropMarker.current) previewDropMarker.current.element.classList.remove(previewDropMarker.current.className);
-        event.currentTarget.classList.add(marker);
-        previewDropMarker.current = { element: event.currentTarget, className: marker };
-      },
-      drop: (id, event) => {
-        const sourceId = previewDragSource.current;
-        if (!sourceId || !canMoveBuilderNode(builderNodes, sourceId, id)) return;
-        event.preventDefault();
-        event.stopPropagation();
-        const { top, height } = event.currentTarget.getBoundingClientRect();
-        const position = event.clientY < top + height / 2 ? "before" : "after";
-        setBuilderNodes((current) => moveBuilderNode(current, sourceId, id, position));
-        setActiveNode(sourceId);
-        previewDragSource.current = null;
-        if (previewDropMarker.current) previewDropMarker.current.element.classList.remove(previewDropMarker.current.className);
-        previewDropMarker.current = null;
-      },
-      end: () => {
-        previewDragSource.current = null;
-        if (previewDropMarker.current) previewDropMarker.current.element.classList.remove(previewDropMarker.current.className);
-        previewDropMarker.current = null;
-      },
-    };
-    return (
-      <section className="builder-page">
-        {isNew ? <><button className="back" onClick={() => setView("create")}><ArrowLeft size={18} /> 创建付费墙</button><div className="workspace-heading"><div><span className="eyebrow">新建付费墙</span><h1>{selected.name}</h1></div></div></> : <WorkspaceHeader selected={selected} setView={setView} duplicate={duplicate} setModal={setModal} markUnknown={markUnknown} />}
-        <div className="detail-tabs"><button onClick={() => setView(isNew ? "create" : "general")}>General</button><button className="active">Builder & Generator</button></div>
-        {appliedTemplate !== null && <div className={`template-context ${isEditableTemplate(templates[appliedTemplate]) ? "observed-tree" : "preview-only"}`}><span>Template</span><strong>{templates[appliedTemplate].title}</strong><small>{isEditableTemplate(templates[appliedTemplate]) ? templateEditableStatus(templates[appliedTemplate]) : "源端已采集预览内容；精确节点树待采集"}{protectedTemplateIds.has(templates[appliedTemplate].id) ? " · 当前浏览器自动保存" : ""}</small><button className="secondary" onClick={() => setModal({ kind: "templates" })}><LayoutTemplate size={15} /> Change template</button></div>}
-        {templateSaveError && <p className="template-save-error" role="alert">模板未能保存到当前浏览器。请缩小已上传的图片或视频后重试。</p>}
-        <div className="builder">
-          <aside className="node-panel">
-            <div className="add-element-wrap"><button className="add-element" onClick={() => setAddElementOpen((open) => !open)}><Plus size={17} /> Add element</button>{addElementOpen && <div className="add-element-menu">{componentCatalog.filter((item) => item !== "Agreement" || (isDocumentTemplate && !builderNodes.some((entry) => entry.type === "Agreement"))).map((item) => <button key={item} onClick={() => addElement(item)}>{zhCopy[item] ?? item}</button>)}</div>}</div>
-            <LayerTree key={appliedTemplate ?? 'blank'} tree={layerTree} selectedId={selectedLayerId ?? activeNode} onSelect={(entry) => {
-              setSelectedLayerId(entry.id);
-              setActiveNode(entry.ownerId ?? null);
-              let current = entry;
-              let slideIndex = entry.rowIndex;
-              while (current && slideIndex === undefined) { current = layerTree.entries.get(current.parentId); slideIndex = current?.rowIndex; }
-              const area = entry.productPart ? `product-${entry.productPart}` : entry.area ?? "component";
-              setPreviewFocus({ id: entry.ownerId, area, slideIndex, key: Date.now() });
-              let screenOwner = entry.ownerId;
-              while (screenOwner && layerTree.graph.byId.get(screenOwner)?.type !== "Screen") screenOwner = layerTree.graph.parent.get(screenOwner);
-              const screenIds = builderNodes.filter((item) => item.type === "Screen").map((item) => item.id);
-              setLayerContext({ ...entry.pane, nodeId: entry.ownerId, rowIndex: slideIndex, screenIndex: screenIds.indexOf(screenOwner), key: Date.now() });
-              setPreviewMode("editable");
-            }} onMove={(entry, direction) => {
-              if (entry.productOrder) {
-                const { regions, part, region, layout } = entry.productOrder;
-                const owner = builderNodes.find((item) => item.id === entry.ownerId);
-                const peers = layerTree.entries.get(entry.parentId).children;
-                const target = peers[peers.findIndex((item) => item.id === entry.id) + direction];
-                if (!target?.productOrder) return;
-                const next = moveContentPart(regions, part, region, regions[region].indexOf(target.productOrder.part));
-                updateNodeWithPreview(owner.id, { config: { ...owner.config, productContentOrders: { ...owner.config?.productContentOrders, [layout]: next } } });
-              } else if (entry.operation) { const owner = builderNodes.find((item) => item.id === entry.ownerId); updateNodeWithPreview(owner.id, editLayerArray(owner, entry.operation, entry.operation.index + direction)); }
-              else { const peers = layerTree.entries.get(entry.parentId)?.children.filter((item) => item.native) ?? []; const target = peers[peers.findIndex((item) => item.id === entry.id) + direction]; if (target) setBuilderNodes((current) => moveBuilderNode(current, entry.id, target.id, direction < 0 ? "before" : "after")); }
-              setPreviewMode("editable");
-            }} onRemove={(entry) => { const owner = builderNodes.find((item) => item.id === entry.ownerId); updateNodeWithPreview(owner.id, editLayerArray(owner, entry.operation, null, true)); setSelectedLayerId(owner.id); }} onReparent={(sourceId, target) => {
-              const sourceLayer = layerTree.entries.get(sourceId);
-              if (sourceLayer?.productOrder) {
-                if (!target.productOrder || target.ownerId !== sourceLayer.ownerId || target.rowIndex !== sourceLayer.rowIndex) return;
-                const { layout, regions, part } = sourceLayer.productOrder;
-                const region = target.productOrder.region;
-                const owner = builderNodes.find((item) => item.id === sourceLayer.ownerId);
-                const next = moveContentPart(regions, part, region, regions[region].indexOf(target.productOrder.part));
-                updateNodeWithPreview(owner.id, { config: { ...owner.config, productContentOrders: { ...owner.config?.productContentOrders, [layout]: next } } });
-                return;
-              }
-              const targetOwner = builderNodes.find((item) => item.id === target.id);
-              const parentId = target.id === "$screen" ? null : NATIVE_CONTAINERS.has(targetOwner?.type) ? target.id : layerTree.graph.parent.get(target.id);
-              setBuilderNodes((current) => reparentNode(current, sourceId, parentId, NATIVE_CONTAINERS.has(targetOwner?.type) ? null : target.id)); setPreviewMode("editable");
-            }} />
-          </aside>
-          <div className="canvas-area">
-            <div className="device-controls">
-              <button className="unknown-action" onClick={() => markUnknown(builderBoundary)}><Smartphone size={16} /> iPhone 15 Pro <ChevronDown size={14} /></button>
-              {appliedTemplate !== null && !templates[appliedTemplate].isNew && <div className="preview-mode" aria-label="Preview mode">
-                <button className={previewMode === "source" ? "active" : ""} onClick={() => setPreviewMode("source")}>{templates[appliedTemplate].documentTemplate ? "文档样式" : "Source visual"}</button>
-                <button className={previewMode === "editable" ? "active" : ""} disabled={!isEditableTemplate(templates[appliedTemplate])} onClick={() => setPreviewMode("editable")}>Editable structure</button>
-              </div>}
-              {galleryHasProducts && <div className="preview-mode" aria-label="商品预览数据"><button className={galleryProductPreview === "source" ? "active" : ""} onClick={() => setGalleryProductPreview("source")}>源模板档位</button><button className={galleryProductPreview === "selected" ? "active" : ""} onClick={() => setGalleryProductPreview("selected")}>已选商品</button></div>}
-              <button className="icon unknown-action" title="Preview orientation" onClick={() => markUnknown(builderBoundary)}><RotateCw size={15} /></button>
-              <button className="icon unknown-action" title="Preview visibility" onClick={() => markUnknown(builderBoundary)}><Eye size={15} /></button>
-            </div>
-            <PaywallPreview nodes={linkedNodes} template={appliedTemplate !== null ? templates[appliedTemplate] : null} mode={previewMode} pricePreviewMode={pricePreviewMode} activeNode={activeNode} layerContext={layerContext} onSelect={selectPreviewNode} onUpdateHeroPosition={updateHeroCopyPosition} onReorder={previewMode === "editable" ? previewReorder : null} retentionPreviewOpen={retentionPreviewOpen} onOpenRetention={() => setRetentionPreview({ templateId: templates[appliedTemplate]?.id })} onCloseRetention={() => setRetentionPreview(null)} />
-            {appliedTemplate !== null && !templates[appliedTemplate].isNew && previewMode === "source" && <p className="source-preview-note">{templates[appliedTemplate].documentTemplate ? "飞书文档中的 Paywall 样式参考，与模板库卡片一一对应。" : "源端模板画面，与模板库卡片一一对应。"}</p>}
-            {appliedTemplate !== null && previewMode === "editable" && <p className="source-preview-note">{templates[appliedTemplate].isGallery ? templates[appliedTemplate].editorVerified ? "已核对 RevenueCat 编辑器 Layers；本地是通用组件映射，SKU、字段和动作目标仍需核验。" : "仅有 RevenueCat 画廊预览证据；编辑器 Layers、SKU 与动作目标均未核实。" : templates[appliedTemplate].isNew ? "本地组合模板；组件和文案可在左侧选择后编辑。" : isEditableTemplate(templates[appliedTemplate]) ? "已采集样式与核心字段的本地可编辑复现。" : "精确节点树仍在采集。"}</p>}
-            <p className="preview-disclaimer">All prices, titles, and offers displayed are placeholders. The actual data from App Store and Google Play will be shown in the app.</p>
-          </div>
-          <aside className="property-panel"><div className="component-library-toolbar"><span>组件库</span><div><button type="button" className="icon" title="保存当前组件" aria-label="保存当前组件" disabled={!rawActive} onClick={() => { setLibraryName(""); setLibraryError(""); setLibraryMode("save"); }}><Save size={17} /></button><button type="button" className="icon" title="读取已保存组件" aria-label="读取已保存组件" disabled={!rawActive} onClick={() => { setLibrarySearch(""); setLibraryError(""); setLibraryMode("load"); }}><FolderOpen size={17} /></button></div></div>{selectedLayer?.binding && active ? <LayerFieldInspector key={selectedLayer.id} entry={selectedLayer} owner={rawActive} onChange={updateNodeWithPreview} onParent={() => setSelectedLayerId(activeNode)} /> : <BuilderProperties active={active} previewFocus={previewFocus} markUnknown={markUnknown} boundary={builderBoundary} templateLinks={templateLinks} setTemplateLinks={setTemplateLinks} updateNode={updateNodeWithPreview} removeNode={deleteElement} addNestedNode={addNestedElement} isDocumentTemplate={isDocumentTemplate} documentTemplate={templates[appliedTemplate]?.documentTemplate} pricePreviewMode={pricePreviewMode} setPricePreviewMode={setPricePreviewMode} retentionPreviewOpen={retentionPreviewOpen} onPreviewRetention={() => { setPreviewMode("editable"); setRetentionPreview((current) => current?.templateId === templates[appliedTemplate]?.id ? null : { templateId: templates[appliedTemplate]?.id }); }} />}</aside>
-        </div>
-        <div className="builder-footer"><button className="secondary unknown-action" onClick={() => markUnknown(builderBoundary)}>Discard</button><button className="primary" onClick={() => setModal({ kind: appliedTemplate !== null ? "template-requirements" : "builder-save" })}>Save</button></div>
-        {libraryMode && <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setLibraryMode(null); }}><section className="modal component-library-modal" role="dialog" aria-modal="true" aria-label={libraryMode === "save" ? "保存组件" : "读取组件"}><header><h2>{libraryMode === "save" ? "保存组件" : "读取组件"}</h2><button type="button" className="icon" title="关闭" aria-label="关闭" onClick={() => setLibraryMode(null)}><X size={19} /></button></header><div className="component-library-body"><p className="component-library-note">仅保存在当前浏览器中，不会同步到账号或其他设备。{rawActive?.type === "Products" && "商品套餐只保存样式配置，不保存 SKU、商品坑位和价格。"}</p>{libraryMode === "save" ? <Field label="组件名称"><input autoFocus maxLength={41} value={libraryName} placeholder="例如：蓝色特权页主视觉" onChange={(event) => { setLibraryName(event.target.value); setLibraryError(""); }} onKeyDown={(event) => { if (event.key === "Enter") saveCurrentComponent(); }} /></Field> : <><div className="component-library-search"><Search size={17} /><input autoFocus value={librarySearch} placeholder="搜索已保存组件" aria-label="搜索已保存组件" onChange={(event) => setLibrarySearch(event.target.value)} /></div><div className="component-library-list">{matchingRecords.length ? matchingRecords.map((record) => <button type="button" key={record.id} className="component-library-item" onClick={() => loadComponent(record)}><span><strong>{record.name}</strong><small>{new Date(record.createdAt).toLocaleString("zh-CN")}</small></span><ChevronRight size={17} /></button>) : <p className="component-library-empty">没有可用于当前组件的记录</p>}</div></>}{libraryError && <p className="component-library-error" role="alert">{libraryError}</p>}</div><div className="modal-actions"><button type="button" className="secondary" onClick={() => setLibraryMode(null)}>取消</button>{libraryMode === "save" && <button type="button" className="primary" onClick={saveCurrentComponent}>保存</button>}</div></section></div>}
-      </section>
-    );
+    const template = appliedTemplate !== null ? templates[appliedTemplate] : { id: "blank", title: "空白页面" };
+    const initialNodes = builderNodes;
+    return <section className="builder-page">
+      {isNew ? <><button className="back" onClick={() => setView("create")}><ArrowLeft size={18} /> 创建付费墙</button><div className="workspace-heading"><div><span className="eyebrow">新建付费墙</span><h1>{selected.name}</h1></div></div></> : <WorkspaceHeader selected={selected} setView={setView} duplicate={duplicate} setModal={setModal} markUnknown={markUnknown} />}
+      <div className="detail-tabs"><button onClick={() => setView(isNew ? "create" : "general")}>General</button><button className="active">Builder & Generator</button></div>
+      <div className="template-context observed-tree"><span>模板</span><strong>{template.title}</strong><button className="secondary" onClick={() => setModal({ kind: "templates" })}><LayoutTemplate size={15} /> 更换模板</button></div>
+      <ComponentEditor key={template.id} template={template} initialNodes={initialNodes} />
+    </section>;
   }
+
 
   return (
     <section>
