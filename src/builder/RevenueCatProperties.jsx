@@ -1,10 +1,10 @@
 import React from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, ArrowRight, ArrowDown, Layers3, AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal, AlignStartVertical, AlignCenterVertical, AlignEndVertical, SquareDashed, RectangleHorizontal, RectangleVertical } from 'lucide-react';
 import { CONTAINER_TYPES } from './componentDocument.js';
 
-export function PropertySection({ title, children, defaultOpen = true, optional = false }) {
+export function PropertySection({ title, children, defaultOpen = true, optional = false, className = '' }) {
   const [open, setOpen] = React.useState(defaultOpen);
-  return <section className="rc-prop-section">
+  return <section className={`rc-prop-section ${className}`}>
     <button type="button" className="rc-prop-heading" onClick={() => setOpen((value) => !value)} aria-expanded={open}>
       <span>{open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}<strong>{title}</strong></span>
       {optional && <small>可选</small>}
@@ -15,26 +15,23 @@ export function PropertySection({ title, children, defaultOpen = true, optional 
 
 function Field({ label, children, hint }) { return <label className="rc-field"><span>{label}</span>{children}{hint && <small>{hint}</small>}</label>; }
 function Select({ label, value, onChange, options }) { return <Field label={label}><select aria-label={label} value={value ?? ''} onChange={(event) => onChange(event.target.value)}>{options.map((option) => { const [key, name] = Array.isArray(option) ? option : [option, option]; return <option key={key} value={key}>{name}</option>; })}</select></Field>; }
-function NumberField({ label, value, onChange, min = 0, max = 2000, unit = 'px' }) { return <Field label={label}><div className="rc-unit-input"><input type="number" min={min} max={max} value={Number.isFinite(Number(value)) ? value : 0} onChange={(event) => { if (event.target.value !== '') onChange(Math.max(min, Math.min(max, Number(event.target.value)))); }} /><span>{unit}</span></div></Field>; }
+function NumberField({ label, value, onChange, min = 0, max = 2000, unit = 'px', icon: Glyph }) { return <Field label={label}><div className="rc-unit-input">{Glyph && <Glyph aria-hidden="true" size={16} />}<input aria-label={label} type="number" min={min} max={max} value={Number.isFinite(Number(value)) ? value : 0} onChange={(event) => { if (event.target.value !== '') onChange(Math.max(min, Math.min(max, Number(event.target.value)))); }} /><span>{unit}</span></div></Field>; }
 function ColorField({ label, value, onChange }) { return <Field label={label}><div className="rc-color-input"><input type="color" aria-label={label} value={/^#[a-f\d]{6}$/i.test(value) ? value : '#ffffff'} onChange={(event) => onChange(event.target.value)} /><input aria-label={`${label}值`} value={value ?? 'transparent'} onChange={(event) => onChange(event.target.value)} /></div></Field>; }
-function SegmentedField({ label, value, onChange, options }) { return <Field label={label}><div className="rc-segmented">{options.map(([key, name]) => <button type="button" key={key} className={String(value) === String(key) ? 'active' : ''} onClick={() => onChange(key)}>{name}</button>)}</div></Field>; }
+function SegmentedField({ label, value, onChange, options, icon = false }) { return <Field label={label}><div className={`rc-segmented ${icon ? 'rc-icon-segmented' : ''}`}>{options.map(([key, name, Glyph]) => <button type="button" key={key} className={String(value) === String(key) ? 'active' : ''} aria-label={name} title={name} onClick={() => onChange(key)}>{icon && Glyph ? <Glyph size={21} strokeWidth={2.8} /> : name}</button>)}</div></Field>; }
 function OptionalToggle({ enabled, onChange }) { return <button type="button" className={`rc-optional-toggle ${enabled ? 'active' : ''}`} aria-pressed={enabled} onClick={() => onChange(!enabled)}>{enabled ? '已启用' : '添加'}</button>; }
 const typeNames = { check: '勾选圆点', lock: '锁', star: '星标', bell: '铃铛', moon: '月亮', heart: '爱心', group: '用户组', clock: '时钟', gift: '礼物', arrow: '箭头', dumbbell: '哑铃', running: '跑步', download: '下载', map: '地图', flower: '花朵', number: '数字' };
 const axisOptions = [['horizontal', '横向'], ['vertical', '纵向'], ['overlay', '叠放']];
 const alignmentOptions = [['start', '起始'], ['center', '居中'], ['end', '末尾']];
 
-function patchEdges(patch, prefix, mode, value) {
-  if (mode === 'uniform') return Object.fromEntries(['Top', 'Right', 'Bottom', 'Left'].map((side) => [`${prefix}${side}`, value]));
-  return patch;
-}
 function SpacingField({ title, prefix, p, patch }) {
   const modeKey = `${prefix}Mode`;
   const mode = p[modeKey] ?? 'axis';
   const sides = [['Top', '上'], ['Right', '右'], ['Bottom', '下'], ['Left', '左']];
   const updateAxis = (vertical, horizontal) => patch({ [`${prefix}Vertical`]: vertical, [`${prefix}Horizontal`]: horizontal, [`${prefix}Top`]: vertical, [`${prefix}Bottom`]: vertical, [`${prefix}Left`]: horizontal, [`${prefix}Right`]: horizontal });
   return <div className="rc-spacing-field">
-    <div className="rc-inline-heading"><span>{title}</span><button type="button" className="rc-spacing-toggle" onClick={() => patch({ [modeKey]: mode === 'individual' ? 'axis' : 'individual' })}>{mode === 'individual' ? '轴向' : '四边'}</button></div>
-    {mode === 'individual' ? <div className="rc-four-values">{sides.map(([side, label]) => <NumberField key={side} label={label} value={p[`${prefix}${side}`]} min={prefix === 'margin' ? -200 : 0} max={500} onChange={(value) => patch({ [`${prefix}${side}`]: value })} />)}</div> : <div className="rc-two-columns"><NumberField label="纵向" value={p[`${prefix}Vertical`] ?? p[`${prefix}Top`]} min={prefix === 'margin' ? -200 : 0} max={500} onChange={(value) => updateAxis(value, p[`${prefix}Horizontal`] ?? p[`${prefix}Right`])} /><NumberField label="横向" value={p[`${prefix}Horizontal`] ?? p[`${prefix}Right`]} min={prefix === 'margin' ? -200 : 0} max={500} onChange={(value) => updateAxis(p[`${prefix}Vertical`] ?? p[`${prefix}Top`], value)} /></div>}
+    <span className="rc-spacing-label">{title}</span>
+    {mode === 'individual' ? <div className="rc-four-values">{sides.map(([side, label]) => <NumberField key={side} label={`${title}${label}`} value={p[`${prefix}${side}`]} min={prefix === 'margin' ? -200 : 0} max={500} onChange={(value) => patch({ [`${prefix}${side}`]: value })} />)}</div> : <div className="rc-two-columns rc-spacing-values"><NumberField label={`${title}纵向`} icon={RectangleHorizontal} value={p[`${prefix}Vertical`] ?? p[`${prefix}Top`]} min={prefix === 'margin' ? -200 : 0} max={500} onChange={(value) => updateAxis(value, p[`${prefix}Horizontal`] ?? p[`${prefix}Right`])} /><NumberField label={`${title}横向`} icon={RectangleVertical} value={p[`${prefix}Horizontal`] ?? p[`${prefix}Right`]} min={prefix === 'margin' ? -200 : 0} max={500} onChange={(value) => updateAxis(p[`${prefix}Vertical`] ?? p[`${prefix}Top`], value)} /></div>}
+    <button type="button" className="rc-spacing-toggle" aria-label={`${title}切换为${mode === 'individual' ? '轴向' : '四边'}配置`} aria-pressed={mode === 'individual'} title={`${title}：${mode === 'individual' ? '轴向' : '四边'}配置`} onClick={() => patch({ [modeKey]: mode === 'individual' ? 'axis' : 'individual' })}><SquareDashed size={18} /></button>
   </div>;
 }
 
@@ -80,9 +77,9 @@ function ContentSection({ selected, p, patch, document, nodes, parents, findPack
 function LayoutSection({ selected, p, patch }) {
   const isContainer = CONTAINER_TYPES.has(selected.type);
   return <>
-    {isContainer && <PropertySection title="布局"><SegmentedField label="方向" value={p.axis} options={axisOptions} onChange={(axis) => patch({ axis })} /><SegmentedField label="对齐" value={p.align === 'stretch' ? 'center' : p.align} options={alignmentOptions} onChange={(align) => patch({ align })} /><Select label="分布" value={p.justify} options={[[ 'start', '起始' ], [ 'center', '居中' ], [ 'end', '末尾' ], [ 'between', '两端分布' ]]} onChange={(justify) => patch({ justify })} /><NumberField label="子项间距" value={p.gap} max={200} onChange={(gap) => patch({ gap })} />{p.axis === 'horizontal' && <SegmentedField label="换行" value={p.wrap ? 'yes' : 'no'} options={[[ 'no', '不换行' ], [ 'yes', '换行' ]]} onChange={(value) => patch({ wrap: value === 'yes' })} />}</PropertySection>}
+    {isContainer && <PropertySection title="布局" className="rc-layout-section"><SegmentedField label="轴向" value={p.axis} icon options={[[ 'horizontal', '横向', ArrowRight ], [ 'vertical', '纵向', ArrowDown ], [ 'overlay', '叠放', Layers3 ]]} onChange={(axis) => patch({ axis })} /><SegmentedField label="对齐" value={p.align === 'stretch' ? 'center' : p.align} icon options={p.axis === 'horizontal' ? [[ 'start', '起始', AlignStartVertical ], [ 'center', '居中', AlignCenterVertical ], [ 'end', '末尾', AlignEndVertical ]] : [[ 'start', '起始', AlignStartHorizontal ], [ 'center', '居中', AlignCenterHorizontal ], [ 'end', '末尾', AlignEndHorizontal ]]} onChange={(align) => patch({ align })} /><Select label="分布" value={p.justify} options={[[ 'start', '起始' ], [ 'center', '居中' ], [ 'end', '末尾' ], [ 'between', '两端分布' ]]} onChange={(justify) => patch({ justify })} /><NumberField label="子项间距" value={p.gap} max={200} onChange={(gap) => patch({ gap })} />{p.axis === 'horizontal' && <SegmentedField label="换行" value={p.wrap ? 'yes' : 'no'} options={[[ 'no', '不换行' ], [ 'yes', '换行' ]]} onChange={(value) => patch({ wrap: value === 'yes' })} />}</PropertySection>}
     <PropertySection title="尺寸"><SegmentedField label="宽度" value={p.widthMode} options={[[ 'fit', '适应内容' ], [ 'fill', '填满' ], [ 'fixed', '固定' ]]} onChange={(widthMode) => patch({ widthMode })} />{p.widthMode === 'fixed' && <NumberField label="固定宽度" value={p.width} onChange={(width) => patch({ width })} />}{p.widthMode === 'fill' && <div className="rc-two-columns"><NumberField label="最小宽度" value={p.minWidth ?? 0} onChange={(minWidth) => patch({ minWidth })} /><NumberField label="最大宽度" value={p.maxWidth ?? 0} onChange={(maxWidth) => patch({ maxWidth })} /></div>}<SegmentedField label="高度" value={p.heightMode} options={[[ 'fit', '适应内容' ], [ 'fill', '填满' ], [ 'fixed', '固定' ]]} onChange={(heightMode) => patch({ heightMode })} />{p.heightMode === 'fixed' && <NumberField label="固定高度" value={p.height} onChange={(height) => patch({ height })} />}{p.heightMode === 'fill' && <div className="rc-two-columns"><NumberField label="最小高度" value={p.minHeight ?? 0} onChange={(minHeight) => patch({ minHeight })} /><NumberField label="最大高度" value={p.maxHeight ?? 0} onChange={(maxHeight) => patch({ maxHeight })} /></div>}{p.heightMode !== 'fill' && <div className="rc-two-columns"><NumberField label="最小高度" value={p.minHeight ?? 0} onChange={(minHeight) => patch({ minHeight })} /><NumberField label="最大高度" value={p.maxHeight ?? 0} onChange={(maxHeight) => patch({ maxHeight })} /></div>}</PropertySection>
-    <PropertySection title="间距"><SpacingField title="内边距" prefix="padding" p={p} patch={patch} /><SpacingField title="外边距" prefix="margin" p={p} patch={patch} /></PropertySection>
+    <PropertySection title="布局间距" className="rc-spacing-section"><SpacingField title="内边距" prefix="padding" p={p} patch={patch} /><SpacingField title="外边距" prefix="margin" p={p} patch={patch} /></PropertySection>
   </>;
 }
 
