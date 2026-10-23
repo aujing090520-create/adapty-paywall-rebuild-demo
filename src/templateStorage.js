@@ -1,5 +1,6 @@
 const PREFIX = "paywall-template-v1:";
 const SOURCE_IMAGE_REPAIR_PREFIX = "paywall-template-source-image-repair-v1:";
+const COMPONENT_LIBRARY_KEY = "paywall-component-library-v1";
 
 export const protectedTemplateIds = new Set([
   "ht-blue-privilege",
@@ -33,6 +34,18 @@ export function writeTemplateNodes(storage, templateId, nodes) {
   if (!protectedTemplateIds.has(templateId) || !Array.isArray(nodes)) return false;
   try {
     storage.setItem(PREFIX + templateId, JSON.stringify({ version: 1, nodes }));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function clearLocalDemoSettings(storage) {
+  try {
+    for (let index = storage.length - 1; index >= 0; index -= 1) {
+      const key = storage.key(index);
+      if (key?.startsWith(PREFIX) || key?.startsWith(SOURCE_IMAGE_REPAIR_PREFIX) || key === COMPONENT_LIBRARY_KEY) storage.removeItem(key);
+    }
     return true;
   } catch {
     return false;

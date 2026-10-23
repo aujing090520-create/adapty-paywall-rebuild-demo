@@ -3,7 +3,7 @@ import { linkActionFor, visibleLinkLabels } from "./linkActions.js";
 import { createRoot } from "react-dom/client";
 import { DEMO_SKUS, PRICE_DISPLAY_MODES, billingMonths, productPriceFields, resolveProductPrice, skuById, skuCopy, templateSkuId } from "./productPricing.js";
 import { applyComponent, captureComponent, componentKind, readComponentLibrary, writeComponentLibrary } from "./componentLibrary.js";
-import { protectedTemplateIds, readTemplateNodes, writeTemplateNodes } from "./templateStorage.js";
+import { clearLocalDemoSettings, protectedTemplateIds, readTemplateNodes, writeTemplateNodes } from "./templateStorage.js";
 import { revenueCatGallery } from "./revenueCatGallery.js";
 import { createSourceTemplateNodes, observedTemplate, sourceBlueprints } from "./revenueCatSourceBlueprints.js";
 import {
@@ -362,7 +362,13 @@ function ProductPackageCard({ plan, index, config = {}, layout, selected, focuse
   const strikeStyle = { ...(Number(modeStyle.strikeFontSize) > 0 ? { fontSize: productFontSize(config, modeStyle.strikeFontSize) } : {}), ...(modeStyle.strikeColor ? { color: modeStyle.strikeColor } : {}) };
   const frameStyle = { ...(Number(config.planWidth) > 0 ? { width: `${config.planWidth}%`, marginInline: "auto", justifySelf: "center" } : {}), ...(config.planHeight !== undefined && config.planHeight !== "" && Number.isFinite(Number(config.planHeight)) ? { minHeight: productFontSize(config, config.planHeight) } : {}), ...(config.planPadding !== "" && Number.isFinite(Number(config.planPadding)) && config.planPadding !== undefined ? { padding: productFontSize(config, config.planPadding) } : {}), ...Object.fromEntries(["Top", "Right", "Bottom", "Left"].filter((side) => config[`planPadding${side}`] !== undefined && config[`planPadding${side}`] !== "" && Number.isFinite(Number(config[`planPadding${side}`]))).map((side) => [`padding${side}`, productFontSize(config, config[`planPadding${side}`])])) };
   const planStyle = { ...productStyle, ...selectedStyle, ...frameStyle, ...(config.planRadius !== undefined && config.planRadius !== "" ? { borderRadius: `${config.planRadius}px` } : {}) };
-  const partStyle = (part, base = {}) => ({ ...base, ...productPartStyle(config, part), ...(part === "price" && Number(modeStyle.mainFontSize) > 0 ? { fontSize: productFontSize(config, modeStyle.mainFontSize) } : {}), ...(part === "price" && validHexColor(modeStyle.mainColor) ? { color: modeStyle.mainColor } : {}), ...(part === "reference" && Number(modeStyle.strikeFontSize) > 0 ? { fontSize: productFontSize(config, modeStyle.strikeFontSize) } : {}), ...(part === "reference" && validHexColor(modeStyle.strikeColor) ? { color: modeStyle.strikeColor } : {}) });
+  const partStyle = (part, base = {}) => {
+    const placement = config.productPartStyles?.[part] ?? {};
+    const align = placement.align === "left" ? "flex-start" : placement.align === "right" ? "flex-end" : placement.align === "center" ? "center" : undefined;
+    const offsetX = Number(placement.offsetX) || 0;
+    const offsetY = Number(placement.offsetY) || 0;
+    return { ...base, ...productPartStyle(config, part), ...(align ? { alignSelf: align, justifySelf: align, textAlign: placement.align } : {}), ...(offsetX || offsetY ? { transform: `translate(${offsetX}px, ${offsetY}px)` } : {}), ...(part === "price" && Number(modeStyle.mainFontSize) > 0 ? { fontSize: productFontSize(config, modeStyle.mainFontSize) } : {}), ...(part === "price" && validHexColor(modeStyle.mainColor) ? { color: modeStyle.mainColor } : {}), ...(part === "reference" && Number(modeStyle.strikeFontSize) > 0 ? { fontSize: productFontSize(config, modeStyle.strikeFontSize) } : {}), ...(part === "reference" && validHexColor(modeStyle.strikeColor) ? { color: modeStyle.strikeColor } : {}) };
+  };
   const choose = (event) => { if (!interactive) return; event.stopPropagation(); onChoose?.(index); onInspect?.(event, index); };
   const keyboard = (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); choose(event); } };
   const cardProps = { style: planStyle, role: interactive ? "button" : undefined, tabIndex: interactive ? 0 : undefined, onClick: choose, onKeyDown: keyboard };
@@ -1469,7 +1475,7 @@ function App() {
       <main className="main">
         <header className="topbar">
           <div className="app-switcher"><b>T</b> Test</div>
-          <div className="top-actions"><div className="language-console" data-no-translate><span>{locale === "zh-CN" ? "界面语言" : "Interface language"}</span><button className={locale === "en" ? "active" : ""} onClick={() => setLocale("en")}>EN</button><button className={locale === "zh-CN" ? "active" : ""} onClick={() => setLocale("zh-CN")}>中文</button></div></div>
+          <div className="top-actions"><div className="language-console" data-no-translate><span>{locale === "zh-CN" ? "界面语言" : "Interface language"}</span><button className={locale === "en" ? "active" : ""} onClick={() => setLocale("en")}>EN</button><button className={locale === "zh-CN" ? "active" : ""} onClick={() => setLocale("zh-CN")}>中文</button></div><button type="button" className="local-reset-button" onClick={() => setModal({ kind: "local-reset" })}><RotateCw size={14} /> 重置</button></div>
         </header>
 
         <div className="content">
@@ -1579,6 +1585,7 @@ function App() {
       </aside>
 
       {toast && <div className="toast"><Check size={17} /> {toast}</div>}
+      {modal?.kind === "local-reset" && <div className="modal-backdrop"><section className="modal local-reset-modal" role="dialog" aria-modal="true" aria-label="重置本地设定"><header><h2>重置本地设定</h2><button type="button" className="icon" aria-label="关闭" onClick={() => setModal(null)}><X size={19} /></button></header><p>将清除当前浏览器保存的模板修改和组件库，并还原本 Demo 的默认页面。此操作无法撤销。</p><div className="modal-actions"><button type="button" className="secondary" onClick={() => setModal(null)}>取消</button><button type="button" className="primary" onClick={() => { if (clearLocalDemoSettings(window.localStorage)) window.location.reload(); else notify("本地设定清除失败，请检查浏览器存储权限。"); }}>确认重置</button></div></section></div>}
       {modal?.kind === "builder-save" && (
         <ComplianceModal
           compliance={compliance}
@@ -2019,7 +2026,7 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
     const list = active.type === "List" || /^List \d+$/.test(active.type) || ["Feature list", "Features"].includes(active.type);
     const listRow = list && tab === "content" && previewFocus.slideIndex != null ? (active.id === "benefits" && active.config?.bluePrivilege ? panel.querySelectorAll(".privilege-row-wrap")[previewFocus.slideIndex] : panel.querySelectorAll(".product-row-editor")[previewFocus.slideIndex]) : null;
     const timerField = active.type === "Timer" ? exactField(tab === "content" ? ["Start value"] : tab === "style" ? ["时间字体颜色"] : ["Vertical offset"]) : null;
-    const productStyle = products && tab === "style" ? panel.querySelector(`[data-product-part-row="${previewFocus.area?.replace(/^product-/, "")}"]`) ?? panel.querySelector(".product-part-editor") : null;
+    const productStyle = products && tab === "position" ? panel.querySelector(`[data-product-part-row="${previewFocus.area?.replace(/^product-/, "")}"]`) ?? panel.querySelector(".product-part-editor") : null;
     const productLayout = products && tab === "layout" ? exactField(["布局类型"]) : null;
     const agreementRow = active.type === "Agreement" && tab === "content" && previewFocus.slideIndex != null ? panel.querySelectorAll(".agreement-segment-editor")[previewFocus.slideIndex] : null;
     const agreementField = active.type === "Agreement" ? tab === "content" ? [...panel.querySelectorAll(".switch-row")].find((field) => field.querySelector("strong")?.textContent?.trim() === "勾选后才能点击按钮") : exactField(tab === "style" ? previewFocus.area === "links" ? ["链接颜色"] : ["文字颜色"] : ["对齐方式"]) : null;
@@ -2056,7 +2063,7 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
     unknown: "Live preview propagation, validation, persistence, and any field not captured verbatim remain unverified.",
   };
 
-  const tabBar = <div className="property-tabs"><button className={tab === "content" ? "active" : ""} onClick={() => setTab("content")}>Content</button><button className={tab === "style" ? "active" : ""} onClick={() => setTab("style")}>Style</button><button className={tab === "layout" ? "active" : ""} onClick={() => setTab("layout")}>Layout</button></div>;
+  const tabBar = <div className="property-tabs"><button className={tab === "content" ? "active" : ""} onClick={() => setTab("content")}>Content</button><button className={tab === "style" ? "active" : ""} onClick={() => setTab("style")}>Style</button><button className={tab === "layout" ? "active" : ""} onClick={() => setTab("layout")}>Layout</button>{type === "Products" && <button className={tab === "position" ? "active" : ""} onClick={() => setTab("position")}>内容位置</button>}</div>;
   const canEditStructure = Boolean(active);
   const nodeEditor = <EditableNodeControls active={active} updateNode={updateNode} removeNode={removeNode} canRemove={canEditStructure} />;
 
@@ -2150,7 +2157,7 @@ function BuilderProperties({ active, previewFocus, markUnknown, boundary, templa
   }
 
   if (type === "Products") {
-    return <div className="property-scroll"><h3>商品套餐</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}<div className="product-price-mode-control"><Field label="价格样式预览"><select aria-label="价格样式预览" value={pricePreviewMode} onChange={(event) => setPricePreviewMode(event.target.value)}>{PRICE_DISPLAY_MODES.map((mode) => <option key={mode.id} value={mode.id}>{mode.id} · {mode.label}</option>)}</select></Field><small>仅切换编辑预览，实际展示由分发样式开关决定</small></div>{tab === "content" && <ProductsContent active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} />}{tab === "style" && <ProductsStyleEditor active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} previewFocus={previewFocus} />}{tab === "layout" && <ProductsLayoutEditor active={active} updateNode={updateNode} />}</div>;
+    return <div className="property-scroll"><h3>商品套餐</h3>{canEditStructure && <NodeDeleteControl active={active} removeNode={removeNode} />}{tabBar}<div className="product-price-mode-control"><Field label="价格样式预览"><select aria-label="价格样式预览" value={pricePreviewMode} onChange={(event) => setPricePreviewMode(event.target.value)}>{PRICE_DISPLAY_MODES.map((mode) => <option key={mode.id} value={mode.id}>{mode.id} · {mode.label}</option>)}</select></Field><small>仅切换编辑预览，实际展示由分发样式开关决定</small></div>{tab === "content" && <ProductsContent active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} />}{tab === "style" && <ProductsStyleEditor active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} previewFocus={previewFocus} />}{tab === "layout" && <ProductsLayoutEditor active={active} updateNode={updateNode} />}{tab === "position" && <ProductsPositionEditor active={active} updateNode={updateNode} pricePreviewMode={pricePreviewMode} />}</div>;
   }
 
   if (type === "Toggle") {
@@ -2466,7 +2473,10 @@ function productPartStyle(config, part) {
 }
 
 function hasCustomProductPlacement(config) {
-  return Object.values(config.productPartStyles ?? {}).some((value) => value.order || value.align || Number(value.offsetX) || Number(value.offsetY));
+  return PRODUCT_PARTS.some(([part], index) => {
+    const order = Number(config.productPartStyles?.[part]?.order);
+    return order > 0 && order !== index + 1;
+  });
 }
 
 function ProductPartStyleEditor({ active, updateNode, defaults }) {
@@ -2509,12 +2519,16 @@ function ProductPartStyleEditor({ active, updateNode, defaults }) {
   })}</div>)}</section>;
 }
 
+function ProductsPositionEditor({ active, updateNode, pricePreviewMode }) {
+  const defaults = useProductPreviewDefaults(active, pricePreviewMode);
+  return <ProductPartStyleEditor active={active} updateNode={updateNode} defaults={defaults.parts} />;
+}
+
 function ProductsStyleEditor({ active, updateNode, pricePreviewMode, previewFocus }) {
   const verticalBlue = productLayout(active.config) === "vertical";
   const defaults = useProductPreviewDefaults(active, pricePreviewMode);
   return <div className="product-color-settings" data-product-layout={active.config?.purchasePerCard ? "credit" : "plan"}>
     <h4>商品框体</h4><div className="split-fields"><ConfigNumberField label="框体宽度" active={active} updateNode={updateNode} name="planWidth" fallback={100} min={40} max={100} suffix="%" clampOnBlur /><ConfigNumberField label="框体最小高度" active={active} updateNode={updateNode} name="planHeight" fallback={defaults.frame.planHeight ?? 0} min={0} max={300} suffix="px" clampOnBlur /></div><div className="split-fields"><ConfigNumberField label="上内边距" active={active} updateNode={updateNode} name="planPaddingTop" fallback={defaults.frame.planPaddingTop ?? 0} min={0} max={40} step={0.1} suffix="px" clampOnBlur /><ConfigNumberField label="右内边距" active={active} updateNode={updateNode} name="planPaddingRight" fallback={defaults.frame.planPaddingRight ?? 0} min={0} max={40} step={0.1} suffix="px" clampOnBlur /><ConfigNumberField label="下内边距" active={active} updateNode={updateNode} name="planPaddingBottom" fallback={defaults.frame.planPaddingBottom ?? 0} min={0} max={40} step={0.1} suffix="px" clampOnBlur /><ConfigNumberField label="左内边距" active={active} updateNode={updateNode} name="planPaddingLeft" fallback={defaults.frame.planPaddingLeft ?? 0} min={0} max={40} step={0.1} suffix="px" clampOnBlur /></div>
-    <ProductPartStyleEditor active={active} updateNode={updateNode} defaults={defaults.parts} />
     {!active.config?.purchasePerCard && <><h4>选中态与标签颜色</h4>
     <ProductColorField label={verticalBlue ? "商品角标颜色" : "商品标签颜色"} active={active} updateNode={updateNode} name="badgeGradient" fallback={["#ff860a", "#ffb000", "#ffd10b"]} gradient />
     <ProductColorField label="商品选中框颜色" active={active} updateNode={updateNode} name="selectedBorderGradient" fallback={["#ff860a", "#ff860a", "#ff860a"]} gradient />
@@ -2833,7 +2847,6 @@ function ProductsContent({ active, updateNode, pricePreviewMode }) {
           <header><strong>套餐 {index + 1}</strong>{!linked && !config.linkedTabsId && <button type="button" className="icon" title={rows.length <= 1 ? "至少保留一个套餐" : "删除套餐"} aria-label={`删除套餐 ${index + 1}`} disabled={rows.length <= 1} onClick={() => removeRow(index)}><X size={15} /></button>}</header>
           {linked ? <div className="product-sku-summary"><span>{row.name}</span><span>SKU：{row.skuId}</span></div> : <div className="split-fields"><Field label="展示名称"><input aria-label={`套餐 ${index + 1} 名称`} value={row.name} onChange={(event) => updateRow(index, { name: event.target.value })} /></Field><Field label="SKU ID（演示映射）"><select aria-label={`套餐 ${index + 1} SKU ID`} value={row.skuId ?? ""} onChange={(event) => { const previous = skuById(row.skuId); const next = skuById(event.target.value); updateRow(index, { skuId: event.target.value, name: !row.name || row.name === previous?.displayName ? next?.displayName ?? row.name : row.name }); }}><option value="">请选择 SKU</option>{DEMO_SKUS.map((sku) => <option key={sku.id} value={sku.id}>{sku.id} · {sku.label}</option>)}</select></Field></div>}
           <div className="product-sku-summary" aria-label={`套餐 ${index + 1} SKU 商品信息`}><span>周期：{months === 0 ? "终身" : months ? `${months} 个月` : "未关联"}</span><span>总价：{fields.total || "未关联"}</span>{months !== 0 && <span>月均价：{fields.monthly || "未关联"}</span>}{fields.referenceTotal && <span>参考价：{fields.referenceTotal}</span>}</div>
-          {skuById(row.skuId)?.referenceTotal && <label className="switch-row"><input type="checkbox" aria-label={`套餐 ${index + 1} 展示参考总价`} checked={row.showReferencePrice !== false} onChange={(event) => updateRow(index, { showReferencePrice: event.target.checked })} /><span>{row.showReferencePrice !== false ? "开启" : "关闭"}</span><strong>展示参考价</strong></label>}
         </section>;
       })}</div>
       {!linked && !config.linkedTabsId && <button type="button" className="text-action" onClick={() => updateRows([...rows, { name: "新套餐", skuId: "", supportingCopy: "", savingCopy: "", saveCopy: "", badgeText: "", showSupportingCopy: false, showReferencePrice: false, showSavingCopy: false, showSaveCopy: false, showBadge: false }])}><Plus size={15} /> 添加套餐</button>}

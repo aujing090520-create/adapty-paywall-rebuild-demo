@@ -1,12 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { protectedTemplateIds, readTemplateNodes, writeTemplateNodes } from "./templateStorage.js";
+import { clearLocalDemoSettings, protectedTemplateIds, readTemplateNodes, writeTemplateNodes } from "./templateStorage.js";
 
 function storage() {
   const values = new Map();
   return {
+    get length() { return values.size; },
+    key: (index) => [...values.keys()][index] ?? null,
     getItem: (key) => values.get(key) ?? null,
     setItem: (key, value) => values.set(key, value),
+    removeItem: (key) => values.delete(key),
   };
 }
 
@@ -18,6 +21,19 @@ test("four protected templates keep independent node trees", () => {
   for (const [index, id] of [...protectedTemplateIds].entries()) {
     assert.deepEqual(readTemplateNodes(store, id), [{ id: `node-${index}`, type: "Text", content: `edit-${index}` }]);
   }
+});
+
+test("local reset removes only this demo's saved templates and component library", () => {
+  const store = storage();
+  writeTemplateNodes(store, "ht-blue-privilege", [{ id: "edited", type: "Text" }]);
+  store.setItem("paywall-template-source-image-repair-v1:ht-blue-privilege", "done");
+  store.setItem("paywall-component-library-v1", "[]");
+  store.setItem("another-site-setting", "keep");
+  assert.equal(clearLocalDemoSettings(store), true);
+  assert.equal(readTemplateNodes(store, "ht-blue-privilege"), null);
+  assert.equal(store.getItem("paywall-template-source-image-repair-v1:ht-blue-privilege"), null);
+  assert.equal(store.getItem("paywall-component-library-v1"), null);
+  assert.equal(store.getItem("another-site-setting"), "keep");
 });
 
 test("unprotected templates and invalid records do not override defaults", () => {
