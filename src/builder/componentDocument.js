@@ -8,7 +8,7 @@ export const COMPONENT_TYPES = ['Screen', 'Stack', 'Text', 'Image', 'Video', 'Ic
 export const COMPONENT_NAMES = { Screen: '页面', Stack: '布局容器', Text: '文字', Image: '图片', Video: '视频', Icon: '图标', Package: '商品', Button: '按钮', Tabs: '标签页', Tab: '标签页面', TabControl: '标签按钮组', TabButton: '标签按钮', Carousel: '轮播', Slide: '轮播页', Timeline: '时间线', TimelineItem: '时间节点', Toggle: '开关', Countdown: '倒计时', Flow: '多页面流程' };
 export const CONTAINER_TYPES = new Set(['Screen', 'Stack', 'Package', 'Button', 'Tabs', 'Tab', 'TabControl', 'TabButton', 'Carousel', 'Slide', 'Timeline', 'TimelineItem', 'Flow']);
 export const DEFAULT_PROPS = { axis: 'vertical', gap: 8, align: 'stretch', justify: 'start', widthMode: 'fill', width: 160, heightMode: 'fit', height: 160, paddingTop: 0, paddingRight: 0, paddingBottom: 0, paddingLeft: 0, marginTop: 0, marginRight: 0, marginBottom: 0, marginLeft: 0, background: 'transparent', color: '#171717', radius: 0, borderWidth: 0, borderColor: '#dedee3', fontSize: 14, fontWeight: 400, textAlign: 'left', objectFit: 'contain', opacity: 100, alignSelf: 'auto' };
-export const componentProps = (node) => ({ ...DEFAULT_PROPS, ...node.props });
+export const componentProps = (node) => ({ ...DEFAULT_PROPS, ...(['Toggle', 'Icon'].includes(node.type) ? { widthMode: 'fit' } : {}), ...node.props });
 export const component = (id, type, name, props = {}, children = []) => ({ id, type, name: name || COMPONENT_NAMES[type], props, children });
 const text = (id, value, props = {}) => component(id, 'Text', '', { text: String(value ?? ''), ...props });
 const stack = (id, name, children, props = {}) => component(id, 'Stack', name, props, children.filter(Boolean));

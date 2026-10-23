@@ -97,3 +97,8 @@ test('canonical persistence is independent of v1, invalid records are preserved 
   store.setItem('paywall-component-library-v3','[]'); clearLocalDemoSettings(store);
   assert.equal(store.length,1); assert.equal(store.getItem('unrelated'),'keep');
 });
+test('intrinsic controls do not claim leftover horizontal width', () => {
+  assert.equal(componentProps(component('checkbox','Toggle','勾选框')).widthMode,'fit');
+  assert.equal(componentProps(component('icon','Icon','图标')).widthMode,'fit');
+  assert.equal(componentProps(component('cell','Icon','单元格',{widthMode:'fill'})).widthMode,'fill');
+});
