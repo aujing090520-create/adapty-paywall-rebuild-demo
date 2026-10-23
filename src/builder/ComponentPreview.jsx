@@ -25,7 +25,7 @@ export function componentStyle(node) {
     margin: props.marginMode === 'individual' ? ['Top', 'Right', 'Bottom', 'Left'].map((side) => `${numeric(`margin${side}`)}px`).join(' ') : `${numeric('marginVertical', numeric('marginTop'))}px ${numeric('marginHorizontal', numeric('marginRight'))}px`,
     alignSelf: props.alignSelf === 'auto' ? undefined : props.alignSelf,
     ...(props.textBackground ? { background: props.textBackground } : {}),
-    ...(props.backgroundImage ? { backgroundImage: `url(${JSON.stringify(safeMediaSource(props.backgroundImage))})`, backgroundSize: props.backgroundFit ?? 'cover', backgroundPosition: 'center top', backgroundRepeat: props.backgroundRepeat ?? 'no-repeat' } : {}),
+    ...(props.backgroundImage ? { backgroundImage: `url(${JSON.stringify(safeMediaSource(props.backgroundImage))})`, backgroundSize: props.backgroundFit ?? 'cover', backgroundPosition: props.backgroundPosition ?? 'center', backgroundRepeat: props.backgroundRepeat ?? 'no-repeat' } : {}),
   };
 }
 function containerStyle(node) {

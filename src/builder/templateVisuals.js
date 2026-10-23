@@ -45,7 +45,7 @@ export function calibrateTemplateVisuals(document, template, sources) {
     set('carousel/slide-caption-0', { color: '#a4a4a4', fontSize: 18.3, paddingTop: 7 });
   }
   if (recovery) {
-    set('$screen', { paddingTop: 148, backgroundImage: document.root.props.backgroundImage || '/figma-paywall-assets/recovery-art.png', backgroundFit: 'contain', backgroundRepeat: 'no-repeat' });
+    set('$screen', { paddingTop: 148, backgroundImage: document.root.props.backgroundImage || '/figma-paywall-assets/recovery-art.png', backgroundFit: 'contain', backgroundPosition: 'center top', backgroundRepeat: 'no-repeat' });
     set('offer-card', { radius: 32, gap: 10, ...edges('padding', 22, 18) });
     set('headline', { fontSize: (configs.get('headline') ?? {}).fontSize ?? 28, marginTop: 12, marginBottom: 12 });
     set('hero-image/image', { height: 190, widthMode: 'fixed', width: 226, alignSelf: 'center' });
