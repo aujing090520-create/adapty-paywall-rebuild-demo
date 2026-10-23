@@ -43,7 +43,7 @@ export function createCatalogComponent(type, id = crypto.randomUUID()) {
   if(type==='Carousel')return component(id,type,'轮播',{defaultIndex:0},[0,1].map((at)=>component(`${id}/slide-${at}`,'Slide',`第 ${at+1} 页`,{gap:12},[t(`${id}/slide-title-${at}`,`第 ${at+1} 页`,{fontSize:22,fontWeight:700,textAlign:'center'}),t(`${id}/slide-copy-${at}`,'内容',{textAlign:'center'})])));
   if (type === 'Countdown') return component(id,type,'倒计时',{start:'00:10:00',previewState:'auto'},[
     component(`${id}/active`,'CountdownState','计时内容',{state:'active',axis:'horizontal',justify:'center',gap:2},[
-      t(`${id}/hours`,'',{timerField:'hours',fontSize:24,fontWeight:700}), t(`${id}/separator-1`,':',{fontSize:24}), t(`${id}/minutes`,'',{timerField:'minutes',fontSize:24,fontWeight:700}), t(`${id}/separator-2`,':',{fontSize:24}), t(`${id}/seconds`,'',{timerField:'seconds',fontSize:24,fontWeight:700}),
+      t(`${id}/hours`,'',{timerField:'hours',widthMode:'fit',fontSize:24,fontWeight:700}), t(`${id}/separator-1`,':',{widthMode:'fit',fontSize:24}), t(`${id}/minutes`,'',{timerField:'minutes',widthMode:'fit',fontSize:24,fontWeight:700}), t(`${id}/separator-2`,':',{widthMode:'fit',fontSize:24}), t(`${id}/seconds`,'',{timerField:'seconds',widthMode:'fit',fontSize:24,fontWeight:700}),
     ]),
     component(`${id}/ended`,'CountdownState','结束内容',{state:'ended'},[t(`${id}/ended-text`,'优惠已结束',{textAlign:'center'})]),
     component(`${id}/fallback`,'CountdownState','兜底内容',{state:'fallback'},[t(`${id}/fallback-text`,'限时优惠',{textAlign:'center'})]),
@@ -72,8 +72,13 @@ export function upgradeCanonicalComponents(document) {
       const native=createCatalogComponent('Countdown'),props=node.props,size=props.fontSize??24;
       const active=native.children[0]; active.props.gap=5;
       const digits=active.children.map((child)=>({...child,props:{...child.props,fontSize:size,color:props.color,...(child.props.timerField?{background:props.digitBackground??'transparent',radius:4,paddingLeft:3,paddingRight:3}:{})}}));
-      active.children=[...(props.prefix?[t(`${native.id}/prefix`,props.prefix,{fontSize:size,color:props.prefixColor??props.color})]:[]),...digits,...(props.suffix?[t(`${native.id}/suffix`,props.suffix,{fontSize:size,color:props.color})]:[])];
+      active.props.align='center';
+      active.children=[...(props.prefix?[t(`${native.id}/prefix`,props.prefix,{widthMode:'fit',fontSize:size,color:props.prefixColor??props.color})]:[]),...digits,...(props.suffix?[t(`${native.id}/suffix`,props.suffix,{widthMode:'fit',fontSize:size,color:props.color})]:[])];
       return {...node,props:{...props,previewState:'auto'},children:native.children};
+    }
+    if(node.type==='CountdownState'&&node.props.state==='active'){
+      const children=node.children.map((child)=>child.type==='Text'&&child.props.widthMode===undefined?{...child,props:{...child.props,widthMode:'fit'}}:visit(child));
+      if(children.some((child,index)=>child!==node.children[index])){changed=true;return {...node,children};}
     }
     const children=node.children.map(visit);
     return children.some((child,index)=>child!==node.children[index])?{...node,children}:node;

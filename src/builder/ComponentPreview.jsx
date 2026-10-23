@@ -96,7 +96,7 @@ function Countdown({ props }) {
   const parts = [Math.floor(remaining / 3600), Math.floor(remaining / 60) % 60, remaining % 60];
   return <span className="nc-countdown"><span style={{ color: props.prefixColor }}>{props.prefix}</span>{parts.map((part, index) => <React.Fragment key={index}>{index > 0 && <span>:</span>}<strong style={{ background: props.digitBackground, borderRadius: 4, padding: '0 3px' }}>{String(part).padStart(2, '0')}</strong></React.Fragment>)}<span>{props.suffix}</span></span>;
 }
-export default function ComponentPreview({ document, selectedId, onSelect, editing, navigation, onStatus }) {
+export default function ComponentPreview({ document, selectedId, onSelect, editing, navigation, onNavigate, onStatus }) {
   const [runtime, setRuntime] = useState({});
   const viewport = useRef(null), [scale, setScale] = useState(0.82);
   useEffect(() => { setRuntime((current) => ({ ...current, ...navigation })); }, [navigation]);
@@ -114,11 +114,11 @@ export default function ComponentPreview({ document, selectedId, onSelect, editi
       else onStatus('请填写有效的 http 或 https 链接');
     } else if (action.action === 'OpenPage') {
       const { nodes, parents } = indexDocument(document), target = nodes.get(action.actionPage), owner = nodes.get(parents.get(target?.id));
-      if (owner?.type === 'Flow') { setRuntime((current) => ({ ...current, [owner.id]: owner.children.findIndex((item) => item.id === target.id) })); if (viewport.current) viewport.current.scrollTop = 0; }
+      if (owner?.type === 'Flow') { const next = { [owner.id]: owner.children.findIndex((item) => item.id === target.id) }; setRuntime((current) => ({ ...current, ...next })); onNavigate?.(next); if (viewport.current) viewport.current.scrollTop = 0; }
       else onStatus('尚未配置有效的目标页面');
     } else if (action.action === 'NextScreen') {
       const flow = findComponent(document.root, (item) => item.type === 'Flow');
-      if (flow) setRuntime((current) => ({ ...current, [flow.id]: Math.min(flow.children.length - 1, (current[flow.id] ?? 0) + 1) }));
+      if (flow) { const next = { [flow.id]: Math.min(flow.children.length - 1, (runtime[flow.id] ?? flow.props.defaultIndex ?? 0) + 1) }; setRuntime((current) => ({ ...current, ...next })); onNavigate?.(next); }
     } else if (action.action === 'Purchase') {
       const required = findComponent(document.root, (item) => item.type === 'Toggle' && item.props.required && !(runtime[item.id] ?? item.props.initial));
       onStatus(required ? '请先勾选同意协议' : '购买预览：未发起真实交易');
