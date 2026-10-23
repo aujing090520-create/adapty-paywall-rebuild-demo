@@ -9,6 +9,7 @@ import { createCatalogComponent, upgradeCanonicalComponents, catalogFor } from '
 import { editorClipboard, copyFragment, pasteFragment, copyStyles, pasteStyles, wrapInStack } from './componentOperations.js';
 import { treeChildren, compositionSummary, initialCollapsed, pageContext, isUnconfiguredDetailPage } from './componentTree.js';
 import './componentEditor.css';
+import RevenueCatProperties from './RevenueCatProperties.jsx';
 
 const libraryKey = 'paywall-component-library-v3';
 const fieldNames = { name: '商品名称', price: '主价格', reference: '参考价', supportingCopy: '辅助文案', savingCopy: '优惠说明', saveCopy: 'SAVE 文案', badgeText: '标签文字' };
@@ -127,7 +128,8 @@ export default function ComponentEditor({ template, initialNodes }) {
         <section><Field label={isPageRoot?'页面名称':'图层名称'}><input value={selected.name} onChange={(event) => setDocument((current) => updateComponent(current, selected.id, { name: event.target.value }))} /></Field><div className="ne-actions"><button className="ne-icon" title="上移" aria-label="上移" disabled={isPageRoot || !parent || parent.children[0]?.id === selected.id} onClick={() => reorder(-1)}><ArrowUp size={16} /></button><button className="ne-icon" title="下移" aria-label="下移" disabled={isPageRoot || !parent || parent.children.at(-1)?.id === selected.id} onClick={() => reorder(1)}><ArrowDown size={16} /></button><button className="ne-icon" title="复制组件" aria-label="复制组件" disabled={isPageRoot || !parent} onClick={() => duplicateAt(selected.id)}><Copy size={16} /></button><button className="ne-icon danger" title="删除组件" aria-label="删除组件" disabled={isPageRoot || !parent} onClick={() => { setDocument((current) => removeComponent(current, selected.id)); setSelectedId(parent.id); }}><Trash2 size={16} /></button></div>{!isPageRoot&&<Select label="显示状态" value={p.hidden ? 'hidden' : 'visible'} onChange={(value) => patch({ hidden: value === 'hidden' })} options={[[ 'visible', '显示' ], [ 'hidden', '隐藏' ]]} />}
           {parent && !isPageRoot && <Select label="所在容器" value={parent.id} onChange={moveTo} options={[...indexDocument({root:pages.active}).nodes.values()].filter((node) => node.id !== selected.id && canContain(node, selected)).map((node) => [node.id, `${node.name} · ${COMPONENT_NAMES[node.type]}`])} />}
         </section>
-        <section><h3>内容</h3>
+        <RevenueCatProperties selected={selected} p={p} patch={patch} document={document} nodes={nodes} parents={parents} resolveText={resolveComponentText} findPackage={findPackage} changeProduct={changeProduct} fieldNames={fieldNames} demoSkus={DEMO_SKUS} setNavigation={setNavigation} onStatus={setStatus} onMediaType={(type) => setDocument((current) => updateComponent(current, selected.id, { type }))} setDefaultPackage={(value) => setDocument((current) => { let next = current; if (value) for (const node of indexDocument(current).nodes.values()) if (node.type === 'Package' && node.props.group === p.group) next = updateComponent(next, node.id, { props: { defaultSelected: false } }); return updateComponent(next, selected.id, { props: { defaultSelected: value } }); })} />
+        {false && <><section><h3>内容</h3>
           {selected.type==='Custom'&&<Field label="网页内容 HTML"><textarea className="ne-code-input" value={p.html??''} onChange={(event)=>patch({html:event.target.value})}/></Field>}
           {selected.type==='Wallet'&&<Select label="钱包" value={p.method??'apple'} options={[[ 'apple','Apple Pay' ],[ 'google','Google Pay' ]]} onChange={(method)=>patch({method})}/>}
           {selected.type==='ExpressCheckout'&&<Select label="预览状态" value={p.previewState??'available'} options={[[ 'available','可用' ],[ 'unavailable','不可用' ],[ 'loading','加载中' ]]} onChange={(previewState)=>{patch({previewState});setNavigation({[selected.id]:previewState});}}/>}
@@ -162,7 +164,7 @@ export default function ComponentEditor({ template, initialNodes }) {
           <NumberField label="最小高度" value={p.minHeight ?? 0} onChange={(minHeight) => patch({ minHeight })} />
           {['Top','Right','Bottom','Left'].map((side,index) => <NumberField key={side} label={`内边距${['上','右','下','左'][index]}`} value={p[`padding${side}`]} max={500} onChange={(value) => patch({ [`padding${side}`]: value })} />)}
           {['Top','Right','Bottom','Left'].map((side,index) => <NumberField key={`m${side}`} label={`外边距${['上','右','下','左'][index]}`} value={p[`margin${side}`]} min={-200} max={500} onChange={(value) => patch({ [`margin${side}`]: value })} />)}
-        </div></section>
+        </div></section></>}
       </aside>
     </div>
     {menuNode&&<LayerActionsMenu menu={layerMenu} node={menuNode} isRoot={menuNode.id===document.root.id||menuNode.id===pages.active.id} canPaste={Boolean(editorClipboard.fragment?.roots.every((node)=>canContain(CONTAINER_TYPES.has(menuNode.type)?menuNode:nodes.get(parents.get(menuNode.id)),node)))} canWrap={Boolean(parents.get(menuNode.id)&&canContain(nodes.get(parents.get(menuNode.id)),{type:'Stack'})&&canContain({type:'Stack'},menuNode))} hasStyles={Boolean(editorClipboard.styles)} onAction={menuAction} onClose={()=>setLayerMenu(null)}/>}

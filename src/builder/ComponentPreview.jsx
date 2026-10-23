@@ -13,11 +13,12 @@ export function componentStyle(node) {
   const numeric = (key, fallback = 0) => Number.isFinite(Number(props[key])) ? Number(props[key]) : fallback;
   return {
     width: dimension(props.widthMode, props.width), height: props.heightMode === 'fixed' ? dimension('fixed', props.height) : undefined,
-    minWidth: 0, flexShrink: 0, boxSizing: 'border-box',
-    minHeight: props.minHeight ?? undefined, background: props.background,
+    minWidth: props.minWidth > 0 ? props.minWidth : 0, maxWidth: props.maxWidth > 0 ? props.maxWidth : undefined, flexShrink: 0, boxSizing: 'border-box',
+    minHeight: props.minHeight > 0 ? props.minHeight : undefined, maxHeight: props.maxHeight > 0 ? props.maxHeight : undefined, background: props.background,
     color: node.props.color, fontSize: numeric('fontSize', 14), fontWeight: props.fontWeight,
     textAlign: node.props.textAlign, opacity: numeric('opacity', 100) / 100, borderRadius: numeric('radius'),
     border: props.borderWidth ? `${numeric('borderWidth')}px solid ${props.borderColor}` : undefined,
+    boxShadow: props.shadowBlur || props.shadowX || props.shadowY ? `${numeric('shadowX')}px ${numeric('shadowY')}px ${numeric('shadowBlur')}px ${props.shadowColor ?? '#000000'}` : undefined,
     padding: ['Top', 'Right', 'Bottom', 'Left'].map((side) => `${numeric(`padding${side}`)}px`).join(' '),
     margin: ['Top', 'Right', 'Bottom', 'Left'].map((side) => `${numeric(`margin${side}`)}px`).join(' '),
     alignSelf: props.alignSelf === 'auto' ? undefined : props.alignSelf,
