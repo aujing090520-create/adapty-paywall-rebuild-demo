@@ -4,9 +4,9 @@ import { linkActionFor, visibleLinkLabels } from '../linkActions.js';
 import { HT_PRODUCT_DESIGN_DEFAULTS } from '../products/productStyleModel.js';
 
 export const DOCUMENT_VERSION = 3;
-export const COMPONENT_TYPES = ['Screen', 'Stack', 'Text', 'Image', 'Video', 'Icon', 'Package', 'Button', 'Tabs', 'Tab', 'TabControl', 'TabButton', 'Carousel', 'Slide', 'Timeline', 'TimelineItem', 'Toggle', 'Countdown', 'Flow'];
-export const COMPONENT_NAMES = { Screen: '页面', Stack: '布局容器', Text: '文字', Image: '图片', Video: '视频', Icon: '图标', Package: '商品', Button: '按钮', Tabs: '标签页', Tab: '标签页面', TabControl: '标签按钮组', TabButton: '标签按钮', Carousel: '轮播', Slide: '轮播页', Timeline: '时间线', TimelineItem: '时间节点', Toggle: '开关', Countdown: '倒计时', Flow: '多页面流程' };
-export const CONTAINER_TYPES = new Set(['Screen', 'Stack', 'Package', 'Button', 'Tabs', 'Tab', 'TabControl', 'TabButton', 'Carousel', 'Slide', 'Timeline', 'TimelineItem', 'Flow']);
+export const COMPONENT_TYPES = ['Screen', 'Stack', 'Text', 'Image', 'Video', 'Icon', 'Custom', 'Header', 'Footer', 'Package', 'PurchaseButton', 'BottomSheet', 'ExpressCheckout', 'CheckoutState', 'Wallet', 'Button', 'Tabs', 'Tab', 'TabControl', 'TabButton', 'Carousel', 'Slide', 'Timeline', 'TimelineItem', 'Switch', 'SwitchCase', 'Toggle', 'Countdown', 'CountdownState', 'Flow'];
+export const COMPONENT_NAMES = { Screen: '页面', Stack: '布局容器', Text: '文字', Image: '图片', Video: '视频', Icon: '图标', Custom: '自定义网页', Header: '页头', Footer: '页脚', Package: '商品', PurchaseButton: '购买按钮', BottomSheet: '底部弹层', ExpressCheckout: '快捷结账', CheckoutState: '结账状态内容', Wallet: '钱包按钮', Button: '按钮', Tabs: '标签页', Tab: '标签页面', TabControl: '标签按钮组', TabButton: '标签按钮', Carousel: '轮播', Slide: '轮播页', Timeline: '时间线', TimelineItem: '时间节点', Switch: '开关', SwitchCase: '开关状态内容', Toggle: '开关控件', Countdown: '倒计时', CountdownState: '倒计时状态内容', Flow: '多页面流程' };
+export const CONTAINER_TYPES = new Set(['Screen', 'Stack', 'Header', 'Footer', 'Package', 'PurchaseButton', 'BottomSheet', 'ExpressCheckout', 'CheckoutState', 'Button', 'Tabs', 'Tab', 'TabControl', 'TabButton', 'Carousel', 'Slide', 'Timeline', 'TimelineItem', 'Switch', 'SwitchCase', 'Countdown', 'CountdownState', 'Flow']);
 export const DEFAULT_PROPS = { axis: 'vertical', gap: 8, align: 'stretch', justify: 'start', widthMode: 'fill', width: 160, heightMode: 'fit', height: 160, paddingTop: 0, paddingRight: 0, paddingBottom: 0, paddingLeft: 0, marginTop: 0, marginRight: 0, marginBottom: 0, marginLeft: 0, background: 'transparent', color: '#171717', radius: 0, borderWidth: 0, borderColor: '#dedee3', fontSize: 14, fontWeight: 400, textAlign: 'left', objectFit: 'contain', opacity: 100, alignSelf: 'auto' };
 export const componentProps = (node) => ({ ...DEFAULT_PROPS, ...(['Toggle', 'Icon'].includes(node.type) ? { widthMode: 'fit' } : {}), ...node.props });
 export const component = (id, type, name, props = {}, children = []) => ({ id, type, name: name || COMPONENT_NAMES[type], props, children });
@@ -43,12 +43,17 @@ export function removeComponent(document, id) {
 }
 export function canContain(parent, child) {
   if (!parent || !CONTAINER_TYPES.has(parent.type)) return false;
+  if (['Header', 'Footer'].includes(child.type)) return parent.type === 'Screen' && !parent.children?.some((entry) => entry.type === child.type && entry.id !== child.id);
+  if (parent.type === 'Header' && !['Stack', 'Text', 'Image', 'Button', 'Icon'].includes(child.type)) return false;
+  if (parent.type === 'ExpressCheckout') return child.type === 'CheckoutState' && (parent.children?.filter((entry)=>entry.id!==child.id).length??0)<3 && (!child.props?.state || !parent.children?.some((entry)=>entry.id!==child.id&&entry.props.state===child.props.state));
+  if (parent.type === 'Switch') return ['SwitchCase', 'Toggle', 'Stack', 'Text'].includes(child.type);
+  if (parent.type === 'Countdown') return child.type === 'CountdownState' && (parent.children?.filter((entry)=>entry.id!==child.id).length??0)<3 && (!child.props?.state || !parent.children?.some((entry)=>entry.id!==child.id&&entry.props.state===child.props.state));
   if (parent.type === 'Tabs') return child.type === 'Tab';
   if (parent.type === 'TabControl') return child.type === 'TabButton';
   if (parent.type === 'Carousel') return child.type === 'Slide';
   if (parent.type === 'Timeline') return child.type === 'TimelineItem';
   if (parent.type === 'Flow') return child.type === 'Screen';
-  return !['Tab', 'TabButton', 'Slide', 'TimelineItem', 'Screen'].includes(child.type);
+  return !['Tab', 'TabButton', 'Slide', 'TimelineItem', 'Screen', 'CheckoutState', 'SwitchCase', 'CountdownState'].includes(child.type);
 }
 export function insertComponent(document, parentId, node, at = Infinity) {
   const index = indexDocument(document), parent = index.nodes.get(parentId);

@@ -789,7 +789,7 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
   const [transientProducts, setTransientProducts] = useState([]);
   if (view === "builder") {
     const template = appliedTemplate !== null ? templates[appliedTemplate] : { id: "blank", title: "空白页面" };
-    const initialNodes = builderNodes;
+    const initialNodes = appliedTemplate !== null ? builderNodes : [];
     return <section className="builder-page">
       {isNew ? <><button className="back" onClick={() => setView("create")}><ArrowLeft size={18} /> 创建付费墙</button><div className="workspace-heading"><div><span className="eyebrow">新建付费墙</span><h1>{selected.name}</h1></div></div></> : <WorkspaceHeader selected={selected} setView={setView} duplicate={duplicate} setModal={setModal} markUnknown={markUnknown} />}
       <div className="detail-tabs"><button onClick={() => setView(isNew ? "create" : "general")}>General</button><button className="active">Builder & Generator</button></div>
