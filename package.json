@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "prebuild": "node scripts/prepare-assets.mjs",
     "dev": "vite --host=0.0.0.0 --port=3017",
     "build": "vite build",
     "test": "node --test src/*.test.js src/builder/*.test.js tests/*.test.js",
@@ -11,12 +12,19 @@
     "test:products": "node --test tests/product*.test.js"
   },
   "dependencies": {
+    "embla-carousel-fade": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
+    "fflate": "^0.8.3",
+    "gradient-parser": "^1.2.0",
     "lucide-react": "^0.468.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-best-gradient-color-picker": "^3.0.14",
+    "react-dom": "^18.3.1",
+    "tinycolor2": "^1.4.2"
   },
   "devDependencies": {
+    "@tabler/icons": "^3.49.0",
+    "@tabler/icons-sprite": "^3.49.0",
     "@vitejs/plugin-react": "^4.3.4",
     "react-test-renderer": "^18.3.1",
     "vite": "^6.0.5"

@@ -1,6 +1,46 @@
 export const STATE_STYLE_KEYS = ['axis','gap','align','justify','wrap','widthMode','width','minWidth','maxWidth','heightMode','height','minHeight','maxHeight','paddingMode','paddingTop','paddingRight','paddingBottom','paddingLeft','paddingVertical','paddingHorizontal','marginMode','marginTop','marginRight','marginBottom','marginLeft','marginVertical','marginHorizontal','background','backgroundImage','backgroundVideo','backgroundFit','backgroundPosition','backgroundRepeat','fillType','color','opacity','radius','shape','borderWidth','borderColor','shadowX','shadowY','shadowBlur','shadowColor'];
 export const selectedStyleKey = (key) => `selected${key[0].toUpperCase()}${key.slice(1)}`;
 STATE_STYLE_KEYS.push('minWidthEnabled', 'maxWidthEnabled', 'minHeightEnabled', 'maxHeightEnabled', 'fillEnabled');
+export const CORNER_KEYS = ['radiusTopLeft', 'radiusTopRight', 'radiusBottomRight', 'radiusBottomLeft'];
+export const PAINT_OPACITY_KEYS = ['colorOpacity', 'backgroundOpacity', 'borderOpacity', 'shadowOpacity', 'overlayOpacity', 'iconBackgroundOpacity'];
+STATE_STYLE_KEYS.push('radiusMode', 'iconBackgroundEnabled', 'borderEnabled', 'shadowEnabled', ...CORNER_KEYS, ...PAINT_OPACITY_KEYS);
+STATE_STYLE_KEYS.push('mask', 'overlayColor', 'overlayEnabled', 'iconBackground');
+STATE_STYLE_KEYS.push('appearanceEnabled', 'maskEnabled');
+export const sequencePages = (node) => node.type === 'Carousel' ? node.children.filter((child)=>child.type==='Slide') : node.children;
+export function utcDateTimeInput(value) {
+  if(!value)return '';
+  const date=new Date(value);
+  return Number.isFinite(date.getTime())?date.toISOString().slice(0,19):'';
+}
+export const BADGE_DEFAULTS={text:'徽标',positionStyle:'overlay',position:'top-center',widthMode:'fit',heightMode:'fit',paddingMode:'axis',paddingVertical:4,paddingHorizontal:8,marginMode:'axis',marginVertical:0,marginHorizontal:0,fontSize:14,fontWeight:400,color:'#000000',textAlign:'center',background:'#11d483',shape:'pill',radius:0,borderWidth:0,borderColor:'#cccccc',shadowBlur:0,shadowColor:'#000000',backgroundOpacity:100,colorOpacity:100};
+
+export function selectionOwner(node, nodes, parents) {
+  let current = node;
+  while (current) {
+    if (['Package', 'TabButton'].includes(current.type)) return current;
+    current = nodes.get(parents.get(current.id));
+  }
+  return null;
+}
+
+export function paintColor(value, opacity = 100) {
+  const amount = Math.max(0, Math.min(100, Number(opacity) || 0));
+  if (!value || value === 'transparent' || amount === 100 || /gradient\(/i.test(value)) return value;
+  return `color-mix(in srgb, ${value === 'inherit' ? 'currentColor' : value} ${amount}%, transparent)`;
+}
+
+export function cornerModePatch(props) {
+  if (props.radiusMode === 'individual') return { radiusMode: 'all', radius: props.radiusTopLeft ?? props.radius ?? 0 };
+  return { radiusMode: 'individual', ...Object.fromEntries(CORNER_KEYS.map((key) => [key, props.radius ?? 0])) };
+}
+
+export function cornerRadius(props) {
+  if (props.appearanceEnabled === false || props.maskEnabled === false) return 0;
+  if (props.shape === 'pill') return 999;
+  if (props.shape === 'circle') return '50%';
+  const numeric = (value) => Math.max(0, Number(value) || 0);
+  return props.radiusMode === 'individual' ? CORNER_KEYS.map((key) => `${numeric(props[key] ?? props.radius)}px`).join(' ') : numeric(props.radius);
+}
 
 export function defaultPackagePatch(document, id, enabled) {
   const group = (node) => node.props.group ?? node.id;
@@ -43,7 +83,7 @@ export function textPropertyPatch(node, patch) {
     if (patch.autoPlay === false && !(patch.controls ?? node.props.controls ?? true)) next.controls = true;
     if (patch.controls === false && !(patch.autoPlay ?? node.props.autoPlay ?? false)) next.autoPlay = true;
   }
-  if (node.type === 'Image' && patch.mask !== undefined) next.shape = 'rectangle';
+  if (['Image','Video'].includes(node.type) && patch.mask !== undefined) next.shape = 'rectangle';
   if (node.type === 'Text' && patch.fontWeight !== undefined) next.bold = false;
   for (const prefix of ['', 'selected']) {
     for (const axis of ['Width', 'Height']) {
@@ -60,7 +100,7 @@ export function textPropertyPatch(node, patch) {
   if (node.type === 'Text' && patch.background !== undefined) { next.textBackground = 'transparent'; next.fillEnabled = true; }
   if (patch.bold !== undefined) next.fontWeight = patch.bold ? 700 : 400;
   if (node.type !== 'Text' || !node.props.runs?.length || patch.runs !== undefined) return next;
-  const keys = ['fontSize', 'color', 'fontWeight', 'bold', 'italic', 'underline'];
+  const keys = ['fontSize', 'color', 'colorOpacity', 'fontWeight', 'bold', 'italic', 'underline'];
   if (!keys.some((key) => next[key] !== undefined) && next.strike === undefined) return next;
   next.runs = node.props.runs.map((run) => ({ ...run, ...Object.fromEntries(keys.filter((key) => next[key] !== undefined).map((key) => [key, next[key]])), ...(next.strike !== undefined ? { strikethrough: next.strike } : {}) }));
   return next;
@@ -72,6 +112,7 @@ export function dimensionModePatch(axis, mode) {
 }
 
 export function imageMask(props) {
+  if (props.maskEnabled === false) return 'rectangle';
   if (props.mask && props.mask !== 'none') return props.mask === 'rounded' ? 'rectangle' : props.mask;
   return props.shape === 'circle' ? 'circle' : 'rectangle';
 }
@@ -115,10 +156,14 @@ export function activeComponents(document, runtime) {
     if (condition && Boolean(runtime[condition.id] ?? nodes.get(condition.id)?.props.initial) !== condition.value) return;
     result.push(node);
     let children = node.children;
-    if (['Flow','Tabs','Carousel'].includes(node.type)) children = children.length ? [children[Math.max(0, Math.min(children.length - 1, runtime[node.id] ?? node.props.defaultIndex ?? 0))]] : [];
+    if (['Flow','Tabs','Carousel'].includes(node.type)) {
+      const pages = sequencePages(node);
+      children = [...(pages.length ? [pages[Math.max(0, Math.min(pages.length - 1, runtime[node.id] ?? node.props.defaultIndex ?? 0))]] : []), ...node.children.filter((child)=>child.type==='PageControl')];
+    }
     if (node.type === 'Switch') children = children.filter((child) => child.type !== 'SwitchCase' || child.props.index === (runtime[node.id] ?? node.props.defaultIndex ?? 0));
     if (node.type === 'ExpressCheckout') children = children.filter((child) => child.props.state === (runtime[node.id] ?? node.props.previewState ?? 'available'));
     if (node.type === 'Countdown') children = children.filter((child) => child.props.state === (runtime[node.id] ?? runtime[`countdown-state:${node.id}`] ?? (node.props.previewState !== 'auto' ? node.props.previewState : null) ?? (countdownSeconds(node.props.start ?? '00:10:00') === null ? 'fallback' : countdownSeconds(node.props.start ?? '00:10:00') > 0 ? 'active' : 'ended')));
+    if(node.type==='Countdown'&&node.props.fallbackEnabled===false)children=children.filter((child)=>child.props.state!=='fallback');
     children.forEach(visit);
   };
   visit(document.root);

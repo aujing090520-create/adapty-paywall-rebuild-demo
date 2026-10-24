@@ -10,6 +10,7 @@ import { linkActionFor, visibleLinkLabels } from "./linkActions.js";
 
 import { DEMO_SKUS, PRICE_DISPLAY_MODES, billingMonths, productPriceFields, resolveProductPrice, skuById, skuCopy, templateSkuId } from "./productPricing.js";
 import { clearLocalDemoSettings, protectedTemplateIds, readTemplateNodes, writeTemplateNodes } from "./templateStorage.js";
+import { clearCustomBundles } from "./builder/customStorage.js";
 import { productTranslation } from "./productPlacement.js";
 import { productArrangement } from "./productArrangement.js";
 import { PRODUCT_REGIONS, contentRegions, moveContentPart, contentSlot } from "./productContentOrder.js";
@@ -600,7 +601,7 @@ export default function App() {
       </aside>
 
       {toast && <div className="toast"><Check size={17} /> {toast}</div>}
-      {modal?.kind === "local-reset" && <div className="modal-backdrop"><section className="modal local-reset-modal" role="dialog" aria-modal="true" aria-label="重置本地设定"><header><h2>重置本地设定</h2><button type="button" className="icon" aria-label="关闭" onClick={() => setModal(null)}><X size={19} /></button></header><p>将清除当前浏览器保存的模板修改和组件库，并还原本 Demo 的默认页面。此操作无法撤销。</p><div className="modal-actions"><button type="button" className="secondary" onClick={() => setModal(null)}>取消</button><button type="button" className="primary" onClick={() => { if (clearLocalDemoSettings(window.localStorage)) window.location.reload(); else notify("本地设定清除失败，请检查浏览器存储权限。"); }}>确认重置</button></div></section></div>}
+      {modal?.kind === "local-reset" && <div className="modal-backdrop"><section className="modal local-reset-modal" role="dialog" aria-modal="true" aria-label="重置本地设定"><header><h2>重置本地设定</h2><button type="button" className="icon" aria-label="关闭" onClick={() => setModal(null)}><X size={19} /></button></header><p>将清除当前浏览器保存的模板修改、组件库和自定义 ZIP，并还原本 Demo 的默认页面。此操作无法撤销。</p><div className="modal-actions"><button type="button" className="secondary" onClick={() => setModal(null)}>取消</button><button type="button" className="primary" onClick={async () => { try { await clearCustomBundles(); if (clearLocalDemoSettings(window.localStorage)) window.location.reload(); else notify("本地设定清除失败，请检查浏览器存储权限。"); } catch { notify("本地设定清除失败，请检查浏览器存储权限。"); } }}>确认重置</button></div></section></div>}
       {modal?.kind === "builder-save" && (
         <ComplianceModal
           compliance={compliance}

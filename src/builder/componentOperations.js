@@ -1,11 +1,20 @@
-import { component, componentProps, cloneComponent, indexDocument, insertComponent, updateComponent, canContain } from './componentDocument.js';
+import { component, componentProps, cloneComponent, indexDocument, insertComponent, updateComponent, canContain, removeComponent, moveComponent } from './componentDocument.js';
 import { STATE_STYLE_KEYS, selectedStyleKey, textPropertyPatch } from './propertyModel.js';
+import { createTabSelectorButton, createTabSelector, createPageControl } from './componentCatalog.js';
 
 const STYLE_KEYS = new Set(['axis','gap','align','justify','wrap','widthMode','width','minWidth','maxWidth','heightMode','height','minHeight','maxHeight','paddingMode','paddingTop','paddingRight','paddingBottom','paddingLeft','paddingVertical','paddingHorizontal','marginMode','marginTop','marginRight','marginBottom','marginLeft','marginVertical','marginHorizontal','background','backgroundImage','backgroundFit','backgroundVideo','fillType','color','radius','shape','borderWidth','borderColor','fontSize','fontWeight','fontFamily','fontStyle','textAlign','objectFit','opacity','alignSelf','strike','bold','italic','underline','textBackground','iconSize','iconBackground','iconRadius','selectedBorder','selectedBackground','selectedColor','shadowX','shadowY','shadowBlur','shadowColor']);
-for (const key of [...STATE_STYLE_KEYS, ...STATE_STYLE_KEYS.map(selectedStyleKey), 'lineHeight', 'flexGrow', 'mask', 'overlayColor', 'pageSpacing', 'pagePeek', 'pageControlPosition', 'dotColor', 'activeDotColor']) STYLE_KEYS.add(key);
+for (const key of [...STATE_STYLE_KEYS, ...STATE_STYLE_KEYS.map(selectedStyleKey), 'lineHeight', 'flexGrow', 'mask', 'overlayColor', 'overlayEnabled', 'pageSpacing', 'pagePeek', 'pageControlPosition', 'dotColor', 'activeDotColor', 'itemSpacing', 'textSpacing', 'columnGutter', 'iconAlignment', 'connectorEnabled', 'connectorWidth', 'connectorColor', 'connectorOpacity', 'connectorMarginMode', 'connectorMarginVertical', 'connectorMarginTop', 'connectorMarginBottom']) STYLE_KEYS.add(key);
+for(const key of ['pageAlignment','transitionTime','transitionAnimation','thumbColor','trackColor','thumbColorOpacity','trackColorOpacity','walletStyle'])STYLE_KEYS.add(key);
 export const copyStyles = (node) => Object.fromEntries(Object.entries(componentProps(node)).filter(([key]) => STYLE_KEYS.has(key)));
 export function pasteStyles(document, id, styles) {
   return patchComponentProperties(document,id,Object.fromEntries(Object.entries(styles ?? {}).filter(([key])=>STYLE_KEYS.has(key))));
+}
+export function togglePageControl(document,id,enabled) {
+  const node=indexDocument(document).nodes.get(id);
+  if(node?.type!=='Carousel')return document;
+  const controls=node.children.filter((child)=>child.type==='PageControl');
+  if(enabled===Boolean(controls.length))return document;
+  return updateComponent(document,id,{props:{pageControlVersion:1},children:enabled?[...node.children,createPageControl(crypto.randomUUID())]:node.children.filter((child)=>child.type!=='PageControl')});
 }
 
 function tabControls(tab) {
@@ -17,6 +26,70 @@ function tabControls(tab) {
   };
   visit(tab);
   return controls;
+}
+
+// Reindex selectors by the page identity they pointed to before a structural edit.
+export function reconcileTabStructure(before, after) {
+  if(before===after)return after;
+  const oldNodes=indexDocument(before).nodes;
+  let next=after;
+  for(const owner of indexDocument(after).nodes.values()) {
+    if(owner.type!=='Tabs')continue;
+    const previous=oldNodes.get(owner.id);
+    if(!previous||previous.children.length===owner.children.length&&previous.children.every((tab,index)=>tab.id===owner.children[index].id))continue;
+    const oldIds=previous.children.map((tab)=>tab.id),newIds=owner.children.map((tab)=>tab.id);
+    const defaultId=oldIds[previous.props.defaultIndex??0];
+    next=updateComponent(next,owner.id,{props:{defaultIndex:Math.max(0,newIds.includes(defaultId)?newIds.indexOf(defaultId):Math.min(previous.props.defaultIndex??0,newIds.length-1))}});
+    for(const page of owner.children)for(const control of tabControls(page)) {
+      const owned=control.children.filter((child)=>child.type==='TabButton'&&(!child.props.target||child.props.target===owner.id));
+      if(!owned.length)continue;
+      const buttons=owner.children.map((tab,index)=>{
+        const oldIndex=oldIds.indexOf(tab.id),existing=owned.find((button)=>button.props.index===oldIndex);
+        return existing?{...existing,props:{...existing.props,target:owner.id,index}}:createTabSelectorButton(crypto.randomUUID(),owner.id,index);
+      });
+      let inserted=false;
+      const children=control.children.flatMap((child)=>{
+        if(!owned.includes(child))return [child];
+        if(inserted)return [];
+        inserted=true;return buttons;
+      });
+      next=updateComponent(next,control.id,{children});
+    }
+  }
+  return next;
+}
+
+export const removeEditorComponent=(document,id)=>reconcileTabStructure(document,removeComponent(document,id));
+export const moveEditorComponent=(document,id,parentId,at=Infinity)=>reconcileTabStructure(document,moveComponent(document,id,parentId,at));
+
+export function reconcileTabNavigation(before,after,navigation) {
+  const oldNodes=indexDocument(before).nodes;
+  const result={...navigation};
+  for(const owner of indexDocument(after).nodes.values()) {
+    const old=oldNodes.get(owner.id);
+    if(owner.type!=='Tabs'||!old||navigation[owner.id]===undefined)continue;
+    const currentId=old.children[navigation[owner.id]]?.id,index=owner.children.findIndex((tab)=>tab.id===currentId);
+    result[owner.id]=index<0?Math.max(0,Math.min(navigation[owner.id],owner.children.length-1)):index;
+  }
+  return result;
+}
+
+export function appendTab(document, tabsId, tab) {
+  const owner = indexDocument(document).nodes.get(tabsId);
+  if (owner?.type !== 'Tabs' || tab?.type !== 'Tab') return document;
+  let next = insertComponent(document, tabsId, tab);
+  if (next === document) return document;
+  const index = owner.children.length;
+  for (const page of owner.children) {
+    for (const control of tabControls(page)) {
+      const owned = control.children.filter((child)=>child.type==='TabButton' && (!child.props.target || child.props.target===tabsId));
+      if (owned.some((child)=>child.props.index===index)) continue;
+      next = updateComponent(next, control.id, {children:[...control.children,createTabSelectorButton(crypto.randomUUID(),tabsId,index)]});
+    }
+  }
+  const first = owner.children[0];
+  const selectors = first ? tabControls(indexDocument(next).nodes.get(first.id)).map(cloneComponent) : [createTabSelector(crypto.randomUUID(),tabsId,1)];
+  return updateComponent(next,tab.id,{children:[...selectors,...tab.children]});
 }
 
 // Match the same selector inside its owning Tabs; never match labels by their text.
@@ -88,7 +161,7 @@ export function pasteFragment(document, parentId, fragment, at = Infinity) {
     if (updated === next) return {document,ids:[]};
     next = updated; ids.push(node.id);
   }
-  return {document:next,ids};
+  return {document:reconcileTabStructure(document,next),ids};
 }
 export function wrapInStack(document, id) {
   const {nodes,parents} = indexDocument(document), node = nodes.get(id), parent = nodes.get(parents.get(id));

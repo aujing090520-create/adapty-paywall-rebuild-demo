@@ -28,6 +28,7 @@ test('new and previously saved split countdowns do not distribute text across fu
   const countdown=createCatalogComponent('Countdown','timer');
   assert.ok(countdown.children[0].children.every((child)=>child.props.widthMode==='fit'));
   const old=structuredClone(countdown);
+  old.children[0].children=['hours','minutes','seconds'].map((timerField)=>component(`timer/${timerField}`,'Text','数字',{timerField}));
   old.children[0].children.forEach((child)=>delete child.props.widthMode);
   old.children[0].children[0].props.widthMode='fixed';
   old.children[0].children[0].props.width=42;

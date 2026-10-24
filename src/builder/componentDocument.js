@@ -6,13 +6,23 @@ import { calibrateTemplateVisuals } from './templateVisuals.js';
 import { effectiveFillType } from './propertyModel.js';
 
 export const DOCUMENT_VERSION = 3;
-export const COMPONENT_TYPES = ['Screen', 'Stack', 'Text', 'Image', 'Video', 'Icon', 'Custom', 'Header', 'Footer', 'Package', 'PurchaseButton', 'BottomSheet', 'ExpressCheckout', 'CheckoutState', 'Wallet', 'Button', 'Tabs', 'Tab', 'TabControl', 'TabButton', 'Carousel', 'Slide', 'Timeline', 'TimelineItem', 'Switch', 'SwitchCase', 'Toggle', 'Countdown', 'CountdownState', 'Flow'];
+export const COMPONENT_TYPES = ['Screen', 'Stack', 'Text', 'Image', 'Video', 'Icon', 'Custom', 'Header', 'Footer', 'Package', 'PurchaseButton', 'BottomSheet', 'ExpressCheckout', 'CheckoutState', 'Wallet', 'Button', 'Tabs', 'Tab', 'TabControl', 'TabButton', 'Carousel', 'Slide', 'PageControl', 'Indicators', 'Timeline', 'TimelineItem', 'Switch', 'SwitchCase', 'Toggle', 'Countdown', 'CountdownState', 'Flow'];
 export const COMPONENT_NAMES = { Screen: '页面', Stack: '布局容器', Text: '文字', Image: '图片', Video: '视频', Icon: '图标', Custom: '自定义网页', Header: '页头', Footer: '页脚', Package: '商品', PurchaseButton: '购买按钮', BottomSheet: '底部弹层', ExpressCheckout: '快捷结账', CheckoutState: '结账状态内容', Wallet: '钱包按钮', Button: '按钮', Tabs: '标签页', Tab: '标签页面', TabControl: '标签按钮组', TabButton: '标签按钮', Carousel: '轮播', Slide: '轮播页', Timeline: '时间线', TimelineItem: '时间节点', Switch: '开关', SwitchCase: '开关状态内容', Toggle: '开关控件', Countdown: '倒计时', CountdownState: '倒计时状态内容', Flow: '多页面流程' };
-export const CONTAINER_TYPES = new Set(['Screen', 'Stack', 'Header', 'Footer', 'Package', 'PurchaseButton', 'BottomSheet', 'ExpressCheckout', 'CheckoutState', 'Button', 'Tabs', 'Tab', 'TabControl', 'TabButton', 'Carousel', 'Slide', 'Timeline', 'TimelineItem', 'Switch', 'SwitchCase', 'Countdown', 'CountdownState', 'Flow']);
+Object.assign(COMPONENT_NAMES, { PageControl: '分页控件', Indicators: '分页指示器',Custom:'自定义组件' });
+export const CONTAINER_TYPES = new Set(['Screen', 'Stack', 'Header', 'Footer', 'Package', 'PurchaseButton', 'BottomSheet', 'ExpressCheckout', 'CheckoutState', 'Button', 'Tabs', 'Tab', 'TabControl', 'TabButton', 'Carousel', 'Slide', 'PageControl', 'Timeline', 'TimelineItem', 'Switch', 'SwitchCase', 'Countdown', 'CountdownState', 'Flow']);
 export const DEFAULT_PROPS = { axis: 'vertical', gap: 8, align: 'stretch', justify: 'start', widthMode: 'fill', width: 160, minWidth: 0, maxWidth: 0, heightMode: 'fit', height: 160, minHeight: 0, maxHeight: 0, paddingTop: 0, paddingRight: 0, paddingBottom: 0, paddingLeft: 0, paddingVertical: 0, paddingHorizontal: 0, paddingMode: 'axis', marginTop: 0, marginRight: 0, marginBottom: 0, marginLeft: 0, marginVertical: 0, marginHorizontal: 0, marginMode: 'axis', background: 'transparent', color: '#171717', radius: 0, borderWidth: 0, borderColor: '#dedee3', fontSize: 14, fontWeight: 400, textAlign: 'left', objectFit: 'contain', opacity: 100, alignSelf: 'auto', shadowX: 0, shadowY: 0, shadowBlur: 0, shadowColor: '#000000', shape: 'rectangle', fillType: 'color', mask: 'none', overlayColor: 'transparent', iconBackground: 'transparent', iconRadius: 0 };
 export const componentProps = (node) => {
   const props = { ...DEFAULT_PROPS, color: node.type === 'Screen' ? '#171717' : 'inherit', ...(['Toggle', 'Icon'].includes(node.type) ? { widthMode: 'fit' } : {}), ...(node.type === 'TabButton' ? { selectedBackground: '#167aff', selectedColor: '#ffffff' } : {}), ...node.props };
   props.fillType = effectiveFillType(node.props);
+  for (const key of ['colorOpacity', 'backgroundOpacity', 'borderOpacity', 'shadowOpacity', 'overlayOpacity', 'iconBackgroundOpacity']) props[key] = node.props[key] ?? (node.type === 'Icon' && key === 'colorOpacity' ? node.props.opacity ?? 100 : 100);
+  if (node.type === 'Timeline') {
+    const item = node.children.find((child) => child.type === 'TimelineItem');
+    const copy = item?.children.find((child) => child.type === 'Stack');
+    props.itemSpacing = node.props.itemSpacing ?? props.gap;
+    props.columnGutter = node.props.columnGutter ?? item?.props.gap ?? 16;
+    props.textSpacing = node.props.textSpacing ?? copy?.props.gap ?? 4;
+    props.iconAlignment = node.props.iconAlignment ?? 'title';
+  }
   if (node.type === 'Icon' && node.props.radius === undefined) props.radius = node.props.iconRadius ?? props.radius;
   for (const prefix of ['padding', 'margin']) {
     const source = node.props;
@@ -28,7 +38,7 @@ export const componentProps = (node) => {
     const sides = (prefix, axis) => props[`${prefix}Mode`] === 'individual' ? Number(props[`${prefix}${axis === 'width' ? 'Left' : 'Top'}`]) + Number(props[`${prefix}${axis === 'width' ? 'Right' : 'Bottom'}`]) : 2 * Number(props[`${prefix}${axis === 'width' ? 'Horizontal' : 'Vertical'}`]);
     for (const axis of ['width', 'height']) {
       const name = axis[0].toUpperCase() + axis.slice(1);
-      if (props[`${axis}Mode`] !== 'fixed') props[axis] = Math.max(Number(glyph) + sides('padding', axis) + 2 * Number(props.borderWidth), Number(props[`min${name}`]) || 0);
+      if (props[`${axis}Mode`] !== 'fixed') props[axis] = Math.max(Number(glyph) + sides('padding', axis) + 2 * Number(props.borderEnabled === false ? 0 : props.borderWidth), Number(props[`min${name}`]) || 0);
       props[`${axis}Mode`] = 'fixed';
     }
   }
@@ -75,10 +85,11 @@ export function canContain(parent, child) {
   if (parent.type === 'Countdown') return child.type === 'CountdownState' && (parent.children?.filter((entry)=>entry.id!==child.id).length??0)<3 && (!child.props?.state || !parent.children?.some((entry)=>entry.id!==child.id&&entry.props.state===child.props.state));
   if (parent.type === 'Tabs') return child.type === 'Tab';
   if (parent.type === 'TabControl') return child.type === 'TabButton';
-  if (parent.type === 'Carousel') return child.type === 'Slide';
+  if (parent.type === 'Carousel') return child.type === 'Slide' || child.type === 'PageControl' && !parent.children?.some((entry)=>entry.type==='PageControl' && entry.id!==child.id);
+  if (parent.type === 'PageControl') return child.type === 'Indicators' && !parent.children?.some((entry)=>entry.type==='Indicators' && entry.id!==child.id);
   if (parent.type === 'Timeline') return child.type === 'TimelineItem';
   if (parent.type === 'Flow') return child.type === 'Screen';
-  return !['Tab', 'TabButton', 'Slide', 'TimelineItem', 'Screen', 'CheckoutState', 'SwitchCase', 'CountdownState'].includes(child.type);
+  return !['Tab', 'TabButton', 'Slide', 'PageControl', 'Indicators', 'TimelineItem', 'Screen', 'CheckoutState', 'SwitchCase', 'CountdownState'].includes(child.type);
 }
 export function insertComponent(document, parentId, node, at = Infinity) {
   const index = indexDocument(document), parent = index.nodes.get(parentId);
@@ -238,7 +249,7 @@ export function createNativeComponent(type, id = crypto.randomUUID()) {
   if (type === 'Button') return component(id, type, '', { background: '#167aff', radius: 8, ...insets(12), action: { action: 'None' } }, [text(`${id}/text`, '按钮', { color: '#ffffff', textAlign: 'center' })]);
   if (type === 'Package') return component(id, type, '', { dataKey: id, group: id, radius: 8, borderWidth: 2, borderColor: '#dddddd', selectedBorder: '#167aff', ...insets(12) }, [text(`${id}/name`, '商品名称'), text(`${id}/price`, '价格', { fontWeight: 700 })]);
   const childType = { Tabs: 'Tab', TabControl: 'TabButton', Carousel: 'Slide', Timeline: 'TimelineItem', Flow: 'Screen' }[type];
-  return component(id, type, '', type === 'Stack' ? { gap: 8 } : {}, childType ? [createNativeComponent(childType, `${id}/item-1`), createNativeComponent(childType, `${id}/item-2`)] : []);
+  return component(id, type, '', type === 'Stack' ? { gap: 0, align: 'start' } : {}, childType ? [createNativeComponent(childType, `${id}/item-1`), createNativeComponent(childType, `${id}/item-2`)] : []);
 }
 
 export const DOCUMENT_PREFIX = 'paywall-component-document-v3:';

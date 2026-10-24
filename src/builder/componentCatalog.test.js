@@ -30,11 +30,13 @@ test('business components retain editable states and native commerce stays outsi
   assert.deepEqual(checkout.children.map((node)=>node.props.state),['available','unavailable','loading']);
   assert.equal(checkout.children[0].children[0].type,'Wallet');
   const toggle=createCatalogComponent('Switch','switch');
-  assert.equal(toggle.children[0].children[1].props.switchTarget,'switch');
+  assert.equal(toggle.children[0].children[0].props.switchTarget,'switch');
+  assert.equal(toggle.children[1].children[0].props.switchTarget,'switch');
   assert.deepEqual(toggle.children.filter((node)=>node.type==='SwitchCase').map((node)=>node.props.index),[0,1]);
   const countdown=createCatalogComponent('Countdown','countdown');
   assert.deepEqual(countdown.children.map((node)=>node.props.state),['active','ended','fallback']);
-  assert.deepEqual(countdown.children[0].children.filter((node)=>node.props.timerField).map((node)=>node.props.timerField),['hours','minutes','seconds']);
+  assert.equal(countdown.children[0].children[0].props.text,'{{ count_days_with_zero }} : {{ count_hours_with_zero }} : {{ count_minutes_with_zero }} : {{ count_seconds_with_zero }}');
+  assert.equal(countdown.props.fallbackEnabled,false);
   const launch=createCatalogComponent('BottomSheet','launch');
   assert.equal(launch.props.action.actionPage,launch.children[1].id);
   assert.equal(launch.children[1].type,'BottomSheet');

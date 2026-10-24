@@ -1,17 +1,17 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Plus, Trash2, Copy, ChevronRight, ChevronDown, GripVertical, ArrowUp, ArrowDown, Eye, Pencil, Save, FolderOpen, X, Layers, Type, Image as ImageIcon, Package as PackageIcon, MoreHorizontal, MousePointerClick, Smartphone, Workflow, GalleryHorizontal, PanelTop, PanelBottom, Clock3, ToggleLeft, ListOrdered, Video, Star, Code, CreditCard, Columns2 } from 'lucide-react';
-import { COMPONENT_NAMES, CONTAINER_TYPES, componentProps, importComponentDocument, indexDocument, validDocument, updateComponent, removeComponent, insertComponent, moveComponent, canContain, readComponentDocument, saveComponentDocument, cloneComponent, captureNativeComponent, resolveComponentText } from './componentDocument.js';
+import { COMPONENT_NAMES, CONTAINER_TYPES, componentProps, importComponentDocument, indexDocument, validDocument, updateComponent, insertComponent, canContain, readComponentDocument, saveComponentDocument, cloneComponent, captureNativeComponent, resolveComponentText } from './componentDocument.js';
 import { DEMO_SKUS } from '../productPricing.js';
 import ComponentPreview from './ComponentPreview.jsx';
 import ComponentPicker from './ComponentPicker.jsx';
 import LayerActionsMenu from './LayerActionsMenu.jsx';
-import { createCatalogComponent, upgradeCanonicalComponents, catalogFor } from './componentCatalog.js';
-import { editorClipboard, copyFragment, pasteFragment, copyStyles, pasteStyles, wrapInStack, patchComponentProperties } from './componentOperations.js';
+import { createCatalogComponent, upgradeCanonicalComponents, catalogFor, createTabSelector } from './componentCatalog.js';
+import { editorClipboard, copyFragment, pasteFragment, copyStyles, pasteStyles, wrapInStack, patchComponentProperties, appendTab, togglePageControl, removeEditorComponent as removeComponent, moveEditorComponent as moveComponent, reconcileTabNavigation } from './componentOperations.js';
 import { treeChildren, compositionSummary, initialCollapsed, pageContext, isUnconfiguredDetailPage } from './componentTree.js';
 import './componentEditor.css';
 import RevenueCatProperties from './RevenueCatProperties.jsx';
 import { migrateTemplateVisuals } from './templateVisuals.js';
-import { defaultPackagePatch } from './propertyModel.js';
+import { defaultPackagePatch, sequencePages } from './propertyModel.js';
 
 const libraryKey = 'paywall-component-library-v3';
 const fieldNames = { name: '商品名称', price: '主价格', reference: '参考价', supportingCopy: '辅助文案', savingCopy: '优惠说明', saveCopy: 'SAVE 文案', badgeText: '标签文字' };
@@ -38,6 +38,9 @@ export default function ComponentEditor({ template, initialNodes }) {
   const [selectedId, setSelectedId] = useState(() => pageContext(initial.document).active.id);
   const [collapsed, setCollapsed] = useState(() => initialCollapsed(initial.document.root));
   const [editing, setEditing] = useState(true), [navigation, setNavigation] = useState({});
+  const patchNavigation = React.useCallback((values)=>setNavigation((current)=>({...current,...values})),[]);
+  const previousDocument=useRef(document);
+  useEffect(()=>{const before=previousDocument.current;previousDocument.current=document;setNavigation((current)=>reconcileTabNavigation(before,document,current));},[document]);
   const [addTarget, setAddTarget] = useState(null), [dragId, setDragId] = useState(null), [status, setStatus] = useState('');
   const [layerMenu,setLayerMenu] = useState(null), [renaming,setRenaming] = useState(null);
   const [library, setLibrary] = useState(readLibrary), [libraryOpen, setLibraryOpen] = useState(false);
@@ -65,7 +68,7 @@ export default function ComponentEditor({ template, initialNodes }) {
       expand.add(current.id);
       if (['overlay','sheet'].includes(current.props.presentation)) reveal.overlay = current.id;
       const owner = nodes.get(parents.get(current.id));
-      if (owner && ['Tabs', 'Carousel', 'Flow'].includes(owner.type)) reveal[owner.id] = owner.children.findIndex((item) => item.id === current.id);
+      if (owner && ['Tabs', 'Carousel', 'Flow'].includes(owner.type)) {const index=sequencePages(owner).findIndex((item)=>item.id===current.id);if(index>=0)reveal[owner.id]=index;}
       if (owner?.type === 'Switch' && current.type === 'SwitchCase') reveal[owner.id] = current.props.index;
       if (owner?.type === 'ExpressCheckout' && current.type === 'CheckoutState') reveal[owner.id] = current.props.state;
       if (owner?.type === 'Countdown' && current.type === 'CountdownState') reveal[owner.id] = current.props.state;
@@ -79,15 +82,17 @@ export default function ComponentEditor({ template, initialNodes }) {
   const add = (type) => {
     const owner = nodes.get(addTarget); if(!owner)return;
     const next = createCatalogComponent(type);
+    if(type==='Tab'){let number=owner.children.length+1;while(owner.children.some((child)=>child.name===`标签 ${number}`))number++;next.name=`标签 ${number}`;}
     if(type==='TabButton'){ const tabs=findAncestor(owner.id,nodes,parents,'Tabs'); next.props={...next.props,target:tabs?.id ?? '',index:owner.children.length};next.children=[createCatalogComponent('Text')];next.children[0].props.text='标签'; }
-    if(type==='TabControl'){const tabs=findAncestor(owner.id,nodes,parents,'Tabs');next.children=next.children.map((child)=>({...child,props:{...child.props,target:tabs?.id??''}}));}
+    if(type==='TabControl'){const tabs=findAncestor(owner.id,nodes,parents,'Tabs');if(tabs)next.children=createTabSelector(next.id,tabs.id,tabs.children.length).children;}
     if(type==='SwitchCase')next.props.index=[0,1].find((index)=>!owner.children.some((child)=>child.type==='SwitchCase'&&child.props.index===index)) ?? 0;
     if(type==='CheckoutState')next.props.state=['available','unavailable','loading'].find((state)=>!owner.children.some((child)=>child.props.state===state)) ?? 'available';
     if(type==='CountdownState')next.props.state=['active','ended','fallback'].find((state)=>!owner.children.some((child)=>child.props.state===state)) ?? 'active';
-    let updated=insertComponent(document,owner.id,next);
+    let updated=type==='Tab' && owner.type==='Tabs' ? appendTab(document,owner.id,next) : insertComponent(document,owner.id,next);
     if(updated===document)return setStatus('该容器无法添加此组件');
     if(type==='Package')updated={...updated,products:{...updated.products,[next.id]:{name:'商品名称',price:'',skuId:''}}};
     setDocument(updated);setAddTarget(null);setCollapsed((old)=>new Set([...old].filter((id)=>id!==owner.id)));setSelectedId(next.id);
+    if(type==='Tab'&&owner.type==='Tabs')setNavigation((current)=>({...current,[owner.id]:owner.children.length}));
   };
   const openAdd=(id)=>{select(id);setLayerMenu(null);setAddTarget(id);};
   const openMenu=(event,id)=>{event.preventDefault();event.stopPropagation();const rect=event.currentTarget.getBoundingClientRect();setLayerMenu({id,x:rect.right,y:rect.bottom});};
@@ -137,7 +142,7 @@ export default function ComponentEditor({ template, initialNodes }) {
         <section><Field label={isPageRoot?'页面名称':'图层名称'}><input value={selected.name} onChange={(event) => setDocument((current) => updateComponent(current, selected.id, { name: event.target.value }))} /></Field><div className="ne-actions"><button className="ne-icon" title="上移" aria-label="上移" disabled={isPageRoot || !parent || parent.children[0]?.id === selected.id} onClick={() => reorder(-1)}><ArrowUp size={16} /></button><button className="ne-icon" title="下移" aria-label="下移" disabled={isPageRoot || !parent || parent.children.at(-1)?.id === selected.id} onClick={() => reorder(1)}><ArrowDown size={16} /></button><button className="ne-icon" title="复制组件" aria-label="复制组件" disabled={isPageRoot || !parent} onClick={() => duplicateAt(selected.id)}><Copy size={16} /></button><button className="ne-icon danger" title="删除组件" aria-label="删除组件" disabled={isPageRoot || !parent} onClick={() => { setDocument((current) => removeComponent(current, selected.id)); setSelectedId(parent.id); }}><Trash2 size={16} /></button></div>{!isPageRoot&&<Select label="显示状态" value={p.hidden ? 'hidden' : 'visible'} onChange={(value) => patch({ hidden: value === 'hidden' })} options={[[ 'visible', '显示' ], [ 'hidden', '隐藏' ]]} />}
           {parent && !isPageRoot && <Select label="所在容器" value={parent.id} onChange={moveTo} options={[...indexDocument({root:pages.active}).nodes.values()].filter((node) => node.id !== selected.id && canContain(node, selected)).map((node) => [node.id, `${node.name} · ${COMPONENT_NAMES[node.type]}`])} />}
         </section>
-        <RevenueCatProperties key={selected.id} selected={selected} p={p} patch={patch} document={document} nodes={nodes} parents={parents} resolveText={resolveComponentText} findPackage={findPackage} changeProduct={changeProduct} fieldNames={fieldNames} demoSkus={DEMO_SKUS} setNavigation={setNavigation} onStatus={setStatus} onMediaType={(type) => setDocument((current) => updateComponent(current, selected.id, { type }))} setDefaultPackage={(value) => setDocument((current) => defaultPackagePatch(current, selected.id, value))} />
+        <RevenueCatProperties key={selected.id} selected={selected} p={p} patch={patch} document={document} nodes={nodes} parents={parents} resolveText={resolveComponentText} findPackage={findPackage} changeProduct={changeProduct} fieldNames={fieldNames} demoSkus={DEMO_SKUS} navigation={navigation} setNavigation={patchNavigation} onStatus={setStatus} onPageControl={(enabled)=>setDocument((current)=>togglePageControl(current,selected.id,enabled))} onMediaType={(type) => setDocument((current) => updateComponent(current, selected.id, { type }))} setDefaultPackage={(value) => setDocument((current) => defaultPackagePatch(current, selected.id, value))} />
       </aside>
     </div>
     {menuNode&&<LayerActionsMenu menu={layerMenu} node={menuNode} isRoot={menuNode.id===document.root.id||menuNode.id===pages.active.id} canPaste={Boolean(editorClipboard.fragment?.roots.every((node)=>canContain(CONTAINER_TYPES.has(menuNode.type)?menuNode:nodes.get(parents.get(menuNode.id)),node)))} canWrap={Boolean(parents.get(menuNode.id)&&canContain(nodes.get(parents.get(menuNode.id)),{type:'Stack'})&&canContain({type:'Stack'},menuNode))} hasStyles={Boolean(editorClipboard.styles)} onAction={menuAction} onClose={()=>setLayerMenu(null)}/>}

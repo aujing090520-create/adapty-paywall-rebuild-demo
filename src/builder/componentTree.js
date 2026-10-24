@@ -23,6 +23,7 @@ export function isUnconfiguredDetailPage(page) {
 }
 
 export function treeChildren(node, navigation = {}) {
+  if(node.type==='Countdown' && node.props.fallbackEnabled===false)return node.children.filter((child)=>child.props.state!=='fallback');
   if (node.type !== 'Flow') return node.children;
   const index = navigation[node.id] ?? node.props.defaultIndex ?? 0;
   return node.children.length ? [node.children[index] ?? node.children[0]] : [];

@@ -6,6 +6,7 @@ export const PRODUCT_TEXT_VARIABLES = [
   ['product.price_per_period', '商品价格与周期'],
   ['product.period_in_months', '订阅月数'],
 ];
+export const TIMER_TEXT_VARIABLES = [['days','天'],['hours','小时'],['minutes','分钟'],['seconds','秒']].flatMap(([unit,label])=>[[`count_${unit}_with_zero`,`${label}（补零）`],[`count_${unit}_without_zero`,`${label}（不补零）`]]);
 
 export function interpolateVariables(text, document, packageNode, timer) {
   const row = document.products[packageNode?.props.dataKey ?? packageNode?.id];
