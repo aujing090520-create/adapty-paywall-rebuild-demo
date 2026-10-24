@@ -1,6 +1,6 @@
 (()=>{
   'use strict';
-  const id=/\/bundles\/([a-f0-9]{64})\//.exec(location.pathname)?.[1];
+  const id=document.currentScript?.dataset.bundleId??/\/bundles\/([a-f0-9]{64})\//.exec(location.pathname)?.[1];
   if(!id)return;
   let context=null;const listeners=new Set(),waiting=[];
   const send=(type,payload)=>parent.postMessage({channel:'ht-custom-preview',id,type,...payload},'*');
@@ -11,6 +11,8 @@
     context=data.context;for(const resolve of waiting.splice(0))resolve(context);for(const listener of listeners)try{listener(context);}catch{}
   });
   const size=()=>send('height',{height:Math.ceil(document.body?.getBoundingClientRect().height??0)});
+  addEventListener('error',(event)=>{const resource=event.target?.getAttribute?.('src')??event.target?.getAttribute?.('href');if(resource?.startsWith('chrome-extension:'))return;send('error',{message:event.message??'组件资源加载失败'});},true);
+  addEventListener('unhandledrejection',(event)=>send('error',{message:event.reason?.message??'组件脚本执行失败'}));
   addEventListener('DOMContentLoaded',()=>{new ResizeObserver(size).observe(document.body);size();});
   send('ready',{});
 })();
