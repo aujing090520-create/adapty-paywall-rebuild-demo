@@ -13,7 +13,7 @@ const spaced=without('TimelineItem','Countdown','Wallet','Custom');
 const framed=without('Text','Timeline','TimelineItem','Countdown','Wallet','Custom','Icon','Screen','Indicators');
 const all=COMPONENT_TYPES;
 const alignment=[['start','起始','横向时靠上，纵向时靠左；叠放时靠左上'],['center','居中','交叉轴居中；叠放时两个方向均居中'],['end','末尾','横向时靠下，纵向时靠右；叠放时靠右下']];
-const distributions=[['between','两端分布','首尾贴主轴两端，把剩余空间均分到子项之间；一个子项靠起始'],['around','各项两侧均分','每个子项两侧分配相同空间，相邻间隙是首尾留白的两倍'],['evenly','各项等距','首端、尾端及子项之间分配相等的额外空间'],['start','起始','全部子项聚集在主轴起点'],['center','居中','整组子项沿主轴居中'],['end','末尾','全部子项聚集在主轴末端']];
+const distributions=[['between','两端分布','首尾贴内容区主轴两端，把剩余空间均分到子项之间；一个子项靠起始'],['around','各项两侧均分','每个子项两侧分配相同的额外空间；相邻额外间隔为首尾额外留白的两倍，基础gap另加'],['evenly','各项等距','首端、尾端及子项之间分配相等的额外空间，内部基础gap仍保留'],['start','起始','全部子项聚集在内容区主轴起点'],['center','居中','整组子项在内容区沿主轴居中'],['end','末尾','全部子项聚集在内容区主轴末端']];
 const modes=[['fit','适应内容','尺寸随内容收缩，不凭空产生可分配空间'],['fill','填满','使用父容器可用空间；纵向有界容器中的填满高度分摊剩余高度'],['fixed','固定','使用明确的设计像素尺寸，不是浏览器缩放后的截图尺寸']];
 const fit=[['cover','填满','保持比例铺满框体，超出的部分裁切'],['contain','完整显示','保持比例完整显示，框体与素材比例不同时会有留白'],['fill','拉伸','铺满框体，允许改变素材比例'],['none','原始尺寸','保持素材固有尺寸，不自动缩放']];
 const bool=[['true','开启','启用此能力或使用该状态'],['false','关闭','禁用此能力或不使用该状态']];
@@ -208,7 +208,7 @@ export function parameterRows(){
     const value=key==='name'?COMPONENT_NAMES[type]:key.startsWith('badge.')?BADGE_DEFAULTS[raw]:key.split('.').reduce((current,part)=>current?.[part],p);
     const optionValue=definition.options.find(option=>String(option[0])===String(value));
     const initial=key==='deadline'&&value?'新建时当前UTC时间 + 3天':optionValue?optionValue[1]:key==='icon'?iconLabel(value):key==='group'&&value===node.id?'组件自身ID':raw==='fontFamily'&&!value?'系统字体':raw.endsWith('Opacity')&&value===undefined?'100':value==='transparent'?'透明':value===undefined?'依当前模板/条件继承':typeof value==='object'?JSON.stringify(value):String(value);
-    const condition=type==='Screen'&&['minWidth','maxWidth'].includes(key)?`页面宽度不提供新增约束入口，仅兼容旧记录已有值。${definition.condition}`:type==='Toggle'&&!['开关填充','图层管理','编辑器工具','预览'].includes(definition.group)?`旧HT协议控件分支；系统滑块不显示此项。${definition.condition}`:definition.condition;
+    const condition=type==='Screen'&&definition.group==='布局'?`页面有固定页头/页脚时，仅滚动内容参与排列，页头/页脚不参与分布。${definition.condition}`:type==='Screen'&&['minWidth','maxWidth'].includes(key)?`页面宽度不提供新增约束入口，仅兼容旧记录已有值。${definition.condition}`:type==='Toggle'&&!['开关填充','图层管理','编辑器工具','预览'].includes(definition.group)?`旧HT协议控件分支；系统滑块不显示此项。${definition.condition}`:definition.condition;
     for(const option of definition.options.length?definition.options:[[null,definition.range||'当前值',definition.meaning]])rows.push({component:type,name:COMPONENT_NAMES[type],group:definition.group,label:definition.label,key,option:option[0],optionName:option[1],meaning:definition.options.length?`${definition.meaning}；${option[2]}`:option[2],purpose:definition.meaning,condition,initial});
   }
   return rows;
