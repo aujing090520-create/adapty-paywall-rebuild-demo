@@ -6,12 +6,12 @@ import ComponentPreview from './ComponentPreview.jsx';
 import ComponentPicker from './ComponentPicker.jsx';
 import LayerActionsMenu from './LayerActionsMenu.jsx';
 import { createCatalogComponent, upgradeCanonicalComponents, catalogFor } from './componentCatalog.js';
-import { editorClipboard, copyFragment, pasteFragment, copyStyles, pasteStyles, wrapInStack } from './componentOperations.js';
+import { editorClipboard, copyFragment, pasteFragment, copyStyles, pasteStyles, wrapInStack, patchComponentProperties } from './componentOperations.js';
 import { treeChildren, compositionSummary, initialCollapsed, pageContext, isUnconfiguredDetailPage } from './componentTree.js';
 import './componentEditor.css';
 import RevenueCatProperties from './RevenueCatProperties.jsx';
 import { migrateTemplateVisuals } from './templateVisuals.js';
-import { textPropertyPatch, defaultPackagePatch } from './propertyModel.js';
+import { defaultPackagePatch } from './propertyModel.js';
 
 const libraryKey = 'paywall-component-library-v3';
 const fieldNames = { name: '商品名称', price: '主价格', reference: '参考价', supportingCopy: '辅助文案', savingCopy: '优惠说明', saveCopy: 'SAVE 文案', badgeText: '标签文字' };
@@ -75,7 +75,7 @@ export default function ComponentEditor({ template, initialNodes }) {
     setCollapsed((old) => new Set([...old].filter((key) => !expand.has(key))));
     setNavigation((current) => ({ ...current, ...reveal }));
   };
-  const patch = (props) => setDocument((current) => updateComponent(current, selected.id, { props: textPropertyPatch(indexDocument(current).nodes.get(selected.id), props) }));
+  const patch = (props) => setDocument((current) => patchComponentProperties(current, selected.id, props));
   const add = (type) => {
     const owner = nodes.get(addTarget); if(!owner)return;
     const next = createCatalogComponent(type);

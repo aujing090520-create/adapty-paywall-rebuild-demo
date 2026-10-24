@@ -5,9 +5,9 @@ import TestRenderer, { act } from 'react-test-renderer';
 import { createServer } from 'vite';
 import { component, componentProps, indexDocument, updateComponent, saveComponentDocument, readComponentDocument, COMPONENT_TYPES, cloneComponent, resolveComponentText } from '../src/builder/componentDocument.js';
 import { DEMO_SKUS } from '../src/productPricing.js';
-import { copyStyles, pasteStyles } from '../src/builder/componentOperations.js';
+import { copyStyles, pasteStyles, patchComponentProperties } from '../src/builder/componentOperations.js';
 import { createCatalogComponent, upgradeCanonicalComponents } from '../src/builder/componentCatalog.js';
-import { textPropertyPatch, countdownSeconds, defaultPackagePatch } from '../src/builder/propertyModel.js';
+import { countdownSeconds, defaultPackagePatch } from '../src/builder/propertyModel.js';
 import { templates, createBuilderNodes } from '../src/templates/templateDefinitions.js';
 import { importComponentDocument, validDocument } from '../src/builder/componentDocument.js';
 
@@ -32,7 +32,7 @@ async function mount(node, { editing = true, source } = {}) {
     const selected = indexDocument(document).nodes.get(node.id);
     const { nodes, parents } = indexDocument(document);
     latest = document;
-    const patch = (props) => setDocument((current) => updateComponent(current, node.id, { props: textPropertyPatch(indexDocument(current).nodes.get(node.id), props) }));
+    const patch = (props) => setDocument((current) => patchComponentProperties(current, node.id, props));
     return React.createElement(React.Fragment, null,
       React.createElement(Properties, { selected, p: componentProps(selected), patch, document, nodes, parents, setNavigation, onStatus: (value) => { status = value; }, demoSkus: DEMO_SKUS, fieldNames: { name: '商品名称', price: '主价格' }, findPackage: () => null, resolveText: resolveComponentText, changeProduct: (key, value) => setDocument((current) => ({ ...current, products: { ...current.products, [selected.props.dataKey ?? selected.id]: { ...current.products[selected.props.dataKey ?? selected.id], [key]: value } } })), onMediaType: (type) => setDocument((current) => updateComponent(current, node.id, { type })), setDefaultPackage: (defaultSelected) => patch({ defaultSelected }) }),
       React.createElement(Preview, { document, selectedId: node.id, onSelect() {}, editing, navigation, onStatus: (value) => { status = value; } }),
@@ -465,6 +465,71 @@ test('actual editor selection, configuration, auto-save and reopen keep the same
     await open(); await selectText();
     const preview = editor.root.findAll((item) => item.type === 'div' && item.props['data-component-id'] === 'sample')[0];
     assert.deepEqual(preview.children, ['已保存标题']); assert.equal(preview.props.style.fontSize, 23); assert.equal(preview.props.style.padding, '12px 0px');
+  } finally {
+    if (editor) { await act(async () => editor.unmount()); mounted.delete(editor); }
+    globalThis.localStorage = previousStorage; globalThis.window = previousWindow;
+  }
+});
+
+test('tab selector changes affect the actual peer preview after switching pages', async () => {
+  const tabs = createCatalogComponent('Tabs', 'tabs');
+  const source = fixture(tabs);
+  const control = tabs.children[0].children[0];
+  const h = await mount(control, { source, editing: false });
+  await h.change('子项间距', '15');
+  await h.change('内边距横向', '9');
+  assert.equal(h.node(control.id).props.style.gap, '15px');
+  await act(async () => h.node('tabs/tab-button-0-1').props.onClick(event()));
+  assert.equal(h.node('tabs/controls-1').props.style.gap, '15px');
+  assert.equal(h.node('tabs/controls-1').props.style.padding, '0px 9px');
+  assert.deepEqual(h.node('tabs/tab-content-1').children, ['标签 2 的内容']);
+  await h.close();
+
+  const button = tabs.children[0].children[0].children[1];
+  const selected = await mount(button, { source, editing: false });
+  await selected.segment('状态', '选中');
+  await selected.change('背景颜色值', '#243546');
+  await selected.change('圆角', '12');
+  await act(async () => selected.node(button.id).props.onClick(event()));
+  assert.equal(selected.node('tabs/tab-button-1-1').props.style.background, '#243546');
+  assert.equal(selected.node('tabs/tab-button-1-1').props.style.borderRadius, 12);
+  assert.notEqual(selected.node('tabs/tab-button-1-0').props.style.background, '#243546');
+  await selected.close();
+});
+
+test('actual editor saves synchronized selector styles and reopens them on the second tab', async () => {
+  const previousStorage = globalThis.localStorage, previousWindow = globalThis.window;
+  const records = new Map();
+  globalThis.localStorage = { getItem: (key) => records.get(key) ?? null, setItem: (key, value) => records.set(key, value) };
+  globalThis.window = { addEventListener() {}, removeEventListener() {} };
+  const source = fixture(createCatalogComponent('Tabs', 'tabs'));
+  saveComponentDocument(localStorage, source);
+  let editor;
+  try {
+    const open = async () => { await act(async () => { editor = TestRenderer.create(React.createElement(Editor, { template: { id: 'audit' }, initialNodes: [] })); }); mounted.add(editor); };
+    const preview = (id) => editor.root.findAll((item) => item.type === 'div' && item.props['data-component-id'] === id)[0];
+    const change = async (label, value) => act(async () => editor.root.findAll((item) => item.type === 'input' && item.props['aria-label'] === label)[0].props.onChange(event(value)));
+    await open();
+    await act(async () => preview('tabs/controls-0').props.onClick(event()));
+    await change('子项间距', '17');
+    await change('内边距横向', '8');
+    await act(async () => new Promise((resolve) => setTimeout(resolve, 280)));
+    const saved = readComponentDocument(localStorage, 'audit');
+    for (const id of ['tabs/controls-0', 'tabs/controls-1']) {
+      const control = indexDocument(saved).nodes.get(id);
+      assert.equal(control.props.gap, 17);
+      assert.equal(control.props.paddingHorizontal, 8);
+    }
+    assert.deepEqual(saved.products, source.products);
+    await act(async () => editor.unmount()); mounted.delete(editor);
+    await open();
+    const interact = editor.root.findAll((item) => item.type === 'button' && item.children.includes('交互预览'))[0];
+    assert.ok(interact, '缺少交互预览入口');
+    await act(async () => interact.props.onClick());
+    await act(async () => preview('tabs/tab-button-0-1').props.onClick(event()));
+    assert.equal(preview('tabs/controls-1').props.style.gap, '17px');
+    assert.equal(preview('tabs/controls-1').props.style.padding, '0px 8px');
+    assert.deepEqual(preview('tabs/tab-content-1').children, ['标签 2 的内容']);
   } finally {
     if (editor) { await act(async () => editor.unmount()); mounted.delete(editor); }
     globalThis.localStorage = previousStorage; globalThis.window = previousWindow;

@@ -1,11 +1,69 @@
 import { component, componentProps, cloneComponent, indexDocument, insertComponent, updateComponent, canContain } from './componentDocument.js';
-import { STATE_STYLE_KEYS, selectedStyleKey } from './propertyModel.js';
+import { STATE_STYLE_KEYS, selectedStyleKey, textPropertyPatch } from './propertyModel.js';
 
 const STYLE_KEYS = new Set(['axis','gap','align','justify','wrap','widthMode','width','minWidth','maxWidth','heightMode','height','minHeight','maxHeight','paddingMode','paddingTop','paddingRight','paddingBottom','paddingLeft','paddingVertical','paddingHorizontal','marginMode','marginTop','marginRight','marginBottom','marginLeft','marginVertical','marginHorizontal','background','backgroundImage','backgroundFit','backgroundVideo','fillType','color','radius','shape','borderWidth','borderColor','fontSize','fontWeight','fontFamily','fontStyle','textAlign','objectFit','opacity','alignSelf','strike','bold','italic','underline','textBackground','iconSize','iconBackground','iconRadius','selectedBorder','selectedBackground','selectedColor','shadowX','shadowY','shadowBlur','shadowColor']);
 for (const key of [...STATE_STYLE_KEYS, ...STATE_STYLE_KEYS.map(selectedStyleKey), 'lineHeight', 'flexGrow', 'mask', 'overlayColor', 'pageSpacing', 'pagePeek', 'pageControlPosition', 'dotColor', 'activeDotColor']) STYLE_KEYS.add(key);
 export const copyStyles = (node) => Object.fromEntries(Object.entries(componentProps(node)).filter(([key]) => STYLE_KEYS.has(key)));
 export function pasteStyles(document, id, styles) {
-  return updateComponent(document,id,{props:Object.fromEntries(Object.entries(styles ?? {}).filter(([key])=>STYLE_KEYS.has(key)))});
+  return patchComponentProperties(document,id,Object.fromEntries(Object.entries(styles ?? {}).filter(([key])=>STYLE_KEYS.has(key))));
+}
+
+function tabControls(tab) {
+  const controls = [];
+  const visit = (node) => {
+    if (node.type === 'Tabs') return;
+    if (node.type === 'TabControl') controls.push(node);
+    else node.children.forEach(visit);
+  };
+  visit(tab);
+  return controls;
+}
+
+// Match the same selector inside its owning Tabs; never match labels by their text.
+function tabStylePeers(document, id) {
+  const { nodes, parents } = indexDocument(document);
+  let control = nodes.get(id);
+  while (control && !['TabControl', 'Tabs'].includes(control.type)) control = nodes.get(parents.get(control.id));
+  if (control?.type !== 'TabControl') return [];
+  let owner = control, tab;
+  while (owner && owner.type !== 'Tabs') {
+    if (owner.type === 'Tab') tab = owner;
+    owner = nodes.get(parents.get(owner.id));
+  }
+  if (!tab || !owner?.children.some((child) => child.id === tab.id)) return [];
+  const at = tabControls(tab).findIndex((node) => node.id === control.id);
+  const path = [];
+  for (let current = nodes.get(id); current?.id !== control.id;) {
+    const parent = nodes.get(parents.get(current.id));
+    const siblings = parent.children.filter((child) => child.type === current.type);
+    if (current.type === 'TabButton' && (current.props.target && current.props.target !== owner.id || siblings.filter((child) => child.props.index === current.props.index).length !== 1)) return [];
+    path.unshift({ type: current.type, at: siblings.findIndex((child) => child.id === current.id), index: current.props.index, count: siblings.length });
+    current = parent;
+  }
+  return owner.children.filter((child) => child.type === 'Tab' && child.id !== tab.id).flatMap((peerTab) => {
+    let peer = tabControls(peerTab)[at];
+    for (const step of path) {
+      if (!peer) break;
+      const matches = peer.children.filter((child) => child.type === step.type);
+      if (step.type === 'TabButton') {
+        const buttons = matches.filter((child) => child.props.index === step.index && (!child.props.target || child.props.target === owner.id));
+        peer = buttons.length === 1 ? buttons[0] : null;
+      } else peer = matches.length === step.count ? matches[step.at] : null;
+    }
+    return peer ? [peer] : [];
+  });
+}
+
+export function patchComponentProperties(document, id, values) {
+  const node = indexDocument(document).nodes.get(id);
+  if (!node) return document;
+  let next = updateComponent(document, id, { props: textPropertyPatch(node, values) });
+  const styles = Object.fromEntries(Object.entries(values).filter(([key]) => STYLE_KEYS.has(key)));
+  if (!Object.keys(styles).length) return next;
+  for (const peer of tabStylePeers(document, id)) {
+    next = updateComponent(next, peer.id, { props: textPropertyPatch(peer, styles) });
+  }
+  return next;
 }
 export function copyFragment(document, id, contentsOnly = false) {
   const node = indexDocument(document).nodes.get(id);
