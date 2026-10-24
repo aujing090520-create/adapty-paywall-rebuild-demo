@@ -658,6 +658,28 @@ test('default package selection is exclusive within its group, not across unrela
   assert.equal(indexDocument(doc).nodes.get('c').props.defaultSelected, true);
 });
 
+test('layer tree uses one readable label, explicit indentation and inline expansion without changing template data',async()=>{
+  const previousStorage=globalThis.localStorage,previousWindow=globalThis.window,records=new Map();let editor;
+  globalThis.localStorage={getItem:key=>records.get(key)??null,setItem:(key,value)=>records.set(key,value)};globalThis.window={addEventListener(){},removeEventListener(){}};
+  const source=fixture(component('hero','Stack','主视觉',{},[component('copy','Stack','内容',{axis:'horizontal'},[component('body','Text','文字',{text:'会员专属权益长文案'}),component('heading','Text','标题',{text:'实际标题正文',hidden:true}),component('image','Image','图片',{src:'/original.png'})])]));
+  saveComponentDocument(localStorage,source);
+  try {
+    await act(async()=>{editor=TestRenderer.create(React.createElement(Editor,{template:{id:'audit'},initialNodes:[]}));});mounted.add(editor);
+    const row=id=>editor.root.findAll(item=>item.type==='div'&&item.props['data-layer-id']===id)[0];
+    const label=id=>row(id).findAll(item=>item.type==='button'&&item.props.className==='ne-tree-select')[0];
+    const expand=id=>row(id).findAll(item=>item.type==='button'&&item.props.className==='ne-icon ne-expand')[0];
+    assert.deepEqual(label('hero').findByProps({className:'ne-tree-label'}).children,['主视觉']);assert.equal(row('hero').findAllByType('small').length,0);
+    assert.equal(row('hero').props.style.paddingLeft,28);assert.equal(expand('hero').props['aria-expanded'],false);
+    await act(async()=>expand('hero').props.onClick());assert.equal(expand('hero').props['aria-expanded'],true);assert.equal(row('copy').props.style.paddingLeft,48);
+    await act(async()=>expand('copy').props.onClick());assert.equal(row('body').props.style.paddingLeft,68);assert.equal(label('body').props['aria-label'],'会员专属权益长文案');assert.equal(expand('body'),undefined);
+    assert.equal(label('heading').findByProps({className:'ne-tree-label'}).children.join(''),'标题');assert.match(label('heading').props.title,/实际标题正文/);assert.equal(label('heading').props['aria-label'],'标题（隐藏）');
+    assert.equal(label('image').props['aria-label'],'图片');assert.equal(label('hero').findAllByType('svg')[0].props.className.includes('lucide-rows2'),true);assert.equal(label('copy').findAllByType('svg')[0].props.className.includes('lucide-columns2'),true);
+    const tree=editor.root.findByProps({role:'tree'});assert.equal(tree.findAllByType('small').length,0);assert.equal(tree.findAll(item=>item.props.className==='ne-grip').length,0);
+    await act(async()=>expand('hero').props.onClick());assert.equal(row('copy'),undefined);assert.equal(editor.root.findAll(item=>item.props['data-component-id']==='body').length,1);
+    await act(async()=>editor.unmount());mounted.delete(editor);editor=null;assert.deepEqual(readComponentDocument(localStorage,'audit').root,source.root);
+  } finally {if(editor){await act(async()=>editor.unmount());mounted.delete(editor);}globalThis.localStorage=previousStorage;globalThis.window=previousWindow;}
+});
+
 test('actual editor selection, configuration, auto-save and reopen keep the same text and layout values', async () => {
   const previousStorage = globalThis.localStorage, previousWindow = globalThis.window;
   const records = new Map();
