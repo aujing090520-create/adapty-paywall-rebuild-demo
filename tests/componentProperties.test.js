@@ -45,7 +45,8 @@ async function mount(node, { editing = true, source } = {}) {
   return {
     renderer, document: () => latest, status: () => status,
     node: (id = node.id) => renderer.root.findAll((item) => item.type === 'div' && item.props['data-component-id'] === id)[0],
-    async change(name, value, tag = 'input') { const input = fields(name, tag)[0] ?? renderer.root.findAll((item) => item.type === 'label' && item.children.some((child) => typeof child === 'object' && child.type === 'span' && child.children.join('') === name))[0]?.findAllByType(tag)[0]; assert.ok(input, `缺少字段 ${name}`); await act(async () => input.props.onChange(event(value))); },
+    async change(name, value, tag = 'input') { if(['文字内容','徽标文字'].includes(name)){const rich=renderer.root.findAll(item=>typeof item.type==='function'&&item.props['aria-label']===name&&typeof item.props.onChange==='function')[0];if(rich){await act(async()=>rich.props.onChange({text:value,runs:null}));return;}} const input = fields(name, tag)[0] ?? renderer.root.findAll((item) => item.type === 'label' && item.children.some((child) => typeof child === 'object' && child.type === 'span' && child.children.join('') === name))[0]?.findAllByType(tag)[0]; assert.ok(input, `缺少字段 ${name}`); await act(async () => input.props.onChange(event(value))); },
+    async editText(values,name='文字内容') {const rich=renderer.root.findAll(item=>typeof item.type==='function'&&item.props['aria-label']===name&&typeof item.props.onChange==='function')[0];assert.ok(rich);await act(async()=>rich.props.onChange(values));},
     async click(name) { const button = fields(name, 'button')[0] ?? renderer.root.findAll((item) => item.type === 'button' && item.children.join('') === name)[0]; assert.ok(button, `缺少按钮 ${name}`); await act(async () => button.props.onClick(event())); },
     async segment(label, choice) { const field = renderer.root.findAll((item) => item.type === 'label' && item.children.some((child) => typeof child === 'object' && child.type === 'span' && child.children.join('') === label))[0]; assert.ok(field, `缺少分段 ${label}`); await act(async () => field.findAllByType('button').find((item) => item.props['aria-label'] === choice).props.onClick()); },
     async optional(title) { const section = renderer.root.findAll((item) => item.type === 'section' && item.findAllByType('strong').some((child) => child.children.join('') === title))[0]; assert.ok(section, `缺少模块 ${title}`); await act(async () => section.findAllByType('button').find((item) => item.props.className?.includes('rc-optional-toggle')).props.onClick()); },
@@ -122,21 +123,30 @@ for (const type of COMPONENT_TYPES.filter((type) => !['Timeline', 'TimelineItem'
   });
 }
 
-test('text: font, rich-run overrides, bold reset and combined decorations are effective', async () => {
+test('text: global style fields and rich editor updates reach preview without fragment forms', async () => {
   const node = component('sample', 'Text', '文字', { text: '甲乙', runs: [{ text: '甲', color: '#ff0000', fontSize: 30, fontWeight: 800 }, { text: '乙' }], fontWeight: 700 });
   const h = await mount(node);
   await h.change('字号', '19');
   await h.change('文字颜色值', '#123456');
   assert.ok(indexDocument(h.document()).nodes.get('sample').props.runs.every((run) => run.fontSize === 19 && run.color === '#123456'));
-  await h.click('粗体');
-  assert.equal(h.node().props.style.fontWeight, 400);
-  await h.click('下划线'); await h.click('删除线');
-  assert.ok(h.node().props.style.textDecoration.includes('underline'));
-  assert.ok(h.node().props.style.textDecoration.includes('line-through'));
-  await h.change('片段 1', '丙');
-  assert.equal(h.renderer.root.findByType('textarea').props.value, '丙乙');
+  const runs=indexDocument(h.document()).nodes.get('sample').props.runs.map((run,index)=>({...run,text:index===0?'丙':run.text,bold:false,fontWeight:400,underline:true,strikethrough:true}));
+  await h.editText({text:'丙乙',runs});
+  assert.ok(h.node().findAllByType('span').every(span=>span.props.style.fontWeight===400&&span.props.style.textDecoration.includes('underline')&&span.props.style.textDecoration.includes('line-through')));
+  assert.equal(h.renderer.root.findAll(item=>item.props['aria-label']==='片段 1').length,0);
   assert.equal(resolveComponentText(indexDocument(h.document()).nodes.get('sample'), h.document()), '丙乙');
   await h.close();
+});
+
+test('new text uses observed source defaults without rewriting an existing component',()=>{
+  const fresh=createCatalogComponent('Text','fresh');
+  assert.equal(fresh.props.widthMode,'fit');assert.equal(fresh.props.heightMode,'fit');assert.equal(fresh.props.fontSize,14);assert.equal(fresh.props.color,'#000000');
+  const previous=component('old','Text','旧模板',{fontSize:32,color:'#ffb400',widthMode:'fill'});assert.equal(previous.props.fontSize,32);assert.equal(previous.props.widthMode,'fill');
+});
+
+test('rich text links render real safe anchors, remain inert while editing and retain neighboring text',async()=>{
+  const h=await mount(component('sample','Text','链接',{runs:[{text:'条款',link:'https://example.com/terms'},{text:'其余',link:'javascript:alert(1)'}]}));
+  const link=h.node().findByType('a');assert.equal(link.props.href,'https://example.com/terms');assert.equal(link.props.rel,'noopener noreferrer');assert.equal(link.props.tabIndex,-1);
+  let prevented=false;link.props.onClick({preventDefault(){prevented=true;}});assert.ok(prevented);assert.equal(h.node().findAllByType('a').length,1);assert.equal(h.node().findByType('span').children[0],'其余');await h.close();
 });
 
 test('package: selected style uses the same field set and can remove the default border and shadow', async () => {
@@ -240,12 +250,12 @@ test('switch default state owns the initial branch; checkout has no second right
 });
 
 test('text content, font family, alignment and background reach the rendered text', async () => {
-  const h = await mount(component('sample', 'Text', '标题', { text: '旧内容', textBackground: '#ff0000', fillEnabled: false }));
+  const h = await mount(component('sample', 'Text', '标题', { text: '旧内容', textBackground: '#ff0000', fillEnabled: false, fontFamily:'serif' }));
   assert.equal(h.node().props.style.background, 'transparent');
   await h.change('文字内容', '新内容', 'textarea');
   assert.ok(h.node().children.includes('新内容'));
-  await h.select('字体', 'serif'); assert.equal(h.node().props.style.fontFamily, 'Georgia, serif');
-  await h.select('文字对齐', 'right'); assert.equal(h.node().props.style.textAlign, 'right');
+  assert.equal(h.node().props.style.fontFamily, 'Georgia, serif');await h.select('字体','system');assert.equal(h.node().props.style.fontFamily,undefined);
+  await h.segment('文字对齐', '右对齐'); assert.equal(h.node().props.style.textAlign, 'right');
   await h.change('背景颜色值', '#123456'); assert.equal(h.node().props.style.background, '#123456');
   await h.close();
 });
@@ -661,7 +671,10 @@ test('actual editor selection, configuration, auto-save and reopen keep the same
     await open();
     const selectText = async () => act(async () => editor.root.findAll((item) => item.type === 'div' && item.props['data-layer-id'] === 'sample')[0].findAll((item) => item.type === 'button' && item.props.className === 'ne-tree-select')[0].props.onClick());
     await selectText();
-    const change = async (label, value, type = 'input') => act(async () => editor.root.findAll((item) => item.type === type && item.props['aria-label'] === label)[0].props.onChange(event(value)));
+    const change = async (label, value, type = 'input') => act(async () => {
+      if(label==='文字内容'){const rich=editor.root.findAll(item=>typeof item.type==='function'&&item.props['aria-label']===label&&typeof item.props.onChange==='function')[0];assert.ok(rich);rich.props.onChange({text:value,runs:null});return;}
+      editor.root.findAll((item) => item.type === type && item.props['aria-label'] === label)[0].props.onChange(event(value));
+    });
     await change('文字内容', '已保存标题', 'textarea'); await change('字号', '23'); await change('内边距纵向', '12');
     await act(async () => new Promise((resolve) => setTimeout(resolve, 280)));
     const saved = readComponentDocument(localStorage, 'audit'), node = indexDocument(saved).nodes.get('sample');
@@ -841,8 +854,8 @@ test('video configuration maps all playback flags and prevents a video with no w
 test('font weight selection and bold shortcut cannot leave two conflicting effective weights', async () => {
   const h=await mount(component('sample','Text','文字',{text:'A',bold:true,fontWeight:700,runs:[{text:'A',bold:true,fontWeight:700}]}));
   await h.select('字重','500');assert.equal(h.node().props.style.fontWeight,500);assert.equal(h.node().findByType('span').props.style.fontWeight,500);
-  await h.click('粗体');assert.equal(h.node().props.style.fontWeight,700);
-  await h.click('粗体');assert.equal(h.node().props.style.fontWeight,400);
+  await h.editText({runs:[{text:'A',bold:true,fontWeight:700}]});assert.equal(h.node().findByType('span').props.style.fontWeight,700);
+  await h.editText({runs:[{text:'A',bold:false,fontWeight:400}]});assert.equal(h.node().findByType('span').props.style.fontWeight,400);
   await h.close();
 });
 
@@ -938,6 +951,15 @@ test('text gradient paints its glyphs, not the full text background or wrapper o
   await h.change('文字颜色值','#123456');assert.equal(h.node().findAllByType('span').length,0);assert.equal(h.node().props.style.color,'#123456');await h.close();
 });
 
+test('gradient borders preserve the same border box, corners and state owner; shadow remains a solid paint',async()=>{
+  const h=await mount(component('sample','Package','商品',{widthMode:'fixed',width:150,heightMode:'fixed',height:100,borderWidth:2,radius:18}));
+  const gradient='linear-gradient(90deg, #ff0000 0%, #0000ff 100%)';await h.change('边框颜色值',gradient);
+  assert.equal(h.node().props.style.border,'2px solid transparent');assert.equal(h.node().props.style['--nc-border-gradient'],gradient);assert.equal(h.node().props.style.borderRadius,18);assert.equal(h.node().props.style.width,'150px');
+  assert.ok(h.renderer.root.findAll(item=>item.type==='input'&&item.props['aria-label']==='边框颜色不透明度')[0].props.disabled);
+  await h.segment('状态','选中');await h.change('边框颜色值','#123456');assert.equal(h.node().props.style['--nc-border-gradient'],undefined);assert.equal(h.node().props.style.border,'2px solid #123456');
+  await h.segment('状态','默认');assert.equal(h.node().props.style['--nc-border-gradient'],gradient);await h.close();
+});
+
 test('badge is one optional parent-owned parameter set; removing it cannot alter card content or dimensions',async()=>{
   const card=component('sample','Stack','卡片',{heightMode:'fixed',height:150},[component('title','Text','标题',{text:'原有标题'})]);
   const h=await mount(card);await h.optional('徽标');await h.change('徽标文字','30% OFF','textarea');await h.change('徽标字号','13');await h.change('徽标背景颜色值','#ff5577');await h.select('徽标对齐','bottom-right');
@@ -947,6 +969,58 @@ test('badge is one optional parent-owned parameter set; removing it cannot alter
   await h.optional('徽标');assert.equal(badge(),undefined);assert.equal(h.node().props.style.height,'150px');assert.deepEqual(h.document().products,fixture(card).products);await h.close();
 });
 
+test('text rules isolate all three offer contents and typography while preserving default layout and data',async()=>{
+  const h=await mount(component('sample','Text','文字',{text:'默认文字',fontSize:14,color:'#111111',widthMode:'fixed',width:123}));
+  for(const [rule,content,size] of [['introductory','首次优惠',18],['promotional','促销优惠',20],['multiphase','分期优惠',24]]) {
+    await h.select('文字规则',rule);await h.change('文字内容',content);await h.change('字号',String(size));
+    assert.equal(h.node().children.join(''),content);assert.equal(h.node().props.style.fontSize,size);assert.equal(h.node().props.style.width,'123px');
+    assert.equal(h.renderer.root.findAll(item=>item.type==='button'&&item.props['aria-label']==='固定').length,0);
+    assert.equal(h.document().root.children[0].props.text,'默认文字');assert.equal(h.document().root.children[0].props.fontSize,14);
+  }
+  await h.select('文字规则','default');assert.equal(h.node().children.join(''),'默认文字');assert.equal(h.node().props.style.fontSize,14);
+  await h.change('文字内容','默认已修改');await h.editText({runs:[{text:'默认已修改',fontWeight:700}]});
+  await h.select('文字规则','introductory');assert.equal(h.node().children.join(''),'首次优惠');assert.equal(h.node().props.style.fontSize,18);
+  const stored=h.document(),storage=new Map();saveComponentDocument({setItem:(k,v)=>storage.set(k,v)},stored);const restored=readComponentDocument({getItem:k=>storage.get(k)},'audit');assert.deepEqual(restored.root.children[0].props.textRules,stored.root.children[0].props.textRules);assert.deepEqual(stored.products,fixture(component('empty','Text','')).products);await h.close();
+});
+
+test('offer typography reaches rich runs without modifying default marks or saved dimensions',async()=>{
+  const h=await mount(component('sample','Text','文字',{text:'查看权益',runs:[{text:'查看',fontWeight:700},{text:'权益',fontWeight:400}],fontSize:14}));
+  await h.select('文字规则','introductory');await h.change('字号','23');await h.change('文字颜色值','#ff5577');
+  const spans=h.node().findAllByType('span');assert.equal(spans[0].props.style.fontSize,23);assert.equal(spans[0].props.style.color,'#ff5577');
+  assert.equal(h.document().root.children[0].props.runs[0].fontSize,undefined);
+  await h.select('文字规则','default');assert.equal(h.node().props.style.fontSize,14);assert.equal(h.node().findAllByType('span')[0].props.style.fontWeight,700);await h.close();
+});
+
+test('shared font family selection reaches plain text, stored rich runs and the preview font-face',async()=>{
+  const node=component('sample','Text','文字',{text:'权益',runs:[{text:'权益',fontFamily:'mono'}]}),source=fixture(node);
+  source.fonts=[{id:'ht-font-audit',family:'核对字体',faces:[{src:'data:font/otf;base64,AAAA',weight:400,style:'normal'}]}];
+  const h=await mount(node,{source});await h.select('字体','ht-font-audit');
+  assert.equal(h.node().props.style.fontFamily,'ht-font-audit');assert.equal(h.node().findAllByType('span')[0].props.style.fontFamily,'ht-font-audit');
+  assert.ok(h.renderer.root.findAllByType('style')[0].children.join('').includes('font-family:"ht-font-audit"'));
+  const stored=h.document(),storage=new Map();saveComponentDocument({setItem:(k,v)=>storage.set(k,v)},stored);assert.deepEqual(readComponentDocument({getItem:k=>storage.get(k)},'audit').fonts,source.fonts);await h.close();
+  assert.equal(validDocument({...source,fonts:{broken:true}}),false);
+});
+
+test('offer contexts never expose inactive legacy product-binding controls or alter SKU ownership',async()=>{
+  const h=await mount(component('sample','Text','商品价格',{binding:{key:'sample',field:'price'}}));
+  assert.equal(h.renderer.root.findAll(item=>item.type==='select'&&item.props['aria-label']==='商品字段').length,1);
+  await h.select('文字规则','introductory');
+  assert.equal(h.renderer.root.findAll(item=>item.type==='select'&&item.props['aria-label']==='商品字段').length,0);
+  assert.equal(h.renderer.root.findAll(item=>item.type==='button'&&item.children.join('')==='转为独立文字').length,0);
+  await h.change('字号','17');assert.deepEqual(h.document().root.children[0].props.binding,{key:'sample',field:'price'});assert.equal(h.node().props.style.fontSize,17);await h.close();
+});
+
+test('badge rich text, text background and frame fill each have one independent configuration owner',async()=>{
+  const h=await mount(component('sample','Stack','框体',{heightMode:'fixed',height:100}));await h.optional('徽标');
+  await h.editText({text:'SAVE 30%',runs:[{text:'SAVE',bold:true,fontWeight:700,underline:true},{text:' 30%',fontWeight:400}]},'徽标文字');
+  await h.change('徽标文字背景值','#ffffff');await h.change('徽标背景颜色值','#ff5577');
+  const badge=()=>h.renderer.root.findAll(item=>item.type==='span'&&item.props['data-badge-owner']==='sample')[0];
+  assert.equal(badge().props.style.background,'#ff5577');assert.equal(badge().children[0].props.style.background,'#ffffff');assert.equal(badge().findAllByType('span').find(item=>item.children.includes('SAVE')).props.style.fontWeight,700);
+  await h.change('徽标字号','12');assert.ok(badge().findAllByType('span').some(item=>item.props.style.fontSize===12));assert.equal(h.node().props.style.height,'100px');
+  const gradient='linear-gradient(90deg, #ff0000 0%, #0000ff 100%)';await h.change('徽标文字颜色值',gradient);assert.equal(badge().children[0].props.style.background,'#ffffff');assert.ok(badge().findAllByType('span').some(item=>item.props.style.backgroundImage===gradient));
+  assert.equal(h.document().root.children[0].props.badge.textBackground,'#ffffff');assert.equal(h.renderer.root.findAll(item=>item.type==='textarea'&&item.props['aria-label']==='徽标文字').length,0);await h.close();
+});
+
 test('product variables refer to the owning package inside and the selected package outside', async () => {
   const variable=component('sample','Text','价格',{text:'{{ product.price }} · {{ product.price_per_month }}'});
   const first=component('p1','Package','年付',{dataKey:'sample',group:'plans',defaultSelected:true},[component('inside','Text','价格',{text:'{{ product.price }}'})]);
@@ -954,8 +1028,8 @@ test('product variables refer to the owning package inside and the selected pack
   const source=fixture(component('row','Stack','',{},[variable,first,second]));source.products.lifetime={name:'终身',price:'¥200',billingMonths:0};
   const h=await mount(variable,{source,editing:false});assert.ok(h.node().children.join('').includes('¥100'));assert.deepEqual(h.node('inside').children,['¥100']);
   await act(async()=>h.node('p2').props.onClick(event()));assert.deepEqual(h.node().children,['¥200 · ¥200']);assert.deepEqual(h.node('inside').children,['¥100']);
-  assert.equal(h.renderer.root.findByType('textarea').props.value,'{{ product.price }} · {{ product.price_per_month }}');
-  await h.change('文字内容','', 'textarea');await h.click('插入变量');await h.click('商品总价');assert.deepEqual(h.node().children,['¥200']);
+  assert.equal(resolveComponentText(indexDocument(h.document()).nodes.get('sample'),h.document()),'{{ product.price }} · {{ product.price_per_month }}');
+  await h.change('文字内容','', 'textarea');await h.editText({text:'{{ product.price }}',runs:null});assert.deepEqual(h.node().children,['¥200']);
   await h.close();
 });
 

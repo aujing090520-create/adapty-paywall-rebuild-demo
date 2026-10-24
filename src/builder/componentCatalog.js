@@ -31,6 +31,7 @@ export function createPageControl(id) {
   return component(id,'PageControl','分页控件',{gap:8,...pad(8),marginTop:8,appearanceEnabled:false},[createCatalogComponent('Indicators',`${id}/indicators`)]);
 }
 export function createCatalogComponent(type, id = crypto.randomUUID()) {
+  if(type==='Text')return t(id,'文字',{widthMode:'fit',heightMode:'fit',fontSize:14,fontWeight:400,color:'#000000'});
   if(type==='Icon')return component(id,type,'图标',{icon:'tabler:outline:icons',widthMode:'fixed',heightMode:'fixed',width:26,height:26,color:'#000000'});
   if(type==='Indicators')return component(id,type,'分页指示器',{widthMode:'fixed',width:5,heightMode:'fixed',height:5,background:'#000000',backgroundOpacity:30,selectedBackground:'#000000',selectedBackgroundOpacity:53,borderColor:'#000000'});
   if(type==='PageControl')return createPageControl(id);

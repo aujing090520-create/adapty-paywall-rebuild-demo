@@ -100,7 +100,7 @@ export function textPropertyPatch(node, patch) {
   if (node.type === 'Text' && patch.background !== undefined) { next.textBackground = 'transparent'; next.fillEnabled = true; }
   if (patch.bold !== undefined) next.fontWeight = patch.bold ? 700 : 400;
   if (node.type !== 'Text' || !node.props.runs?.length || patch.runs !== undefined) return next;
-  const keys = ['fontSize', 'color', 'colorOpacity', 'fontWeight', 'bold', 'italic', 'underline'];
+  const keys = ['fontSize', 'fontFamily', 'color', 'colorOpacity', 'fontWeight', 'bold', 'italic', 'underline'];
   if (!keys.some((key) => next[key] !== undefined) && next.strike === undefined) return next;
   next.runs = node.props.runs.map((run) => ({ ...run, ...Object.fromEntries(keys.filter((key) => next[key] !== undefined).map((key) => [key, next[key]])), ...(next.strike !== undefined ? { strikethrough: next.strike } : {}) }));
   return next;

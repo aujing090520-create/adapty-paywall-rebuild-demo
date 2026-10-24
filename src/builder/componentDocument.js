@@ -59,6 +59,7 @@ export function indexDocument(document) {
 }
 export function validDocument(document) {
   if (document?.version !== DOCUMENT_VERSION || document.root?.type !== 'Screen' || !document.products || typeof document.products !== 'object') return false;
+  if(document.fonts!==undefined&&(!Array.isArray(document.fonts)||document.fonts.some(font=>!font||typeof font.id!=='string'||typeof font.family!=='string'||!Array.isArray(font.faces)||font.faces.some(face=>!face||typeof face.src!=='string'))))return false;
   const ids = new Set();
   const visit = (node, depth = 0) => {
     if (depth > 40 || !node || typeof node.id !== 'string' || ids.has(node.id) || !COMPONENT_TYPES.includes(node.type) || !Array.isArray(node.children) || !node.props || typeof node.props !== 'object') return false;

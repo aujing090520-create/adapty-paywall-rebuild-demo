@@ -1,11 +1,15 @@
 import React from 'react';
-import { ArrowRight, ArrowDown, Layers3, AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal, AlignStartVertical, AlignCenterVertical, AlignEndVertical, SquareDashed, RectangleHorizontal, RectangleVertical, Plus, X, Braces } from 'lucide-react';
+import { ArrowRight, ArrowDown, Layers3, AlignLeft, AlignCenter, AlignRight, AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal, AlignStartVertical, AlignCenterVertical, AlignEndVertical, SquareDashed, RectangleHorizontal, RectangleVertical, Plus, X, Settings2 } from 'lucide-react';
 import { CONTAINER_TYPES } from './componentDocument.js';
-import { selectedStyleKey, stateStyleProps, spacingModePatch, dimensionModePatch, imageMask, cornerModePatch, CORNER_KEYS, selectionOwner, sequencePages, BADGE_DEFAULTS, utcDateTimeInput } from './propertyModel.js';
+import { selectedStyleKey, stateStyleProps, spacingModePatch, dimensionModePatch, imageMask, cornerModePatch, CORNER_KEYS, selectionOwner, sequencePages, BADGE_DEFAULTS, utcDateTimeInput, textPropertyPatch } from './propertyModel.js';
 import { PRODUCT_TEXT_VARIABLES, TIMER_TEXT_VARIABLES } from './textVariables.js';
 import {isGradient,pickerColor,pickerPaint} from './colorModel.js';
 import IconField from './IconField.jsx';
+import { TEXT_RULES, textRuleName, textRuleProps, textRulePatch } from './textRules.js';
 const ColorPickerPopup=React.lazy(()=>import('./ColorPickerPopup.jsx'));
+const RichTextEditor=React.lazy(()=>import('./RichTextEditor.jsx'));
+const FontManager=React.lazy(()=>import('./FontManager.jsx'));
+const FontContext=React.createContext({fonts:[]});
 
 export function PropertySection({ title, children, optional = false, className = '' }) {
   const fields = React.Children.toArray(children);
@@ -26,7 +30,7 @@ function NumberField({ label, value, onChange, min = 0, max = 2000, unit = 'px',
 function ColorField({ label, value, onChange, opacity=100, onPaintChange, opacityReadOnly=false }) {
   const [draft, setDraft] = React.useState(value ?? 'transparent');
   const [anchor,setAnchor]=React.useState(null);
-  const allowGradient=label.includes('背景')||label==='文字颜色';
+  const allowGradient=label.includes('背景')||label.endsWith('文字颜色')||label.endsWith('边框颜色');
   React.useEffect(() => setDraft(value ?? 'transparent'), [value]);
   const valid = draft.trim() !== '' && (typeof CSS === 'undefined' || CSS.supports(allowGradient ? 'background' : 'color', draft));
   const close=React.useCallback(()=>setAnchor(null),[]);
@@ -34,7 +38,7 @@ function ColorField({ label, value, onChange, opacity=100, onPaintChange, opacit
 }
 function PaintField({ label, property, opacityKey, p, patch, opacityReadOnly = false }) {
   const key = opacityKey ?? `${property}Opacity`;
-  return <div className="rc-paint-field"><ColorField label={label} value={p[property]} opacity={p[key]??100} opacityReadOnly={opacityReadOnly} onPaintChange={({color,opacity})=>patch({[property]:color,[key]:opacity})} onChange={(value) => patch({ [property]: value,...(isGradient(value)?{[key]:100}:{}) })} />{!/gradient\(/i.test(p[property] ?? '') && <NumberField label={`${label}不透明度`} value={p[key] ?? 100} disabled={opacityReadOnly} max={100} unit="%" onChange={(value) => patch({ [key]: value })} />}</div>;
+  return <div className="rc-paint-field"><ColorField label={label} value={p[property]} opacity={p[key]??100} opacityReadOnly={opacityReadOnly} onPaintChange={({color,opacity})=>patch({[property]:color,[key]:opacity})} onChange={(value) => patch({ [property]: value,...(isGradient(value)?{[key]:100}:{}) })} /><NumberField label={`${label}不透明度`} value={isGradient(p[property])?100:p[key]??100} disabled={opacityReadOnly||isGradient(p[property])} max={100} unit="%" onChange={(value) => patch({ [key]: value })} /></div>;
 }
 function CornerField({ p, patch }) {
   return <div className="rc-corner-field">{p.radiusMode === 'individual' ? <div className="rc-four-values">{CORNER_KEYS.map((key, index) => <NumberField key={key} label={`圆角${['左上', '右上', '右下', '左下'][index]}`} value={p[key] ?? p.radius} onChange={(value) => patch({ [key]: value })} />)}</div> : <NumberField label="圆角" value={p.radius} onChange={(radius) => patch({ radius })} />}<button type="button" className="rc-spacing-toggle" aria-label={`圆角切换为${p.radiusMode === 'individual' ? '统一' : '四角'}配置`} title="切换圆角配置" onClick={() => patch(cornerModePatch(p))}><SquareDashed size={18} /></button></div>;
@@ -95,9 +99,7 @@ function MediaEditor({ value, type, onChange, onError, background = false }) {
   return <div className="rc-media-editor">{value && (type === 'Video' ? <video src={value} controls /> : <img src={value} alt="当前素材" />)}<label className="rc-upload">{value ? '替换素材' : '上传素材'}<input type="file" accept={accept} onChange={(event) => { upload(event.target.files[0]); event.target.value = ''; }} /></label><Field label={type === 'Screen' ? '背景图片地址' : '素材地址'}><input value={value} onChange={(event) => onChange(event.target.value)} /></Field>{value && <button type="button" className="rc-secondary" onClick={() => onChange('')}>删除素材</button>}</div>;
 }
 
-function ContentSection({ selected, p, patch, document, nodes, parents, findPackage, resolveText, changeProduct, fieldNames, demoSkus, setNavigation, onStatus, setDefaultPackage, onMediaType, onPageControl }) {
-  const contentRef = React.useRef(null);
-  const [variablesOpen, setVariablesOpen] = React.useState(false);
+function ContentSection({ selected, p, patch, document, nodes, parents, findPackage, resolveText, changeProduct, fieldNames, demoSkus, setNavigation, onStatus, setDefaultPackage, onMediaType, onPageControl, rule='default' }) {
   const [uploading,setUploading]=React.useState(false);
   const type = selected.type;
   if(type==='Toggle' && p.switchControl)return <PropertySection title="开关填充"><PaintField label="滑块颜色" property="thumbColor" p={p} patch={patch}/><PaintField label="轨道颜色" property="trackColor" p={p} patch={patch}/></PropertySection>;
@@ -119,11 +121,9 @@ function ContentSection({ selected, p, patch, document, nodes, parents, findPack
     let owner = nodes.get(parents.get(selected.id));
     while (owner && owner.type !== 'Countdown') owner = nodes.get(parents.get(owner.id));
     return <PropertySection title="文字属性">
-      {owner && p.timerField && <Select label="倒计时字段（旧模板）" value={p.timerField} options={[[ 'none', '普通文字' ], ...[['days','天'],['hours','小时'],['minutes','分钟'],['seconds','秒']].flatMap(([key, label]) => [[key, `${label}（补零）`], [`${key}WithoutZero`, `${label}（不补零）`]])]} onChange={(value) => patch({ timerField: value === 'none' ? null : value, ...(value !== 'none' ? { binding: null, runs: null } : {}) })} />}
-      {!p.timerField && <Field label="文字内容"><textarea ref={contentRef} aria-label="文字内容" value={resolveText(selected, document, findPackage(selected.id, nodes, parents))} readOnly={Boolean(p.binding)} onChange={(event) => patch({ text: event.target.value, runs: null })} /></Field>}
-      {!p.timerField && !p.binding && <><button type="button" className="ne-icon" aria-label="插入变量" title="插入变量" aria-expanded={variablesOpen} onClick={() => setVariablesOpen(!variablesOpen)}><Braces size={16}/></button>{variablesOpen && <div role="menu" className="rc-limit-menu">{[...PRODUCT_TEXT_VARIABLES,...(owner?TIMER_TEXT_VARIABLES:[])].map(([key,label])=><button type="button" role="menuitem" key={key} onClick={()=>{const text=resolveText(selected,document),start=contentRef.current?.selectionStart??text.length,end=contentRef.current?.selectionEnd??start;patch({text:`${text.slice(0,start)}{{ ${key} }}${text.slice(end)}`,runs:null});setVariablesOpen(false);}}>{label}</button>)}</div>}</>}
-      {p.binding && <><Select label="商品字段" value={p.binding.field} options={Object.entries(fieldNames)} onChange={(field) => patch({ binding: { ...p.binding, field } })} /><button type="button" className="rc-secondary" onClick={() => patch({ binding: null, runs: null, text: resolveText(selected, document, findPackage(selected.id, nodes, parents)) })}>转为独立文字</button></>}
-      {p.runs?.map((run, index) => <div key={index} className="rc-rich-run"><Field label={`片段 ${index + 1}`}><input aria-label={`片段 ${index + 1}`} value={run.text} onChange={(event) => patch({ runs: p.runs.map((item, at) => at === index ? { ...item, text: event.target.value } : item) })} /></Field><ColorField label={`片段 ${index + 1} 颜色`} value={run.color ?? p.color} onChange={(color) => patch({ runs: p.runs.map((item, at) => at === index ? { ...item, color } : item) })} />{run.link !== undefined && <Field label={`片段 ${index + 1} 链接`}><input value={run.link} onChange={(event) => patch({ runs: p.runs.map((item, at) => at === index ? { ...item, link: event.target.value } : item) })} /></Field>}</div>)}
+      {rule==='default' && owner && p.timerField && <Select label="倒计时字段（旧模板）" value={p.timerField} options={[[ 'none', '普通文字' ], ...[['days','天'],['hours','小时'],['minutes','分钟'],['seconds','秒']].flatMap(([key, label]) => [[key, `${label}（补零）`], [`${key}WithoutZero`, `${label}（不补零）`]])]} onChange={(value) => patch({ timerField: value === 'none' ? null : value, ...(value !== 'none' ? { binding: null, runs: null } : {}) })} />}
+      {!p.timerField && (p.binding ? <Field label="文字内容"><textarea aria-label="文字内容" value={resolveText(selected, document, findPackage(selected.id, nodes, parents))} readOnly/></Field> : <React.Suspense fallback={<div className="rc-rich-loading">加载文字编辑器</div>}><RichTextEditor key={selected.id} aria-label="文字内容" p={p} value={resolveText({...selected,props:p},document)} onChange={patch} variables={[...PRODUCT_TEXT_VARIABLES,...(owner?TIMER_TEXT_VARIABLES:[])]}/></React.Suspense>)}
+      {rule==='default' && p.binding && <><Select label="商品字段" value={p.binding.field} options={Object.entries(fieldNames)} onChange={(field) => patch({ binding: { ...p.binding, field } })} /><button type="button" className="rc-secondary" onClick={() => patch({ binding: null, runs: null, text: resolveText(selected, document, findPackage(selected.id, nodes, parents)) })}>转为独立文字</button></>}
     </PropertySection>;
   }
   if (type === 'Image' || type === 'Video') return <><PropertySection title="素材"><MediaEditor value={p.src ?? ''} type={type} onChange={(value, mediaType) => { if (mediaType && mediaType !== type) onMediaType?.(mediaType); patch({ src: value }); }} onError={onStatus} /><Select label="素材适配" value={p.objectFit} options={[[ 'cover', '填满' ], [ 'contain', '完整显示' ], ...(p.objectFit === 'fill' ? [[ 'fill', '拉伸' ]] : []), ...(p.objectFit === 'none' ? [[ 'none', '原始尺寸' ]] : [])]} onChange={(objectFit) => patch({ objectFit })} /></PropertySection>{type === 'Video' && <PropertySection title="播放设置">{[['loop', '循环播放', false], ['muted', '静音', true], ['autoPlay', '自动播放', false], ['controls', '播放控件', true]].map(([key, label, fallback]) => <CheckboxField key={key} label={label} checked={Boolean(p[key] ?? fallback)} disabled={key==='autoPlay' && !(p.controls??true)} onChange={(value) => patch({ [key]: value })} />)}</PropertySection>}</>;
@@ -193,54 +193,67 @@ function FillSection({selected,p,patch,onStatus,required=false}) {
   </PropertySection>;
 }
 
-function BorderShadowSections({p,patch,strokeOnly=false}) {
+function BorderShadowSections({p,patch,strokeOnly=false,prefix=''}) {
   const border=p.borderEnabled ?? (Number(p.borderWidth)>0);
   const shadow=p.shadowEnabled ?? Boolean(Number(p.shadowBlur)||Number(p.shadowX)||Number(p.shadowY));
   return <>
-    <PropertySection title={strokeOnly?'描边':'边框'} optional><OptionalToggle enabled={border} onChange={(enabled) => patch({ borderEnabled: enabled, borderWidth: enabled ? Math.max(1, Number(p.borderWidth) || 1) : 0 })} />{border && <><PaintField label="边框颜色" property="borderColor" opacityKey="borderOpacity" p={p} patch={patch} /><NumberField label="边框宽度" value={p.borderWidth} max={20} onChange={(borderWidth) => patch({ borderEnabled: true, borderWidth })} /></>}</PropertySection>
-    {!strokeOnly&&<PropertySection title="阴影" optional><OptionalToggle enabled={shadow} onChange={(enabled) => patch(enabled ? { shadowEnabled: true, shadowBlur: 6, shadowX: 0, shadowY: 2, shadowColor: '#000000', shadowOpacity: 20 } : { shadowEnabled: false, shadowBlur: 0, shadowX: 0, shadowY: 0 })} />{shadow && <><div className="rc-two-columns"><NumberField label="X 偏移" value={p.shadowX ?? 0} min={-100} max={100} onChange={(shadowX) => patch({ shadowEnabled: true, shadowX })} /><NumberField label="Y 偏移" value={p.shadowY ?? 0} min={-100} max={100} onChange={(shadowY) => patch({ shadowEnabled: true, shadowY })} /></div><NumberField label="模糊" value={p.shadowBlur ?? 0} max={100} onChange={(shadowBlur) => patch({ shadowEnabled: true, shadowBlur })} /><PaintField label="阴影颜色" property="shadowColor" opacityKey="shadowOpacity" p={p} patch={patch} /></>}</PropertySection>}
+    <PropertySection title={`${prefix}${strokeOnly?'描边':'边框'}`} optional><OptionalToggle enabled={border} onChange={(enabled) => patch({ borderEnabled: enabled, borderWidth: enabled ? Math.max(1, Number(p.borderWidth) || 1) : 0 })} />{border && <><PaintField label={`${prefix}边框颜色`} property="borderColor" opacityKey="borderOpacity" p={p} patch={patch} /><NumberField label={`${prefix}边框宽度`} value={p.borderWidth} max={20} onChange={(borderWidth) => patch({ borderEnabled: true, borderWidth })} /></>}</PropertySection>
+    {!strokeOnly&&<PropertySection title={`${prefix}阴影`} optional><OptionalToggle enabled={shadow} onChange={(enabled) => patch(enabled ? { shadowEnabled: true, shadowBlur: 6, shadowX: 0, shadowY: 2, shadowColor: '#000000', shadowOpacity: 20 } : { shadowEnabled: false, shadowBlur: 0, shadowX: 0, shadowY: 0 })} />{shadow && <><div className="rc-two-columns"><NumberField label={`${prefix}X 偏移`} value={p.shadowX ?? 0} min={-100} max={100} onChange={(shadowX) => patch({ shadowEnabled: true, shadowX })} /><NumberField label={`${prefix}Y 偏移`} value={p.shadowY ?? 0} min={-100} max={100} onChange={(shadowY) => patch({ shadowEnabled: true, shadowY })} /></div><NumberField label={`${prefix}模糊`} value={p.shadowBlur ?? 0} max={100} onChange={(shadowBlur) => patch({ shadowEnabled: true, shadowBlur })} /><PaintField label={`${prefix}阴影颜色`} property="shadowColor" opacityKey="shadowOpacity" p={p} patch={patch} /></>}</PropertySection>}
+  </>;
+}
+
+function FontField({p,patch,label}) {
+  const {fonts,onFontsChange}=React.useContext(FontContext),[open,setOpen]=React.useState(false);
+  const legacy=p.fontFamily&&p.fontFamily!=='system'&&!fonts.some(font=>font.id===p.fontFamily);
+  return <><div className="rc-font-field"><Select label={label} value={p.fontFamily??'system'} options={[[ 'system','系统字体' ],...fonts.map(font=>[font.id,font.family]),...(legacy?[[p.fontFamily,`${({serif:'衬线字体',mono:'等宽字体'})[p.fontFamily]??p.fontFamily}（旧配置）`]]:[]),...(onFontsChange?[[ '$add-font','添加字体' ]]:[])]} onChange={(value)=>value==='$add-font'?setOpen(true):patch({fontFamily:value})}/><button type="button" className="ne-icon" title="配置字体族" aria-label="配置字体族" disabled={!onFontsChange} onClick={()=>setOpen(true)}><Settings2 size={15}/></button></div>{open&&<React.Suspense fallback={<div role="status">加载字体配置</div>}><FontManager fonts={fonts} onSave={onFontsChange} onClose={()=>setOpen(false)}/></React.Suspense>}</>;
+}
+
+function TypographyFields({p,patch,badge=false}) {
+  const label=(name)=>`${badge?'徽标':''}${name}`;
+  return <>
+    <SegmentedField label={label('文字对齐')} value={p.textAlign} options={[[ 'left','左对齐',AlignLeft ],[ 'center','居中',AlignCenter ],[ 'right','右对齐',AlignRight ]]} icon onChange={(textAlign)=>patch({textAlign})}/>
+    <FontField label={badge?'徽标字体':'字体'} p={p} patch={patch}/>
+    <Select label={label('字重')} value={p.bold?700:p.fontWeight} options={[[100,'极细'],[200,'特细'],[300,'细体'],[400,'常规'],[500,'中等'],[600,'半粗'],[700,'粗体'],[800,'特粗'],[900,'极粗']]} onChange={(value)=>patch({fontWeight:Number(value)})}/>
+    <NumberField label={label('字号')} value={p.fontSize} min={8} max={160} onChange={(fontSize)=>patch({fontSize})}/>
+    <PaintField label={label('文字颜色')} property="color" p={p} patch={patch}/>
+    <PaintField label={badge?'徽标文字背景':'背景颜色'} property={badge?'textBackground':'background'} opacityKey={badge?'textBackgroundOpacity':'backgroundOpacity'} p={badge?p:{...p,background:p.fillEnabled===false?'transparent':p.background==='transparent'?p.textBackground??p.background:p.background}} patch={patch}/>
   </>;
 }
 
 function BadgeSection({selected,p,patch}){
   if(!['Stack','Package','Slide','PurchaseButton'].includes(selected.type))return null;
   const enabled=p.badgeEnabled??Boolean(p.badge),badge={...BADGE_DEFAULTS,...p.badge};
-  const update=(values)=>patch({badge:{...badge,...values},badgeEnabled:true});
+  const update=(values)=>{const {background,...typography}=values;patch({badge:{...badge,...textPropertyPatch({type:'Text',props:badge},typography),...('background' in values?{background}: {})},badgeEnabled:true});};
   return <PropertySection title="徽标" optional><OptionalToggle enabled={enabled} onChange={(badgeEnabled)=>patch({badgeEnabled,...(badgeEnabled&&!p.badge?{badge:{...BADGE_DEFAULTS}}:{})})}/>{enabled&&<div className="rc-badge-properties">
-    <Field label="徽标文字"><textarea aria-label="徽标文字" value={badge.text} onChange={(event)=>update({text:event.target.value})}/></Field>
-    <Select label="徽标文字对齐" value={badge.textAlign} options={[[ 'left','左对齐' ],[ 'center','居中' ],[ 'right','右对齐' ]]} onChange={(textAlign)=>update({textAlign})}/>
-    <Select label="徽标字体" value={badge.fontFamily??'system'} options={[[ 'system','系统字体' ],[ 'serif','衬线字体' ],[ 'mono','等宽字体' ]]} onChange={(fontFamily)=>update({fontFamily})}/>
-    <NumberField label="徽标字号" value={badge.fontSize} min={8} max={160} onChange={(fontSize)=>update({fontSize})}/><Select label="徽标字重" value={badge.fontWeight} options={[[400,'常规'],[500,'中等'],[600,'半粗'],[700,'粗体'],[800,'特粗']]} onChange={(value)=>update({fontWeight:Number(value)})}/>
-    <PaintField label="徽标文字颜色" property="color" p={badge} patch={update}/>
+    <React.Suspense fallback={<div className="rc-rich-loading">加载文字编辑器</div>}><RichTextEditor aria-label="徽标文字" p={badge} value={badge.text} onChange={update} variables={PRODUCT_TEXT_VARIABLES}/></React.Suspense>
+    <TypographyFields p={badge} patch={update} badge/>
     <PropertySection title="徽标位置"><Select label="徽标样式" value={badge.positionStyle} options={[[ 'overlay','覆盖边框' ],[ 'nested','内嵌边框' ]]} onChange={(positionStyle)=>update({positionStyle})}/><Select label="徽标对齐" value={badge.position} options={[[ 'top-left','左上' ],[ 'top-center','上方居中' ],[ 'top-right','右上' ],[ 'bottom-left','左下' ],[ 'bottom-center','下方居中' ],[ 'bottom-right','右下' ]]} onChange={(position)=>update({position})}/></PropertySection>
     <PropertySection title="徽标间距"><SpacingField title="内边距" prefix="padding" p={badge} patch={update}/><SpacingField title="外边距" prefix="margin" p={badge} patch={update}/></PropertySection>
     <PropertySection title="徽标外观" optional><OptionalToggle enabled={badge.appearanceEnabled!==false} onChange={(appearanceEnabled)=>update({appearanceEnabled})}/>{badge.appearanceEnabled!==false&&<><Select label="徽标形状" value={badge.shape} options={[[ 'rectangle','矩形' ],[ 'pill','胶囊' ]]} onChange={(shape)=>update({shape})}/>{badge.shape==='rectangle'&&<CornerField p={badge} patch={update}/>}</>}</PropertySection>
     <PropertySection title="徽标填充" optional><OptionalToggle enabled={badge.fillEnabled!==false} onChange={(fillEnabled)=>update({fillEnabled})}/>{badge.fillEnabled!==false&&<PaintField label="徽标背景颜色" property="background" p={badge} patch={update}/>}</PropertySection>
-    <BorderShadowSections p={badge} patch={update}/>
+    <BorderShadowSections p={badge} patch={update} prefix="徽标"/>
   </div>}</PropertySection>;
 }
 
-export default function RevenueCatProperties({ selected, p, patch, document, nodes, parents, findPackage, resolveText, changeProduct, fieldNames, demoSkus, navigation = {}, setNavigation, onStatus, setDefaultPackage, onMediaType, onPageControl }) {
+export default function RevenueCatProperties({ selected, p, patch, document, nodes, parents, findPackage, resolveText, changeProduct, fieldNames, demoSkus, navigation = {}, setNavigation, onStatus, setDefaultPackage, onMediaType, onPageControl, onFontsChange }) {
+  const rule=selected.type==='Text'?textRuleName(navigation.textRule):'default';
+  const textP=textRuleProps(p,rule), textPatch=(values)=>patch(textRulePatch(p,rule,values));
   const owner = selected.type==='Indicators'?selected:selectionOwner(selected, nodes, parents);
   const [packageState, setPackageState] = React.useState(() => navigation[`package-style:${owner?.id}`] ?? 'default');
   const stateful = Boolean(owner);
   React.useEffect(() => { if (stateful) setNavigation({ [`package-style:${owner.id}`]: packageState }); }, [stateful, owner?.id, packageState, setNavigation]);
   const styleP = stateStyleProps(p, stateful && packageState === 'selected');
   const stylePatch = stateful && packageState === 'selected' ? (values) => patch(Object.fromEntries(Object.entries(values).map(([key, value]) => [selectedStyleKey(key), value]))) : patch;
-  const bold = Boolean(p.bold) || Number(p.fontWeight) >= 600;
-  return <div className="rc-properties-body">
-    <ContentSection selected={selected} p={p} patch={patch} document={document} nodes={nodes} parents={parents} findPackage={findPackage} resolveText={resolveText} changeProduct={changeProduct} fieldNames={fieldNames} demoSkus={demoSkus} setNavigation={setNavigation} onStatus={onStatus} setDefaultPackage={setDefaultPackage} onMediaType={onMediaType} onPageControl={onPageControl}/>
-    {stateful && <PropertySection title="状态样式"><SegmentedField label="状态" value={packageState} options={[[ 'default', '默认' ], [ 'selected', selected.type==='Indicators'?'当前':'选中' ]]} onChange={(value) => { setPackageState(value); setNavigation({ [`package-style:${owner.id}`]: value }); }} /></PropertySection>}
+  return <FontContext.Provider value={{fonts:document.fonts??[],onFontsChange}}><div className="rc-properties-body">
+    {selected.type==='Text'&&<div className="rc-text-rule"><Select label="文字规则" value={rule} options={TEXT_RULES} onChange={(value)=>{if(value!=='default'&&!p.textRules?.[value])patch(textRulePatch(p,value,{}));setNavigation({textRule:value});}}/></div>}
+    <ContentSection key={rule} rule={rule} selected={selected} p={selected.type==='Text'?textP:p} patch={selected.type==='Text'?textPatch:patch} document={document} nodes={nodes} parents={parents} findPackage={findPackage} resolveText={resolveText} changeProduct={changeProduct} fieldNames={fieldNames} demoSkus={demoSkus} setNavigation={setNavigation} onStatus={onStatus} setDefaultPackage={setDefaultPackage} onMediaType={onMediaType} onPageControl={onPageControl}/>
+    {stateful && rule==='default' && <PropertySection title="状态样式"><SegmentedField label="状态" value={packageState} options={[[ 'default', '默认' ], [ 'selected', selected.type==='Indicators'?'当前':'选中' ]]} onChange={(value) => { setPackageState(value); setNavigation({ [`package-style:${owner.id}`]: value }); }} /></PropertySection>}
     {selected.type === 'Text' && <PropertySection title="文字样式">
-      <div className="rc-two-columns"><Select label="字体" value={p.fontFamily ?? 'system'} options={[[ 'system', '系统字体' ], [ 'serif', '衬线字体' ], [ 'mono', '等宽字体' ]]} onChange={(fontFamily) => patch({ fontFamily })} /><NumberField label="字号" value={p.fontSize} min={8} max={160} onChange={(fontSize) => patch({ fontSize })} /></div>
-      <Select label="字重" value={p.bold ? 700 : p.fontWeight} options={[[100,'极细'],[200,'特细'],[300,'细体'],[400,'常规'],[500,'中等'],[600,'半粗'],[700,'粗体'],[800,'特粗'],[900,'极粗']]} onChange={(value) => patch({ fontWeight: Number(value) })} />
-      <div className="rc-text-toolbar">{[['粗体', bold, 'bold'], ['斜体', p.italic, 'italic'], ['下划线', p.underline, 'underline'], ['删除线', p.strike, 'strike']].map(([name, active, key]) => <button key={key} type="button" aria-label={name} aria-pressed={Boolean(active)} className={active ? 'active' : ''} onClick={() => patch({ [key]: !active })}>{name}</button>)}</div>
-      <PaintField label="文字颜色" property="color" p={p} patch={patch} /><Select label="文字对齐" value={p.textAlign} options={[[ 'left', '左对齐' ], [ 'center', '居中' ], [ 'right', '右对齐' ]]} onChange={(textAlign) => patch({ textAlign })} />
-      <PaintField label="背景颜色" property="background" p={{...p,background:p.fillEnabled === false ? 'transparent' : p.background === 'transparent' ? p.textBackground ?? p.background : p.background}} patch={patch}/>
+      <TypographyFields p={textP} patch={textPatch}/>
     </PropertySection>}
     {selected.type === 'Countdown' && !selected.children.length && <PropertySection title="文字样式"><div className="rc-two-columns"><NumberField label="字号" value={p.fontSize} min={8} max={160} onChange={(fontSize) => patch({ fontSize })} /><ColorField label="颜色" value={p.color} onChange={(color) => patch({ color })} /></div></PropertySection>}
-    <LayoutSection selected={selected} p={styleP} patch={stylePatch} parent={nodes.get(parents.get(selected.id))}/>
+    {rule==='default'&&<LayoutSection selected={selected} p={styleP} patch={stylePatch} parent={nodes.get(parents.get(selected.id))}/>}
     <AppearanceSection selected={selected} p={styleP} patch={stylePatch} onStatus={onStatus} />
     <BadgeSection selected={selected} p={p} patch={patch}/>
-  </div>;
+  </div></FontContext.Provider>;
 }

@@ -1,13 +1,15 @@
 import { component, componentProps, cloneComponent, indexDocument, insertComponent, updateComponent, canContain, removeComponent, moveComponent } from './componentDocument.js';
 import { STATE_STYLE_KEYS, selectedStyleKey, textPropertyPatch } from './propertyModel.js';
 import { createTabSelectorButton, createTabSelector, createPageControl } from './componentCatalog.js';
+import {fontResources,withFontResources} from './fontStyles.js';
 
 const STYLE_KEYS = new Set(['axis','gap','align','justify','wrap','widthMode','width','minWidth','maxWidth','heightMode','height','minHeight','maxHeight','paddingMode','paddingTop','paddingRight','paddingBottom','paddingLeft','paddingVertical','paddingHorizontal','marginMode','marginTop','marginRight','marginBottom','marginLeft','marginVertical','marginHorizontal','background','backgroundImage','backgroundFit','backgroundVideo','fillType','color','radius','shape','borderWidth','borderColor','fontSize','fontWeight','fontFamily','fontStyle','textAlign','objectFit','opacity','alignSelf','strike','bold','italic','underline','textBackground','iconSize','iconBackground','iconRadius','selectedBorder','selectedBackground','selectedColor','shadowX','shadowY','shadowBlur','shadowColor']);
 for (const key of [...STATE_STYLE_KEYS, ...STATE_STYLE_KEYS.map(selectedStyleKey), 'lineHeight', 'flexGrow', 'mask', 'overlayColor', 'overlayEnabled', 'pageSpacing', 'pagePeek', 'pageControlPosition', 'dotColor', 'activeDotColor', 'itemSpacing', 'textSpacing', 'columnGutter', 'iconAlignment', 'connectorEnabled', 'connectorWidth', 'connectorColor', 'connectorOpacity', 'connectorMarginMode', 'connectorMarginVertical', 'connectorMarginTop', 'connectorMarginBottom']) STYLE_KEYS.add(key);
 for(const key of ['pageAlignment','transitionTime','transitionAnimation','thumbColor','trackColor','thumbColorOpacity','trackColorOpacity','walletStyle'])STYLE_KEYS.add(key);
-export const copyStyles = (node) => Object.fromEntries(Object.entries(componentProps(node)).filter(([key]) => STYLE_KEYS.has(key)));
+export const copyStyles = (node,fonts=[]) => {const styles=Object.fromEntries(Object.entries(componentProps(node)).filter(([key]) => STYLE_KEYS.has(key))),resources=fontResources(styles,fonts);return resources.length?{...styles,$fonts:resources}:styles;};
 export function pasteStyles(document, id, styles) {
-  return patchComponentProperties(document,id,Object.fromEntries(Object.entries(styles ?? {}).filter(([key])=>STYLE_KEYS.has(key))));
+  if(!indexDocument(document).nodes.has(id))return document;
+  return patchComponentProperties(withFontResources(document,styles?.$fonts),id,Object.fromEntries(Object.entries(styles ?? {}).filter(([key])=>STYLE_KEYS.has(key))));
 }
 export function togglePageControl(document,id,enabled) {
   const node=indexDocument(document).nodes.get(id);
@@ -145,7 +147,7 @@ export function copyFragment(document, id, contentsOnly = false) {
   const keys = new Set();
   const visit = (entry) => { if (entry.props.dataKey) keys.add(entry.props.dataKey); if (entry.props.binding?.key) keys.add(entry.props.binding.key); entry.children.forEach(visit); };
   roots.forEach(visit);
-  return { roots:structuredClone(roots), products:Object.fromEntries([...keys].filter((key)=>document.products[key]).map((key)=>[key,structuredClone(document.products[key])])) };
+  return { roots:structuredClone(roots), products:Object.fromEntries([...keys].filter((key)=>document.products[key]).map((key)=>[key,structuredClone(document.products[key])])), fonts:fontResources(roots,document.fonts) };
 }
 export function pasteFragment(document, parentId, fragment, at = Infinity) {
   const parent = indexDocument(document).nodes.get(parentId);
@@ -161,7 +163,7 @@ export function pasteFragment(document, parentId, fragment, at = Infinity) {
     if (updated === next) return {document,ids:[]};
     next = updated; ids.push(node.id);
   }
-  return {document:reconcileTabStructure(document,next),ids};
+  return {document:withFontResources(reconcileTabStructure(document,next),fragment.fonts),ids};
 }
 export function wrapInStack(document, id) {
   const {nodes,parents} = indexDocument(document), node = nodes.get(id), parent = nodes.get(parents.get(id));

@@ -12,13 +12,14 @@ import './componentEditor.css';
 import RevenueCatProperties from './RevenueCatProperties.jsx';
 import { migrateTemplateVisuals } from './templateVisuals.js';
 import { defaultPackagePatch, sequencePages } from './propertyModel.js';
+import {fontResources,withFontResources} from './fontStyles.js';
 
 const libraryKey = 'paywall-component-library-v3';
 const fieldNames = { name: '商品名称', price: '主价格', reference: '参考价', supportingCopy: '辅助文案', savingCopy: '优惠说明', saveCopy: 'SAVE 文案', badgeText: '标签文字' };
 const iconFor = (type) => ({ Screen: Smartphone, Flow: Workflow, Text: Type, Image: ImageIcon, Video, Icon: Star, Custom: Code, Package: PackageIcon, Button: MousePointerClick, PurchaseButton: CreditCard, Header: PanelTop, Footer: PanelBottom, BottomSheet: PanelBottom, Carousel: GalleryHorizontal, Tabs: Columns2, TabControl: Columns2, TabButton: MousePointerClick, Timeline: ListOrdered, Countdown: Clock3, Toggle: ToggleLeft, Switch: ToggleLeft, Wallet: CreditCard, ExpressCheckout: CreditCard }[type] ?? Layers);
 function Field({ label, children }) { return <label className="ne-field"><span>{label}</span>{children}</label>; }
 function Select({ label, value, onChange, options }) { return <Field label={label}><select aria-label={label} value={value ?? ''} onChange={(event) => onChange(event.target.value)}>{options.map((option) => { const [key, name] = Array.isArray(option) ? option : [option, option]; return <option key={key} value={key}>{name}</option>; })}</select></Field>; }
-function readLibrary() { try { const value = JSON.parse(localStorage.getItem(libraryKey) ?? '[]'); return Array.isArray(value) ? value.filter((item) => item?.name && validDocument({ version: 3, products: {}, root: { id: '$library', type: 'Screen', props: {}, children: [item.node] } })) : []; } catch { return []; } }
+function readLibrary() { try { const value = JSON.parse(localStorage.getItem(libraryKey) ?? '[]'); return Array.isArray(value) ? value.filter((item) => item?.name && validDocument({ version: 3, products: {}, fonts:item.fonts, root: { id: '$library', type: 'Screen', props: {}, children: [item.node] } })) : []; } catch { return []; } }
 
 export default function ComponentEditor({ template, initialNodes }) {
   const [initial] = useState(() => {
@@ -55,6 +56,12 @@ export default function ComponentEditor({ template, initialNodes }) {
   const pickerParent = nodes.get(addTarget);
   const menuNode = nodes.get(layerMenu?.id);
   latest.current = document;
+  const saveFonts=(fonts)=>{
+    if(blockedSave)throw new Error(initial.error);
+    const next={...latest.current,fonts};
+    if(!saveComponentDocument(localStorage,next))throw new Error('字体保存失败，本地存储空间不足；原配置保留');
+    setDocument(next);
+  };
   useEffect(() => {
     if (blockedSave) return;
     const timer = setTimeout(() => setSaveError(saveComponentDocument(localStorage, document) ? '' : '本地保存失败，请缩小媒体文件后重试'), 250);
@@ -104,7 +111,7 @@ export default function ComponentEditor({ template, initialNodes }) {
     if(action==='paste'){const target=CONTAINER_TYPES.has(node.type)?node:owner;if(!target)return;const result=pasteFragment(document,target.id,editorClipboard.fragment);if(result.ids.length){setDocument(result.document);setSelectedId(result.ids[0]);setCollapsed((old)=>new Set([...old].filter((id)=>id!==target.id)));}}
     if(action==='duplicate')duplicateAt(node.id);
     if(action==='wrap'){const result=wrapInStack(document,node.id);setDocument(result.document);setSelectedId(result.id);}
-    if(action==='copyStyles'){editorClipboard.styles=copyStyles(node);setStatus('已复制样式');}
+    if(action==='copyStyles'){editorClipboard.styles=copyStyles(node,document.fonts);setStatus('已复制样式');}
     if(action==='pasteStyles')setDocument(pasteStyles(document,node.id,editorClipboard.styles));
     if(action==='hide')setDocument(updateComponent(document,node.id,{props:{hidden:!node.props.hidden}}));
     if(action==='delete'&&owner){setDocument(removeComponent(document,node.id));setSelectedId(owner.id);}
@@ -128,7 +135,8 @@ export default function ComponentEditor({ template, initialNodes }) {
   };
   const saveLibrary = () => {
     const name = libraryName.trim(); if (!name) return setStatus('请输入组件名称');
-    const next = [{ id: crypto.randomUUID(), name, node: captureNativeComponent(document, selected) }, ...library];
+    const node=captureNativeComponent(document,selected);
+    const next = [{ id: crypto.randomUUID(), name, node, fonts:fontResources(node,document.fonts) }, ...library];
     try { localStorage.setItem(libraryKey, JSON.stringify(next)); setLibrary(next); setLibraryName(''); setStatus('已保存当前组件结构与样式'); } catch { setStatus('组件库保存失败：本地空间不足'); }
   };
   const changeProduct = (key, value) => setDocument((current) => ({ ...current, products: { ...current.products, [p.dataKey ?? selected.id]: { ...current.products[p.dataKey ?? selected.id], [key]: value } }, root: updateComponent(current, selected.id, { props: { dataKey: p.dataKey ?? selected.id } }).root }));
@@ -142,11 +150,11 @@ export default function ComponentEditor({ template, initialNodes }) {
         <section><Field label={isPageRoot?'页面名称':'图层名称'}><input value={selected.name} onChange={(event) => setDocument((current) => updateComponent(current, selected.id, { name: event.target.value }))} /></Field><div className="ne-actions"><button className="ne-icon" title="上移" aria-label="上移" disabled={isPageRoot || !parent || parent.children[0]?.id === selected.id} onClick={() => reorder(-1)}><ArrowUp size={16} /></button><button className="ne-icon" title="下移" aria-label="下移" disabled={isPageRoot || !parent || parent.children.at(-1)?.id === selected.id} onClick={() => reorder(1)}><ArrowDown size={16} /></button><button className="ne-icon" title="复制组件" aria-label="复制组件" disabled={isPageRoot || !parent} onClick={() => duplicateAt(selected.id)}><Copy size={16} /></button><button className="ne-icon danger" title="删除组件" aria-label="删除组件" disabled={isPageRoot || !parent} onClick={() => { setDocument((current) => removeComponent(current, selected.id)); setSelectedId(parent.id); }}><Trash2 size={16} /></button></div>{!isPageRoot&&<Select label="显示状态" value={p.hidden ? 'hidden' : 'visible'} onChange={(value) => patch({ hidden: value === 'hidden' })} options={[[ 'visible', '显示' ], [ 'hidden', '隐藏' ]]} />}
           {parent && !isPageRoot && <Select label="所在容器" value={parent.id} onChange={moveTo} options={[...indexDocument({root:pages.active}).nodes.values()].filter((node) => node.id !== selected.id && canContain(node, selected)).map((node) => [node.id, `${node.name} · ${COMPONENT_NAMES[node.type]}`])} />}
         </section>
-        <RevenueCatProperties key={selected.id} selected={selected} p={p} patch={patch} document={document} nodes={nodes} parents={parents} resolveText={resolveComponentText} findPackage={findPackage} changeProduct={changeProduct} fieldNames={fieldNames} demoSkus={DEMO_SKUS} navigation={navigation} setNavigation={patchNavigation} onStatus={setStatus} onPageControl={(enabled)=>setDocument((current)=>togglePageControl(current,selected.id,enabled))} onMediaType={(type) => setDocument((current) => updateComponent(current, selected.id, { type }))} setDefaultPackage={(value) => setDocument((current) => defaultPackagePatch(current, selected.id, value))} />
+        <RevenueCatProperties key={selected.id} selected={selected} p={p} patch={patch} document={document} nodes={nodes} parents={parents} resolveText={resolveComponentText} findPackage={findPackage} changeProduct={changeProduct} fieldNames={fieldNames} demoSkus={DEMO_SKUS} navigation={navigation} setNavigation={patchNavigation} onStatus={setStatus} onFontsChange={saveFonts} onPageControl={(enabled)=>setDocument((current)=>togglePageControl(current,selected.id,enabled))} onMediaType={(type) => setDocument((current) => updateComponent(current, selected.id, { type }))} setDefaultPackage={(value) => setDocument((current) => defaultPackagePatch(current, selected.id, value))} />
       </aside>
     </div>
     {menuNode&&<LayerActionsMenu menu={layerMenu} node={menuNode} isRoot={menuNode.id===document.root.id||menuNode.id===pages.active.id} canPaste={Boolean(editorClipboard.fragment?.roots.every((node)=>canContain(CONTAINER_TYPES.has(menuNode.type)?menuNode:nodes.get(parents.get(menuNode.id)),node)))} canWrap={Boolean(parents.get(menuNode.id)&&canContain(nodes.get(parents.get(menuNode.id)),{type:'Stack'})&&canContain({type:'Stack'},menuNode))} hasStyles={Boolean(editorClipboard.styles)} onAction={menuAction} onClose={()=>setLayerMenu(null)}/>}
-    {libraryOpen && <div className="modal-backdrop"><section className="modal ne-library" role="dialog" aria-label="组件库"><header><h2>组件库</h2><button className="ne-icon" title="关闭组件库" onClick={() => setLibraryOpen(false)}><X size={18} /></button></header><div className="ne-library-body"><Field label="组件名称"><input value={libraryName} maxLength={40} onChange={(event) => setLibraryName(event.target.value)} /></Field><button className="secondary" onClick={saveLibrary}><Save size={16} />保存当前组件</button>{library.map((record) => <div className="ne-library-row" key={record.id}><span>{record.name} · {COMPONENT_NAMES[record.node.type]}</span><button className="secondary" disabled={!canContain(insertionParent, record.node)} onClick={() => { const node = cloneComponent(record.node); setDocument((current) => insertComponent(current, insertionParent.id, node)); setSelectedId(node.id); setLibraryOpen(false); }}>插入</button><button className="ne-icon danger" title={`删除 ${record.name}`} onClick={() => { const next = library.filter((item) => item.id !== record.id); try { localStorage.setItem(libraryKey, JSON.stringify(next)); setLibrary(next); } catch { setStatus('组件库保存失败'); } }}><Trash2 size={16} /></button></div>)}</div></section></div>}
+    {libraryOpen && <div className="modal-backdrop"><section className="modal ne-library" role="dialog" aria-label="组件库"><header><h2>组件库</h2><button className="ne-icon" title="关闭组件库" onClick={() => setLibraryOpen(false)}><X size={18} /></button></header><div className="ne-library-body"><Field label="组件名称"><input value={libraryName} maxLength={40} onChange={(event) => setLibraryName(event.target.value)} /></Field><button className="secondary" onClick={saveLibrary}><Save size={16} />保存当前组件</button>{library.map((record) => <div className="ne-library-row" key={record.id}><span>{record.name} · {COMPONENT_NAMES[record.node.type]}</span><button className="secondary" disabled={!canContain(insertionParent, record.node)} onClick={() => { const node = cloneComponent(record.node); setDocument((current) => withFontResources(insertComponent(current, insertionParent.id, node),record.fonts)); setSelectedId(node.id); setLibraryOpen(false); }}>插入</button><button className="ne-icon danger" title={`删除 ${record.name}`} onClick={() => { const next = library.filter((item) => item.id !== record.id); try { localStorage.setItem(libraryKey, JSON.stringify(next)); setLibrary(next); } catch { setStatus('组件库保存失败'); } }}><Trash2 size={16} /></button></div>)}</div></section></div>}
   </div>;
 }
 function findPackage(id, nodes, parents) { let current = nodes.get(id); while (current) { if (current.type === 'Package') return current; current = nodes.get(parents.get(current.id)); } return null; }

@@ -11,6 +11,9 @@ import { actionLink,customCheckoutLink } from './actionLinks.js';
 import {isGradient,gradientWithOpacity} from './colorModel.js';
 import TablerGlyph,{parseTablerIcon} from './TablerGlyph.jsx';
 import CustomComponentPreview from './CustomComponentPreview.jsx';
+import {safeTextLink,richTextFontFamily} from './richTextModel.js';
+import {textRuleProps} from './textRules.js';
+import {fontStyles} from './fontStyles.js';
 
 const PreviewContext = createContext(null);
 const TimerContext = createContext(null);
@@ -27,9 +30,10 @@ export function componentStyle(node) {
     width: props.widthMode === 'fill' && horizontalMargin ? `calc(100% - ${horizontalMargin}px)` : dimension(props.widthMode, props.width), height: props.heightMode === 'fixed' ? dimension('fixed', props.height) : props.heightMode === 'fill' ? '100%' : undefined,
     minWidth: props.widthMode === 'fill' && props.minWidth > 0 ? props.minWidth : 0, maxWidth: props.widthMode === 'fill' && props.maxWidth > 0 ? props.maxWidth : undefined, flexShrink: 0, boxSizing: 'border-box',
     minHeight: props.minHeight > 0 ? props.minHeight : undefined, maxHeight: props.maxHeight > 0 ? props.maxHeight : undefined, background: props.fillEnabled === false ? 'transparent' : paintColor(props.background, props.backgroundOpacity),
-    color: isGradient(props.color)?'inherit':paintColor(props.color, props.colorOpacity), flexGrow: props.flexGrow, fontSize: numeric('fontSize', 14), lineHeight: props.lineHeight, fontWeight: props.bold ? 700 : props.fontWeight, fontStyle: props.italic ? 'italic' : undefined, fontFamily: props.fontFamily === 'serif' ? 'Georgia, serif' : props.fontFamily === 'mono' ? 'ui-monospace, monospace' : undefined,
+    color: isGradient(props.color)?'inherit':paintColor(props.color, props.colorOpacity), flexGrow: props.flexGrow, fontSize: numeric('fontSize', 14), lineHeight: props.lineHeight, fontWeight: props.bold ? 700 : props.fontWeight, fontStyle: props.italic ? 'italic' : undefined, fontFamily: richTextFontFamily(props.fontFamily),
     textAlign: props.textAlign, opacity: node.type === 'Icon' ? 1 : numeric('opacity', 100) / 100, borderRadius: cornerRadius(props),
-    border: props.borderEnabled !== false && props.borderWidth ? `${numeric('borderWidth')}px solid ${paintColor(props.borderColor, props.borderOpacity)}` : undefined,
+    border: props.borderEnabled !== false && props.borderWidth ? `${numeric('borderWidth')}px solid ${isGradient(props.borderColor)?'transparent':paintColor(props.borderColor, props.borderOpacity)}` : undefined,
+    ...(props.borderEnabled!==false&&props.borderWidth&&isGradient(props.borderColor)?{'--nc-border-gradient':gradientWithOpacity(props.borderColor,props.borderOpacity),'--nc-border-width':`${numeric('borderWidth')}px`}:{}),
     boxShadow: props.shadowEnabled !== false && (props.shadowBlur || props.shadowX || props.shadowY) ? `${numeric('shadowX')}px ${numeric('shadowY')}px ${numeric('shadowBlur')}px ${paintColor(props.shadowColor ?? '#000000', props.shadowOpacity)}` : undefined,
     padding: props.paddingMode === 'individual' ? ['Top', 'Right', 'Bottom', 'Left'].map((side) => `${numeric(`padding${side}`)}px`).join(' ') : `${numeric('paddingVertical', numeric('paddingTop'))}px ${numeric('paddingHorizontal', numeric('paddingRight'))}px`,
     margin: props.marginMode === 'individual' ? ['Top', 'Right', 'Bottom', 'Left'].map((side) => `${numeric(`margin${side}`)}px`).join(' ') : `${numeric('marginVertical', numeric('marginTop'))}px ${numeric('marginHorizontal', numeric('marginRight'))}px`,
@@ -52,7 +56,16 @@ function ComponentBadge({node,document,packageNode,timer}){
   if(!(p.badgeEnabled??Boolean(p.badge)))return null;
   const badge={...BADGE_DEFAULTS,...p.badge},bottom=badge.position.startsWith('bottom'),side=badge.position.split('-')[1];
   const content=interpolateVariables(badge.text,document,packageNode,timer);
-  return <span data-badge-owner={node.id} style={{...componentStyle({type:'Text',props:badge,children:[]}),position:'absolute',zIndex:3,...(bottom?{bottom:0}:{top:0}),...(side==='center'?{left:'50%'}:side==='right'?{right:0}:{left:0}),transform:`translate(${side==='center'?'-50%':'0'},${badge.positionStyle==='overlay'?(bottom?'50%':'-50%'):'0'})`,maxWidth:'100%',whiteSpace:'pre-wrap',overflowWrap:'anywhere',pointerEvents:'none'}}><span style={textPaintStyle(badge.color,badge.colorOpacity)}>{content}</span></span>;
+  const rich=richTextContent({p:badge,value:content,document,packageNode,timer,editing:true});
+  return <span className="nc-badge" data-badge-owner={node.id} style={{...componentStyle({type:'Text',props:{...badge,textBackground:'transparent'},children:[]}),position:'absolute',zIndex:3,...(bottom?{bottom:0}:{top:0}),...(side==='center'?{left:'50%'}:side==='right'?{right:0}:{left:0}),transform:`translate(${side==='center'?'-50%':'0'},${badge.positionStyle==='overlay'?(bottom?'50%':'-50%'):'0'})`,maxWidth:'100%',whiteSpace:'pre-wrap',overflowWrap:'anywhere',pointerEvents:'none'}}><span style={{background:paintColor(badge.textBackground,badge.textBackgroundOpacity),textDecoration:badge.runs?.length?undefined:textDecoration(badge.strike,badge.underline)}}>{isGradient(badge.color)?<span style={textPaintStyle(badge.color,badge.colorOpacity)}>{rich}</span>:rich}</span></span>;
+}
+const textDecoration=(strike,underline)=>[strike&&'line-through',underline&&'underline'].filter(Boolean).join(' ')||undefined;
+function richTextContent({p,value,document,packageNode,timer,editing}) {
+  if(!p.runs?.length||p.binding)return value;
+  return p.runs.map((run,index)=>{
+    const href=safeTextLink(run.link),Tag=href?'a':'span';
+    return <React.Fragment key={index}>{run.breakBefore&&<br/>}<Tag {...(href?{href,target:'_blank',rel:'noopener noreferrer',tabIndex:editing?-1:undefined,onClick:(event)=>{if(editing)event.preventDefault();else event.stopPropagation();}}:{})} style={{...textPaintStyle(run.color??(href?'inherit':undefined),run.colorOpacity??p.colorOpacity),fontSize:run.fontSize?Number.parseFloat(run.fontSize):undefined,fontWeight:run.fontWeight??(run.bold===false?400:run.bold?700:undefined),fontStyle:(run.italic??p.italic)?'italic':'normal',fontFamily:run.code?'ui-monospace, monospace':richTextFontFamily(run.fontFamily),backgroundColor:run.backgroundColor,textDecoration:textDecoration(run.strikethrough??p.strike,(run.underline??p.underline)||Boolean(href))}}>{interpolateVariables(run.text,document,packageNode,timer)}</Tag></React.Fragment>;
+  });
 }
 function PageSequence({ node, context, props, attributes, style, children }) {
   const pages = sequencePages(node), count = pages.length;
@@ -105,7 +118,7 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
   const timer = useContext(TimerContext);
   const sequence=useContext(CarouselContext);
   const { document, selectedId, onSelect, editing, runtime, setRuntime, runAction } = context;
-  const baseProps = componentProps(node);
+  const baseProps = node.type==='Text'?textRuleProps(componentProps(node),runtime.textRule):componentProps(node);
   const group = baseProps.group ?? node.id;
   const packageSelected = runtime[`package:${group}`] !== undefined ? runtime[`package:${group}`] === node.id : Boolean(baseProps.defaultSelected);
   const owner = selectionOwner(node, context.nodeIndex, context.parentIndex);
@@ -115,7 +128,7 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
   const ownerSelected = owner?.type === 'TabButton' ? (runtime[ownerProps.target] ?? context.nodeIndex.get(ownerProps.target)?.props.defaultIndex ?? 0) === ownerProps.index : runtime[`package:${selectedGroup}`] !== undefined ? runtime[`package:${selectedGroup}`] === owner?.id : Boolean(ownerProps.defaultSelected);
   const previewState = editing && selectedOwner?.id === owner?.id ? runtime[`package-style:${owner?.id}`] : null;
   const stateSelected = previewState ? previewState === 'selected' : ownerSelected;
-  const visualNode = owner ? { ...node, props: stateStyleProps(baseProps, stateSelected) } : node;
+  const visualNode = { ...node, props: owner ? stateStyleProps(baseProps, stateSelected) : baseProps };
   const props = componentProps(visualNode);
   if (props.hidden || (['overlay','sheet'].includes(props.presentation) && !floating)) return null;
   if (props.visibleWhen && Boolean(runtime[props.visibleWhen.id] ?? context.nodeIndex.get(props.visibleWhen.id)?.props.initial) !== props.visibleWhen.value) return null;
@@ -132,11 +145,11 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
     return <button {...attributes} key={page.id} type="button" data-indicator-index={index} title={`第 ${index+1} 页`} aria-label={`第 ${index+1} 页`} aria-current={index===sequence.chosen?'true':undefined} style={{...dotStyle,display:'block',padding:0,margin:0,borderRadius:'50%',cursor:'pointer'}} onClick={(event)=>{event.stopPropagation();if(editing)onSelect(node.id);else setRuntime((current)=>({...current,[sequence.id]:index}));}}/>;
   })}</>;
   if (node.type === 'Text') {
-    const value = props.timerField && timer ? timer[props.timerField] ?? '' : interpolateVariables(resolveComponentText(node, document, currentPackage), document, variablePackage, timer);
+    const value = props.timerField && timer ? timer[props.timerField] ?? '' : interpolateVariables(resolveComponentText(visualNode, document, currentPackage), document, variablePackage, timer);
     if (node.props.binding && !value) return null;
-    const decoration = (strike, underline) => [strike && 'line-through', underline && 'underline'].filter(Boolean).join(' ') || undefined;
-    const content=node.props.runs?.length && !node.props.binding ? node.props.runs.map((run, index) => <React.Fragment key={index}>{run.breakBefore && <br />}<span style={{ ...textPaintStyle(run.color,run.colorOpacity??props.colorOpacity), fontSize: run.fontSize ? Number(run.fontSize) : undefined, fontWeight: run.fontWeight ?? (run.bold ? 700 : undefined), fontStyle: run.italic ? 'italic' : undefined, textDecoration: decoration(run.strikethrough, run.underline || run.link !== undefined) }} onClick={!editing && /^https?:\/\//i.test(run.link ?? '') ? (event) => { event.stopPropagation(); window.open(run.link, '_blank', 'noopener,noreferrer'); } : undefined}>{interpolateVariables(run.text, document, variablePackage, timer)}</span></React.Fragment>) : value;
-    return <div {...attributes} style={{ ...style, textDecoration: decoration(props.strike, props.underline), whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', lineHeight: props.lineHeight ?? 1.35 }}>{isGradient(props.color)?<span style={textPaintStyle(props.color,props.colorOpacity)}>{content}</span>:content}</div>;
+    const rich = Boolean(props.runs?.length && !props.binding);
+    const content=richTextContent({p:props,value,document,packageNode:variablePackage,timer,editing});
+    return <div {...attributes} style={{ ...style, textDecoration: rich ? undefined : textDecoration(props.strike, props.underline), whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', lineHeight: props.lineHeight ?? 1.35 }}>{isGradient(props.color)?<span style={textPaintStyle(props.color,props.colorOpacity)}>{content}</span>:content}</div>;
   }
   if (node.type === 'Image' || node.type === 'Video') {
     const src = safeMediaSource(props.src);
@@ -283,5 +296,5 @@ export default function ComponentPreview({ document, selectedId, onSelect, editi
   const {nodes:nodeIndex,parents:parentIndex} = indexDocument(document), overlay = nodeIndex.get(runtime.overlay);
   const packages = activeComponents(document,runtime).filter((item)=>item.type==='Package');
   const selectedPackage = packages.find((item)=>item.id===runtime.selectedPackage) ?? packages.find((item)=>runtime[`package:${item.props.group??item.id}`]===item.id) ?? packages.find((item)=>item.props.defaultSelected && runtime[`package:${item.props.group??item.id}`]===undefined);
-  return <PreviewContext.Provider value={{ document, nodeIndex, parentIndex, selectedId, onSelect, editing, runtime, setRuntime, runAction, onStatus, selectedPackage,packages }}><div className="phone native-phone"><div className="nc-viewport" ref={viewport}><div className="nc-design" style={{ zoom: scale }}><NativeComponent node={document.root} /></div></div>{overlay && <div className="nc-floating-overlay"><div className="nc-floating-backdrop" onClick={()=>setRuntime((current)=>({...current,overlay:null}))}/><div className="nc-floating-design" style={{zoom:scale,height:(viewport.current?.clientHeight??844)/scale}}><NativeComponent node={overlay} floating/></div></div>}{runtime.webLink && <div className="nc-web-preview" role="dialog" aria-label="网页预览"><header><span>{runtime.webLink.title}</span><button type="button" aria-label="关闭网页预览" title="关闭网页预览" onClick={()=>setRuntime((current)=>({...current,webLink:null}))}><X size={18}/></button></header><iframe title="网页预览内容" src={runtime.webLink.url} sandbox="allow-scripts allow-forms allow-popups" referrerPolicy="no-referrer"/></div>}</div></PreviewContext.Provider>;
+  return <PreviewContext.Provider value={{ document, nodeIndex, parentIndex, selectedId, onSelect, editing, runtime, setRuntime, runAction, onStatus, selectedPackage,packages }}><style>{fontStyles(document.fonts)}</style><div className="phone native-phone"><div className="nc-viewport" ref={viewport}><div className="nc-design" style={{ zoom: scale }}><NativeComponent node={document.root} /></div></div>{overlay && <div className="nc-floating-overlay"><div className="nc-floating-backdrop" onClick={()=>setRuntime((current)=>({...current,overlay:null}))}/><div className="nc-floating-design" style={{zoom:scale,height:(viewport.current?.clientHeight??844)/scale}}><NativeComponent node={overlay} floating/></div></div>}{runtime.webLink && <div className="nc-web-preview" role="dialog" aria-label="网页预览"><header><span>{runtime.webLink.title}</span><button type="button" aria-label="关闭网页预览" title="关闭网页预览" onClick={()=>setRuntime((current)=>({...current,webLink:null}))}><X size={18}/></button></header><iframe title="网页预览内容" src={runtime.webLink.url} sandbox="allow-scripts allow-forms allow-popups" referrerPolicy="no-referrer"/></div>}</div></PreviewContext.Provider>;
 }
