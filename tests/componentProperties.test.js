@@ -680,6 +680,58 @@ test('layer tree uses one readable label, explicit indentation and inline expans
   } finally {if(editor){await act(async()=>editor.unmount());mounted.delete(editor);}globalThis.localStorage=previousStorage;globalThis.window=previousWindow;}
 });
 
+test('alignment always has three standard options while legacy stretch stays unchanged until explicitly replaced',async()=>{
+  const h=await mount(component('sample','Stack','旧容器',{align:'stretch'},[component('child','Icon','图标',{widthMode:'fixed',heightMode:'fixed',width:26,height:26})]));
+  const alignment=()=>h.renderer.root.findAll(item=>item.type==='label'&&item.props.className==='rc-field'&&item.children.some(child=>typeof child==='object'&&child.type==='span'&&child.children.join('')==='对齐'))[0];
+  assert.equal(alignment().findAllByType('button').length,3);
+  assert.equal(h.node().props.style.alignItems,'stretch');
+  assert.equal(h.document().root.children[0].props.align,'stretch');
+  for(const [choice,value] of [['末尾','flex-end'],['居中','center'],['起始','flex-start']]){
+    await h.segment('对齐',choice);assert.equal(alignment().findAllByType('button').length,3);assert.equal(h.node().props.style.alignItems,value);
+  }
+  await h.close();
+});
+
+test('all six distribution choices map to separate main-axis CSS values, not cross-axis alignment',async()=>{
+  const h=await mount(component('sample','Stack','布局',{heightMode:'fixed',height:300,widthMode:'fixed',width:300,align:'start'},[component('a','Icon','图标',{width:26,height:26}),component('b','Icon','图标',{width:26,height:26})]));
+  for(const [value,css] of [['start','flex-start'],['center','center'],['end','flex-end'],['between','space-between'],['around','space-around'],['evenly','space-evenly']]){
+    await h.select('分布',value);assert.equal(h.node().props.style.justifyContent,css);assert.equal(h.node().props.style.alignItems,'flex-start');
+  }
+  await h.segment('轴向','横向');assert.equal(h.node().props.style.flexDirection,'row');
+  await h.segment('轴向','叠放');assert.equal(h.node().props.style.display,'grid');assert.equal(h.renderer.root.findAll(item=>item.type==='select'&&item.props['aria-label']==='分布').length,0);
+  await h.close();
+});
+
+test('vertical Fill uses remaining flex space only under a bounded main axis and never rewrites saved dimensions',async()=>{
+  const sample=component('sample','Stack','父容器',{heightMode:'fixed',height:300,gap:10},[
+    component('fixed','Stack','固定子项',{heightMode:'fixed',height:26}),
+    component('fill','Stack','填满子项',{heightMode:'fill',minHeight:30,maxHeight:280}),
+  ]);
+  const h=await mount(sample);
+  assert.equal(h.node('fill').props.style.height,0);assert.equal(h.node('fill').props.style.flexGrow,1);assert.equal(h.node('fill').props.style.flexShrink,1);
+  assert.equal(h.node('fill').props.style.minHeight,30);assert.equal(h.node('fill').props.style.maxHeight,280);
+  assert.equal(h.document().root.children[0].children[1].props.heightMode,'fill');
+  await h.segment('高度','适应内容');assert.equal(h.node('fill').props.style.height,'100%');assert.equal(h.node('fill').props.style.flexGrow,undefined);
+  await h.segment('高度','固定');await h.segment('轴向','横向');assert.equal(h.node('fill').props.style.height,'100%');
+  await h.close();
+});
+
+test('existing fit-width constraints remain effective while new constraints are added only through Fill',async()=>{
+  const h=await mount(component('sample','Text','文字',{text:'短文案',widthMode:'fit',minWidth:80,maxWidth:200}));
+  assert.equal(h.node().props.style.minWidth,80);assert.equal(h.node().props.style.maxWidth,200);
+  await h.change('最小宽度',100);assert.equal(h.node().props.style.minWidth,100);
+  await h.close();
+});
+
+test('image overlay accepts a gradient as a background paint, not an invalid CSS foreground color',async()=>{
+  const previousCSS=globalThis.CSS;globalThis.CSS={supports:(property,value)=>!String(value).includes('gradient(')||property==='background'};
+  let h;
+  try{h=await mount(component('sample','Image','图片',{src:'/test.png',overlayEnabled:true,overlayColor:'#000000'}));
+    const gradient='linear-gradient(90deg, #ffffff 0%, #000000 100%)';await h.change('叠加层颜色值',gradient);
+    assert.equal(h.document().root.children[0].props.overlayColor,gradient);assert.equal(h.node().findAll(item=>item.type==='span'&&String(item.props['aria-hidden'])==='true')[0].props.style.background,gradient);
+  }finally{if(h)await h.close();globalThis.CSS=previousCSS;}
+});
+
 test('actual editor selection, configuration, auto-save and reopen keep the same text and layout values', async () => {
   const previousStorage = globalThis.localStorage, previousWindow = globalThis.window;
   const records = new Map();
@@ -1030,6 +1082,16 @@ test('offer contexts never expose inactive legacy product-binding controls or al
   assert.equal(h.renderer.root.findAll(item=>item.type==='select'&&item.props['aria-label']==='商品字段').length,0);
   assert.equal(h.renderer.root.findAll(item=>item.type==='button'&&item.children.join('')==='转为独立文字').length,0);
   await h.change('字号','17');assert.deepEqual(h.document().root.children[0].props.binding,{key:'sample',field:'price'});assert.equal(h.node().props.style.fontSize,17);await h.close();
+});
+
+test('an offer may override bound price copy while its default SKU binding and format-only overrides remain intact',async()=>{
+  await server.ssrLoadModule('/src/builder/RichTextEditor.jsx');
+  const h=await mount(component('sample','Text','商品价格',{binding:{key:'sample',field:'price'}}));
+  await h.select('文字规则','introductory');await h.change('字号','17');assert.deepEqual(h.node().children,['¥100']);
+  await h.change('文字内容','首次优惠价格');assert.deepEqual(h.node().children,['首次优惠价格']);
+  assert.equal(h.document().root.children[0].props.textRules.introductory.contentOverridden,true);assert.deepEqual(h.document().root.children[0].props.binding,{key:'sample',field:'price'});
+  await h.select('文字规则','default');assert.deepEqual(h.node().children,['¥100']);assert.equal(h.document().products.sample.price,'¥100');
+  await h.select('文字规则','introductory');assert.deepEqual(h.node().children,['首次优惠价格']);await h.close();
 });
 
 test('badge rich text, text background and frame fill each have one independent configuration owner',async()=>{

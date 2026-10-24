@@ -38,6 +38,7 @@
 .rc-icon-segmented button{display:flex;align-items:center;justify-content:center;flex:1 1 0;min-width:0;min-height:0;padding:0;border:0;border-radius:7px;color:#60606d}
 .rc-icon-segmented button svg{width:17px;height:17px}
 .rc-icon-segmented button.active{background:#586bdf;color:#fff}
+.rc-legacy-alignment{margin:-5px 0 12px 78px;font-size:11px;color:#777780}
 .rc-layout-section .rc-unit-input,.rc-spacing-values .rc-unit-input{height:34px;border:1px solid #dedde1;border-radius:8px;background:#fff;box-sizing:border-box;overflow:hidden}
 .rc-layout-section .rc-unit-input{max-width:120px;justify-self:end}
 .rc-layout-section .rc-unit-input input,.rc-spacing-values .rc-unit-input input{height:32px;min-height:0;border:0;border-radius:0;font-size:13px;padding:0 6px;appearance:textfield}

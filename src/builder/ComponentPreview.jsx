@@ -4,7 +4,7 @@ import Fade from 'embla-carousel-fade';
 import { Check, LockKeyhole, Star, Bell, Moon, Heart, Users, Clock3, Gift, ChevronRight, Dumbbell, Download, MapPin, Flower2, Activity, Ticket, Ban, Blocks, Archive, Shirt, Armchair, ScanSearch, CircleHelp, LogIn, PersonStanding, X } from 'lucide-react';
 import { componentProps, resolveComponentText, indexDocument } from './componentDocument.js';
 import { isUnconfiguredDetailPage } from './componentTree.js';
-import { stateStyleProps, countdownSeconds, checkedControl, activeComponents, countdownValues, countdownDeadline, imageMask, paintColor, cornerRadius, selectionOwner, sequencePages, BADGE_DEFAULTS } from './propertyModel.js';
+import { stateStyleProps, countdownSeconds, checkedControl, activeComponents, countdownValues, countdownDeadline, imageMask, paintColor, cornerRadius, selectionOwner, sequencePages, BADGE_DEFAULTS, mainAxisFillStyle } from './propertyModel.js';
 import { interpolateVariables } from './textVariables.js';
 import { TimelinePreview, TimelineItemPreview } from './TimelinePreview.jsx';
 import { actionLink,customCheckoutLink } from './actionLinks.js';
@@ -28,7 +28,7 @@ export function componentStyle(node) {
   const horizontalMargin = props.marginMode === 'individual' ? numeric('marginLeft') + numeric('marginRight') : 2 * numeric('marginHorizontal');
   return {
     width: props.widthMode === 'fill' && horizontalMargin ? `calc(100% - ${horizontalMargin}px)` : dimension(props.widthMode, props.width), height: props.heightMode === 'fixed' ? dimension('fixed', props.height) : props.heightMode === 'fill' ? '100%' : undefined,
-    minWidth: props.widthMode === 'fill' && props.minWidth > 0 ? props.minWidth : 0, maxWidth: props.widthMode === 'fill' && props.maxWidth > 0 ? props.maxWidth : undefined, flexShrink: 0, boxSizing: 'border-box',
+    minWidth: props.minWidth > 0 ? props.minWidth : 0, maxWidth: props.maxWidth > 0 ? props.maxWidth : undefined, flexShrink: 0, boxSizing: 'border-box',
     minHeight: props.minHeight > 0 ? props.minHeight : undefined, maxHeight: props.maxHeight > 0 ? props.maxHeight : undefined, background: props.fillEnabled === false ? 'transparent' : paintColor(props.background, props.backgroundOpacity),
     color: isGradient(props.color)?'inherit':paintColor(props.color, props.colorOpacity), flexGrow: props.flexGrow, fontSize: numeric('fontSize', 14), lineHeight: props.lineHeight, fontWeight: props.bold ? 700 : props.fontWeight, fontStyle: props.italic ? 'italic' : undefined, fontFamily: richTextFontFamily(props.fontFamily),
     textAlign: props.textAlign, opacity: node.type === 'Icon' ? 1 : numeric('opacity', 100) / 100, borderRadius: cornerRadius(props),
@@ -135,7 +135,10 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
   const currentPackage = node.type === 'Package' ? node : packageNode;
   const variablePackage = currentPackage ?? context.selectedPackage;
   const select = (event) => { if (editing) { event.stopPropagation(); onSelect(node.id); } };
-  const style = { ...componentStyle(visualNode), ...layoutStyle };
+  const parentNode=context.nodeIndex.get(context.parentIndex.get(node.id));
+  const parentOwner=parentNode&&selectionOwner(parentNode,context.nodeIndex,context.parentIndex);
+  const parentProps=parentNode?componentProps({...parentNode,props:parentOwner?.id===owner?.id&&owner?stateStyleProps(parentNode.props,stateSelected):parentNode.props}):null;
+  const style = { ...componentStyle(visualNode), ...mainAxisFillStyle(props,parentProps), ...layoutStyle };
   const attributes = { 'data-component-id': node.id, 'data-component-type': node.type, 'data-axis': props.axis, 'data-width': props.widthMode, 'data-height': props.heightMode, className: `nc-node nc-${node.type.toLowerCase()} ${props.presentation === 'overlay' ? 'nc-overlay' : ''} ${editing && selectedId === node.id ? 'nc-inspected' : ''}`, style, onClick: select };
   const children = (items = node.children, background = true) => <>{background && <BackgroundVideo props={props} />}{items.map((child) => <NativeComponent key={child.id} node={child} packageNode={currentPackage} />)}{background&&<ComponentBadge node={visualNode} document={document} packageNode={variablePackage} timer={timer}/>}</>;
   if(node.type==='PageControl')return <div {...attributes} style={{...style,width:'auto',height:'auto',display:'flex',justifyContent:'center',alignItems:'center',gap:props.gap}}>{children()}</div>;

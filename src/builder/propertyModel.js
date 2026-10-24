@@ -141,6 +141,11 @@ export function effectiveFillType(props) {
   return props.fillType ?? (props.backgroundVideo ? 'video' : props.backgroundImage ? 'image' : 'color');
 }
 
+export function mainAxisFillStyle(props,parentProps) {
+  if(props.heightMode!=='fill'||parentProps?.axis!=='vertical'||!['fixed','fill'].includes(parentProps.heightMode))return {};
+  return {height:0,flexBasis:'0%',flexGrow:props.flexGrow??1,flexShrink:1};
+}
+
 export function checkedControl(props, id, runtime, nodes) {
   return props.switchTarget ? (runtime[props.switchTarget] ?? nodes.get(props.switchTarget)?.props.defaultIndex ?? 0) === 1 : Boolean(runtime[id] ?? props.initial);
 }

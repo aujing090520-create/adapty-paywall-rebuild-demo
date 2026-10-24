@@ -30,7 +30,7 @@ function NumberField({ label, value, onChange, min = 0, max = 2000, unit = 'px',
 function ColorField({ label, value, onChange, opacity=100, onPaintChange, opacityReadOnly=false }) {
   const [draft, setDraft] = React.useState(value ?? 'transparent');
   const [anchor,setAnchor]=React.useState(null);
-  const allowGradient=label.includes('背景')||label.endsWith('文字颜色')||label.endsWith('边框颜色');
+  const allowGradient=label.includes('背景')||label.endsWith('文字颜色')||label.endsWith('边框颜色')||label==='叠加层颜色';
   React.useEffect(() => setDraft(value ?? 'transparent'), [value]);
   const valid = draft.trim() !== '' && (typeof CSS === 'undefined' || CSS.supports(allowGradient ? 'background' : 'color', draft));
   const close=React.useCallback(()=>setAnchor(null),[]);
@@ -122,7 +122,7 @@ function ContentSection({ selected, p, patch, document, nodes, parents, findPack
     while (owner && owner.type !== 'Countdown') owner = nodes.get(parents.get(owner.id));
     return <PropertySection title="文字属性">
       {rule==='default' && owner && p.timerField && <Select label="倒计时字段（旧模板）" value={p.timerField} options={[[ 'none', '普通文字' ], ...[['days','天'],['hours','小时'],['minutes','分钟'],['seconds','秒']].flatMap(([key, label]) => [[key, `${label}（补零）`], [`${key}WithoutZero`, `${label}（不补零）`]])]} onChange={(value) => patch({ timerField: value === 'none' ? null : value, ...(value !== 'none' ? { binding: null, runs: null } : {}) })} />}
-      {!p.timerField && (p.binding ? <Field label="文字内容"><textarea aria-label="文字内容" value={resolveText(selected, document, findPackage(selected.id, nodes, parents))} readOnly/></Field> : <React.Suspense fallback={<div className="rc-rich-loading">加载文字编辑器</div>}><RichTextEditor key={selected.id} aria-label="文字内容" p={p} value={resolveText({...selected,props:p},document)} onChange={patch} variables={[...PRODUCT_TEXT_VARIABLES,...(owner?TIMER_TEXT_VARIABLES:[])]}/></React.Suspense>)}
+      {!p.timerField && (rule==='default'&&p.binding ? <Field label="文字内容"><textarea aria-label="文字内容" value={resolveText(selected, document, findPackage(selected.id, nodes, parents))} readOnly/></Field> : <React.Suspense fallback={<div className="rc-rich-loading">加载文字编辑器</div>}><RichTextEditor key={selected.id} aria-label="文字内容" p={p} value={resolveText({...selected,props:p},document,findPackage(selected.id,nodes,parents))} onChange={patch} variables={[...PRODUCT_TEXT_VARIABLES,...(owner?TIMER_TEXT_VARIABLES:[])]}/></React.Suspense>)}
       {rule==='default' && p.binding && <><Select label="商品字段" value={p.binding.field} options={Object.entries(fieldNames)} onChange={(field) => patch({ binding: { ...p.binding, field } })} /><button type="button" className="rc-secondary" onClick={() => patch({ binding: null, runs: null, text: resolveText(selected, document, findPackage(selected.id, nodes, parents)) })}>转为独立文字</button></>}
     </PropertySection>;
   }
@@ -152,7 +152,8 @@ function LayoutSection({ selected, p, patch, parent }) {
   return <>
     {isContainer && <PropertySection title="布局" className="rc-layout-section">
       <SegmentedField label="轴向" value={p.axis} icon options={[[ 'horizontal', '横向', ArrowRight ], [ 'vertical', '纵向', ArrowDown ], [ 'overlay', '叠放', Layers3 ]]} onChange={(axis) => patch({ axis })} />
-      <SegmentedField label="对齐" value={p.align} icon options={[[ 'start', '起始', p.axis === 'horizontal' ? AlignStartVertical : AlignStartHorizontal ], [ 'center', '居中', p.axis === 'horizontal' ? AlignCenterVertical : AlignCenterHorizontal ], [ 'end', '末尾', p.axis === 'horizontal' ? AlignEndVertical : AlignEndHorizontal ], ...(p.align === 'stretch' ? [[ 'stretch', '拉伸（旧模板）', Layers3 ]] : [])]} onChange={(align) => patch({ align })} />
+      <SegmentedField label="对齐" value={p.align} icon options={[[ 'start', '起始', p.axis === 'horizontal' ? AlignStartVertical : AlignStartHorizontal ], [ 'center', '居中', p.axis === 'horizontal' ? AlignCenterVertical : AlignCenterHorizontal ], [ 'end', '末尾', p.axis === 'horizontal' ? AlignEndVertical : AlignEndHorizontal ]]} onChange={(align) => patch({ align })} />
+      {p.align==='stretch'&&<div className="rc-legacy-alignment" role="status">当前对齐：拉伸（旧配置）</div>}
       {p.axis !== 'overlay' && <><Select label="分布" value={p.justify} options={[[ 'between', '两端分布' ], [ 'around', '各项两侧均分' ], [ 'evenly', '各项等距' ], [ 'start', '起始' ], [ 'center', '居中' ], [ 'end', '末尾' ]]} onChange={(justify) => patch({ justify })} /><NumberField label="子项间距" value={p.gap} max={200} onChange={(gap) => patch({ gap })} /></>}
       {p.wrap && p.axis === 'horizontal' && <SegmentedField label="换行（旧模板）" value="yes" options={[[ 'no', '不换行' ], [ 'yes', '换行' ]]} onChange={(value) => patch({ wrap: value === 'yes' })} />}
     </PropertySection>}
