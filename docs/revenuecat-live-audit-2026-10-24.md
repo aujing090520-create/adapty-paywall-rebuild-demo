@@ -80,3 +80,12 @@
 - 在同一localhost文件上实际读取到“商品”“请选择商品”“展开详情”；开启交互预览后展开显示“随时管理订阅”“查看当前商品权益”，高度从124.37px增至197.64px。截图：test-results/custom-zip-fixed-20261024.jpg。没有重传文件或改四张HT模板。
 - 当前自动化测试208/208通过，无跳过；构建1.89秒；git diff --check通过。此段替代上文示例上传未验收的旧状态，不覆盖其他未完成项。
 - 当前支持自包含HTML、普通脚本、相对静态/字面量动态模块导入、CSS引用、图片/字体/媒体。外部资源、计算型模块路径、import.meta、额外importmap、srcset明确提示不支持；脚本运行时生成的资源请求不作完整支持承诺。样例通过不等价RevenueCat原生SDK或任意网页ZIP均可运行。
+
+## 线上示例 ZIP 验收闭环
+
+- 环境：原生产主域名，Codex 内部浏览器，test 空白测试页。用户实际选择 example.zip 后，文件名及预览均显示；不将自动上传门槛被拒绝记为上传通过。
+- 真实操作：点击交互预览，再点展开详情，显示“随时管理订阅”“查看当前商品权益”。读取 iframe 行内高度204px、渲染高度110.89px，sandbox仍为allow-scripts。
+- 收起详情后，iframe行内高度恢复130px、渲染高度70.66px。以上行内值是设计尺寸，渲染值包含当前手机预览缩放，不混为字体或组件参数。
+- 刷新整个页面后从列表重新进入同一test构建器，示例重新显示；选中Custom后右侧仍是example.zip及替换ZIP/移除ZIP，无需再次上传。
+- 实际截图：test-results/online-custom-zip-expanded-20261024.png、online-custom-zip-reopened-20261024.png、online-custom-zip-verified-20261024.png。
+- 结论：RC-02的示例上传、显示、展开/收起、自动高度、刷新恢复闭环通过，WB-20261024-custom-preview-blank的本例交付阻塞关闭。外部Chrome及自动上传许可不宣称修复；更多ZIP资源组合、其他组件核对及完整RevenueCat等价仍按未完成项保留。未改四张HT模板或应用代码，未重跑未被新改动影响的构建与部署。
