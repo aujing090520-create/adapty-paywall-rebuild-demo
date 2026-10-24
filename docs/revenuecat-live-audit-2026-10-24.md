@@ -101,3 +101,10 @@
 - 本地真实交互：选中Alpha加粗/下划线/链接，Beta不变；全局22px/123456生效，撤销/重做正确；整页刷新重进后格式、链接和优惠18px分支保留。徽标SAVE 30%变700字重，文字白底与框体粉底分开生效；渐变描边实际绘出、圆角20、设计高度100不变。两张自建测试节点已删除，空白测试页恢复只有Screen；不动生产ZIP样例和四张HT。
 - 证据：test-results/local-rich-text-verified-20261024.png、local-offer-text-verified-20261024.png、local-font-manager-20261024.png、local-badge-gradient-border-20261024.png。截图均为HTTP运行页真实渲染，没有编辑参考图。
 - 当前最终测试225/225通过，无跳过；构建2.90秒；生产依赖audit0漏洞；git diff --check通过。富文本引擎129.66KB gzip、字体解析器49.91KB gzip独立按需加载；不冒充首屏性能测量。此段尚不代表生产交互已验收，发布结果另记。
+
+## 本次生产发布及实测
+
+- 代码提交85717f1已推送main。生产部署dpl_DtxM581m8kyPKzDqPTYC9P1xEfuh为READY，原主域名已绑定；生产入口index-CtdD5zae.js与最终本地构建对应。
+- 内部浏览器在原主域名刷新，进入既有test构建器，原example.zip仍显示。只新增一张独立Text核验：新建14px、适应内容；输入“线上格式核验”并全选加粗，实际span字重700；首次优惠改成“线上首次优惠核验”、18px，预览随之变化；返回默认恢复原文、14px和700，ZIP iframe仍在。
+- 生产证据：test-results/online-rich-text-verified-20261024.png、online-offer-text-verified-20261024.png。最后删除本次新增Text，DOM只剩Screen及原Custom（8dc7e298-aee1-4c92-9ab8-97af87102da7）；不清除用户ZIP、不改四张HT内容，也不要求用户刷新后重新上传。
+- 字体文件实传、主题、跨标签组操作与其他媒体范围没有因本次上线而自动通过。后续源Video现场又读到遮罩四项Rectangle/Circle/Concave/Convex；Concave没有额外参数，但空视频占位符没有真实曲面路径，不能凭名称编造几何。两种曲面遮罩仍列RC-06，待实际素材核对后实现。原端只改同一授权核对草稿，没有发布或新增草稿。
