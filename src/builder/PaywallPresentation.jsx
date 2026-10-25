@@ -4,15 +4,16 @@ import ComponentPreview from './ComponentPreview.jsx';
 import { exitOfferSource, exitOfferTarget } from './exitOffers.js';
 import { pageContext } from './componentTree.js';
 
-export default function PaywallPresentation({ offerings = [], currentPaywallId, backdropDocument, ...props }) {
+export default function PaywallPresentation({ offerings = [], currentPaywallId, backdropDocument, backdropNavigation, ...props }) {
   const [offer, setOffer] = useState(null);
   const [closed, setClosed] = useState(false);
   const [request, setRequest] = useState(0);
   const [session, setSession] = useState(0);
   const [restarted, setRestarted] = useState(false);
   const [underlayNavigation, setUnderlayNavigation] = useState({});
-  const dismiss = ({ eligible, snapshot }) => {
-    const target = !offer && eligible && exitOfferTarget(props.document, offerings, currentPaywallId);
+  const dismiss = ({ snapshot }) => {
+    const sourceId = pageContext(props.document, snapshot).active.id;
+    const target = !offer && exitOfferTarget(props.document, offerings, currentPaywallId, sourceId);
     if (target) { setUnderlayNavigation({ ...snapshot, overlay: null, webLink: null }); setOffer(target); setRequest(0); }
     else setClosed(true);
   };
@@ -22,7 +23,7 @@ export default function PaywallPresentation({ offerings = [], currentPaywallId, 
     if (!background || !previewProps.document.settings?.presentationSurfaceId) return <ComponentPreview {...previewProps}/>;
     const { flow, pages } = pageContext(background);
     const source = exitOfferSource(background);
-    const backgroundNavigation = offer ? underlayNavigation : flow && source ? { [flow.id]: pages.findIndex((page) => page.id === source.id) } : {};
+    const backgroundNavigation = offer ? underlayNavigation : backdropNavigation ?? (flow && source ? { [flow.id]: pages.findIndex((page) => page.id === source.id) } : {});
     return <div className="ne-exit-sheet-presentation"><div className="ne-exit-underlay" inert="" aria-hidden="true"><ComponentPreview document={background} editing={false} navigation={backgroundNavigation} onSelect={() => {}} onStatus={() => {}}/></div><div className="ne-exit-foreground"><ComponentPreview {...previewProps} dismissOnBackdrop/></div></div>;
   };
   if (props.editing) return render(props);

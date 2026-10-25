@@ -1,5 +1,5 @@
 import { component, indexDocument, updateComponent, removeComponent } from './componentDocument.js';
-import { copyFragment, pasteFragment } from './componentOperations.js';
+import { copyFragment, pasteFragment, patchComponentProperties } from './componentOperations.js';
 import { pageContext, flowInitialIndex } from './componentTree.js';
 
 export const MAX_STEPS = 10;
@@ -21,10 +21,17 @@ export function stepDestination(document, node) {
   if (!action || !['NextScreen', 'OpenPage'].includes(action.action)) return null;
   if (action.action === 'NextScreen' && action.actionPage === null) return null;
   const { nodes, parents } = indexDocument(document);
-  if (action.actionPage) return nodes.get(action.actionPage)?.type === 'Screen' ? nodes.get(action.actionPage) : null;
+  if (action.actionPage) {
+    const target = nodes.get(action.actionPage), current = owningScreen(document, node.id);
+    if (target?.type !== 'Screen' || target.props.hidden || target.id === current?.id) return null;
+    const targetFlow = nodes.get(parents.get(target.id)), currentFlow = nodes.get(parents.get(current?.id));
+    if (targetFlow?.type !== 'Flow' || targetFlow.id !== currentFlow?.id) return null;
+    return action.action === 'NextScreen' && auxiliaryScreen(target) ? null : target;
+  }
   if (action.action === 'OpenPage') return null;
   const current = owningScreen(document, node.id), flow = nodes.get(parents.get(current?.id));
-  const steps = flow?.type === 'Flow' ? flow.children.filter((page)=>!auxiliaryScreen(page)) : [];
+  const steps = flow?.type === 'Flow' ? flow.children.filter((page)=>!auxiliaryScreen(page) && !page.props.hidden) : [];
+  if (!steps.some((page) => page.id === current?.id)) return null;
   return steps[steps.findIndex((page) => page.id === current?.id) + 1] ?? null;
 }
 export function workflowEdges(document) {
@@ -91,9 +98,9 @@ export function addWorkflowStep(document, { source, screenId, beforeId, afterId,
       const copied = indexDocument(next).nodes.get(id);
       const counterpart = (original, clone) => original.id === connectionButtonId ? clone : original.children.map((child, index) => clone.children[index] && counterpart(child, clone.children[index])).find(Boolean);
       const button = counterpart(screen, copied);
-      if (button?.type !== 'Button' || button.props.action?.action !== 'NextScreen') return { document, error: '请选择有效的步骤连接按钮' };
+      if (!['Button', 'PurchaseButton'].includes(button?.type) || button.props.hidden) return { document, error: '请选择有效的步骤连接按钮' };
       const destination = flow.children[at];
-      if (destination) next = updateComponent(next, button.id, { props: { action: { ...button.props.action, actionPage: destination.id } } });
+      if (destination) next = patchComponentProperties(next, button.id, { action: { ...button.props.action, action: 'NextScreen', actionPage: destination.id } });
     }
   } else {
     const names = new Set(flow.children.map((page) => page.name));

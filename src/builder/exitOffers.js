@@ -18,7 +18,16 @@ export function exitContentChoices(document) {
   return [...workflowContext(document).steps, ...[...indexDocument(document).nodes.values()].filter((node) => node.type === 'BottomSheet')];
 }
 
-export function createExitOffer(document, offeringId, surfaceId, selection) {
+export function createExitOffer(document, offeringId, surfaceId, selection, sourceId) {
+  if (sourceId) {
+    const source = workflowContext(document).steps.find((page) => page.id === sourceId && !page.props.hidden);
+    if (!source) return null;
+    const result = createExitOffer(document, offeringId, surfaceId, selection);
+    if (!result) return null;
+    const name = ['付费墙页面', '退出优惠'].includes(result.name) ? `${source.name} · 退出优惠` : result.name;
+    const targetId = result.offerDocument.settings?.presentationSurfaceId ?? workflowContext(result.offerDocument).initial?.id;
+    return { ...result, name, offerDocument: updateComponent(result.offerDocument, targetId, { name }), mainDocument: bindExitOffer({ ...result.mainDocument, settings: document.settings }, sourceId, offeringId) };
+  }
   if (selection) return createSelectedExitOffer(document, offeringId, selection);
   let source = document;
   if (!surfaceId) {
@@ -116,8 +125,22 @@ function createSelectedExitOffer(document, offeringId, { source, nodeId } = {}) 
   return { name: chosen.name, offerDocument, mainDocument: { ...document, settings: { ...document.settings, exitOfferOfferingId: offeringId } } };
 }
 
-export function exitOfferTarget(document, offerings, currentPaywallId) {
-  const id = document.settings?.exitOfferOfferingId;
+export function exitOfferId(document, sourceId = exitOfferSource(document)?.id) {
+  if (!workflowContext(document).steps.some((page) => page.id === sourceId && !page.props.hidden)) return '';
+  const bindings = document.settings?.exitOffersByScreen ?? {};
+  return Object.hasOwn(bindings, sourceId) ? bindings[sourceId] : sourceId === exitOfferSource(document)?.id ? document.settings?.exitOfferOfferingId ?? '' : '';
+}
+
+export function bindExitOffer(document, sourceId, offeringId) {
+  return { ...document, settings: { ...document.settings, exitOffersByScreen: { ...document.settings?.exitOffersByScreen, [sourceId]: offeringId } } };
+}
+
+export function boundExitOfferIds(document) {
+  return [...new Set(workflowContext(document).steps.map((page) => exitOfferId(document, page.id)).filter(Boolean))];
+}
+
+export function exitOfferTarget(document, offerings, currentPaywallId, sourceId) {
+  const id = exitOfferId(document, sourceId);
   return offerings.find((offering) => offering.id === id && offering.id !== currentPaywallId && offering.packageCount > 0 && validDocument(offering.document)) ?? null;
 }
 
@@ -125,15 +148,19 @@ export function exitOfferSource(document) {
   return workflowContext(document).steps.filter((page) => !page.props.hidden).at(-1) ?? null;
 }
 
-export function exitOfferConnection(document, offerings, currentPaywallId) {
-  const source = exitOfferSource(document);
-  const target = exitOfferTarget(document, offerings, currentPaywallId);
+export function exitOfferConnection(document, offerings, currentPaywallId, sourceId = exitOfferSource(document)?.id) {
+  const source = workflowContext(document).steps.find((page) => page.id === sourceId);
+  const target = exitOfferTarget(document, offerings, currentPaywallId, sourceId);
   if (!source || !target) return null;
   const destination = workflowContext(target.document).initial ?? target.document.root;
   return {
-    id: 'exit-offer', kind: 'exit', source: source.id, target: target.document.settings?.presentationSurfaceId ?? destination.id,
+    id: `exit-offer:${source.id}`, kind: 'exit', source: source.id, target: target.document.settings?.presentationSurfaceId ?? destination.id,
     targetOwner: target.id, label: '关闭页面', description: `关闭「${source.name}」 → ${target.name}`,
   };
+}
+
+export function exitOfferConnections(document, offerings, currentPaywallId) {
+  return workflowContext(document).steps.map((page) => exitOfferConnection(document, offerings, currentPaywallId, page.id)).filter(Boolean);
 }
 
 export function isExitOfferStep(document, navigation = {}) {

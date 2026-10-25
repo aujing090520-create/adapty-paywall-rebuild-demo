@@ -5,6 +5,7 @@ import { Check, LockKeyhole, Star, Bell, Moon, Heart, Users, Clock3, Gift, Chevr
 import { componentProps, resolveComponentText, indexDocument } from './componentDocument.js';
 import { isUnconfiguredDetailPage, flowInitialIndex } from './componentTree.js';
 import { stepDestination } from './workflow.js';
+import { canvasSelectionTarget } from './canvasSelection.js';
 import { stateStyleProps, countdownSeconds, checkedControl, activeComponents, countdownValues, countdownDeadline, imageMask, paintColor, cornerRadius, selectionOwner, sequencePages, BADGE_DEFAULTS, mainAxisFillStyle } from './propertyModel.js';
 import { interpolateVariables } from './textVariables.js';
 import { TimelinePreview, TimelineItemPreview } from './TimelinePreview.jsx';
@@ -139,16 +140,13 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
   const select = (event) => {
     if (!editing) return;
     event.stopPropagation();
-    let owner = node;
-    while (owner && !['Button','PurchaseButton','Screen','BottomSheet'].includes(owner.type)) owner = context.nodeIndex.get(context.parentIndex.get(owner.id));
-    const button = owner && ['Button','PurchaseButton'].includes(owner.type) ? owner : null;
-    onSelect(button && selectedId !== button.id && selectedId !== node.id ? button.id : node.id);
+    onSelect(canvasSelectionTarget(node, selectedId, context.nodeIndex, context.parentIndex));
   };
   const parentNode=context.nodeIndex.get(context.parentIndex.get(node.id));
   const parentOwner=parentNode&&selectionOwner(parentNode,context.nodeIndex,context.parentIndex);
   const parentProps=parentNode?componentProps({...parentNode,props:parentOwner?.id===owner?.id&&owner?stateStyleProps(parentNode.props,stateSelected):parentNode.props}):null;
   const style = { ...componentStyle(visualNode), ...mainAxisFillStyle(props,parentProps), ...layoutStyle };
-  const attributes = { 'data-component-id': node.id, 'data-component-type': node.type, 'data-axis': props.axis, 'data-width': props.widthMode, 'data-height': props.heightMode, className: `nc-node nc-${node.type.toLowerCase()} ${props.presentation === 'overlay' ? 'nc-overlay' : ''} ${editing && selectedId === node.id ? 'nc-inspected' : ''}`, style, onClick: select };
+  const attributes = { 'data-component-id': node.id, 'data-component-type': node.type, 'data-axis': props.axis, 'data-width': props.widthMode, 'data-height': props.heightMode, className: `nc-node nc-${node.type.toLowerCase()} ${props.presentation === 'overlay' ? 'nc-overlay' : ''} ${editing && selectedId === node.id ? 'nc-inspected' : ''} ${editing && context.hoveredId === node.id ? 'nc-hovered' : ''}`, style, onClick: select };
   const children = (items = node.children, background = true) => <>{background && <BackgroundVideo props={props} />}{items.map((child) => <NativeComponent key={child.id} node={child} packageNode={currentPackage} />)}{background&&<ComponentBadge node={visualNode} document={document} packageNode={variablePackage} timer={timer}/>}</>;
   if(node.type==='PageControl')return <div {...attributes} style={{...style,width:'auto',height:'auto',display:'flex',justifyContent:'center',alignItems:'center',gap:props.gap}}>{children()}</div>;
   if(node.type==='Indicators')return <>{sequence?.pages.map((page,index)=>{
@@ -229,11 +227,13 @@ function Countdown({ props }) {
   const parts = [Math.floor(remaining / 3600), Math.floor(remaining / 60) % 60, remaining % 60];
   return <span className="nc-countdown"><span style={{ color: props.prefixColor }}>{props.prefix}</span>{parts.map((part, index) => <React.Fragment key={index}>{index > 0 && <span>:</span>}<strong style={{ background: props.digitBackground, borderRadius: 4, padding: '0 3px' }}>{String(part).padStart(2, '0')}</strong></React.Fragment>)}<span>{props.suffix}</span></span>;
 }
-export default function ComponentPreview({ document, selectedId, onSelect, editing, navigation, onNavigate, onStatus, onDismiss, dismissRequest = 0, dismissOnBackdrop = false }) {
+export default function ComponentPreview({ document, selectedId, onSelect, editing, inspectable = true, navigation, onNavigate, onStatus, onDismiss, dismissRequest = 0, dismissOnBackdrop = false }) {
   const [runtime, setRuntime] = useState({});
+  const [hoveredId, setHoveredId] = useState(null);
   const previousDocument = useRef(document);
   const viewport = useRef(null), [scale, setScale] = useState(0.82);
   const navigationKey = JSON.stringify(Object.entries(navigation ?? {}).sort(([a], [b]) => a.localeCompare(b)));
+  useEffect(() => setHoveredId(null), [editing, inspectable, selectedId, navigationKey, document]);
   useEffect(() => {
     const previous = indexDocument(previousDocument.current).nodes;
     previousDocument.current = document;
@@ -297,7 +297,7 @@ export default function ComponentPreview({ document, selectedId, onSelect, editi
       else if (link.method === 'deep_link') window.location.assign(link.url);
       else window.open(link.url, '_blank', 'noopener,noreferrer');
     } else if (action.action === 'OpenPage') {
-      const { nodes, parents } = indexDocument(document), target = nodes.get(action.actionPage), owner = nodes.get(parents.get(target?.id));
+      const { nodes, parents } = indexDocument(document), target = stepDestination(document, node), owner = nodes.get(parents.get(target?.id));
       if (isUnconfiguredDetailPage(target)) { onStatus('该权益详情内容待补充，暂不开放跳转'); return; }
       if (owner?.type === 'Flow') { const currentId=owner.children[runtime[owner.id]??flowInitialIndex(owner)]?.id; const next = { [owner.id]: owner.children.findIndex((item) => item.id === target.id), overlay: null, [`history:${owner.id}`]: [...runtime[`history:${owner.id}`]??[],currentId] }; setRuntime((current) => ({ ...current, ...next })); onNavigate?.(next); if (viewport.current) viewport.current.scrollTop = 0; }
       else onStatus('尚未配置有效的目标页面');
@@ -335,5 +335,10 @@ export default function ComponentPreview({ document, selectedId, onSelect, editi
   const {nodes:nodeIndex,parents:parentIndex} = indexDocument(document), overlay = nodeIndex.get(runtime.overlay);
   const packages = activeComponents(document,runtime).filter((item)=>item.type==='Package');
   const selectedPackage = packages.find((item)=>item.id===runtime.selectedPackage) ?? packages.find((item)=>runtime[`package:${item.props.group??item.id}`]===item.id) ?? packages.find((item)=>item.props.defaultSelected && runtime[`package:${item.props.group??item.id}`]===undefined);
-  return <PreviewContext.Provider value={{ document, nodeIndex, parentIndex, selectedId, onSelect, editing, runtime, setRuntime, runAction, onStatus, selectedPackage,packages }}><style>{fontStyles(document.fonts)}</style><div className="phone native-phone"><div className="nc-viewport" ref={viewport}><div className="nc-design" style={{ zoom: scale }}><NativeComponent node={document.root} /></div></div>{overlay && <div className="nc-floating-overlay"><div className="nc-floating-backdrop" onClick={()=>{ if (!editing && dismissOnBackdrop && overlay.id === document.settings?.presentationSurfaceId) dismissPaywall(); else setRuntime((current)=>({...current,overlay:null})); }}/><div className="nc-floating-design" style={{zoom:scale,height:(viewport.current?.clientHeight??844)/scale}}><NativeComponent node={overlay} floating/></div></div>}{runtime.webLink && <div className="nc-web-preview" role="dialog" aria-label="网页预览"><header><span>{runtime.webLink.title}</span><button type="button" aria-label="关闭网页预览" title="关闭网页预览" onClick={()=>setRuntime((current)=>({...current,webLink:null}))}><X size={18}/></button></header><iframe title="网页预览内容" src={runtime.webLink.url} sandbox="allow-scripts allow-forms allow-popups" referrerPolicy="no-referrer"/></div>}</div></PreviewContext.Provider>;
+  const hover = (event) => {
+    if (!editing || !inspectable) return;
+    const element = event.target.closest?.('[data-component-id]');
+    setHoveredId(canvasSelectionTarget(nodeIndex.get(element?.dataset.componentId), selectedId, nodeIndex, parentIndex));
+  };
+  return <PreviewContext.Provider value={{ document, nodeIndex, parentIndex, selectedId, onSelect, editing, hoveredId: inspectable ? hoveredId : null, runtime, setRuntime, runAction, onStatus, selectedPackage,packages }}><style>{fontStyles(document.fonts)}</style><div className="phone native-phone" onPointerMove={hover} onPointerLeave={()=>setHoveredId(null)}><div className="nc-viewport" ref={viewport} onScroll={()=>setHoveredId(null)}><div className="nc-design" style={{ zoom: scale }}><NativeComponent node={document.root} /></div></div>{overlay && <div className="nc-floating-overlay"><div className="nc-floating-backdrop" onClick={()=>{ if (!editing && dismissOnBackdrop && overlay.id === document.settings?.presentationSurfaceId) dismissPaywall(); else setRuntime((current)=>({...current,overlay:null})); }}/><div className="nc-floating-design" style={{zoom:scale,height:(viewport.current?.clientHeight??844)/scale}}><NativeComponent node={overlay} floating/></div></div>}{runtime.webLink && <div className="nc-web-preview" role="dialog" aria-label="网页预览"><header><span>{runtime.webLink.title}</span><button type="button" aria-label="关闭网页预览" title="关闭网页预览" onClick={()=>setRuntime((current)=>({...current,webLink:null}))}><X size={18}/></button></header><iframe title="网页预览内容" src={runtime.webLink.url} sandbox="allow-scripts allow-forms allow-popups" referrerPolicy="no-referrer"/></div>}</div></PreviewContext.Provider>;
 }

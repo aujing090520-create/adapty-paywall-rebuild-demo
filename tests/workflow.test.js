@@ -58,6 +58,30 @@ test('explicitly clearing a target does not silently fall back to the next array
   assert.ok(workflowIssues(doc).some(message=>message.includes('有效的目标步骤')));
 });
 
+test('step targets reject self, hidden, auxiliary, wrong-type, deleted and unrelated nested-flow destinations',()=>{
+  const doc=document([screen('a',[button('next','NextScreen','b'),c('nested','Flow','嵌套',{},[screen('nested-page')])]),screen('b'),c('hidden','Screen','隐藏',{hidden:true}),c('detail','Screen','详情',{auxiliary:true})]);
+  for(const id of ['a','hidden','detail','nested-page','missing','next']){
+    const changed=updateComponent(doc,'next',{props:{action:{action:'NextScreen',actionPage:id}}});
+    assert.equal(stepDestination(changed,indexDocument(changed).nodes.get('next')),null,id);
+    assert.equal(workflowEdges(changed).length,0,id);
+  }
+  assert.equal(stepDestination(doc,indexDocument(doc).nodes.get('next')).id,'b');
+  const details=updateComponent(doc,'next',{props:{action:{action:'OpenPage',actionPage:'detail'}}});
+  assert.equal(stepDestination(details,indexDocument(details).nodes.get('next')).id,'detail');
+  assert.equal(workflowEdges(details).length,0);
+});
+
+for(const type of ['Button','PurchaseButton'])test(`explicit creation can connect a copied ${type} CTA without altering the source or its appearance`,()=>{
+  const cta=c('cta',type,'继续',{action:{action:type==='PurchaseButton'?'Purchase':'None'},fontSize:21,background:'#1256ea',paddingHorizontal:22},[c('label','Text','文案',{text:'继续'})]);
+  const source=document([screen('intro',[cta])]),before=structuredClone(source),target=document([screen('paywall')]);
+  const result=addWorkflowStep(target,{source,screenId:'intro',beforeId:'paywall',connectionButtonId:'cta'});
+  assert.equal(result.error,undefined);assert.deepEqual(source,before);
+  const copy=indexDocument(result.document).nodes.get(result.id).children[0];
+  assert.equal(copy.type,'Button');assert.equal(copy.props.action.action,'NextScreen');assert.equal(copy.props.action.actionPage,'paywall');
+  assert.equal(copy.props.background,'#1256ea');assert.equal(copy.props.paddingHorizontal,22);assert.equal(copy.children[0].props.text,'继续');
+  assert.deepEqual(workflowEdges(result.document).map((edge)=>[edge.source,edge.target]),[[result.id,'paywall']]);
+});
+
 let server,Preview,Picker,Editor,Connections,oldObserver;
 before(async()=>{oldObserver=globalThis.ResizeObserver;globalThis.ResizeObserver=class{observe(){}disconnect(){}};server=await createServer({configFile:false,logLevel:'silent',server:{middlewareMode:true,hmr:false,watch:null}});Preview=(await server.ssrLoadModule('/src/builder/ComponentPreview.jsx')).default;Picker=(await server.ssrLoadModule('/src/builder/StepPicker.jsx')).default;Editor=(await server.ssrLoadModule('/src/builder/ComponentEditor.jsx')).default;Connections=(await server.ssrLoadModule('/src/builder/WorkflowConnections.jsx')).default;});
 after(async()=>{await server?.close();globalThis.ResizeObserver=oldObserver;});

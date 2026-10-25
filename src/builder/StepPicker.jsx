@@ -18,8 +18,9 @@ export default function StepPicker({ offerings, onBack, onAdd, purpose = 'step',
     setSelected((value) => ({ ...value, document, nodeId }));
   };
   const selectedNode = source && selected?.nodeId ? indexDocument(source).nodes.get(selected.nodeId) : null;
-  const buttons = selectedNode && !isExit ? [...indexDocument({ root: selectedNode }).nodes.values()].filter((node) => node.type === 'Button' && !node.props.hidden && node.props.action?.action === 'NextScreen') : [];
-  const connectionId = connectionButton ?? (buttons.length === 1 ? buttons[0].id : '');
+  const buttons = selectedNode && !isExit ? [...indexDocument({ root: selectedNode }).nodes.values()].filter((node) => ['Button','PurchaseButton'].includes(node.type) && !node.props.hidden) : [];
+  const existingConnections = buttons.filter((node) => node.props.action?.action === 'NextScreen');
+  const connectionId = connectionButton ?? (existingConnections.length === 1 ? existingConnections[0].id : '');
   const buttonLabel = (node) => { const text = node.children.find((child) => child.type === 'Text'); return node.name && node.name !== '按钮' ? node.name : text ? resolveComponentText(text, source) : '继续按钮'; };
   const create = () => selected?.current ? onUseSurface?.(selected.nodeId) : onAdd(selected?.document, selected?.nodeId, { connectionButtonId: connectionId });
   return <div className="ne-step-picker">

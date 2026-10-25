@@ -11,7 +11,8 @@ import { linkActionFor, visibleLinkLabels } from "./linkActions.js";
 import { DEMO_SKUS, PRICE_DISPLAY_MODES, billingMonths, productPriceFields, resolveProductPrice, skuById, skuCopy, templateSkuId } from "./productPricing.js";
 import { clearLocalDemoSettings, beginLocalDemoReset, cancelLocalDemoReset } from "./templateStorage.js";
 import { listSavedPaywalls, readSavedPaywall, savePaywallBatch, removeSavedPaywall } from './paywallStorage.js';
-import { savedOfferings, createExitOffer } from './builder/exitOffers.js';
+import { savedOfferings, createExitOffer, boundExitOfferIds } from './builder/exitOffers.js';
+import { indexDocument } from './builder/componentDocument.js';
 import { clearCustomBundles } from "./builder/customStorage.js";
 import { productTranslation } from "./productPlacement.js";
 import { productArrangement } from "./productArrangement.js";
@@ -413,12 +414,13 @@ export default function App() {
       if (current[id]?.document === document) return current;
       const record = current[id] ?? readSavedPaywall(window.localStorage, id);
       if (!record || !current[id] && JSON.stringify(record.document) === JSON.stringify(document)) return current;
-      return { ...current, [id]: { ...record, document, paywall: { ...record.paywall, products: Object.keys(document.products).length } } };
+      const name = indexDocument(document).nodes.get(document.settings?.presentationSurfaceId)?.name ?? document.root.name;
+      return { ...current, [id]: { ...record, document, paywall: { ...record.paywall, name: name || record.paywall.name, products: Object.keys(document.products).length } } };
     });
   }, []);
-  const prepareExitOffer = React.useCallback((document, surfaceId, selection) => {
+  const prepareExitOffer = React.useCallback((document, surfaceId, selection, sourceId) => {
     const id = `local-exit-${crypto.randomUUID()}`;
-    const result = createExitOffer(document, id, surfaceId, selection);
+    const result = createExitOffer(document, id, surfaceId, selection, sourceId);
     if (!result) return null;
     const record = { version: 1, templateId: result.offerDocument.templateId, document: result.offerDocument, paywall: { id, name: result.name, state: 'Draft', products: Object.keys(result.offerDocument.products).length, startedAt: new Date().toLocaleDateString('zh-CN') } };
     setExitOfferDrafts((current) => ({ ...current, [id]: record }));
@@ -511,8 +513,8 @@ export default function App() {
   const saveBuilder = () => {
     if (!builderDocument) return notify('请先打开构建器，确认页面内容后保存。');
     const paywall = builderOrigin === 'create' ? { id: `local-${crypto.randomUUID()}`, name: draft.name.trim() || '未命名付费墙', state: 'Draft', products: Object.keys(builderDocument.products).length, startedAt: new Date().toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' }), config: structuredClone(draft) } : { ...selected, products: Object.keys(builderDocument.products).length };
-    const exitDraft = exitOfferDrafts[builderDocument.settings?.exitOfferOfferingId];
-    const records = [...(exitDraft ? [exitDraft] : []), { version: 1, paywall, templateId: builderDocument.templateId, document: builderDocument }];
+    const exitDrafts = boundExitOfferIds(builderDocument).map((id) => exitOfferDrafts[id]).filter(Boolean);
+    const records = [...exitDrafts, { version: 1, paywall, templateId: builderDocument.templateId, document: builderDocument }];
     if (!savePaywallBatch(window.localStorage, records)) return notify('本地保存失败，主付费墙与退出优惠的编辑仍保留，请检查存储空间。');
     setPaywalls((items) => records.reduce((all, record) => all.some((item) => item.id === record.paywall.id) ? all.map((item) => item.id === record.paywall.id ? record.paywall : item) : [...all, record.paywall], items));
     setExitOfferDrafts({});

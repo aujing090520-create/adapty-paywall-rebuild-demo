@@ -4,7 +4,8 @@ import React from 'react';
 import TestRenderer, { act } from 'react-test-renderer';
 import { createServer } from 'vite';
 import { component, validDocument } from '../src/builder/componentDocument.js';
-import { savedOfferings, exitOfferTarget, isExitOfferStep, createExitOffer, exitOfferSource, exitOfferConnection, exitContentChoices } from '../src/builder/exitOffers.js';
+import { savedOfferings, exitOfferTarget, isExitOfferStep, createExitOffer, exitOfferSource, exitOfferConnection, exitContentChoices, exitOfferId, bindExitOffer, boundExitOfferIds, exitOfferConnections } from '../src/builder/exitOffers.js';
+import { moveWorkflowStep, removeWorkflowStep, duplicateWorkflowStep } from '../src/builder/workflow.js';
 import { readSavedPaywall, savePaywall, savePaywallBatch } from '../src/paywallStorage.js';
 import { indexDocument, importComponentDocument } from '../src/builder/componentDocument.js';
 import { createCatalogComponent } from '../src/builder/componentCatalog.js';
@@ -182,8 +183,94 @@ test('actual editor owns exit configuration at document level and does not chang
   await act(async () => settingsButton.props.onClick());
   const field = renderer.root.findAll((item) => item.type === 'select' && item.props['aria-label'] === '退出优惠 Offering')[0];
   await act(async () => field.props.onChange({ target: { value: 'offer' } }));
-  assert.equal(latest.settings.exitOfferOfferingId, 'offer'); assert.deepEqual(latest.root, doc.root); assert.deepEqual(latest.products, doc.products);
+  assert.equal(exitOfferId(latest, doc.root.id), 'offer'); assert.deepEqual(latest.root, doc.root); assert.deepEqual(latest.products, doc.products);
   assert.equal(doc.settings, undefined);
+});
+
+const multiScreen = () => ({ ...fixture(), root: component('root', 'Screen', '主流程', {}, [component('flow', 'Flow', '步骤', { initialStepId: 'a' }, [
+  component('a', 'Screen', '介绍 A', {}, [button('a-next', 'NextScreen', 'b'), button('a-close', 'Dismiss')]),
+  component('b', 'Screen', '介绍 B', {}, [button('b-back', 'NavigateBack'), button('b-close', 'Dismiss')]),
+  component('c', 'Screen', '购买 C', {}, [button('c-close', 'Dismiss')]),
+])]) });
+
+test('Demo per-screen bindings override but never broaden legacy final-only defaults, including explicit disable', () => {
+  let doc = multiScreen(); doc.settings = { exitOfferOfferingId: 'legacy' };
+  assert.equal(exitOfferId(doc, 'a'), ''); assert.equal(exitOfferId(doc, 'c'), 'legacy');
+  doc = bindExitOffer(bindExitOffer(doc, 'a', 'offer-a'), 'b', 'offer-b');
+  const offers = ['legacy', 'offer-a', 'offer-b'].map((id) => ({ id, name: id, document: fixture(id), packageCount: 1 }));
+  assert.deepEqual(exitOfferConnections(doc, offers).map((edge) => [edge.source, edge.targetOwner]), [['a','offer-a'],['b','offer-b'],['c','legacy']]);
+  assert.equal(isExitOfferStep(doc, { flow: 0 }), false);
+  assert.equal(exitOfferId(bindExitOffer(doc, 'c', ''), 'c'), '');
+  assert.equal(exitOfferId(doc, 'missing'), '');
+  assert.equal(validDocument({ ...doc, settings: { exitOffersByScreen: [] } }), false);
+  assert.equal(validDocument({ ...doc, settings: { exitOffersByScreen: { a: {} } } }), false);
+  const moved = moveWorkflowStep(doc, 'a', 1);
+  assert.equal(exitOfferId(moved, 'a'), 'offer-a'); assert.equal(exitOfferId(moved, 'b'), 'offer-b');
+  const duplicated = duplicateWorkflowStep(doc, 'a');
+  assert.equal(exitOfferId(duplicated.document, duplicated.id), '');
+  assert.deepEqual(boundExitOfferIds(removeWorkflowStep(doc, 'a')), ['offer-b','legacy']);
+});
+
+test('actual closing screen chooses its independent offer; Back does not trigger; dismissal terminates without offer chaining', async () => {
+  const doc = bindExitOffer(bindExitOffer(multiScreen(), 'a', 'offer-a'), 'b', 'offer-b');
+  const offers = ['offer-a','offer-b'].map((id) => ({ id, name: id, packageCount: 1, document: fixture(id, [button(`${id}-close`, 'Dismiss')]) }));
+  const h = await mount(doc, offers);
+  await h.click('a-close'); assert.ok(h.visible('offer-a-root')); assert.equal(h.visible('offer-b-root'), false);
+  await h.click('offer-a-close'); assert.match(text(h.renderer.root), /付费墙已关闭/);
+  await h.click('重新预览'); await h.click('a-next');
+  await h.click('b-back'); assert.ok(h.visible('a-close')); assert.equal(h.visible('offer-b-root'), false);
+  await h.click('a-next'); await h.click('关闭付费墙预览'); assert.ok(h.visible('offer-b-root'));
+  await h.click('offer-b-close'); assert.match(text(h.renderer.root), /付费墙已关闭/);
+});
+
+test('per-screen creation keeps other bindings and batch saving retains every independent offer after reopening', () => {
+  let doc = bindExitOffer(multiScreen(), 'a', 'offer-a');
+  const result = createExitOffer(doc, 'offer-b', undefined, { source: fixture('discount'), nodeId: 'discount-root' }, 'b');
+  assert.ok(result); assert.equal(exitOfferId(result.mainDocument, 'a'), 'offer-a'); assert.equal(exitOfferId(result.mainDocument, 'b'), 'offer-b');
+  assert.equal(result.mainDocument.settings.exitOfferOfferingId, undefined);
+  const store = storage(), drafts = { 'offer-a': record('offer-a', fixture('offer-a')), 'offer-b': record('offer-b', result.offerDocument) };
+  assert.equal(savePaywallBatch(store, [...boundExitOfferIds(result.mainDocument).map((id) => drafts[id]), record('primary', result.mainDocument)]), true);
+  const reopened = readSavedPaywall(store, 'primary').document;
+  assert.deepEqual(boundExitOfferIds(reopened), ['offer-a','offer-b']);
+  assert.ok(readSavedPaywall(store, 'offer-a')); assert.ok(readSavedPaywall(store, 'offer-b'));
+  assert.equal(createExitOffer(doc, 'x', undefined, {}, 'unknown'), null);
+});
+
+test('each actual artboard has its own close port and settings source while multiple exit boards remain selectable', async () => {
+  let renderer, latest;
+  const doc = multiScreen(), offers = ['offer-a','offer-b'].map((id) => ({ id, name: id, packageCount: 1, document: fixture(id) }));
+  await act(async () => { renderer = TestRenderer.create(React.createElement(Editor, { template: { id: 'blank' }, initialNodes: [], initialDocument: doc, persistence: 'session', offerings: offers, onDocumentChange(value) { latest = value; }, onCreateExitOffer() {} })); }); mounted.add(renderer);
+  assert.equal(renderer.root.findAll((item) => item.type === 'button' && item.props['aria-label']?.startsWith('配置关闭「')).length, 3);
+  const selectBoard = async (name) => act(async () => renderer.root.findByProps({ 'aria-label': `选择画板：${name}` }).props.onClick());
+  const configure = async (name, target) => {
+    await selectBoard(name);
+    await act(async () => renderer.root.findByProps({ 'aria-label': '页面退出触发' }).findAllByType('button')[0].props.onClick());
+    const rule = renderer.root.findByProps({ 'aria-label': '退出优惠触发规则' }); assert.ok(text(rule).includes(name));
+    await act(async () => renderer.root.findByProps({ 'aria-label': '退出优惠 Offering' }).props.onChange({ target: { value: target } }));
+  };
+  await configure('介绍 A','offer-a'); await configure('介绍 B','offer-b');
+  assert.equal(exitOfferId(latest,'a'),'offer-a'); assert.equal(exitOfferId(latest,'b'),'offer-b');
+  assert.equal(renderer.root.findAll((item) => item.type === 'button' && item.props['aria-label']?.startsWith('配置退出触发：')).length, 2);
+  assert.equal(renderer.root.findAll((item) => item.type === 'button' && item.props['aria-label']?.startsWith('配置关闭「')).length, 1);
+  assert.ok(renderer.root.findByProps({ 'aria-label': '画板：offer-a' })); assert.ok(renderer.root.findByProps({ 'aria-label': '画板：offer-b' }));
+  assert.match(text(renderer.root), /Demo 扩展能力/);
+});
+
+test('hover uses the same button drill-in target as click, clears on leave/scroll and is inert in unselected boards or preview', async () => {
+  const doc = fixture('hover', [button('cta','None')]); let selected;
+  const h = await mount(doc, [], { editing: true, selectedId: 'hover-root', onSelect: (id) => { selected = id; } });
+  const phone = () => h.renderer.root.findByProps({ className: 'phone native-phone' });
+  const pointer = { target: { closest: () => ({ dataset: { componentId: 'cta-text' } }) } };
+  await act(async () => phone().props.onPointerMove(pointer));
+  const hovered = () => h.renderer.root.findAll((item) => typeof item.type === 'string' && item.props.className?.split(' ').includes('nc-hovered')).map((item) => item.props['data-component-id']);
+  assert.deepEqual(hovered(), ['cta']); await h.click('cta-text'); assert.equal(selected, 'cta');
+  await act(async () => phone().props.onPointerLeave()); assert.deepEqual(hovered(), []);
+  await act(async () => phone().props.onPointerMove(pointer));
+  await act(async () => h.renderer.root.findByProps({ className: 'nc-viewport' }).props.onScroll()); assert.deepEqual(hovered(), []);
+  await act(async () => h.renderer.update(React.createElement(Presentation, { document: doc, editing: true, inspectable: false, onSelect() {}, onStatus() {} })));
+  await act(async () => phone().props.onPointerMove(pointer)); assert.deepEqual(hovered(), []);
+  await act(async () => h.renderer.update(React.createElement(Presentation, { document: doc, editing: false, onSelect() {}, onStatus() {} })));
+  await act(async () => phone().props.onPointerMove(pointer)); assert.deepEqual(hovered(), []);
 });
 
 test('converting existing HT retention preserves copy, assets, geometry and products without a visible generated launcher', () => {

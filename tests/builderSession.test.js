@@ -6,6 +6,8 @@ import { createServer } from 'vite';
 import { component, saveComponentDocument, DOCUMENT_PREFIX } from '../src/builder/componentDocument.js';
 import { beginLocalDemoReset, clearLocalDemoSettings, writeTemplateNodes } from '../src/templateStorage.js';
 import { savePaywall, readSavedPaywall, listSavedPaywalls, removeSavedPaywall, PAYWALL_SAVE_PREFIX } from '../src/paywallStorage.js';
+import { exitOfferId, boundExitOfferIds } from '../src/builder/exitOffers.js';
+import { addWorkflowStep, workflowContext } from '../src/builder/workflow.js';
 
 let server, App;
 before(async()=>{
@@ -113,16 +115,28 @@ test('actual App converts, edits and saves an existing retention offer in one se
     await act(async()=>nameField().props.onChange({target:{value:'已编辑挽留优惠'}}));
     await click('选择画板：特权首页');
     assert.equal(nameField().props.value,'特权首页','selecting main board restores the main property owner');
-    const main=editor().props.initialDocument,offerId=main.settings.exitOfferOfferingId;
+    const main=editor().props.initialDocument,offerId=exitOfferId(main);
     assert.equal(visit(main.root).some(node=>node.id===surface.id||node.name==='打开底部弹层'),false);
     assert.equal(listSavedPaywalls(store).length,0,'conversion and editing are not autosaved');
     await click('保存');assert.equal(listSavedPaywalls(store).length,2);
-    assert.equal(readSavedPaywall(store,'test-2').document.settings.exitOfferOfferingId,offerId);
+    assert.equal(exitOfferId(readSavedPaywall(store,'test-2').document),offerId);
     assert.equal(readSavedPaywall(store,offerId).document.root.children[0].name,'已编辑挽留优惠');
+    assert.equal(readSavedPaywall(store,offerId).paywall.name,'已编辑挽留优惠');
     await click('付费墙设置');await click('编辑退出优惠');await act(async()=>nameField().props.onChange({target:{value:'不应保存的新修改'}}));
     await click('放弃修改');await click('付费墙设置');await click('编辑退出优惠');assert.equal(nameField().props.value,'已编辑挽留优惠');
     await click('选择画板：特权首页');await click('Paywalls');await open();
-    assert.equal(editor().props.initialDocument.settings.exitOfferOfferingId,offerId);
+    assert.equal(exitOfferId(editor().props.initialDocument),offerId);
     await click('付费墙设置');await click('编辑退出优惠');assert.equal(nameField().props.value,'已编辑挽留优惠');
+    let expanded=addWorkflowStep(addWorkflowStep(editor().props.initialDocument).document).document;
+    const sources=workflowContext(expanded).steps.slice(0,2);
+    for(const source of sources){
+      await act(async()=>{expanded=editor().props.onCreateExitOffer(expanded,undefined,{source:main,nodeId:workflowContext(main).initial.id},source.id);});
+      await act(async()=>editor().props.onDocumentChange(expanded));
+    }
+    const ids=boundExitOfferIds(expanded);assert.equal(ids.length,3);
+    await click('保存');
+    const reopened=readSavedPaywall(store,'test-2').document;
+    assert.deepEqual(boundExitOfferIds(reopened),ids);
+    for(const id of ids)assert.ok(readSavedPaywall(store,id),`persisted independent Offering ${id}`);
   }finally{if(app)await act(async()=>app.unmount());for(const timer of timers)clearTimeout(timer);for(const[key,value]of Object.entries(previous))globalThis[key]=value;}
 });
