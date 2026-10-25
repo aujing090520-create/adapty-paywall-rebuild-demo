@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "result_level": "已完成",
+  "scope": "已有退出优惠触发关系可视化修复及新增Screen录屏适用性检查，不包括统一退出优惠创建选择器",
+  "source_commit": "ee9f9779365b8a5865e4c7459c556741b014b3f1",
+  "production_deployment": "dpl_GSD5h9rvQ28QgdpcTc6jGbTXQuQZ",
+  "ledger": { "total": 5, "verified": 5, "unresolved": 0 },
+  "coverage": {
+    "affected": ["TR-01", "TR-02", "TR-03", "TR-04", "TR-05"],
+    "verified": ["TR-01", "TR-02", "TR-03", "TR-04", "TR-05"]
+  },
+  "verification_evidence": [
+    "269/269 tests passed; final build 3.30s; git diff --check passed",
+    "Local IAB: unbound ordinary HT Sheet, conversion, close-event edge, canonical configuration readback, unbind/rebind, save/reload and restored connection",
+    "Local and production IAB: dismiss main page, retention offer appears, cancel ends entire paywall flow",
+    "Production IAB: close-event connection and source caption, click edge opens original settings.exitOfferOfferingId configuration",
+    "Production READY and main-domain JS index-DLojzfJi.js/CSS index-BXUemnJI.css match final build",
+    "Read-only video review: 46.35s user recording shows Add step/Welcome Screen, peer Screen and Continue navigation, not Exit offer binding",
+    "Official RevenueCat exit-offer documentation distinguishes final-screen dismiss binding from ordinary step navigation",
+    "/tmp/paywall-exit-trigger-production.png"
+  ],
+  "evidence_boundaries": [
+    "No new persisted trigger field; readback and connection derive from existing exit binding and the runtime source predicate",
+    "Ordinary Sheet is not automatically promoted; four original HT templates/assets/products preserved",
+    "Production unbind/save/reload not repeated; these paths verified locally",
+    "TR-05 reviewed with no implementation expansion: unified blank/template/saved-paywall creation picker remains a named follow-up, not claimed implemented",
+    "No real Billing or native dismissal integration; no global RevenueCat parity claim"
+  ]
+}

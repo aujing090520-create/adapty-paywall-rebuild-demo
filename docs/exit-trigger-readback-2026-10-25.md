@@ -37,3 +37,11 @@
 - 实际主屏关闭后呈现挽留，忍痛取消后付费墙已关闭；最终截图/tmp/paywall-exit-trigger-local.png。
 - 参数表32类、3340条，新增只读退出触发关系说明；同一字段仍仅由settings.exitOfferOfferingId持久化。
 - 生产交付证据在对应delivery JSON中记录；不以本地或构建结果替代线上点击。
+
+## 生产回读
+
+- ee9f9779365b8a5865e4c7459c556741b014b3f1已推送；生产dpl_GSD5h9rvQ28QgdpcTc6jGbTXQuQZ READY且主域名绑定，入口JS index-DLojzfJi.js、CSS index-BXUemnJI.css匹配最终构建。
+- 隔离生产origin lhfuregrc.vercel.app 实测原HT普通弹层转为退出优惠、关闭事件边、点击边打开唯一配置，以及画板标题显示来源；截图/tmp/paywall-exit-trigger-production.png。
+- 生产交互预览：关闭主屏后出现挽留中的忍痛取消按钮，点击后显示付费墙已关闭。未在生产重复解绑或保存刷新，本地已有实际证据。
+- 初次创建tab18导航11.5秒超时；同一IAB库存确认已创建，用同标签读取恢复。后续操作约30秒、状态读取约60秒但成功，无切浏览器/改权限/重复创建；本轮只有这一次导航等待失败。
+- 台账5项：4项已修改，1项确认不修改（录屏适用性检查完成，创建来源选择器统一留待后续）。本轮无待处理阻塞。
