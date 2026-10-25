@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "result_level": "已完成",
+  "scope": "现有HT挽留弹窗与独立退出优惠的配置路径定点修复，不代表RevenueCat全组件审计完成",
+  "source_commit": "c065deaee975e7b082c058867e15e9c8a1eba0e9",
+  "production_deployment": "dpl_GP2LnfwR4iJ4aQiHn2YLo2R1dxHm",
+  "ledger": { "total": 5, "verified": 5, "unresolved": 0 },
+  "coverage": {
+    "affected": ["RET-01", "RET-02", "RET-03", "RET-04", "RET-05"],
+    "verified": ["RET-01", "RET-02", "RET-03", "RET-04", "RET-05"]
+  },
+  "verification_evidence": [
+    "254/254 tests passed; final build 3.09 seconds; git diff --check passed before source commit",
+    "Local isolated browser: convert existing HT popup, remove matching generated launcher, joint save, reload, reopen, cancel session",
+    "App-mounted regression: conversion does not persist early; explicit joint save; discard; reload; storage write failure rollback",
+    "Production READY deployment and main-domain JS/CSS match final build",
+    "Production internal-browser tab11: direct new exit editor without launcher; zero-product warning; original HT popup conversion preserving visible content",
+    "Production internal-browser tab11: return primary, preview, dismiss primary -> exit offer with 3 products -> cancel -> paywall closed",
+    "/tmp/paywall-retention-production-edit.png",
+    "/tmp/paywall-retention-linked-edit-local.png"
+  ],
+  "evidence_boundaries": [
+    "Production joint save/reload was not performed; those behaviors were verified locally and in mounted App tests",
+    "Four HT source template definitions unchanged",
+    "Real Billing, native system dismissal interception, source template 38 and wider RevenueCat component audit remain outside this fix"
+  ]
+}
