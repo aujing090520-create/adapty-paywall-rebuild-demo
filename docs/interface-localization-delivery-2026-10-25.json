@@ -1,0 +1,26 @@
+{
+  "task": "补齐中文模式后台显示标签",
+  "route": "已发布Demo文案局部更新",
+  "result_level": "已完成",
+  "source_commit": "2884e47",
+  "ledger": { "total": 3, "verified": 3, "unresolved": 0 },
+  "coverage": {
+    "affected": ["CN-01构建器保护边界", "CN-02显示名称和中文搜索", "CN-03语言切换与发布"],
+    "verified": ["CN-01构建器保护边界", "CN-02显示名称和中文搜索", "CN-03语言切换与发布"]
+  },
+  "verification_evidence": [
+    "根因：native-editor整体data-no-translate阻止已存在字典访问步骤选项；小写purchase未命中精确词条",
+    "复用zhCopy和语言Observer，开放已有后台面板、图层、画板标题、连线及选择器；手机预览、正文编辑、输入值、SKU和未知自定义名称保持原样",
+    "补齐常用动作、编号页面、全部模板显示标题/副标题及后台弹窗词条；步骤和关闭目标选择器支持中文显示名称搜索",
+    "npm test: 328/328 passed; 四项新DOM测试覆盖动态option、内容及属性保护、EN/CN切换、模板标题和中英文搜索",
+    "npm run build: 3.64s; git diff --check passed",
+    "本地IAB：中文知识搜索 -> 解锁知识的世界 -> 页面 -> 菜单暂不连接/服务条款/隐私政策/恢复购买/购买；EN/CN切换恢复，选择购买创建真实步骤连接；手机预览原文保持英文",
+    "2884e47 pushed to existing main and Vercel auto deployment; no new resource or manual duplicate deploy",
+    "生产同一Knowledge模板菜单AX读回五个中文标签；选择购买后实拍，不创建页面、不保存生产测试草稿",
+    "生产实际IAB脚本index-Cvrz2Bdm.js与最终构建一致；截图/tmp/paywall-chinese-selector-production.png"
+  ],
+  "production_url": "https://adapty-paywall-rebuild-demo.vercel.app/",
+  "preserved": ["源模板正文和媒体", "用户已保存文档", "节点ID、按钮动作和配置值", "SKU、价格及交易边界"],
+  "limits": ["品牌、字体名、SKU/技术标识和源模板正文不改；不声称翻译所有用户输入或整张模板预览"],
+  "next_action": "本次范围无待办"
+}
