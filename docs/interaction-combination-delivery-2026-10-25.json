@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "result_level": "已本地验证，发布阻塞",
+  "scope": "按屏幕独立退出优惠的Demo扩展、按钮与步骤组合、活动画板悬停反馈",
+  "source_commit": "f099fbc",
+  "local_url": "http://interaction-audit-20261025.localhost:3017/",
+  "production_url": "https://adapty-paywall-rebuild-demo.vercel.app/",
+  "production_updated": false,
+  "ledger": { "total": 5, "verified": 4, "unresolved": 1 },
+  "issues": [
+    { "id": "IC-01", "priority": "P1", "status": "本地已验证", "outcome": "每个真实Screen独立创建、绑定、关闭连线、预览与批量保存；显式标注Demo扩展能力" },
+    { "id": "IC-02", "priority": "P1", "status": "本地已验证", "outcome": "创建时可明确选择普通/购买CTA并保留样式；无效步骤目标拒绝跳转并可修复" },
+    { "id": "IC-03", "priority": "P2", "status": "本地已验证", "outcome": "仅活动画板有悬停框，悬停/点击共用命中规则，滚动/离开/预览清空" },
+    { "id": "IC-04", "priority": "P2", "status": "本地已验证", "outcome": "优惠根组件改名后设置、连线、保存记录名称同步；通用默认名区分源Screen" },
+    { "id": "IC-05", "priority": "P1", "status": "发布阻塞", "outcome": "GitHub推送两次均SSL连接失败；未发布、未核验生产新路径" }
+  ],
+  "coverage": { "affected": ["IC-01", "IC-02", "IC-03", "IC-04", "IC-05"], "verified": ["IC-01", "IC-02", "IC-03", "IC-04"] },
+  "verification_evidence": [
+    "310/310 automated tests passed; actual App integration saves all bound draft documents and reopens independent IDs",
+    "Final build passed in 2.89 seconds; index-CN1nBuTg.js and index-DlFiIzl-.css; git diff whitespace check passed",
+    "Isolated actual IAB applied Multi-step Paywall, used first/second Screen canvas close ports to create SKU and payment-recovery independent offers",
+    "Actual runtime: first Screen close enters SKU offer; closing ends session; restart and Continue then second Screen close enters payment-recovery offer",
+    "Actual save/reload/reopen retained three Screens, two offer artboards and two close edges; both offer renames read back correctly in source settings",
+    "Actual IAB pointer readback shows title nc-hovered with computed outline only in active board; inactive third board hover count zero; no browser error logs",
+    "32 component families and 3369 parameter/option rows regenerated; source-backed interaction matrix in interaction-combination-audit-2026-10-25.md",
+    "/tmp/paywall-per-screen-config.png",
+    "/tmp/paywall-selected-board-hover.png",
+    "/tmp/paywall-per-screen-final.png"
+  ],
+  "evidence_boundaries": [
+    "RevenueCat official final-only restriction is not changed; independent per-Screen exits are an explicitly user-approved Demo extension",
+    "Commerce stays final-step-only and preview-only; no real purchase or external SDK acceptance claimed",
+    "Legacy global exit binding retains final-visible-Screen behavior; new map overrides are stable source IDs, not canvas selection",
+    "No exhaustive manual acceptance of all component nesting combinations claimed",
+    "Source committed locally; both GitHub push attempts failed with SSL_ERROR_SYSCALL; production remains unmodified by this delivery",
+    "No external Chrome permission or production draft mutation; original untracked test-results left untouched"
+  ],
+  "blocker_id": "WB-20261025-INTERACTION-COMBOS",
+  "next_action": "网络恢复后推送现有提交，等待已有GitHub/Vercel链路部署并核验生产；本地开发验收无剩余动作"
+}
