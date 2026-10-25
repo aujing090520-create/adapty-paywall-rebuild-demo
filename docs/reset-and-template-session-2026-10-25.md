@@ -16,5 +16,7 @@
 ## 最终验证
 
 - 244/244测试通过，构建3.07秒，git diff --check通过。回归包括新建保存、旧缓存隔离、同模板重套、跨付费墙、放弃、刷新、重置、存储写入失败及归档移除。
-- 独立本地域名实际读数：重套后页面名“特权首页”；保存后刷新为“显式保存验收”；重置后模板“空白页面”、页面名“付费墙页面”。截图/tmp/paywall-save-session-local.png、/tmp/paywall-reset-verified-local.png。保存栏位置调整后待最终界面回读。
-- 参数功能表补充保存范围，32类组件、3327条字段/选项说明。待发布及线上验证，不提前计为通过。
+- 独立本地域名实际读数：重套后页面名“特权首页”；保存后刷新为“显式保存验收”；重置后模板“空白页面”、页面名“付费墙页面”。截图/tmp/paywall-save-session-local.png、/tmp/paywall-reset-verified-local.png。最终模板栏保存入口在1280px视口内，右边界1197px；截图/tmp/paywall-reset-toolbar-local.png。
+- 参数功能表补充保存范围，32类组件、3327条字段/选项说明；CSV标准解析通过，8列、LF换行。
+- 应用代码3522889已推送main，Vercel生产部署dpl_8x9jnX9aeC8UY5jbZH5PohWrANdC为READY并绑定原主域名。主域名HTTP入口资源index-DDW_0fO1.js、index-Bdc2v7VS.css与本次构建一致。
+- 生产交互验证尚未完成：独立生产域名tab10导航和AX初始化超时；同标签受支持DOM读取成功，实际进入test 2基础设置。随后打开构建器并读取状态45秒超时，停止重试。未执行生产重置、未改用户原域名存储；部署和入口版本确认不替代线上交互验收。
