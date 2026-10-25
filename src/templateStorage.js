@@ -1,6 +1,10 @@
 const PREFIX = "paywall-template-v1:";
 const SOURCE_IMAGE_REPAIR_PREFIX = "paywall-template-source-image-repair-v1:";
 const COMPONENT_LIBRARY_KEY = "paywall-component-library-v1";
+const resetting = new WeakSet();
+export const localSettingsResetting = (storage) => resetting.has(storage);
+export const beginLocalDemoReset = (storage) => resetting.add(storage);
+export const cancelLocalDemoReset = (storage) => resetting.delete(storage);
 
 export const protectedTemplateIds = new Set([
   "ht-blue-privilege",
@@ -31,6 +35,7 @@ export function readTemplateNodes(storage, templateId) {
 }
 
 export function writeTemplateNodes(storage, templateId, nodes) {
+  if (localSettingsResetting(storage)) return false;
   if (!protectedTemplateIds.has(templateId) || !Array.isArray(nodes)) return false;
   try {
     storage.setItem(PREFIX + templateId, JSON.stringify({ version: 1, nodes }));
@@ -41,13 +46,15 @@ export function writeTemplateNodes(storage, templateId, nodes) {
 }
 
 export function clearLocalDemoSettings(storage) {
+  beginLocalDemoReset(storage);
   try {
     for (let index = storage.length - 1; index >= 0; index -= 1) {
       const key = storage.key(index);
-      if (key?.startsWith(PREFIX) || key?.startsWith(SOURCE_IMAGE_REPAIR_PREFIX) || key?.startsWith('paywall-component-document-v3:') || key === 'paywall-component-library-v3' || key === COMPONENT_LIBRARY_KEY) storage.removeItem(key);
+      if (key?.startsWith(PREFIX) || key?.startsWith(SOURCE_IMAGE_REPAIR_PREFIX) || key?.startsWith('paywall-component-document-v3:') || key?.startsWith('paywall-saved-v1:') || key === 'paywall-component-library-v3' || key === COMPONENT_LIBRARY_KEY) storage.removeItem(key);
     }
     return true;
   } catch {
+    cancelLocalDemoReset(storage);
     return false;
   }
 }

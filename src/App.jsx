@@ -9,7 +9,8 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { linkActionFor, visibleLinkLabels } from "./linkActions.js";
 
 import { DEMO_SKUS, PRICE_DISPLAY_MODES, billingMonths, productPriceFields, resolveProductPrice, skuById, skuCopy, templateSkuId } from "./productPricing.js";
-import { clearLocalDemoSettings, protectedTemplateIds, readTemplateNodes, writeTemplateNodes } from "./templateStorage.js";
+import { clearLocalDemoSettings, beginLocalDemoReset, cancelLocalDemoReset } from "./templateStorage.js";
+import { listSavedPaywalls, readSavedPaywall, savePaywall, removeSavedPaywall } from './paywallStorage.js';
 import { clearCustomBundles } from "./builder/customStorage.js";
 import { productTranslation } from "./productPlacement.js";
 import { productArrangement } from "./productArrangement.js";
@@ -342,27 +343,32 @@ function localizeInterface(root, locale) {
   });
 }
 
+const freshPaywallDraft = () => ({
+  name: 'RESEARCH - Rebuild Draft', businessType: paywallBusinessTypes[0], businessScene: paywallScenesByBusinessType[paywallBusinessTypes[0]][0], publicAccount: paywallPublicAccounts[0], note: '', offerRows: defaultPaywallOfferRows(), defaultProductId: 'DEMO-BLUE-YEAR', products: [],
+});
+
 export default function App() {
   const [view, setView] = useState("list");
-  const [paywalls, setPaywalls] = useState(originalPaywalls);
+  const [paywalls, setPaywalls] = useState(() => {
+    const saved = listSavedPaywalls(window.localStorage).map((record) => record.paywall);
+    return [...originalPaywalls.map((item) => saved.find((record) => record.id === item.id) ?? item), ...saved.filter((item) => !originalPaywalls.some((original) => original.id === item.id))];
+  });
   const [selectedId, setSelectedId] = useState("test-2");
   const [search, setSearch] = useState("");
   const [stateFilter, setStateFilter] = useState("Live,Draft,Inactive");
   const [modal, setModal] = useState(null);
   const [toast, setToast] = useState("");
-  const [draft, setDraft] = useState({
-    name: "RESEARCH - Rebuild Draft",
-    businessType: paywallBusinessTypes[0], businessScene: paywallScenesByBusinessType[paywallBusinessTypes[0]][0], publicAccount: paywallPublicAccounts[0],
-    note: "", offerRows: defaultPaywallOfferRows(), defaultProductId: "DEMO-BLUE-YEAR", products: [],
-  });
+  const [draft, setDraft] = useState(freshPaywallDraft);
   const [compliance, setCompliance] = useState(false);
   const [rememberCompliance, setRememberCompliance] = useState(false);
   const [templateSelected, setTemplateSelected] = useState(null);
   const [appliedTemplate, setAppliedTemplate] = useState(null);
   const [templateLinks, setTemplateLinks] = useState({ terms: "terms-link", privacy: "privacy-link" });
   const [builderNodes, setBuilderNodes] = useState(() => createBuilderNodes());
-  const currentTemplateId = useRef(null);
-  const [templateSaveError, setTemplateSaveError] = useState(false);
+  const [builderDocument, setBuilderDocument] = useState(null);
+  const [savedDocument, setSavedDocument] = useState(null);
+  const [builderRevision, setBuilderRevision] = useState(0);
+  const [resetPending, setResetPending] = useState(false);
   const [builderOrigin, setBuilderOrigin] = useState("existing");
   const [activeNode, setActiveNode] = useState("links");
   const [unknownOpen, setUnknownOpen] = useState(false);
@@ -399,7 +405,25 @@ export default function App() {
 
   const selected = paywalls.find((item) => item.id === selectedId) ?? paywalls[0];
 
+  const restoreBuilder = (record = null) => {
+    const index = record ? templates.findIndex((template) => template.id === record.templateId) : -1;
+    setAppliedTemplate(index < 0 ? null : index);
+    setTemplateSelected(index < 0 ? null : index);
+    setBuilderNodes(index < 0 ? [] : createBuilderNodes(record.templateId));
+    setBuilderDocument(record?.document ?? null);
+    setSavedDocument(record?.document ?? null);
+    setBuilderRevision((value) => value + 1);
+  };
+
+  const startCreation = () => {
+    restoreBuilder();
+    setDraft(freshPaywallDraft());
+    setBuilderOrigin('create');
+    setView('create');
+  };
+
   const openPaywall = (item) => {
+    restoreBuilder(readSavedPaywall(window.localStorage, item.id));
     setSelectedId(item.id);
     setBuilderOrigin("existing");
     setView("general");
@@ -410,12 +434,13 @@ export default function App() {
   }, [view]);
 
   const duplicate = (source = selected) => {
+    startCreation();
     setDraft((current) => ({ ...current, name: `${source.name} (Copy)`, products: productOptions.slice(0, source.products) }));
-    setView("create");
     notify("Duplicate opens an unsaved copy. It is not added to the list yet.");
   };
 
   const archiveCurrent = () => {
+    if (!removeSavedPaywall(window.localStorage, selected.id)) return notify('本地归档失败，原记录仍保留。');
     setPaywalls((current) => current.filter((item) => item.id !== selected.id));
     setView("list");
     setModal(null);
@@ -445,12 +470,9 @@ export default function App() {
   };
   const applyTemplate = (templateIndex) => {
     const template = templates[templateIndex];
-    if (currentTemplateId.current && protectedTemplateIds.has(currentTemplateId.current)) {
-      writeTemplateNodes(window.localStorage, currentTemplateId.current, builderNodes);
-    }
-    const nextNodes = readTemplateNodes(window.localStorage, template.id) ?? createBuilderNodes(template.id);
-    currentTemplateId.current = template.id;
-    setTemplateSaveError(false);
+    const nextNodes = createBuilderNodes(template.id);
+    setBuilderDocument(null);
+    setBuilderRevision((value) => value + 1);
     setTemplateSelected(templateIndex);
     setAppliedTemplate(templateIndex);
     setBuilderNodes(nextNodes);
@@ -464,14 +486,38 @@ export default function App() {
     setActiveNode(nextNodes[0]?.id ?? "links");
   };
 
-  useEffect(() => {
-    const templateId = currentTemplateId.current;
-    if (!templateId || !protectedTemplateIds.has(templateId)) return;
-    const flush = () => setTemplateSaveError(!writeTemplateNodes(window.localStorage, templateId, builderNodes));
-    const timer = window.setTimeout(flush, 250);
-    window.addEventListener("pagehide", flush);
-    return () => { window.clearTimeout(timer); window.removeEventListener("pagehide", flush); };
-  }, [builderNodes]);
+  const saveBuilder = () => {
+    if (!builderDocument) return notify('请先打开构建器，确认页面内容后保存。');
+    const paywall = builderOrigin === 'create' ? { id: `local-${crypto.randomUUID()}`, name: draft.name.trim() || '未命名付费墙', state: 'Draft', products: Object.keys(builderDocument.products).length, startedAt: new Date().toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' }), config: structuredClone(draft) } : { ...selected, products: Object.keys(builderDocument.products).length };
+    if (!savePaywall(window.localStorage, paywall, builderDocument)) return notify('本地保存失败，当前编辑仍保留，请检查存储空间。');
+    setPaywalls((items) => items.some((item) => item.id === paywall.id) ? items.map((item) => item.id === paywall.id ? paywall : item) : [...items, paywall]);
+    setSelectedId(paywall.id);
+    setBuilderOrigin('existing');
+    setSavedDocument(builderDocument);
+    notify('付费墙已保存到本地。');
+  };
+
+  const discardBuilder = () => {
+    const record = builderOrigin === 'existing' ? readSavedPaywall(window.localStorage, selected.id) : null;
+    if (record) restoreBuilder(record);
+    else { setBuilderDocument(null); setBuilderNodes(appliedTemplate === null ? [] : createBuilderNodes(templates[appliedTemplate].id)); setBuilderRevision((value) => value + 1); }
+    notify(record ? '已恢复上次保存的付费墙。' : '已恢复模板默认内容。');
+  };
+
+  const resetLocal = async () => {
+    if (resetPending) return;
+    setResetPending(true);
+    beginLocalDemoReset(window.localStorage);
+    try {
+      await clearCustomBundles();
+      if (!clearLocalDemoSettings(window.localStorage)) throw new Error('storage');
+      window.location.reload();
+    } catch {
+      cancelLocalDemoReset(window.localStorage);
+      setResetPending(false);
+      notify('本地设定清除失败，请检查浏览器存储权限。');
+    }
+  };
 
   return (
     <div className={`app ${unknownOpen ? "" : "evidence-collapsed"}`}>
@@ -511,6 +557,7 @@ export default function App() {
               rowMenuId={rowMenuId}
               setRowMenuId={setRowMenuId}
               openPaywall={openPaywall}
+              onCreate={startCreation}
               setView={setView}
               setModal={setModal}
               duplicate={duplicate}
@@ -537,7 +584,12 @@ export default function App() {
               setModal={setModal}
               markUnknown={markUnknown}
               builderNodes={builderNodes}
-              templateSaveError={templateSaveError}
+              builderDocument={builderDocument}
+              setBuilderDocument={setBuilderDocument}
+              builderRevision={builderRevision}
+              builderDirty={builderDocument !== savedDocument}
+              saveBuilder={saveBuilder}
+              discardBuilder={discardBuilder}
               setBuilderNodes={setBuilderNodes}
               updateBuilderNode={updateBuilderNode}
               removeBuilderNode={removeBuilderNode}
@@ -563,7 +615,12 @@ export default function App() {
               setModal={setModal}
               markUnknown={markUnknown}
               builderNodes={builderNodes}
-              templateSaveError={templateSaveError}
+              builderDocument={builderDocument}
+              setBuilderDocument={setBuilderDocument}
+              builderRevision={builderRevision}
+              builderDirty={builderDocument !== savedDocument}
+              saveBuilder={saveBuilder}
+              discardBuilder={discardBuilder}
               setBuilderNodes={setBuilderNodes}
               updateBuilderNode={updateBuilderNode}
               removeBuilderNode={removeBuilderNode}
@@ -601,7 +658,7 @@ export default function App() {
       </aside>
 
       {toast && <div className="toast"><Check size={17} /> {toast}</div>}
-      {modal?.kind === "local-reset" && <div className="modal-backdrop"><section className="modal local-reset-modal" role="dialog" aria-modal="true" aria-label="重置本地设定"><header><h2>重置本地设定</h2><button type="button" className="icon" aria-label="关闭" onClick={() => setModal(null)}><X size={19} /></button></header><p>将清除当前浏览器保存的模板修改、组件库和自定义 ZIP，并还原本 Demo 的默认页面。此操作无法撤销。</p><div className="modal-actions"><button type="button" className="secondary" onClick={() => setModal(null)}>取消</button><button type="button" className="primary" onClick={async () => { try { await clearCustomBundles(); if (clearLocalDemoSettings(window.localStorage)) window.location.reload(); else notify("本地设定清除失败，请检查浏览器存储权限。"); } catch { notify("本地设定清除失败，请检查浏览器存储权限。"); } }}>确认重置</button></div></section></div>}
+      {modal?.kind === "local-reset" && <div className="modal-backdrop"><section className="modal local-reset-modal" role="dialog" aria-modal="true" aria-label="重置本地设定"><header><h2>重置本地设定</h2><button type="button" className="icon" aria-label="关闭" disabled={resetPending} onClick={() => setModal(null)}><X size={19} /></button></header><p>将清除当前浏览器保存的付费墙、模板修改、组件库和自定义 ZIP，并还原本 Demo 的默认页面。此操作无法撤销。</p><div className="modal-actions"><button type="button" className="secondary" disabled={resetPending} onClick={() => setModal(null)}>取消</button><button type="button" className="primary" disabled={resetPending} onClick={resetLocal}>{resetPending ? '正在重置…' : '确认重置'}</button></div></section></div>}
       {modal?.kind === "builder-save" && (
         <ComplianceModal
           compliance={compliance}
@@ -609,7 +666,7 @@ export default function App() {
           rememberCompliance={rememberCompliance}
           setRememberCompliance={setRememberCompliance}
           onClose={() => setModal(null)}
-          onAccept={() => { setModal(null); setCompliance(false); notify("Builder changes saved locally after the observed confirmation."); }}
+          onAccept={() => { setModal(null); setCompliance(false); saveBuilder(); }}
           context="builder"
         />
       )}
@@ -642,6 +699,7 @@ export default function App() {
 }
 
 function PaywallList({
+  onCreate,
   paywalls,
   search,
   setSearch,
@@ -673,7 +731,7 @@ function PaywallList({
     <section>
       <div className="page-heading">
         <div><h1>Paywalls <span>↗</span></h1><p>Read the docs</p></div>
-        <button className="primary" onClick={() => setView("create")}>Create paywall</button>
+        <button className="primary" onClick={onCreate}>Create paywall</button>
       </div>
       <div className="list-controls">
         <label className="search"><Search size={19} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search by paywall name" /></label>
@@ -784,7 +842,7 @@ function CreatePaywall({ draft, setDraft, setView, setModal }) {
   );
 }
 
-function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setView, duplicate, setModal, markUnknown, builderNodes, setBuilderNodes, updateBuilderNode, removeBuilderNode, activeNode, setActiveNode, appliedTemplate, templateSaveError, templateLinks, setTemplateLinks, notify }) {
+function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setView, duplicate, setModal, markUnknown, builderNodes, setBuilderNodes, updateBuilderNode, removeBuilderNode, activeNode, setActiveNode, appliedTemplate, builderDocument, setBuilderDocument, builderRevision, builderDirty, saveBuilder, discardBuilder, templateLinks, setTemplateLinks, notify }) {
 
   const [productPickerOpen, setProductPickerOpen] = useState(false);
   const [transientProducts, setTransientProducts] = useState([]);
@@ -794,8 +852,8 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
     return <section className="builder-page">
       {isNew ? <><button className="back" onClick={() => setView("create")}><ArrowLeft size={18} /> 创建付费墙</button><div className="workspace-heading"><div><span className="eyebrow">新建付费墙</span><h1>{selected.name}</h1></div></div></> : <WorkspaceHeader selected={selected} setView={setView} duplicate={duplicate} setModal={setModal} markUnknown={markUnknown} />}
       <div className="detail-tabs"><button onClick={() => setView(isNew ? "create" : "general")}>General</button><button className="active">Builder & Generator</button></div>
-      <div className="template-context observed-tree"><span>模板</span><strong>{template.title}</strong><button className="secondary" onClick={() => setModal({ kind: "templates" })}><LayoutTemplate size={15} /> 更换模板</button></div>
-      <ComponentEditor key={template.id} template={template} initialNodes={initialNodes} />
+      <div className="template-context observed-tree"><span>模板</span><strong>{template.title}</strong><button className="secondary" onClick={() => setModal({ kind: "templates" })}><LayoutTemplate size={15} /> 更换模板</button><div className="builder-save-actions"><span role="status">{builderDirty ? '未保存' : '已保存'}</span><button type="button" className="secondary" onClick={discardBuilder}>放弃修改</button><button type="button" className="primary" onClick={saveBuilder}><Save size={15}/>保存</button></div></div>
+      <ComponentEditor key={`${template.id}:${builderRevision}`} template={template} initialNodes={initialNodes} initialDocument={builderDocument} onDocumentChange={setBuilderDocument} persistence="session" />
     </section>;
   }
 

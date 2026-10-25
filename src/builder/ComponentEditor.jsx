@@ -21,12 +21,13 @@ function Field({ label, children }) { return <label className="ne-field"><span>{
 function Select({ label, value, onChange, options }) { return <Field label={label}><select aria-label={label} value={value ?? ''} onChange={(event) => onChange(event.target.value)}>{options.map((option) => { const [key, name] = Array.isArray(option) ? option : [option, option]; return <option key={key} value={key}>{name}</option>; })}</select></Field>; }
 function readLibrary() { try { const value = JSON.parse(localStorage.getItem(libraryKey) ?? '[]'); return Array.isArray(value) ? value.filter((item) => item?.name && validDocument({ version: 3, products: {}, fonts:item.fonts, root: { id: '$library', type: 'Screen', props: {}, children: [item.node] } })) : []; } catch { return []; } }
 
-export default function ComponentEditor({ template, initialNodes }) {
+export default function ComponentEditor({ template, initialNodes, initialDocument, onDocumentChange, persistence = 'legacy' }) {
   const [initial] = useState(() => {
     try {
-      const saved = readComponentDocument(localStorage, template?.id ?? 'blank');
+      const saved = persistence === 'session' ? initialDocument : readComponentDocument(localStorage, template?.id ?? 'blank');
+      if (saved && (!validDocument(saved) || saved.templateId !== (template?.id ?? 'blank'))) throw new Error('已保存的付费墙内容无效，原记录仍然保留');
       const defaults = importComponentDocument(initialNodes, template);
-      const document = saved ? migrateTemplateVisuals(saved, importComponentDocument(initialNodes, template, false), defaults) : defaults;
+      const document = saved ? persistence === 'session' ? saved : migrateTemplateVisuals(saved, importComponentDocument(initialNodes, template, false), defaults) : defaults;
       return { document: upgradeCanonicalComponents(document), error: '' };
     } catch (error) {
       return { document: upgradeCanonicalComponents(importComponentDocument(initialNodes, template)), error: error.message };
@@ -36,6 +37,7 @@ export default function ComponentEditor({ template, initialNodes }) {
   const [saveError, setSaveError] = useState(initial.error);
   const blockedSave = Boolean(initial.error);
   const latest = useRef(document);
+  useEffect(() => { onDocumentChange?.(document); }, [document, onDocumentChange]);
   const [selectedId, setSelectedId] = useState(() => pageContext(initial.document).active.id);
   const [collapsed, setCollapsed] = useState(() => initialCollapsed(initial.document.root));
   const [editing, setEditing] = useState(true), [navigation, setNavigation] = useState({});
@@ -60,15 +62,15 @@ export default function ComponentEditor({ template, initialNodes }) {
   const saveFonts=(fonts)=>{
     if(blockedSave)throw new Error(initial.error);
     const next={...latest.current,fonts};
-    if(!saveComponentDocument(localStorage,next))throw new Error('字体保存失败，本地存储空间不足；原配置保留');
+    if(persistence !== 'session' && !saveComponentDocument(localStorage,next))throw new Error('字体保存失败，本地存储空间不足；原配置保留');
     setDocument(next);
   };
   useEffect(() => {
-    if (blockedSave) return;
+    if (blockedSave || persistence === 'session') return;
     const timer = setTimeout(() => setSaveError(saveComponentDocument(localStorage, document) ? '' : '本地保存失败，请缩小媒体文件后重试'), 250);
     return () => clearTimeout(timer);
-  }, [document, blockedSave]);
-  useEffect(() => { const flush = () => { if (!blockedSave) saveComponentDocument(localStorage, latest.current); }; window.addEventListener('pagehide', flush); return () => { flush(); window.removeEventListener('pagehide', flush); }; }, [blockedSave]);
+  }, [document, blockedSave, persistence]);
+  useEffect(() => { if (persistence === 'session') return; const flush = () => { if (!blockedSave) saveComponentDocument(localStorage, latest.current); }; window.addEventListener('pagehide', flush); return () => { flush(); window.removeEventListener('pagehide', flush); }; }, [blockedSave, persistence]);
   const select = (id) => {
     setSelectedId(id); setEditing(true);
     const reveal = {}; const expand = new Set(); let current = nodes.get(id);

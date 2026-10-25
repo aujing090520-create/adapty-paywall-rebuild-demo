@@ -4,6 +4,7 @@ import { linkActionFor, visibleLinkLabels } from '../linkActions.js';
 import { HT_PRODUCT_DESIGN_DEFAULTS } from '../products/productStyleModel.js';
 import { calibrateTemplateVisuals } from './templateVisuals.js';
 import { effectiveFillType } from './propertyModel.js';
+import { localSettingsResetting } from '../templateStorage.js';
 
 export const DOCUMENT_VERSION = 3;
 export const COMPONENT_TYPES = ['Screen', 'Stack', 'Text', 'Image', 'Video', 'Icon', 'Custom', 'Header', 'Footer', 'Package', 'PurchaseButton', 'BottomSheet', 'ExpressCheckout', 'CheckoutState', 'Wallet', 'Button', 'Tabs', 'Tab', 'TabControl', 'TabButton', 'Carousel', 'Slide', 'PageControl', 'Indicators', 'Timeline', 'TimelineItem', 'Switch', 'SwitchCase', 'Toggle', 'Countdown', 'CountdownState', 'Flow'];
@@ -262,6 +263,7 @@ export function readComponentDocument(storage, templateId) {
   return document;
 }
 export function saveComponentDocument(storage, document) {
+  if (localSettingsResetting(storage)) return false;
   if (!validDocument(document)) return false;
   try { storage.setItem(DOCUMENT_PREFIX + document.templateId, JSON.stringify(document)); return true; } catch { return false; }
 }
