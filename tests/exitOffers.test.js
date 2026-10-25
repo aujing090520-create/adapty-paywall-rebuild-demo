@@ -106,11 +106,12 @@ test('settings visibly report source, close event, destination and terminal resu
   const doc = fixture('购买页面'); doc.settings = { exitOfferOfferingId: 'offer' };
   let renderer;
   await act(async () => { renderer = TestRenderer.create(React.createElement(Settings, { document: doc, offerings: savedOfferings([record('offer', fixture('offer'))]), onChange() {} })); }); mounted.add(renderer);
-  const rule = renderer.root.findByProps({ 'aria-label': '退出优惠触发规则' });
-  for (const value of ['触发页面', '购买页面', '触发事件', '关闭页面', '展示内容', 'offer', '关闭优惠后', '结束整个付费墙流程']) assert.ok(text(rule).includes(value), value);
-  assert.equal(renderer.root.findAllByType('select').length, 1);
+  const rule = renderer.root.findByProps({ 'aria-label': '关闭后显示规则' });
+  for (const value of ['触发事件', '购买页面', '显示内容', 'offer']) assert.ok(text(rule).includes(value), value);
+  assert.equal(renderer.root.findAllByType('select').length, 0);
+  assert.equal(text(renderer.root).includes('Offering'), false);
   await act(async () => renderer.update(React.createElement(Settings, { document: { ...doc, settings: {} }, offerings: [], onChange() {} })));
-  assert.match(text(renderer.root), /未绑定，直接关闭/);
+  assert.match(text(renderer.root), /未关联，关闭后直接离开/);
 });
 
 test('exit canvas connection opens the canonical settings and removing the binding removes the connection', async () => {
@@ -120,9 +121,9 @@ test('exit canvas connection opens the canonical settings and removing the bindi
   const connection = renderer.root.findAll((item) => item.type === 'button' && item.props['aria-label']?.startsWith('配置退出触发：'));
   assert.equal(connection.length, 1); assert.match(connection[0].props['aria-label'], /关闭「购买页面」 → offer/);
   await act(async () => connection[0].props.onClick());
-  assert.ok(text(renderer.root.findByProps({ 'aria-label': '退出优惠触发规则' })).includes('购买页面'));
-  const field = renderer.root.findAll((item) => item.type === 'select' && item.props['aria-label'] === '退出优惠 Offering')[0];
-  await act(async () => field.props.onChange({ target: { value: '' } }));
+  assert.ok(text(renderer.root.findByProps({ 'aria-label': '关闭后显示规则' })).includes('购买页面'));
+  const field = renderer.root.findAll((item) => item.type === 'button' && text(item) === '解除关联')[0];
+  await act(async () => field.props.onClick());
   assert.equal(renderer.root.findAll((item) => item.type === 'button' && item.props['aria-label']?.startsWith('配置退出触发：')).length, 0);
   assert.deepEqual(latest.root, doc.root); assert.deepEqual(latest.products, doc.products);
 });
@@ -130,12 +131,12 @@ test('preview from a selected independent exit board starts at the main page and
   const doc = fixture('primary'); doc.settings = { exitOfferOfferingId: 'offer' };
   let renderer;
   await act(async () => { renderer = TestRenderer.create(React.createElement(Editor, { template: { id: 'blank' }, initialNodes: [], initialDocument: doc, persistence: 'session', offerings: savedOfferings([record('offer', fixture('offer'))]), currentPaywallId: 'primary', onExitOfferChange() {} })); }); mounted.add(renderer);
-  const click = async (name) => { const button = renderer.root.findAll((item) => item.type === 'button' && (item.props['aria-label'] === name || text(item) === name))[0]; assert.ok(button, name); await act(async () => button.props.onClick()); };
-  await click('选择画板：offer'); await click('交互预览');
+  const click = async (name) => { const button = renderer.root.findAll((item) => item.type === 'button' && (item.props['aria-label'] === name || text(item).trim() === name))[0]; assert.ok(button, name); await act(async () => button.props.onClick()); };
+  await click('选择画板：offer'); await click('预览流程');
   const preview = renderer.root.findByType(Presentation);
   assert.equal(preview.props.document, doc); assert.equal(preview.props.currentPaywallId, 'primary');
-  assert.ok(text(preview).includes('主付费墙')); assert.ok(text(preview).includes('¥100')); assert.equal(text(preview).includes('¥50'), false);
-  await click('关闭付费墙预览'); assert.ok(text(preview).includes('退出优惠 · offer')); assert.ok(text(preview).includes('¥50'));
+  assert.ok(text(preview).includes('页面预览')); assert.ok(text(preview).includes('¥100')); assert.equal(text(preview).includes('¥50'), false);
+  await click('关闭付费墙预览'); assert.ok(text(preview).includes('offer')); assert.ok(text(preview).includes('¥50'));
 });
 
 test('closing the primary displays the saved offer with its own products; closing the offer ends the session without chaining', async () => {
@@ -171,20 +172,20 @@ test('no binding or removed target closes directly, while settings preserve an u
     const h = await mount(doc, []); await h.click('dismiss'); assert.ok(text(h.renderer.root).includes('付费墙已关闭'));
   }
   let latest, renderer;
-  await act(async () => { renderer = TestRenderer.create(React.createElement(Settings, { document: { ...fixture(), settings: { exitOfferOfferingId: 'removed' } }, offerings: [], onChange: (value) => { latest = value; } })); }); mounted.add(renderer);
+  await act(async () => { renderer = TestRenderer.create(React.createElement(Settings, { document: { ...fixture(), settings: { exitOfferOfferingId: 'removed' } }, offerings: [], onUnlink: () => { latest = true; } })); }); mounted.add(renderer);
   assert.ok(renderer.root.findAll((item) => item.props.role === 'alert').length);
-  await act(async () => renderer.root.findByType('select').props.onChange({ target: { value: '' } })); assert.equal(latest.exitOfferOfferingId, '');
+  await act(async () => renderer.root.findAll((item)=>item.type==='button'&&text(item)==='解除关联')[0].props.onClick()); assert.equal(latest, true);
 });
 
-test('actual editor owns exit configuration at document level and does not change any component or template', async () => {
-  const doc = fixture(); let latest, renderer;
+test('actual editor unlinks legacy retention at document level without changing components or products', async () => {
+  const doc = fixture(); doc.settings={exitOfferOfferingId:'offer'}; let latest, renderer;
   await act(async () => { renderer = TestRenderer.create(React.createElement(Editor, { template: { id: 'blank' }, initialNodes: [], initialDocument: doc, persistence: 'session', offerings: savedOfferings([record('offer', fixture('offer'))]), currentPaywallId: 'primary', onDocumentChange: (value) => { latest = value; } })); }); mounted.add(renderer);
   const settingsButton = renderer.root.findAll((item) => item.type === 'button' && text(item) === '付费墙设置')[0];
   await act(async () => settingsButton.props.onClick());
-  const field = renderer.root.findAll((item) => item.type === 'select' && item.props['aria-label'] === '退出优惠 Offering')[0];
-  await act(async () => field.props.onChange({ target: { value: 'offer' } }));
-  assert.equal(exitOfferId(latest, doc.root.id), 'offer'); assert.deepEqual(latest.root, doc.root); assert.deepEqual(latest.products, doc.products);
-  assert.equal(doc.settings, undefined);
+  const field = renderer.root.findAll((item) => item.type === 'button' && text(item)==='解除关联')[0];
+  await act(async () => field.props.onClick());
+  assert.equal(exitOfferTarget(latest,[{id:'offer',document:fixture('offer'),packageCount:1}],undefined,doc.root.id),null); assert.deepEqual(latest.root, doc.root); assert.deepEqual(latest.products, doc.products);
+  assert.equal(doc.settings.exitOfferOfferingId, 'offer');
 });
 
 const multiScreen = () => ({ ...fixture(), root: component('root', 'Screen', '主流程', {}, [component('flow', 'Flow', '步骤', { initialStepId: 'a' }, [
@@ -238,15 +239,14 @@ test('per-screen creation keeps other bindings and batch saving retains every in
 
 test('each actual artboard has its own close port and settings source while multiple exit boards remain selectable', async () => {
   let renderer, latest;
-  const doc = multiScreen(), offers = ['offer-a','offer-b'].map((id) => ({ id, name: id, packageCount: 1, document: fixture(id) }));
+  const doc = bindExitOffer(bindExitOffer(multiScreen(),'a','offer-a'),'b','offer-b'), offers = ['offer-a','offer-b'].map((id) => ({ id, name: id, packageCount: 1, document: fixture(id) }));
   await act(async () => { renderer = TestRenderer.create(React.createElement(Editor, { template: { id: 'blank' }, initialNodes: [], initialDocument: doc, persistence: 'session', offerings: offers, onDocumentChange(value) { latest = value; }, onCreateExitOffer() {} })); }); mounted.add(renderer);
-  assert.equal(renderer.root.findAll((item) => item.type === 'button' && item.props['aria-label']?.startsWith('配置关闭「')).length, 3);
+  assert.equal(renderer.root.findAll((item) => item.type === 'button' && item.props['aria-label']?.startsWith('配置关闭「')).length, 1);
   const selectBoard = async (name) => act(async () => renderer.root.findByProps({ 'aria-label': `选择画板：${name}` }).props.onClick());
   const configure = async (name, target) => {
     await selectBoard(name);
     await act(async () => renderer.root.findByProps({ 'aria-label': '页面退出触发' }).findAllByType('button')[0].props.onClick());
-    const rule = renderer.root.findByProps({ 'aria-label': '退出优惠触发规则' }); assert.ok(text(rule).includes(name));
-    await act(async () => renderer.root.findByProps({ 'aria-label': '退出优惠 Offering' }).props.onChange({ target: { value: target } }));
+    const rule = renderer.root.findByProps({ 'aria-label': '关闭后显示规则' }); assert.ok(text(rule).includes(name)); assert.ok(text(rule).includes(target));
   };
   await configure('介绍 A','offer-a'); await configure('介绍 B','offer-b');
   assert.equal(exitOfferId(latest,'a'),'offer-a'); assert.equal(exitOfferId(latest,'b'),'offer-b');
@@ -291,7 +291,8 @@ test('converting existing HT retention preserves copy, assets, geometry and prod
   assert.deepEqual(result.offerDocument.products, original.products); assert.notEqual(result.offerDocument.products, doc.products);
   for (const node of indexDocument(original).nodes.values()) if (node.id.startsWith(surface.id) && ['Text', 'Image', 'Countdown'].includes(node.type) && node.id !== `${surface.id}/cancel`) assert.deepEqual(offer.get(node.id), node);
   assert.equal(offer.get(`${surface.id}/cancel`).props.action.action, 'Dismiss');
-  assert.equal(offer.get(`${surface.id}/action`).type, 'PurchaseButton');
+  assert.equal(offer.get(`${surface.id}/action`).type, 'Button');
+  assert.equal(offer.get(`${surface.id}/action`).props.action.action, 'Dismiss');
   assert.deepEqual(doc.root.children.slice(0, -1), original.root.children, 'source document was not mutated');
 });
 
@@ -316,7 +317,7 @@ test('blank exit creation is genuinely empty and does not inherit the main produ
   const surface = indexDocument(result.offerDocument).nodes.get(result.offerDocument.settings.presentationSurfaceId);
   assert.equal(surface.type, 'BottomSheet'); assert.deepEqual(surface.children, []); assert.deepEqual(result.offerDocument.products, {});
   assert.deepEqual(doc, before); assert.deepEqual(result.mainDocument.root, before.root);
-  assert.equal(exitOfferTarget(result.mainDocument, [{ id: 'blank-exit', name: result.name, document: result.offerDocument, packageCount: 0 }]), null);
+  assert.equal(exitOfferTarget(result.mainDocument, [{ id: 'blank-exit', name: result.name, document: result.offerDocument, packageCount: 0 }])?.id, 'blank-exit');
 });
 
 test('template and saved screen copies retain style, products, selected package and link dependencies with independent IDs', () => {
@@ -339,7 +340,7 @@ test('template and saved screen copies retain style, products, selected package 
   copiedPackages[0].props.radius = 99; result.offerDocument.products[copiedPackages[0].props.dataKey].name = 'copy-only'; assert.deepEqual(source, before);
 });
 
-test('template popup source preserves its artwork and purchase content without copying unrelated screens or mutating the source', () => {
+test('template popup source preserves its artwork and explicit button behavior without copying unrelated screens or mutating the source', () => {
   const template = templates.find((item) => item.id === 'ht-blue-privilege');
   const source = importComponentDocument(createBuilderNodes(template.id), template), before = structuredClone(source), main = fixture();
   const sheet = exitContentChoices(source).find((node) => node.type === 'BottomSheet');
@@ -347,7 +348,7 @@ test('template popup source preserves its artwork and purchase content without c
   assert.ok(validDocument(result.offerDocument)); assert.deepEqual(source, before); assert.deepEqual(result.mainDocument.root, main.root);
   const nodes = [...indexDocument(result.offerDocument).nodes.values()];
   assert.equal(nodes.filter((node) => node.type === 'Screen').length, 1);
-  assert.ok(nodes.some((node) => node.type === 'PurchaseButton'));
+  assert.ok(nodes.some((node) => node.name === '领取按钮' && node.props.action?.action === 'Dismiss'));
   assert.ok(nodes.some((node) => node.props.action?.action === 'Dismiss'));
   assert.deepEqual(nodes.filter((node) => node.type === 'Image').map((node) => node.props.src), [...indexDocument({ root: sheet }).nodes.values()].filter((node) => node.type === 'Image').map((node) => node.props.src));
   assert.equal(Object.keys(result.offerDocument.products).length, Object.keys(source.products).length);

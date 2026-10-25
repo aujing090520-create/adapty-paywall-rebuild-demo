@@ -227,7 +227,7 @@ function Countdown({ props }) {
   const parts = [Math.floor(remaining / 3600), Math.floor(remaining / 60) % 60, remaining % 60];
   return <span className="nc-countdown"><span style={{ color: props.prefixColor }}>{props.prefix}</span>{parts.map((part, index) => <React.Fragment key={index}>{index > 0 && <span>:</span>}<strong style={{ background: props.digitBackground, borderRadius: 4, padding: '0 3px' }}>{String(part).padStart(2, '0')}</strong></React.Fragment>)}<span>{props.suffix}</span></span>;
 }
-export default function ComponentPreview({ document, selectedId, onSelect, editing, inspectable = true, navigation, onNavigate, onStatus, onDismiss, dismissRequest = 0, dismissOnBackdrop = false }) {
+export default function ComponentPreview({ document, selectedId, onSelect, editing, inspectable = true, navigation, onNavigate, onStatus, onDismiss, onResume, dismissRequest = 0, dismissOnBackdrop = false }) {
   const [runtime, setRuntime] = useState({});
   const [hoveredId, setHoveredId] = useState(null);
   const previousDocument = useRef(document);
@@ -278,9 +278,16 @@ export default function ComponentPreview({ document, selectedId, onSelect, editi
       const target = indexDocument(document).nodes.get(action.actionPage);
       if (target?.type === 'BottomSheet' && !target.props.hidden) setRuntime((current)=>({...current,overlay:target.id})); else onStatus('请先选择有效的弹层');
     } else if (action.action === 'CloseSheet') {
+      if (document.settings?.presentationSurfaceId && onResume) { onResume(); return; }
+      if (document.settings?.presentationSurfaceId && onDismiss) { dismissPaywall(); return; }
       setRuntime((current)=>({...current,overlay:null}));
     } else if (action.action === 'NavigateBack') {
-      if (runtime.overlay) { setRuntime((current)=>({...current,overlay:null})); return; }
+      if (runtime.overlay) {
+        if (document.settings?.presentationSurfaceId && onResume) onResume();
+        else if (document.settings?.presentationSurfaceId && onDismiss) dismissPaywall();
+        else setRuntime((current)=>({...current,overlay:null}));
+        return;
+      }
       const {nodes,parents}=indexDocument(document);let flow=nodes.get(parents.get(node.id));
       while(flow&&flow.type!=='Flow')flow=nodes.get(parents.get(flow.id));
       const index=flow?(runtime[flow.id]??flowInitialIndex(flow)):0;

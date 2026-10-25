@@ -8,6 +8,8 @@ import { beginLocalDemoReset, clearLocalDemoSettings, writeTemplateNodes } from 
 import { savePaywall, readSavedPaywall, listSavedPaywalls, removeSavedPaywall, PAYWALL_SAVE_PREFIX } from '../src/paywallStorage.js';
 import { exitOfferId, boundExitOfferIds } from '../src/builder/exitOffers.js';
 import { addWorkflowStep, workflowContext } from '../src/builder/workflow.js';
+import { closeTargetId } from '../src/builder/closeTargets.js';
+import { indexDocument } from '../src/builder/componentDocument.js';
 
 let server, App;
 before(async()=>{
@@ -55,6 +57,7 @@ test('actual App reapplies pristine templates, saves by paywall, discards edits 
     await click('更换模板');
     const card=app.root.findAll(item=>item.type==='div'&&item.props.role==='button'&&item.findAllByType('strong').some(title=>text(title)==='蓝色特权页'))[0];assert.ok(card);
     await act(async()=>card.props.onClick());await click('Open in Builder');
+    if(app.root.findAll(item=>item.props.role==='dialog'&&item.props['aria-label']==='替换当前画布？').length)await click('替换画布');
   };
   const open=async id=>{
     const row=app.root.findAll(item=>item.type==='tr'&&item.findAllByType('strong').some(label=>text(label)===id))[0];assert.ok(row);
@@ -67,9 +70,9 @@ test('actual App reapplies pristine templates, saves by paywall, discards edits 
     await rename('未保存内容');await applyBlue();assert.equal(rootName().props.value,'特权首页');
     await rename('已保存内容');await click('保存');assert.equal(readSavedPaywall(store,'test-2').document.root.children.find(node=>node.type==='Flow').children[0].name,'已保存内容');
     await rename('第二次未保存');await click('放弃修改');assert.equal(rootName().props.value,'已保存内容');
-    await rename('离开前未保存');await click('Paywalls');await open('test 2');assert.equal(rootName().props.value,'已保存内容');
+    await rename('离开前未保存');await click('Paywalls');assert.ok(app.root.findByProps({'aria-label':'有尚未保存的修改'}));await click('放弃并继续');await open('test 2');assert.equal(rootName().props.value,'已保存内容');
     await click('Paywalls');await open('test');assert.equal(rootName().props.value,'付费墙页面');
-    await click('Paywalls');await click('Create paywall');await click('Build no-code paywall');await applyBlue();assert.equal(rootName().props.value,'特权首页');
+    await click('Paywalls');if(app.root.findAll(item=>item.props['aria-label']==='有尚未保存的修改').length)await click('放弃并继续');await click('Create paywall');await click('Build no-code paywall');await applyBlue();assert.equal(rootName().props.value,'特权首页');
     await rename('新建也不能污染模板');
     assert.equal(JSON.parse(store.getItem(DOCUMENT_PREFIX+'ht-blue-privilege')).root.name,'旧缓存污染');
     assert.equal(listSavedPaywalls(store).length,1);assert.equal(reloads,0);
@@ -81,7 +84,7 @@ test('actual App reapplies pristine templates, saves by paywall, discards edits 
   }
 });
 
-test('actual App converts, edits and saves an existing retention offer in one session without a launcher or premature persistence', async()=>{
+test('actual App links, edits and saves an existing canvas popup without copying it or creating another paywall record', async()=>{
   const keys=['window','document','localStorage','MutationObserver','ResizeObserver','IntersectionObserver'];
   const previous=Object.fromEntries(keys.map(key=>[key,globalThis[key]]));const store=storage(),timers=new Set();let app;
   globalThis.localStorage=store;
@@ -91,7 +94,7 @@ test('actual App converts, edits and saves an existing retention offer in one se
   const text=node=>typeof node==='string'?node:node.children?.map(text).join('')??'';
   const click=async name=>{const target=app.root.findAll(item=>item.type==='button'&&(text(item).trim()===name||item.props['aria-label']===name))[0];assert.ok(target,`button ${name}`);await act(async()=>target.props.onClick({stopPropagation(){},preventDefault(){}}));};
   const editor=()=>app.root.findAll(item=>typeof item.type==='function'&&item.type.name==='ComponentEditor'&&!item.props.isExitOffer)[0];
-  const nameField=()=>app.root.findAll(item=>item.type==='label'&&item.props.className==='ne-field'&&item.children.some(child=>typeof child==='object'&&text(child)==='页面名称'))[0].findByType('input');
+  const nameField=()=>app.root.findAll(item=>item.type==='label'&&item.props.className==='ne-field'&&item.children.some(child=>typeof child==='object'&&['页面名称','弹窗名称'].includes(text(child))))[0].findByType('input');
   const open=async()=>{const row=app.root.findAll(item=>item.type==='tr'&&item.findAllByType('strong').some(label=>text(label)==='test 2'))[0];await act(async()=>row.props.onClick());await click('Open Builder');};
   try{
     await act(async()=>{app=TestRenderer.create(React.createElement(App));});await open();await click('更换模板');
@@ -99,13 +102,12 @@ test('actual App converts, edits and saves an existing retention offer in one se
     const doc=editor().props.initialDocument;
     const visit=node=>[node,...node.children.flatMap(visit)];
     const surface=visit(doc.root).find(node=>node.name==='挽留弹窗');assert.ok(surface);
-    await click('付费墙设置');
-    const field=app.root.findAll(item=>item.type==='select'&&item.props['aria-label']==='退出优惠 Offering')[0];
-    assert.ok(field.findAllByType('option').some(option=>option.props.value===`surface:${surface.id}`));
-    await act(async()=>field.props.onChange({target:{value:`surface:${surface.id}`}}));
-    await act(async()=>{await server.ssrLoadModule('/src/builder/StepPicker.jsx');});
+    await click('配置关闭「特权首页」后的挽留');
+    await act(async()=>{await server.ssrLoadModule('/src/builder/CloseTargetPicker.jsx');});
+    const choice=app.root.findAll(item=>item.type==='button'&&item.props.className==='ne-target-choice'&&text(item).includes('挽留弹窗'))[0];assert.ok(choice);
+    await act(async()=>choice.props.onClick());
     assert.equal(editor().props.initialDocument.settings?.exitOfferOfferingId,undefined,'selecting content is not creation');
-    await click('创建退出优惠');
+    await click('关联此内容');
     assert.equal(text(app.root).includes('返回主付费墙'),false);assert.equal(listSavedPaywalls(store).length,0);
     assert.equal(app.root.findAll(item=>item.type==='div'&&item.props['aria-label']==='多画板画布').length,1);
     assert.ok(app.root.findAll(item=>item.type==='section'&&item.props.className?.startsWith('ne-artboard')).length>=2);
@@ -115,25 +117,24 @@ test('actual App converts, edits and saves an existing retention offer in one se
     await act(async()=>nameField().props.onChange({target:{value:'已编辑挽留优惠'}}));
     await click('选择画板：特权首页');
     assert.equal(nameField().props.value,'特权首页','selecting main board restores the main property owner');
-    const main=editor().props.initialDocument,offerId=exitOfferId(main);
-    assert.equal(visit(main.root).some(node=>node.id===surface.id||node.name==='打开底部弹层'),false);
+    const main=editor().props.initialDocument,offerId=closeTargetId(main,workflowContext(main).initial.id);
+    assert.equal(offerId,surface.id);assert.equal(visit(main.root).filter(node=>node.id===surface.id).length,1);
     assert.equal(listSavedPaywalls(store).length,0,'conversion and editing are not autosaved');
-    await click('保存');assert.equal(listSavedPaywalls(store).length,2);
-    assert.equal(exitOfferId(readSavedPaywall(store,'test-2').document),offerId);
-    assert.equal(readSavedPaywall(store,offerId).document.root.children[0].name,'已编辑挽留优惠');
-    assert.equal(readSavedPaywall(store,offerId).paywall.name,'已编辑挽留优惠');
-    await click('付费墙设置');await click('编辑退出优惠');await act(async()=>nameField().props.onChange({target:{value:'不应保存的新修改'}}));
-    await click('放弃修改');await click('付费墙设置');await click('编辑退出优惠');assert.equal(nameField().props.value,'已编辑挽留优惠');
+    await click('保存');assert.equal(listSavedPaywalls(store).length,1);
+    assert.equal(closeTargetId(readSavedPaywall(store,'test-2').document,workflowContext(main).initial.id),offerId);
+    assert.equal(indexDocument(readSavedPaywall(store,'test-2').document).nodes.get(offerId).name,'已编辑挽留优惠');
+    await click('付费墙设置');await click('编辑关联内容');await act(async()=>nameField().props.onChange({target:{value:'不应保存的新修改'}}));
+    await click('放弃修改');await click('付费墙设置');await click('编辑关联内容');assert.equal(nameField().props.value,'已编辑挽留优惠');
     await click('选择画板：特权首页');await click('Paywalls');await open();
-    assert.equal(exitOfferId(editor().props.initialDocument),offerId);
-    await click('付费墙设置');await click('编辑退出优惠');assert.equal(nameField().props.value,'已编辑挽留优惠');
+    assert.equal(closeTargetId(editor().props.initialDocument,workflowContext(main).initial.id),offerId);
+    await click('付费墙设置');await click('编辑关联内容');assert.equal(nameField().props.value,'已编辑挽留优惠');
     let expanded=addWorkflowStep(addWorkflowStep(editor().props.initialDocument).document).document;
     const sources=workflowContext(expanded).steps.slice(0,2);
     for(const source of sources){
       await act(async()=>{expanded=editor().props.onCreateExitOffer(expanded,undefined,{source:main,nodeId:workflowContext(main).initial.id},source.id);});
       await act(async()=>editor().props.onDocumentChange(expanded));
     }
-    const ids=boundExitOfferIds(expanded);assert.equal(ids.length,3);
+    const ids=boundExitOfferIds(expanded);assert.equal(ids.length,2);
     await click('保存');
     const reopened=readSavedPaywall(store,'test-2').document;
     assert.deepEqual(boundExitOfferIds(reopened),ids);

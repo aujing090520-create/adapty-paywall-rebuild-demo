@@ -1,0 +1,55 @@
+import test, { before, after } from 'node:test';
+import assert from 'node:assert/strict';
+import React from 'react';
+import TestRenderer, { act } from 'react-test-renderer';
+import { createServer } from 'vite';
+import { component } from '../src/builder/componentDocument.js';
+import { createRetentionModal, closeTargetId } from '../src/builder/closeTargets.js';
+import { savePaywall, readSavedPaywall, listSavedPaywalls } from '../src/paywallStorage.js';
+
+let server, App;
+before(async()=>{server=await createServer({configFile:false,logLevel:'silent',server:{middlewareMode:true,hmr:false,watch:null}});App=(await server.ssrLoadModule('/src/App.jsx')).default;});
+after(async()=>server?.close());
+const text=node=>typeof node==='string'?node:node.children?.map(text).join('')??'';
+
+test('actual administration saves names, protects navigation, copies real canvas and leaves source isolated',async()=>{
+  const keys=['window','document','localStorage','MutationObserver','ResizeObserver','IntersectionObserver'],previous=Object.fromEntries(keys.map(key=>[key,globalThis[key]]));
+  const records=new Map(),listeners=new Map(),timers=new Set();let app;
+  const storage={get length(){return records.size;},key:index=>[...records.keys()][index]??null,getItem:key=>records.get(key)??null,setItem:(key,value)=>records.set(key,value),removeItem:key=>records.delete(key)};
+  globalThis.localStorage=storage;
+  globalThis.document={querySelector(){return null;},documentElement:{lang:'zh-CN',style:{}},body:{style:{}}};
+  globalThis.MutationObserver=class{observe(){}disconnect(){}};globalThis.ResizeObserver=class{observe(){}disconnect(){}};globalThis.IntersectionObserver=class{observe(){}disconnect(){}};
+  globalThis.window={localStorage:storage,location:{reload(){}},addEventListener(name,callback){listeners.set(name,callback);},removeEventListener(name,callback){if(listeners.get(name)===callback)listeners.delete(name);},setInterval,clearInterval,setTimeout(fn,ms){const id=setTimeout(fn,ms);timers.add(id);return id;},clearTimeout};
+  const initial={version:3,templateId:'blank',products:{},root:component('page','Screen','原画布',{},[component('copy','Text','标题',{text:'保留的真实内容'})])};
+  const source=createRetentionModal(initial,'page').document;
+  assert.ok(savePaywall(storage,{id:'test-2',name:'源付费墙',state:'Draft',products:0,startedAt:'2026/10/25'},source));
+  const click=async(name)=>{const button=app.root.findAll(item=>item.type==='button'&&(text(item).trim()===name||item.props['aria-label']===name))[0];assert.ok(button,name);await act(async()=>button.props.onClick({preventDefault(){},stopPropagation(){}}));};
+  const open=async(name)=>{const row=app.root.findAll(item=>item.type==='tr'&&item.findAllByType('strong').some(node=>text(node)===name))[0];assert.ok(row,name);await act(async()=>row.props.onClick());};
+  const nameInput=()=>app.root.findByProps({'aria-label':'付费墙名称'});
+  const pageInput=()=>app.root.findAll(item=>item.type==='label'&&item.props.className==='ne-field'&&item.children.some(node=>typeof node==='object'&&text(node)==='页面名称'))[0].findByType('input');
+  try{
+    await act(async()=>{app=TestRenderer.create(React.createElement(App));});await open('源付费墙');
+    await act(async()=>nameInput().props.onChange({target:{value:'改名成功'}}));await click('Paywalls');
+    assert.ok(app.root.findByProps({'aria-label':'有尚未保存的修改'}));assert.equal(readSavedPaywall(storage,'test-2').paywall.name,'源付费墙');
+    await click('继续编辑');assert.equal(nameInput().props.value,'改名成功');
+    const unload={preventDefault(){this.prevented=true;}};listeners.get('beforeunload')(unload);assert.equal(unload.prevented,true);
+    await click('保存');assert.equal(readSavedPaywall(storage,'test-2').paywall.name,'改名成功');assert.deepEqual(readSavedPaywall(storage,'test-2').document,source);
+    await click('Open Builder');await click('Duplicate');
+    assert.equal(listSavedPaywalls(storage).length,1,'copy is initially unsaved');assert.equal(pageInput().props.value,'原画布');
+    await act(async()=>pageInput().props.onChange({target:{value:'副本画布'}}));await click('保存');
+    const saved=listSavedPaywalls(storage);assert.equal(saved.length,2);
+    const copy=saved.find(record=>record.paywall.id!=='test-2');assert.equal(copy.paywall.name,'改名成功 (Copy)');assert.equal(copy.document.root.name,'副本画布');assert.equal(closeTargetId(copy.document,'page'),closeTargetId(source,'page'));
+    assert.deepEqual(readSavedPaywall(storage,'test-2').document,source,'source canvas remains unchanged');
+    await click('Paywalls');await open('改名成功');assert.equal(nameInput().props.value,'改名成功');
+    await act(async()=>nameInput().props.onChange({target:{value:''}}));await click('保存');assert.equal(readSavedPaywall(storage,'test-2').paywall.name,'改名成功');
+    await click('放弃修改');assert.equal(nameInput().props.value,'改名成功');
+    await click('Open Builder');await act(async()=>pageInput().props.onChange({target:{value:'待保存画布'}}));
+    await click('Paywalls');await click('保存并继续');assert.equal(readSavedPaywall(storage,'test-2').document.root.name,'待保存画布');
+    assert.ok(app.root.findAllByType('table').length);
+    await open('改名成功');await click('Open Builder');await act(async()=>pageInput().props.onChange({target:{value:'不要保留'}}));
+    await click('Metrics');await click('放弃并继续');await click('Edit paywall');await click('Builder & Generator');
+    assert.equal(pageInput().props.value,'待保存画布','discard before navigation really restores the saved workspace');
+    await click('General');await act(async()=>nameInput().props.onChange({target:{value:''}}));await click('Paywalls');await click('保存并继续');
+    assert.ok(app.root.findByProps({'aria-label':'有尚未保存的修改'}));assert.equal(readSavedPaywall(storage,'test-2').paywall.name,'改名成功');
+  }finally{if(app)await act(async()=>app.unmount());for(const id of timers)clearTimeout(id);for(const[key,value]of Object.entries(previous))globalThis[key]=value;}
+});

@@ -695,13 +695,13 @@ test('editor keeps sheets on peer artboards, previews the selected sheet and swi
     const select=async(id)=>act(async()=>editor.root.findAll(item=>item.type==='div'&&item.props['data-layer-id']===id)[0].findAll(item=>item.type==='button'&&item.props.className==='ne-tree-select')[0].props.onClick());
     const componentNode=id=>editor.root.findAll(item=>item.type==='div'&&item.props['data-component-id']===id)[0];
     const clickLabel=async(label)=>act(async()=>editor.root.findAll(item=>item.type==='button'&&(item.props['aria-label']===label||item.children.some(child=>child===label)))[0].props.onClick(event()));
-    const main=editor.root.findByProps({'aria-label':'组件图层'}),surfaces=editor.root.findByProps({'aria-label':'弹层图层'});
+    const main=editor.root.findByProps({'aria-label':'组件图层'}),surfaces=editor.root.findByProps({'aria-label':'弹窗图层'});
     assert.equal(main.findAll(item=>item.props['data-layer-id']==='retention').length,0);
     assert.equal(surfaces.findAll(item=>item.props['data-layer-id']==='retention').length,1);assert.ok(componentNode('retention'));
     assert.equal(editor.root.findAll(item=>item.type==='section'&&item.props.className?.startsWith('ne-artboard')).length,2);
     await select('retention');assert.ok(componentNode('retention'));assert.equal(componentNode('retention').props['data-component-type'],'BottomSheet');
-    assert.ok(editor.root.findByProps({'aria-label':'当前弹层'}).findAllByType('button').some(button=>button.props.title==='定位触发按钮：查看优惠'));
-    await clickLabel('交互预览');assert.ok(componentNode('retention'));await act(async()=>componentNode('close-sheet').props.onClick(event()));assert.equal(componentNode('retention'),undefined);
+    assert.ok(editor.root.findByProps({'aria-label':'当前弹窗'}).findAllByType('button').some(button=>button.props.title==='定位触发按钮：查看优惠'));
+    await clickLabel('预览弹窗');assert.ok(componentNode('retention'));await act(async()=>componentNode('close-sheet').props.onClick(event()));assert.equal(componentNode('retention'),undefined);
     await clickLabel('返回编辑');assert.ok(componentNode('retention'));
     await clickLabel('选择画板：页面');assert.ok(componentNode('retention'));assert.ok(componentNode('launch'));
     assert.equal(editor.root.findAll(item=>item.type==='button'&&item.props['aria-label']==='返回主页面').length,0);
@@ -897,8 +897,8 @@ test('actual editor saves synchronized selector styles and reopens them on the s
     assert.deepEqual(saved.products, source.products);
     await act(async () => editor.unmount()); mounted.delete(editor);
     await open();
-    const interact = editor.root.findAll((item) => item.type === 'button' && item.children.includes('交互预览'))[0];
-    assert.ok(interact, '缺少交互预览入口');
+    const interact = editor.root.findAll((item) => item.type === 'button' && item.children.includes('预览流程'))[0];
+    assert.ok(interact, '缺少流程预览入口');
     await act(async () => interact.props.onClick());
     await act(async () => preview('tabs/tab-button-0-1').props.onClick(event()));
     assert.equal(preview('tabs/controls-1').props.style.gap, '17px');

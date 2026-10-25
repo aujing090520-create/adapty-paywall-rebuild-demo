@@ -3,6 +3,7 @@ import { pageContext } from './componentTree.js';
 import { createCatalogComponent } from './componentCatalog.js';
 import { workflowContext, stepDestination } from './workflow.js';
 import { copyFragment, pasteFragment } from './componentOperations.js';
+import { hasCloseTarget, closeTargetPresentation } from './closeTargets.js';
 
 // A saved Demo paywall and its packages form one local Offering, not a Sheet.
 export function savedOfferings(records, currentPaywallId) {
@@ -127,21 +128,30 @@ function createSelectedExitOffer(document, offeringId, { source, nodeId } = {}) 
 
 export function exitOfferId(document, sourceId = exitOfferSource(document)?.id) {
   if (!workflowContext(document).steps.some((page) => page.id === sourceId && !page.props.hidden)) return '';
+  if (hasCloseTarget(document, sourceId)) return '';
   const bindings = document.settings?.exitOffersByScreen ?? {};
   return Object.hasOwn(bindings, sourceId) ? bindings[sourceId] : sourceId === exitOfferSource(document)?.id ? document.settings?.exitOfferOfferingId ?? '' : '';
 }
 
 export function bindExitOffer(document, sourceId, offeringId) {
-  return { ...document, settings: { ...document.settings, exitOffersByScreen: { ...document.settings?.exitOffersByScreen, [sourceId]: offeringId } } };
+  const closeTargetsByScreen = { ...document.settings?.closeTargetsByScreen };
+  delete closeTargetsByScreen[sourceId];
+  return { ...document, settings: { ...document.settings, closeTargetsByScreen, exitOffersByScreen: { ...document.settings?.exitOffersByScreen, [sourceId]: offeringId } } };
 }
 
 export function boundExitOfferIds(document) {
   return [...new Set(workflowContext(document).steps.map((page) => exitOfferId(document, page.id)).filter(Boolean))];
 }
 
+export function workspaceExitOfferIds(document) {
+  return [...new Set([...boundExitOfferIds(document), ...document.settings?.retainedPopupIds ?? []])];
+}
+
 export function exitOfferTarget(document, offerings, currentPaywallId, sourceId) {
+  sourceId ??= exitOfferSource(document)?.id;
+  if (hasCloseTarget(document, sourceId)) return closeTargetPresentation(document, sourceId);
   const id = exitOfferId(document, sourceId);
-  return offerings.find((offering) => offering.id === id && offering.id !== currentPaywallId && offering.packageCount > 0 && validDocument(offering.document)) ?? null;
+  return offerings.find((offering) => offering.id === id && offering.id !== currentPaywallId && (offering.packageCount > 0 || offering.document.settings?.presentationSurfaceId) && validDocument(offering.document)) ?? null;
 }
 
 export function exitOfferSource(document) {
@@ -155,7 +165,7 @@ export function exitOfferConnection(document, offerings, currentPaywallId, sourc
   const destination = workflowContext(target.document).initial ?? target.document.root;
   return {
     id: `exit-offer:${source.id}`, kind: 'exit', source: source.id, target: target.document.settings?.presentationSurfaceId ?? destination.id,
-    targetOwner: target.id, label: '关闭页面', description: `关闭「${source.name}」 → ${target.name}`,
+    targetOwner: target.local ? null : target.id, label: '关闭页面', description: `关闭「${source.name}」 → ${target.name}`,
   };
 }
 

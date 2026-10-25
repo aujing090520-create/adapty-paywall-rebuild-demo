@@ -19,8 +19,10 @@ import { documentArtboards } from './artboards.js';
 import { workflowContext, workflowEdges, workflowIssues, owningScreen, addWorkflowStep, duplicateWorkflowStep, moveWorkflowStep, removeWorkflowStep } from './workflow.js';
 import WorkflowConnections, { STEP_BOARD_GAP, STEP_CANVAS_GUTTER } from './WorkflowConnections.jsx';
 import { flowInitialIndex } from './componentTree.js';
-import { exitOfferConnections, exitOfferSource, exitOfferId, boundExitOfferIds } from './exitOffers.js';
+import { exitOfferConnections, exitOfferSource, exitOfferId, workspaceExitOfferIds, exitOfferTarget, bindExitOffer } from './exitOffers.js';
+import { bindCloseTarget, closeTargetId, createRetentionModal, importCloseTarget, removeCanvasModal, modalPresentationDocument } from './closeTargets.js';
 const StepPicker = React.lazy(()=>import('./StepPicker.jsx'));
+const CloseTargetPicker = React.lazy(()=>import('./CloseTargetPicker.jsx'));
 
 const libraryKey = 'paywall-component-library-v3';
 const fieldNames = { name: '商品名称', price: '主价格', reference: '参考价', monthlyPrice: 'SKU 月均价', referencePrice: 'SKU 原价', supportingCopy: '辅助文案', savingCopy: '优惠说明', saveCopy: 'SAVE 文案', badgeText: '标签文字' };
@@ -43,7 +45,7 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
   });
   const [mainDocument, setMainDocument] = useState(initial.document);
   const [focusedOfferingId, setFocusedOfferingId] = useState(null);
-  const boundExits = offerings.filter((offering) => boundExitOfferIds(mainDocument).includes(offering.id));
+  const boundExits = offerings.filter((offering) => workspaceExitOfferIds(mainDocument).includes(offering.id));
   const activeExit = boundExits.find((offering) => offering.id === focusedOfferingId) ?? null;
   const document = activeExit?.document ?? mainDocument;
   const owner = activeExit?.id ?? null;
@@ -65,6 +67,7 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
   const collapsed = useMemo(() => { const next = context.collapsed ?? initialEditorCollapsed(document); if (context.collapsed) return next; next.delete(document.settings?.presentationSurfaceId); return next; }, [context.collapsed, document]);
   const setCollapsed = (update) => setContext('collapsed', update);
   const [editing, setEditing] = useState(true);
+  const [previewMode, setPreviewMode] = useState('flow'), [previewNavigation, setPreviewNavigation] = useState({});
   const navigation = context.navigation ?? (document.settings?.presentationSurfaceId ? { overlay: document.settings.presentationSurfaceId } : {});
   const setNavigation = (update) => setContext('navigation', update);
   const [zoom, setZoom] = useState(0.55);
@@ -80,11 +83,12 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [stepPicker, setStepPicker] = useState(false);
   const [creationSurfaceId, setCreationSurfaceId] = useState(null);
+  const [sceneUndo, setSceneUndo] = useState(null);
   const [exitSourceId, setExitSourceId] = useState(null);
   const workflow = workflowContext(mainDocument);
   const exitSource = workflow.steps.find((page) => page.id === exitSourceId && !page.props.hidden) ?? workflow.initial ?? exitOfferSource(mainDocument);
   const exitConnections = exitOfferConnections(mainDocument, offerings, currentPaywallId);
-  const exitConnection = exitConnections.find((edge) => edge.source === exitSource?.id);
+  const closeTarget = exitOfferTarget(mainDocument, offerings, currentPaywallId, exitSource?.id);
   const boundExit = boundExits.find((offering) => offering.id === exitOfferId(mainDocument, exitSource?.id));
   const openExitSettings = (sourceId) => { if (typeof sourceId === 'string') setExitSourceId(sourceId); setFocusedOfferingId(null); setSettingsOpen(true); setAddTarget(null); setStepPicker(false); };
   const openCreation = (purpose = 'step', surfaceId = null, sourceId) => { if (sourceId) setExitSourceId(sourceId); setFocusedOfferingId(null); setSettingsOpen(false); setAddTarget(null); setCreationSurfaceId(surfaceId); setStepPicker(purpose); };
@@ -95,6 +99,7 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
   const { surfaces, surface, triggers } = surfaceContext(document, navigation, selectedId);
   const selected = nodes.get(selectedId) ?? document.root;
   const isPageRoot = selected.id === pages.active.id || selected.id === document.root.id || selected.id === document.settings?.presentationSurfaceId;
+  const isModalRoot = selected.type === 'BottomSheet' || Boolean(activeExit && isPageRoot);
   const p = componentProps(selected);
   const parent = nodes.get(parents.get(selected.id));
   const insertionParent = CONTAINER_TYPES.has(selected.type) ? selected : parent ?? document.root;
@@ -117,12 +122,14 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
     setSettingsOpen(false);
     setAddTarget(null); setLayerMenu(null); setRenaming(null);
     setFocusedOfferingId(targetOwner); setEditing(true);
+    const { nodes: sourceNodes, parents: sourceParents } = indexDocument(source);
     if (!targetOwner) {
       const screen = owningScreen(source, id);
-      if (workflowContext(source).steps.some((page) => page.id === screen?.id)) setExitSourceId(screen.id);
+      const modalEdge = exitConnections.find((edge) => !edge.targetOwner && edge.target === id);
+      if (sourceNodes.get(id)?.type==='BottomSheet' && modalEdge) setExitSourceId(modalEdge.source);
+      else if (workflowContext(source).steps.some((page) => page.id === screen?.id)) setExitSourceId(screen.id);
     } else if (exitOfferId(mainDocument, exitSource?.id) !== targetOwner) setExitSourceId(exitConnections.find((edge) => edge.targetOwner === targetOwner)?.source ?? null);
     const targetScope = targetOwner ?? 'main';
-    const { nodes: sourceNodes, parents: sourceParents } = indexDocument(source);
     const reveal = {}; const expand = new Set(); let current = sourceNodes.get(id);
     while (current) {
       expand.add(current.id);
@@ -144,7 +151,7 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
   useEffect(()=>{fitBoards();},[boards.length]);
   useEffect(()=>{const element=boardElements.current.get(activeBoard?.key),scroll=boardScroll.current;if(!element||!scroll)return;const rect=element.getBoundingClientRect(),outer=scroll.getBoundingClientRect();const initial=activeBoard?.owner===null&&activeBoard.node.id===workflow.initial?.id;if(initial||rect.left<outer.left||rect.right>outer.right)scroll.scrollTo({left:Math.max(0,scroll.scrollLeft+rect.left-outer.left-20-(initial?STEP_CANVAS_GUTTER:0))});},[activeBoard?.key,workflow.initial?.id]);
   const focusBoard = (board) => select(board.node.id, board.document, board.owner);
-  const focusExit = () => { const board = boards.find((item) => item.owner === boundExit?.id); if (board) focusBoard(board); };
+  const focusExit = () => { const board = closeTarget?.local ? boards.find((item) => !item.owner && item.node.id === closeTargetId(mainDocument, exitSource?.id)) : boards.find((item) => item.owner === boundExit?.id); if (board) focusBoard(board); };
   const patch = (props) => setDocument((current) => patchComponentProperties(current, selected.id, props));
   const add = (type) => {
     const owner = nodes.get(addTarget); if(!owner)return;
@@ -162,10 +169,25 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
     if(type==='Tab'&&owner.type==='Tabs')setNavigation((current)=>({...current,[owner.id]:owner.children.length}));
   };
   const openAdd=(id,source=document,targetOwner=owner)=>{select(id,source,targetOwner);setLayerMenu(null);setAddTarget(id);};
-  const openMenu=(event,id,source=document,targetOwner=owner)=>{event.preventDefault();event.stopPropagation();select(id,source,targetOwner);const rect=event.currentTarget.getBoundingClientRect();setLayerMenu({id,x:rect.right,y:rect.bottom,step:targetOwner===null&&workflow.steps.some((page)=>page.id===id)});};
+  const openMenu=(event,id,source=document,targetOwner=owner)=>{
+    event.preventDefault();event.stopPropagation();select(id,source,targetOwner);
+    const rect=event.currentTarget.getBoundingClientRect();
+    const scene=Boolean(source.root.id===id&&targetOwner||indexDocument(source).nodes.get(id)?.type==='BottomSheet');
+    const linked=exitConnections.some((edge)=>targetOwner?edge.targetOwner===targetOwner:!edge.targetOwner&&edge.target===id);
+    setLayerMenu({id,x:rect.right,y:rect.bottom,step:targetOwner===null&&workflow.steps.some((page)=>page.id===id),scene:scene?{linked}:false});
+  };
+  const unlink = () => { const linkedId=exitOfferId(mainDocument,exitSource.id); let next = bindCloseTarget(mainDocument, exitSource.id, ''); if(linkedId)next={...next,settings:{...next.settings,retainedPopupIds:[...new Set([...next.settings?.retainedPopupIds??[],linkedId])]}};setSceneUndo({ before: mainDocument, after: next }); setMainDocument(next); setStatus('已解除关联，内容仍保留在画布中'); };
+  const deleteScene = (id) => {
+    let next = mainDocument;
+    if (owner) {for (const page of workflow.steps) { if (exitOfferId(next, page.id) === owner) next = bindCloseTarget(next, page.id, ''); }next={...next,settings:{...next.settings,retainedPopupIds:(next.settings?.retainedPopupIds??[]).filter((item)=>item!==owner)}};}
+    else next = removeCanvasModal(mainDocument, id);
+    setSceneUndo({ before: mainDocument, after: next }); setMainDocument(next); setFocusedOfferingId(null); select(exitSource.id, next, null); setStatus('已移除弹窗及其关联');
+  };
   const duplicateAt=(id)=>{const owner=nodes.get(parents.get(id));if(!owner)return;const result=pasteFragment(document,owner.id,copyFragment(document,id),owner.children.findIndex((node)=>node.id===id)+1);if(result.ids.length){setDocument(result.document);setSelectedId(result.ids[0]);}};
   const menuAction=(action)=>{
     const node=nodes.get(layerMenu?.id);if(!node)return;const owner=nodes.get(parents.get(node.id));setLayerMenu(null);
+    if (layerMenu.scene && action === 'delete') { deleteScene(node.id); return; }
+    if (layerMenu.scene && action === 'unlink') { unlink(); return; }
     if(layerMenu.step&&action!=='rename'){
       let next=mainDocument,id=node.id;
       if(action==='duplicate'){const result=duplicateWorkflowStep(mainDocument,node.id);if(result.error)return setStatus(result.error);next=result.document;id=result.id;}
@@ -207,53 +229,59 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
     try { localStorage.setItem(libraryKey, JSON.stringify(next)); setLibrary(next); setLibraryName(''); setStatus('已保存当前组件结构与样式'); } catch { setStatus('组件库保存失败：本地空间不足'); }
   };
   const changeProduct = (key, value) => setDocument((current) => ({ ...current, products: { ...current.products, [p.dataKey ?? selected.id]: { ...current.products[p.dataKey ?? selected.id], [key]: value } }, root: updateComponent(current, selected.id, { props: { dataKey: p.dataKey ?? selected.id } }).root }));
-  const createExit = (id, selection) => {
-    const next = onCreateExitOffer?.(mainDocument, id, selection, exitSource?.id);
-    if (!next) return setStatus('退出优惠创建失败，原内容仍保留');
-    setMainDocument(next); setFocusedOfferingId(exitOfferId(next, exitSource?.id)); setSettingsOpen(false); setEditing(true); setAddTarget(null); setStepPicker(false); setCreationSurfaceId(null);
-  };
   const addStep = (source,screenId,options) => {
     const result=addWorkflowStep(mainDocument,{source,screenId,beforeId:workflow.initial?.id,...options});
     if(result.error)return setStatus(result.error);
     setMainDocument(result.document);setStepPicker(false);select(result.id,result.document,null);
   };
+  const createModal = (blank = false) => { const result = createRetentionModal(mainDocument, exitSource.id, blank); setMainDocument(result.document); setStepPicker(false); select(result.id, result.document, null); };
+  const bindModal = (id) => { const next = bindCloseTarget(mainDocument, exitSource.id, id); setMainDocument(next); setStepPicker(false); select(id, next, null); setStatus(`已关联：关闭「${exitSource.name}」后显示该内容`); };
+  const bindSaved = (id) => { const next = bindExitOffer(mainDocument, exitSource.id, id); setMainDocument(next); setStepPicker(false); setSettingsOpen(true); };
+  const importModal = (source, id) => { const result = importCloseTarget(mainDocument, exitSource.id, source, id); if (result.error) return setStatus(result.error); setMainDocument(result.document); setStepPicker(false); select(result.id, result.document, null); };
+  const previewDocument = previewMode === 'modal' ? activeExit?.document ?? modalPresentationDocument(mainDocument, surface?.id) ?? mainDocument : mainDocument;
+  const startPreview = (mode = 'flow') => { const flow=workflow.flow; setPreviewMode(mode); setPreviewNavigation(flow?{[flow.id]:mode==='close'?flow.children.findIndex((page)=>page.id===exitSource.id):flowInitialIndex(flow),[`history:${flow.id}`]:[],overlay:null}:{overlay:null}); setEditing(false); };
   return <div className="native-editor" data-no-translate="true">
     {saveError && <p className="ne-error" role="alert">{saveError}{blockedSave ? '。为保护原记录，本次未覆盖保存。' : ''}</p>}
     <div className="ne-workspace-tools"><button type="button" className={`secondary${settingsOpen ? ' active' : ''}`} aria-pressed={settingsOpen} onClick={() => { setFocusedOfferingId(null); setSettingsOpen((value) => !value); setAddTarget(null); setStepPicker(false); }}><Settings size={16}/>付费墙设置</button></div>
     <div className="builder ne-builder">
-      <aside className="ne-layers">{stepPicker?<React.Suspense fallback={<p>加载内容来源…</p>}><StepPicker key={`${stepPicker}:${creationSurfaceId??''}`} purpose={stepPicker} offerings={offerings} currentDocument={mainDocument} surfaces={surfaceContext(mainDocument,{...mainNavigation,...(workflow.flow?{[workflow.flow.id]:workflow.flow.children.findIndex((page)=>page.id===exitSource?.id)}:{})}).surfaces} initialSurface={indexDocument(mainDocument).nodes.get(creationSurfaceId)} triggerSource={exitSource} nextStep={workflow.initial} onUseSurface={createExit} onBack={()=>setStepPicker(false)} onAdd={stepPicker==='exit'?(source,nodeId)=>createExit(undefined,{source,nodeId}):addStep}/></React.Suspense>:pickerParent?<ComponentPicker commerceAllowed={!workflowContext(document).steps.some((page)=>page.id===owningScreen(document,pickerParent.id)?.id&&page.id!==workflowContext(document).final?.id)} parent={pickerParent} onBack={()=>setAddTarget(null)} onAdd={add}/>:<>
+      <aside className="ne-layers">{stepPicker?<React.Suspense fallback={<p>加载内容来源…</p>}>{stepPicker==='exit'?<CloseTargetPicker key={exitSource.id} document={mainDocument} source={exitSource} offerings={offerings} boundOfferings={boundExits} initialId={creationSurfaceId} onBack={()=>setStepPicker(false)} onCreate={createModal} onBind={bindModal} onBindSaved={bindSaved} onImport={importModal} onSourceChange={setExitSourceId}/>:<StepPicker offerings={offerings} nextStep={workflow.initial} onBack={()=>setStepPicker(false)} onAdd={addStep}/>}</React.Suspense>:pickerParent?<ComponentPicker commerceAllowed={!workflowContext(document).steps.some((page)=>page.id===owningScreen(document,pickerParent.id)?.id&&page.id!==workflowContext(document).final?.id)} parent={pickerParent} onBack={()=>setAddTarget(null)} onAdd={add}/>:<>
         <header><strong>图层</strong><button className="ne-icon" title="添加组件" aria-label="添加组件" onClick={()=>openAdd(insertionParent.id===document.root.id?pages.active.id:insertionParent.id)}><Plus size={17}/></button></header>
         <div className="ne-tree">
           <div role="tree" aria-label="组件图层">{workflow.steps.map((page)=>renderTree(mainDocument.settings?.presentationSurfaceId?indexDocument(mainDocument).nodes.get(mainDocument.settings.presentationSurfaceId):page,0,mainDocument,null))}
             {mainPages.shared.filter((node)=>!isOverlaySurface(node)).map((node)=>renderTree(node,0,mainDocument,null))}
           </div>
-          {!mainDocument.settings?.presentationSurfaceId&&boards.some((board)=>board.owner===null&&board.kind==='弹层')&&<section className="ne-surfaces" aria-label="弹层"><h3>弹层</h3><div role="tree" aria-label="弹层图层">{boards.filter((board)=>board.owner===null&&board.kind==='弹层').map((board)=>renderTree(board.node,0,mainDocument,null))}</div></section>}
-          {boundExits.length?<section className="ne-surfaces" aria-label="退出优惠"><h3>退出优惠</h3>{boundExits.map((offering)=><React.Fragment key={offering.id}>{renderTree(indexDocument(offering.document).nodes.get(offering.document.settings?.presentationSurfaceId)??offering.document.root,0,offering.document,offering.id)}</React.Fragment>)}</section>:!mainDocument.settings?.presentationSurfaceId&&<section className="ne-surfaces ne-exit-entry" aria-label="退出优惠"><h3>退出优惠</h3><button type="button" className="ne-tree-select" onClick={()=>openExitSettings()}><PanelBottom size={16}/><span className="ne-tree-label">未配置</span><ChevronRight size={15}/></button></section>}
+          {!mainDocument.settings?.presentationSurfaceId&&<section className="ne-surfaces" aria-label="弹窗"><h3>弹窗<button type="button" className="ne-icon" aria-label="新建挽留弹窗" title="新建挽留弹窗" onClick={()=>closeTarget?openCreation('exit'):createModal(false)}><Plus size={15}/></button></h3><div role="tree" aria-label="弹窗图层">{boards.filter((board)=>board.owner===null&&board.kind==='弹层').map((board)=>renderTree(board.node,0,mainDocument,null))}{boundExits.map((offering)=><React.Fragment key={offering.id}>{renderTree(indexDocument(offering.document).nodes.get(offering.document.settings?.presentationSurfaceId)??offering.document.root,0,offering.document,offering.id)}</React.Fragment>)}</div></section>}
         </div>
       </>}</aside>
       <div className="canvas-area ne-canvas ne-artboard-canvas">{flowWarnings.length>0&&<div className="ne-workflow-issues" role="status">{flowWarnings.map((message)=><div key={message}>{message}</div>)}</div>}
         <div className="device-controls"><span>iPhone · 390 × 844</span>
           <div className="ne-zoom"><button className="ne-icon" aria-label="缩小画布" title="缩小画布" disabled={zoom<=0.3} onClick={()=>setZoom((value)=>Math.max(0.3,Math.round((value-0.1)*100)/100))}><Minus size={15}/></button><select aria-label="画布缩放" value={zoom} onChange={(event)=>setZoom(Number(event.target.value))}>{[0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1].map((value)=><option value={value} key={value}>{Math.round(value*100)}%</option>)}</select><button className="ne-icon" aria-label="放大画布" title="放大画布" disabled={zoom>=1} onClick={()=>setZoom((value)=>Math.min(1,Math.round((value+0.1)*100)/100))}><Plus size={15}/></button><button className="ne-icon" aria-label="适应画布" title="适应画布" onClick={fitBoards}><Maximize2 size={15}/></button></div>
-          <button className="secondary" onClick={() => {if(editing&&activeExit){const flow=workflowContext(mainDocument).flow;setContext('navigation',{...mainNavigation,overlay:null,...(flow?{[flow.id]:flowInitialIndex(flow),[`history:${flow.id}`]:[]}:{})},'main');}else if(editing&&!surface&&!document.settings?.presentationSurfaceId){const flow=workflowContext(document).flow;if(flow)setNavigation((current)=>({...current,[flow.id]:flowInitialIndex(flow),[`history:${flow.id}`]:[]}));}setEditing(!editing);}}>{editing ? <Eye size={15} /> : <Pencil size={15} />}{editing ? '交互预览' : '返回编辑'}</button>
+          <button className="secondary" onClick={()=>editing?startPreview('flow'):setEditing(true)}>{editing?<Eye size={15}/>:<Pencil size={15}/>} {editing?'预览流程':'返回编辑'}</button>
+          {editing&&(surface||activeExit)&&<><button type="button" className="secondary" onClick={()=>startPreview('modal')}><Eye size={15}/>预览弹窗</button>{closeTarget&&<button type="button" className="secondary" onClick={()=>startPreview('close')}>测试关闭触发</button>}</>}
         </div>
-        {!activeExit && !isExitOffer && surface&&<div className="ne-surface-context" aria-label="当前弹层"><strong>{surface.name}</strong><span>{triggers.length ? '按钮点击触发' : '未配置退出触发'}</span>{triggers.map((node)=><button type="button" className="ne-surface-trigger" key={node.id} onClick={()=>select(node.id)} title={`定位触发按钮：${node.name}`}>{node.name}</button>)}</div>}
+        {!activeExit && !isExitOffer && surface&&<div className="ne-surface-context" aria-label="当前弹窗"><strong>{surface.name}</strong><span>{exitConnections.some((edge)=>!edge.targetOwner&&edge.target===surface.id)?'页面关闭时显示':triggers.length?'按钮点击时显示':'尚未关联'}</span>{triggers.map((node)=><button type="button" className="ne-surface-trigger" key={node.id} onClick={()=>select(node.id)} title={`定位触发按钮：${node.name}`}>{node.name}</button>)}</div>}
         {editing?<div ref={boardScroll} className="ne-artboard-scroll" role="region" aria-label="多画板画布" tabIndex={0}><div className="ne-artboard-track">
-          <WorkflowConnections boards={boards} edges={[...workflowEdges(mainDocument),...exitConnections]} zoom={zoom} initialStepId={workflow.initial?.id} onAddStep={!mainDocument.settings?.presentationSurfaceId&&!isExitOffer&&workflow.steps.length<10?()=>openCreation():undefined} exitSourceIds={workflow.steps.filter((page)=>!page.props.hidden).map((page)=>page.id)} onAddExit={!mainDocument.settings?.presentationSurfaceId&&!isExitOffer&&onCreateExitOffer?(id)=>openCreation('exit',null,id):undefined} onSelect={(id)=>select(id,mainDocument,null)} onExitSelect={(edge)=>openExitSettings(edge.source)}/>
+          <WorkflowConnections boards={boards} edges={[...workflowEdges(mainDocument),...exitConnections]} zoom={zoom} initialStepId={workflow.initial?.id} onAddStep={!mainDocument.settings?.presentationSurfaceId&&!isExitOffer&&workflow.steps.length<10?()=>openCreation():undefined} exitSourceIds={workflow.steps.filter((page)=>!page.props.hidden).map((page)=>page.id)} onAddExit={!mainDocument.settings?.presentationSurfaceId&&!isExitOffer?(id)=>openCreation('exit',null,id):undefined} onSelect={(id)=>select(id,mainDocument,null)} onExitSelect={(edge)=>openExitSettings(edge.source)}/>
           {boards.map((board)=><section key={board.key} ref={(element)=>{if(element)boardElements.current.set(board.key,element);else boardElements.current.delete(board.key);}} className={`ne-artboard${activeBoard?.key===board.key?' active':''}`} aria-label={`画板：${board.label}`} data-board-owner={board.owner??'main'} style={{width:390*zoom}}>
-            <header><button type="button" aria-label={`选择画板：${board.label}`} aria-pressed={activeBoard?.key===board.key} onClick={()=>focusBoard(board)}><span>{board.label}</span><small title={board.owner?exitConnections.filter((edge)=>edge.targetOwner===board.owner).map((edge)=>edge.description).join('；'):undefined}>{board.owner?exitConnections.filter((edge)=>edge.targetOwner===board.owner).map((edge)=>`关闭「${workflow.steps.find((page)=>page.id===edge.source)?.name}」`).join(' / ')||'未配置商品，暂不可触发':board.node.id===workflow.initial?.id?'初始步骤':board.kind==='弹层'?'未配置退出触发':board.kind}</small></button>
+            <header><button type="button" aria-label={`选择画板：${board.label}`} aria-pressed={activeBoard?.key===board.key} onClick={()=>focusBoard(board)}><span>{board.label}</span><small>{exitConnections.filter((edge)=>(edge.targetOwner??null)===board.owner&&edge.target===board.node.id).map((edge)=>`关闭「${workflow.steps.find((page)=>page.id===edge.source)?.name}」后显示`).join(' / ')||(board.owner||board.kind==='弹层'?'尚未关联':board.node.id===workflow.initial?.id?'初始页面':'页面')}</small></button>
             </header>
             <div className="ne-artboard-frame" style={{height:844*zoom}}><div className="ne-artboard-scale" style={{transform:`scale(${zoom})`}}><PaywallPresentation document={board.document} selectedId={activeBoard?.key===board.key?selected.id:undefined} inspectable={activeBoard?.key===board.key} onSelect={(id)=>select(id,board.document,board.owner)} editing navigation={board.navigation} onStatus={setStatus} currentPaywallId={board.owner??currentPaywallId} backdropDocument={board.owner?mainDocument:backdropDocument} backdropNavigation={board.owner&&workflow.flow?{[workflow.flow.id]:workflow.flow.children.findIndex((page)=>page.id===(exitOfferId(mainDocument,exitSource?.id)===board.owner?exitSource?.id:exitConnections.find((edge)=>edge.targetOwner===board.owner)?.source))}:undefined}/></div></div>
           </section>)}
-        </div></div>:<div className="ne-interactive-board"><PaywallPresentation key="interactive:main" document={mainDocument} selectedId={activeExit?undefined:selected.id} onSelect={select} editing={false} navigation={activeExit?mainNavigation:navigation} onNavigate={(next)=>setContext('navigation',(current)=>({...current,...next}),'main')} onStatus={setStatus} offerings={offerings} currentPaywallId={currentPaywallId} backdropDocument={backdropDocument}/></div>}{status && <div className="ne-status" role="status"><span>{status}</span><button className="ne-icon" title="关闭提示" onClick={() => setStatus('')}><X size={14} /></button></div>}</div>
-      <aside className="ne-properties">{settingsOpen ? <><header><strong>付费墙设置</strong><button type="button" className="ne-icon" aria-label="返回组件属性" title="返回组件属性" onClick={() => setSettingsOpen(false)}><X size={16}/></button></header><PaywallSettings document={mainDocument} sourceId={exitSource?.id} onSourceChange={setExitSourceId} onDocumentChange={setMainDocument} offerings={offerings} currentPaywallId={currentPaywallId} surfaces={surfaceContext(mainDocument,{...mainNavigation,...(workflow.flow?{[workflow.flow.id]:workflow.flow.children.findIndex((page)=>page.id===exitSource?.id)}:{})}).surfaces} onCreate={!isExitOffer && onCreateExitOffer ? (id)=>openCreation('exit',id) : undefined} onNew={!isExitOffer && onCreateExitOffer ? ()=>openCreation('exit') : undefined} onEdit={onExitOfferChange ? focusExit : undefined} onChange={(settings) => setMainDocument((current) => ({ ...current, settings }))}/></> : <><header><strong>{COMPONENT_NAMES[selected.type]}</strong><div className="ne-actions"><button className="ne-icon" title="保存到组件库" aria-label="保存到组件库" onClick={() => setLibraryOpen(true)}><Save size={16} /></button><button className="ne-icon" title="打开组件库" aria-label="打开组件库" onClick={() => setLibraryOpen(true)}><FolderOpen size={16} /></button></div></header>
-        <section><Field label={isPageRoot?'页面名称':'图层名称'}><input value={selected.name} onChange={(event) => setDocument((current) => updateComponent(current, selected.id, { name: event.target.value }))} /></Field><div className="ne-actions"><button className="ne-icon" title="上移" aria-label="上移" disabled={isPageRoot || !parent || parent.children[0]?.id === selected.id} onClick={() => reorder(-1)}><ArrowUp size={16} /></button><button className="ne-icon" title="下移" aria-label="下移" disabled={isPageRoot || !parent || parent.children.at(-1)?.id === selected.id} onClick={() => reorder(1)}><ArrowDown size={16} /></button><button className="ne-icon" title="复制组件" aria-label="复制组件" disabled={isPageRoot || !parent} onClick={() => duplicateAt(selected.id)}><Copy size={16} /></button><button className="ne-icon danger" title="删除组件" aria-label="删除组件" disabled={isPageRoot || !parent} onClick={() => { setDocument((current) => removeComponent(current, selected.id)); setSelectedId(parent.id); }}><Trash2 size={16} /></button></div>{!isPageRoot&&<Select label="显示状态" value={p.hidden ? 'hidden' : 'visible'} onChange={(value) => patch({ hidden: value === 'hidden' })} options={[[ 'visible', '显示' ], [ 'hidden', '隐藏' ]]} />}
+        </div></div>:<div className="ne-interactive-board"><PaywallPresentation key={`interactive:${previewMode}`} document={previewDocument} onSelect={select} editing={false} navigation={previewMode==='modal'&&previewDocument.settings?.presentationSurfaceId?{overlay:previewDocument.settings.presentationSurfaceId}:previewNavigation} onNavigate={(next)=>setPreviewNavigation((current)=>({...current,...next}))} onStatus={setStatus} offerings={previewMode==='modal'?[]:offerings} currentPaywallId={currentPaywallId} backdropDocument={previewMode==='modal'?mainDocument:backdropDocument} backdropNavigation={workflow.flow?{[workflow.flow.id]:workflow.flow.children.findIndex((page)=>page.id===exitSource?.id)}:undefined}/></div>}{status && <div className="ne-status" role="status"><span>{status}</span><button className="ne-icon" title="关闭提示" onClick={() => setStatus('')}><X size={14} /></button></div>}</div>
+      <aside className="ne-properties">{settingsOpen ? <><header><strong>付费墙设置</strong><button type="button" className="ne-icon" aria-label="返回组件属性" title="返回组件属性" onClick={() => setSettingsOpen(false)}><X size={16}/></button></header>
+        <PaywallSettings document={mainDocument} sourceId={exitSource?.id} onSourceChange={setExitSourceId} onDocumentChange={setMainDocument} offerings={offerings} currentPaywallId={currentPaywallId} onChoose={()=>openCreation('exit',closeTargetId(mainDocument,exitSource?.id)||null)} onNew={!isExitOffer?()=>createModal(false):undefined} onEdit={focusExit} onUnlink={unlink}/>
+      </> : <><header><strong>{COMPONENT_NAMES[selected.type]}</strong><div className="ne-actions"><button className="ne-icon" title="保存到组件库" aria-label="保存到组件库" onClick={() => setLibraryOpen(true)}><Save size={16} /></button><button className="ne-icon" title="打开组件库" aria-label="打开组件库" onClick={() => setLibraryOpen(true)}><FolderOpen size={16} /></button></div></header>
+        <section><Field label={isModalRoot?'弹窗名称':isPageRoot?'页面名称':'图层名称'}><input value={selected.name} onChange={(event) => setDocument((current) => updateComponent(current, selected.id, { name: event.target.value }))} /></Field>
+          <div className="ne-actions"><button className="ne-icon" title="上移" aria-label="上移" disabled={isPageRoot || !parent || parent.children[0]?.id === selected.id} onClick={() => reorder(-1)}><ArrowUp size={16} /></button><button className="ne-icon" title="下移" aria-label="下移" disabled={isPageRoot || !parent || parent.children.at(-1)?.id === selected.id} onClick={() => reorder(1)}><ArrowDown size={16} /></button><button className="ne-icon" title="复制组件" aria-label="复制组件" disabled={isPageRoot || !parent} onClick={() => duplicateAt(selected.id)}><Copy size={16} /></button><button className="ne-icon danger" title={isModalRoot?'删除弹窗':'删除组件'} aria-label={isModalRoot?'删除弹窗':'删除组件'} disabled={!isModalRoot&&(isPageRoot||!parent)} onClick={()=>{if(isModalRoot)deleteScene(selected.id);else{setDocument((current)=>removeComponent(current,selected.id));setSelectedId(parent.id);}}}><Trash2 size={16}/></button></div>
+          {!isPageRoot&&<Select label="显示状态" value={p.hidden?'hidden':'visible'} onChange={(value)=>patch({hidden:value==='hidden'})} options={[[ 'visible','显示' ],[ 'hidden','隐藏' ]]}/>}
         </section>
-        {isPageRoot&&(activeExit||workflow.steps.some((page)=>page.id===selected.id))&&!isExitOffer&&<section className="ne-exit-rule" aria-label="页面退出触发"><strong>退出触发</strong><p className="ne-extension-label">Demo 扩展能力</p><dl><dt>关闭页面</dt><dd>{exitSource?.name??'无可触发页面'}</dd><dt>展示内容</dt><dd>{exitConnection?boundExit.name:exitOfferId(mainDocument,exitSource?.id)?'绑定不可用':'未绑定，直接关闭'}</dd></dl><button type="button" className="secondary" onClick={openExitSettings}><Settings size={14}/>退出优惠设置</button></section>}
+        {(isPageRoot||isModalRoot)&&!isExitOffer&&<section className="ne-exit-rule" aria-label="页面退出触发"><strong>{isModalRoot?'显示条件':'关闭后显示'}</strong>{isModalRoot?<><dl><dt>关联页面</dt><dd>{exitConnections.filter((edge)=>owner?edge.targetOwner===owner:!edge.targetOwner&&edge.target===selected.id).map((edge)=>workflow.steps.find((page)=>page.id===edge.source)?.name).join('、')||'尚未关联'}</dd></dl><button type="button" className="secondary" onClick={()=>owner?openExitSettings():openCreation('exit',selected.id)}>配置触发页面</button></>:<><dl><dt>关闭页面</dt><dd>{exitSource?.name??'当前页面'}</dd><dt>显示内容</dt><dd>{closeTarget?.name??'尚未关联'}</dd></dl><button type="button" className="secondary" onClick={openExitSettings}><Settings size={14}/>设置关闭后显示</button>{closeTarget&&<button type="button" className="secondary" onClick={unlink}>解除关联</button>}</>}</section>}
         <RevenueCatProperties key={`${scope}:${selected.id}`} selected={selected} p={p} patch={patch} document={document} nodes={nodes} parents={parents} resolveText={resolveComponentText} findPackage={findPackage} changeProduct={changeProduct} fieldNames={fieldNames} demoSkus={DEMO_SKUS} navigation={navigation} setNavigation={patchNavigation} onStatus={setStatus} onFontsChange={saveFonts} onPageControl={(enabled)=>setDocument((current)=>togglePageControl(current,selected.id,enabled))} onMediaType={(type) => setDocument((current) => updateComponent(current, selected.id, { type }))} setDefaultPackage={(value) => setDocument((current) => defaultPackagePatch(current, selected.id, value))} />
         </>}
       </aside>
     </div>
-    {menuNode&&<LayerActionsMenu menu={layerMenu} node={menuNode} step={layerMenu.step?{count:workflow.steps.length,index:workflow.steps.findIndex((page)=>page.id===menuNode.id)}:undefined} isRoot={menuNode.id===document.root.id||menuNode.id===pages.active.id||menuNode.id===document.settings?.presentationSurfaceId} canPaste={Boolean(editorClipboard.fragment?.roots.every((node)=>canContain(CONTAINER_TYPES.has(menuNode.type)?menuNode:nodes.get(parents.get(menuNode.id)),node)))} canWrap={Boolean(parents.get(menuNode.id)&&canContain(nodes.get(parents.get(menuNode.id)),{type:'Stack'})&&canContain({type:'Stack'},menuNode))} hasStyles={Boolean(editorClipboard.styles)} onAction={menuAction} onClose={()=>setLayerMenu(null)}/>}
+    {sceneUndo&&mainDocument===sceneUndo.after&&<button type="button" className="ne-scene-undo secondary" onClick={()=>{setMainDocument(sceneUndo.before);setSceneUndo(null);setStatus('已撤销移除');}}>撤销移除</button>}
+    {menuNode&&<LayerActionsMenu menu={layerMenu} node={menuNode} scene={layerMenu.scene} step={layerMenu.step?{count:workflow.steps.length,index:workflow.steps.findIndex((page)=>page.id===menuNode.id)}:undefined} isRoot={menuNode.id===document.root.id||menuNode.id===pages.active.id||menuNode.id===document.settings?.presentationSurfaceId} canPaste={Boolean(editorClipboard.fragment?.roots.every((node)=>canContain(CONTAINER_TYPES.has(menuNode.type)?menuNode:nodes.get(parents.get(menuNode.id)),node)))} canWrap={Boolean(parents.get(menuNode.id)&&canContain(nodes.get(parents.get(menuNode.id)),{type:'Stack'})&&canContain({type:'Stack'},menuNode))} hasStyles={Boolean(editorClipboard.styles)} onAction={menuAction} onClose={()=>setLayerMenu(null)}/>}
     {libraryOpen && <div className="modal-backdrop"><section className="modal ne-library" role="dialog" aria-label="组件库"><header><h2>组件库</h2><button className="ne-icon" title="关闭组件库" onClick={() => setLibraryOpen(false)}><X size={18} /></button></header><div className="ne-library-body"><Field label="组件名称"><input value={libraryName} maxLength={40} onChange={(event) => setLibraryName(event.target.value)} /></Field><button className="secondary" onClick={saveLibrary}><Save size={16} />保存当前组件</button>{library.map((record) => <div className="ne-library-row" key={record.id}><span>{record.name} · {COMPONENT_NAMES[record.node.type]}</span><button className="secondary" disabled={!canContain(insertionParent, record.node)} onClick={() => { const node = cloneComponent(record.node); setDocument((current) => withFontResources(insertComponent(current, insertionParent.id, node),record.fonts)); setSelectedId(node.id); setLibraryOpen(false); }}>插入</button><button className="ne-icon danger" title={`删除 ${record.name}`} onClick={() => { const next = library.filter((item) => item.id !== record.id); try { localStorage.setItem(libraryKey, JSON.stringify(next)); setLibrary(next); } catch { setStatus('组件库保存失败'); } }}><Trash2 size={16} /></button></div>)}</div></section></div>}
   </div>;
 }
