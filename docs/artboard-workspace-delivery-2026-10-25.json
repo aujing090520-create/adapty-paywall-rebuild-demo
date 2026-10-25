@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "result_level": "已完成",
+  "scope": "主页面、Screen、普通Sheet和退出优惠的同画布可视化编辑，不包括全组件审计",
+  "source_commit": "848dff75e60b235f38d8d8603362845d7872aa68",
+  "production_deployment": "dpl_A9AuMb5HRfbyaR65bZGYP4fQRC5q",
+  "ledger": { "total": 5, "verified": 5, "unresolved": 0 },
+  "coverage": {
+    "affected": ["ART-01", "ART-02", "ART-03", "ART-04", "ART-05"],
+    "verified": ["ART-01", "ART-02", "ART-03", "ART-04", "ART-05"]
+  },
+  "verification_evidence": [
+    "257/257 tests passed; final build 2.85s; git diff --check passed",
+    "Local IAB: one canvas with peer primary/popup/detail boards; selection and isolated name editing; save/reload/reopen; restored test names",
+    "Local IAB: Multi-step Paywall displays three configured Screen boards together without body overflow",
+    "Local IAB: closing primary enters retention offer; cancel ends session",
+    "Local IAB: 60% workspace zoom displays 234px phones without changing internal font sizes or component parameters",
+    "Production READY deployment and main-domain JS/CSS match final build",
+    "Production IAB: HT boards visible together, popup conversion remains on same canvas, independent document owner, zero nested-return buttons, direct primary selection restores property owner",
+    "/tmp/paywall-artboards-production.png"
+  ],
+  "evidence_boundaries": [
+    "Production save/reload and exit/cancel were not repeated; those paths were validated locally and in regression tests",
+    "No changes to four HT source template definitions, SKU ownership, real Billing or native dismissal interception",
+    "Same-level visualization does not merge ordinary Sheet, Screen and independent exit Offering semantics"
+  ]
+}
