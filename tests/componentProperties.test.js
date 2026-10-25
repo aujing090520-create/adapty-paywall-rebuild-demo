@@ -10,6 +10,7 @@ import { createCatalogComponent, upgradeCanonicalComponents } from '../src/build
 import { countdownSeconds, defaultPackagePatch } from '../src/builder/propertyModel.js';
 import { templates, createBuilderNodes } from '../src/templates/templateDefinitions.js';
 import { importComponentDocument, validDocument } from '../src/builder/componentDocument.js';
+import {workflowEdges} from '../src/builder/workflow.js';
 
 let server, Properties, Preview, Editor;
 const mounted = new Set();
@@ -1183,15 +1184,84 @@ test('all 45 templates preserve original copy, media and product data after fixe
   }
 });
 
-test('ordinary button navigation and purchase checkout use separate property flows', async () => {
+test('buttons expose one action selector while checkout modes remain conditional', async () => {
   const b=await mount(component('sample','Button','按钮',{action:{action:'None'}}),{editing:false});
   const select=b.renderer.root.findAll((item)=>item.type==='select'&&item.props['aria-label']==='点击动作')[0];
-  assert.deepEqual(select.findAllByType('option').map((option)=>option.props.value),['None','NavigateTo','NextScreen','NavigateBack','RestorePurchases','Dismiss']);
+  assert.deepEqual(select.findAllByType('option').map((option)=>option.props.value),['None','NavigateTo','NextScreen','NavigateBack','RestorePurchases','Dismiss','Purchase']);
   await b.select('点击动作','NavigateTo');await b.select('导航目标','OpenSheet');
   assert.equal(indexDocument(b.document()).nodes.get('sample').props.action.action,'OpenSheet');await b.close();
   const purchase=await mount(createCatalogComponent('PurchaseButton','sample'),{editing:false});
-  assert.equal(purchase.renderer.root.findAll((item)=>item.type==='select'&&item.props['aria-label']==='点击动作').length,0);
+  assert.equal(purchase.renderer.root.findAll((item)=>item.type==='select'&&item.props['aria-label']==='点击动作').length,1);
   await purchase.select('打开方式','WebCheckout');await act(async()=>purchase.node().props.onClick(event()));assert.equal(purchase.status(),'网页结账预览');await purchase.close();
+});
+
+for (const buttonType of ['Button','PurchaseButton']) test(`copied checkout CTA can become a step button and navigate using its edge target (${buttonType})`,async()=>{
+  const original=createCatalogComponent('PurchaseButton','sample');
+  original.type=buttonType;
+  original.props.background='#1278ef';original.props.radius=23;
+  const source={version:3,templateId:'audit',products:{original:{name:'Original SKU',price:'¥78'}},root:component('root','Screen','根',{},[
+    component('flow','Flow','流程',{initialStepId:'intro'},[
+      component('intro','Screen','介绍',{},[original]),
+      component('final','Screen','已有购买页',{},[component('final-copy','Text','标题',{text:'Destination'})]),
+      component('aux/detail-screen-0','Screen','非流程详情',{},[]),
+    ]),
+  ])};
+  const before=structuredClone(source),styles=copyStyles(original);
+  const h=await mount(original,{source,editing:false});
+  await h.select('点击动作','NextScreen');
+  const selected=indexDocument(h.document()).nodes.get('sample');
+  assert.equal(selected.type,'Button');assert.equal(selected.props.action.actionPage,'final');
+  assert.deepEqual(copyStyles(selected),styles);assert.deepEqual(selected.children,original.children);assert.deepEqual(h.document().products,before.products);
+  const targets=h.renderer.root.findAll(item=>item.type==='select'&&item.props['aria-label']==='步骤')[0];
+  assert.deepEqual(targets.findAllByType('option').map(item=>item.props.value),['','final']);
+  assert.equal(h.renderer.root.findAll(item=>item.type==='select'&&item.props['aria-label']==='打开方式').length,0);
+  assert.deepEqual(workflowEdges(h.document()).map(edge=>[edge.source,edge.target]),[['intro','final']]);
+  const store={data:new Map(),getItem(key){return this.data.get(key)??null;},setItem(key,value){this.data.set(key,value);}};
+  assert.equal(saveComponentDocument(store,h.document()),true);
+  assert.equal(indexDocument(readComponentDocument(store,'audit')).nodes.get('sample').props.action.actionPage,'final');
+  await act(async()=>h.node().props.onClick(event()));assert.ok(h.node('final-copy'));
+  assert.deepEqual(source,before);await h.close();
+});
+
+test('canvas first-click selects a button before its label; drill-in and floating sheet text remain editable',async()=>{
+  const label=component('label','Text','按钮文字',{text:'Continue'});
+  const title=component('sheet-title','Text','弹层标题',{text:'Sheet title'});
+  const doc=fixture(component('cta','Button','CTA',{action:{action:'None'}},[label,component('sheet','BottomSheet','Sheet',{presentation:'overlay'},[title])]));
+  let selected,renderer;
+  function Harness(){const [id,setId]=React.useState('page');selected=id;return React.createElement(Preview,{document:doc,selectedId:id,onSelect:setId,editing:true,navigation:{overlay:'sheet'},onStatus(){}});}
+  const click=async id=>{const node=renderer.root.findAll(item=>item.type==='div'&&item.props['data-component-id']===id)[0];assert.ok(node,id);await act(async()=>node.props.onClick(event()));};
+  try{
+    await act(async()=>{renderer=TestRenderer.create(React.createElement(Harness));});
+    await click('label');assert.equal(selected,'cta','first canvas click exposes button Action instead of text typography');
+    await click('label');assert.equal(selected,'label','second click drills into editable label');
+    await click('sheet-title');assert.equal(selected,'sheet-title','floating title cannot select its enclosing launcher across a sheet boundary');
+  }finally{if(renderer)await act(async()=>renderer.unmount());}
+});
+
+test('ordinary navigation can explicitly become checkout without changing its content or visual properties',async()=>{
+  const original=component('sample','Button','Custom label',{action:{action:'None'},paddingHorizontal:31,radius:17},[component('label','Text','标题',{text:'Keep this label'})]);
+  const h=await mount(original),styles=copyStyles(original);
+  await h.select('点击动作','Purchase');
+  assert.equal(indexDocument(h.document()).nodes.get('sample').type,'PurchaseButton');
+  assert.deepEqual(copyStyles(indexDocument(h.document()).nodes.get('sample')),styles);
+  assert.equal(indexDocument(h.document()).nodes.get('sample').name,'Custom label');
+  await h.select('打开方式','WebCheckout');assert.equal(indexDocument(h.document()).nodes.get('sample').type,'PurchaseButton');
+  await h.select('点击动作','Dismiss');assert.equal(indexDocument(h.document()).nodes.get('sample').type,'Button');
+  assert.equal(indexDocument(h.document()).nodes.get('label').props.text,'Keep this label');await h.close();
+});
+
+test('HT flow layers exclude generated sample and empty auxiliary screens without deleting their data or links',async()=>{
+  const template=templates.find(item=>item.id==='ht-blue-privilege');
+  const initialNodes=createBuilderNodes(template.id),document=importComponentDocument(initialNodes,template),before=structuredClone(document);
+  assert.ok([...indexDocument(document).nodes.values()].some(node=>node.name==='中秋月夜 | 谁看了我'));
+  let renderer;
+  try{
+    await act(async()=>{renderer=TestRenderer.create(React.createElement(Editor,{template,initialNodes,initialDocument:document,persistence:'session'}));});
+    const layers=renderer.root.findAll(item=>item.type==='div'&&item.props['data-layer-type']==='Screen');
+    assert.equal(layers.some(item=>String(item.props['data-layer-id']).includes('/detail-screen-')),false);
+    assert.equal(renderer.root.findAll(item=>item.type==='summary'&&item.children.join('')==='未配置详情').length,0);
+    assert.deepEqual(document,before,'the correction removes redundant layer output, not user content or routes');
+  }finally{if(renderer)await act(async()=>renderer.unmount());}
 });
 
 test('purchase checkout modes expose source-specific URL parameters without duplicate ordinary actions',async()=>{

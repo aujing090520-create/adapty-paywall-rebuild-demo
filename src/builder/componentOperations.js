@@ -133,6 +133,10 @@ export function patchComponentProperties(document, id, values) {
   const node = indexDocument(document).nodes.get(id);
   if (!node) return document;
   let next = updateComponent(document, id, { props: textPropertyPatch(node, values) });
+  if (['Button','PurchaseButton'].includes(node.type) && values.action?.action) {
+    const type = node.type === 'PurchaseButton' && !['Purchase','WebCheckout','WebPaywall','CustomCheckout'].includes(values.action.action) ? 'Button' : node.type === 'Button' && values.action.action === 'Purchase' ? 'PurchaseButton' : node.type;
+    if (type !== node.type) next = updateComponent(next, id, { type, props: { ...componentProps(node), ...values } });
+  }
   const styles = Object.fromEntries(Object.entries(values).filter(([key]) => STYLE_KEYS.has(key)));
   if (!Object.keys(styles).length) return next;
   for (const peer of tabStylePeers(document, id)) {

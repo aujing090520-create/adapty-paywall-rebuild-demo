@@ -136,7 +136,14 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
   if (props.visibleWhen && Boolean(runtime[props.visibleWhen.id] ?? context.nodeIndex.get(props.visibleWhen.id)?.props.initial) !== props.visibleWhen.value) return null;
   const currentPackage = node.type === 'Package' ? node : packageNode;
   const variablePackage = currentPackage ?? context.selectedPackage;
-  const select = (event) => { if (editing) { event.stopPropagation(); onSelect(node.id); } };
+  const select = (event) => {
+    if (!editing) return;
+    event.stopPropagation();
+    let owner = node;
+    while (owner && !['Button','PurchaseButton','Screen','BottomSheet'].includes(owner.type)) owner = context.nodeIndex.get(context.parentIndex.get(owner.id));
+    const button = owner && ['Button','PurchaseButton'].includes(owner.type) ? owner : null;
+    onSelect(button && selectedId !== button.id && selectedId !== node.id ? button.id : node.id);
+  };
   const parentNode=context.nodeIndex.get(context.parentIndex.get(node.id));
   const parentOwner=parentNode&&selectionOwner(parentNode,context.nodeIndex,context.parentIndex);
   const parentProps=parentNode?componentProps({...parentNode,props:parentOwner?.id===owner?.id&&owner?stateStyleProps(parentNode.props,stateSelected):parentNode.props}):null;
