@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { RotateCcw, X } from 'lucide-react';
 import ComponentPreview from './ComponentPreview.jsx';
-import { exitOfferTarget } from './exitOffers.js';
+import { exitOfferSource, exitOfferTarget } from './exitOffers.js';
+import { pageContext } from './componentTree.js';
 
 export default function PaywallPresentation({ offerings = [], currentPaywallId, backdropDocument, ...props }) {
   const [offer, setOffer] = useState(null);
@@ -19,7 +20,10 @@ export default function PaywallPresentation({ offerings = [], currentPaywallId, 
   const render = (previewProps) => {
     const background = offer ? props.document : backdropDocument;
     if (!background || !previewProps.document.settings?.presentationSurfaceId) return <ComponentPreview {...previewProps}/>;
-    return <div className="ne-exit-sheet-presentation"><div className="ne-exit-underlay" inert="" aria-hidden="true"><ComponentPreview document={background} editing={false} navigation={underlayNavigation} onSelect={() => {}} onStatus={() => {}}/></div><div className="ne-exit-foreground"><ComponentPreview {...previewProps} dismissOnBackdrop/></div></div>;
+    const { flow, pages } = pageContext(background);
+    const source = exitOfferSource(background);
+    const backgroundNavigation = offer ? underlayNavigation : flow && source ? { [flow.id]: pages.findIndex((page) => page.id === source.id) } : {};
+    return <div className="ne-exit-sheet-presentation"><div className="ne-exit-underlay" inert="" aria-hidden="true"><ComponentPreview document={background} editing={false} navigation={backgroundNavigation} onSelect={() => {}} onStatus={() => {}}/></div><div className="ne-exit-foreground"><ComponentPreview {...previewProps} dismissOnBackdrop/></div></div>;
   };
   if (props.editing) return render(props);
   return <div className="ne-presentation">

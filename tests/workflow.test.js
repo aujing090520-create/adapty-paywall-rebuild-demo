@@ -5,6 +5,7 @@ import TestRenderer,{act} from 'react-test-renderer';
 import {createServer} from 'vite';
 import {component,indexDocument,validDocument,updateComponent} from '../src/builder/componentDocument.js';
 import {workflowContext,workflowEdges,workflowIssues,stepDestination,addWorkflowStep,setInitialStep,moveWorkflowStep,duplicateWorkflowStep,removeWorkflowStep} from '../src/builder/workflow.js';
+import {documentArtboards} from '../src/builder/artboards.js';
 const c=component;
 const screen=(id,children=[])=>c(id,'Screen',id,{},children);
 const button=(id,action,target)=>c(id,'Button',id,{action:{action,actionPage:target}},[c(id+'/text','Text','文字',{text:id})]);
@@ -57,8 +58,8 @@ test('explicitly clearing a target does not silently fall back to the next array
   assert.ok(workflowIssues(doc).some(message=>message.includes('有效的目标步骤')));
 });
 
-let server,Preview,Picker,oldObserver;
-before(async()=>{oldObserver=globalThis.ResizeObserver;globalThis.ResizeObserver=class{observe(){}disconnect(){}};server=await createServer({configFile:false,logLevel:'silent',server:{middlewareMode:true,hmr:false,watch:null}});Preview=(await server.ssrLoadModule('/src/builder/ComponentPreview.jsx')).default;Picker=(await server.ssrLoadModule('/src/builder/StepPicker.jsx')).default;});
+let server,Preview,Picker,Editor,Connections,oldObserver;
+before(async()=>{oldObserver=globalThis.ResizeObserver;globalThis.ResizeObserver=class{observe(){}disconnect(){}};server=await createServer({configFile:false,logLevel:'silent',server:{middlewareMode:true,hmr:false,watch:null}});Preview=(await server.ssrLoadModule('/src/builder/ComponentPreview.jsx')).default;Picker=(await server.ssrLoadModule('/src/builder/StepPicker.jsx')).default;Editor=(await server.ssrLoadModule('/src/builder/ComponentEditor.jsx')).default;Connections=(await server.ssrLoadModule('/src/builder/WorkflowConnections.jsx')).default;});
 after(async()=>{await server?.close();globalThis.ResizeObserver=oldObserver;});
 test('the step template picker reads the selected real template and offers its three actual screens',async()=>{
   let renderer,chosen;
@@ -68,8 +69,79 @@ test('the step template picker reads the selected real template and offers its t
     await act(async()=>renderer.root.findAll(item=>item.type==='button'&&text(item)==='Multi-step Paywall')[0].props.onClick());
     assert.ok(renderer.root.findAll(item=>item.type==='button'&&text(item)==='权益介绍').length);
     await act(async()=>renderer.root.findAll(item=>item.type==='button'&&text(item)==='权益介绍')[0].props.onClick());
+    assert.equal(chosen,undefined,'selecting a screen does not create it');
+    await act(async()=>renderer.root.findAll(item=>item.type==='button'&&text(item)==='创建页面')[0].props.onClick());
     assert.equal(workflowContext(chosen.document).steps.length,3);assert.ok(indexDocument(chosen.document).nodes.get(chosen.id).children.length);
   }finally{await act(async()=>renderer.unmount());}
+});
+
+test('peer boards retain their own screen and popup when step creation resets flow defaults',async()=>{
+  const sheet=c('sheet','BottomSheet','挽留弹窗',{presentation:'overlay'},[c('offer-copy','Text','优惠标题',{text:'优惠仍在'})]);
+  const original=document([screen('main',[c('main-copy','Text','正文',{text:'原页面仍在'}),sheet])]);
+  let app;
+  const render=doc=>React.createElement('div',{},documentArtboards(doc).map(board=>React.createElement('section',{key:board.key,'data-board':board.node.id},React.createElement(Preview,{document:doc,navigation:board.navigation,editing:true,onSelect(){},onStatus(){}}))));
+  const visible=(board,id)=>app.root.findAll(item=>item.type==='section'&&item.props['data-board']===board)[0]?.findAll(item=>typeof item.type==='string'&&item.props['data-component-id']===id).length>0;
+  try{
+    await act(async()=>{app=TestRenderer.create(render(original));});
+    assert.ok(visible('main','main-copy'));assert.ok(visible('sheet','offer-copy'));
+    const added=addWorkflowStep(original);
+    await act(async()=>app.update(render(added.document)));
+    assert.ok(visible('main','main-copy'),'new blank initial screen cannot blank the original peer board');
+    assert.ok(visible('sheet','offer-copy'),'flow reset cannot clear the popup board overlay');
+    assert.equal(visible(added.id,'main-copy'),false,'blank is confined to the newly created screen');
+    const changed=setInitialStep(added.document,'main');
+    await act(async()=>app.update(render(changed)));
+    assert.ok(visible('main','main-copy'));assert.ok(visible('sheet','offer-copy'));
+    await act(async()=>app.update(render(moveWorkflowStep(changed,'main',-1))));
+    assert.ok(visible('main','main-copy'));assert.ok(visible('sheet','offer-copy'));
+  }finally{if(app)await act(async()=>app.unmount());}
+});
+
+test('actual canvas entry selects then confirms a blank screen without blanking peer boards',async()=>{
+  const doc={...document([screen('main',[c('copy','Text','正文',{text:'Keep original content'})])]),templateId:'blank'};
+  assert.ok(validDocument(doc));
+  let app,current;
+  const text=node=>typeof node==='string'?node:node.children?.map(text).join('')??'';
+  const click=async name=>{const target=app.root.findAll(item=>item.type==='button'&&(item.props['aria-label']===name||text(item)===name))[0];assert.ok(target,name);await act(async()=>target.props.onClick());};
+  try{
+    await act(async()=>{app=TestRenderer.create(React.createElement(Editor,{initialNodes:[],template:{id:'blank'},initialDocument:doc,persistence:'session',onDocumentChange:value=>{current=value;},onCreateExitOffer(){}}));});
+    const toolbar=app.root.findByProps({className:'device-controls'});
+    assert.equal(toolbar.findAll(item=>item.type==='button'&&text(item)==='创建流程').length,0);
+    const entry=app.root.findAll(item=>item.type==='button'&&item.props['aria-label']==='添加步骤')[0];
+    assert.ok(entry.parent.props.className==='ne-canvas-start');
+    await click('添加步骤');await act(async()=>{await server.ssrLoadModule('/src/builder/StepPicker.jsx');});
+    await click('空白屏幕');assert.equal(workflowContext(current).steps.length,1);
+    await click('创建页面');assert.equal(workflowContext(current).steps.length,2);
+    const board=app.root.findAll(item=>item.type==='section'&&item.props['aria-label']==='画板：main')[0];
+    assert.ok(board.findAll(item=>item.type==='div'&&item.props['data-component-id']==='copy').length);
+    await act(async()=>board.findAll(item=>item.type==='div'&&item.props['data-component-id']==='copy')[0].props.onClick({stopPropagation(){}}));
+    assert.ok(board.findAll(item=>item.type==='div'&&item.props['data-component-id']==='copy').length);
+  }finally{if(app)await act(async()=>app.unmount());}
+});
+
+test('close creation port belongs to the predecessor board and is replaced by its bound exit edge',async()=>{
+  const doc=document([screen('main')]),boards=documentArtboards(doc);let app,opened=0;
+  const props={boards,edges:[],zoom:0.75,initialStepId:'main',exitSourceId:'main',onAddExit(){opened++;}};
+  try{
+    await act(async()=>{app=TestRenderer.create(React.createElement(Connections,props));});
+    const port=app.root.findByProps({'aria-label':'配置关闭「main」后的挽留'});
+    await act(async()=>port.props.onClick());assert.equal(opened,1);
+    await act(async()=>app.update(React.createElement(Connections,{...props,edges:[{kind:'exit',source:'main',target:'offer'}]})));
+    assert.equal(app.root.findAll(item=>item.type==='button'&&item.props['aria-label']==='配置关闭「main」后的挽留').length,0);
+  }finally{if(app)await act(async()=>app.unmount());}
+});
+
+test('explicit creation connects the copied continuation button to its actual following screen',()=>{
+  const original=document([screen('purchase',[c('price','Text','价格',{text:'¥78'})])]);
+  const source=document([screen('welcome',[button('continue','NextScreen','source-paywall')]),screen('source-paywall')]);
+  const before=structuredClone(source);
+  const result=addWorkflowStep(original,{source,screenId:'welcome',beforeId:'purchase',connectionButtonId:'continue'});
+  assert.equal(result.error,undefined);assert.deepEqual(source,before);
+  assert.deepEqual(workflowEdges(result.document).map(edge=>[edge.source,edge.target]),[[result.id,'purchase']]);
+  const next=workflowEdges(result.document)[0];assert.notEqual(next.id,'continue');
+  assert.equal(workflowContext(result.document).initial.id,result.id);
+  const unconnected=addWorkflowStep(original,{source,screenId:'welcome',beforeId:'purchase'});
+  assert.equal(workflowEdges(unconnected.document).length,0,'not selecting a connection does not invent one');
 });
 test('exit creation shares sources but selection and cancellation never create until confirmation',async()=>{
   const text=node=>typeof node==='string'?node:node.children?.map(text).join('')??'';

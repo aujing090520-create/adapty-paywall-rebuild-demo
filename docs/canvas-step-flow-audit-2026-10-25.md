@@ -1,0 +1,18 @@
+# Canvas Step Creation Repair
+
+Source: user screenshots of the misplaced toolbar entry, peer-board blanking and ambiguous exit creation. Reference: https://www.revenuecat.com/docs/tools/paywalls/creating-paywalls (peer screens on a canvas; button-based step navigation; exit offer only on final-screen dismissal).
+
+| ID | Priority | Evidence and cause | Implemented decision | Verification | Status |
+| --- | --- | --- | --- | --- | --- |
+| CF-01 | P1 | Creation lived in the toolbar; selecting a source screen created immediately; no explicit connection ownership. | Canvas initial-step port opens source selection. Choosing content does not create; explicit Create Page inserts before current initial step. An existing NextScreen button can be selected to connect to that original step. Its actual actionPage owns the edge. Blank screens stay empty; no invented button or fake transition. Keep initial port visible during board autofocus. | Mounted actual Editor blank selection/confirmation/canvas clicks; copied-button ID mapping and target tests; actual local IAB template selection, confirmation, Continue edge, preview navigation and save/reopen. | Locally verified |
+| CF-02 | P0 | Actual Blue Privilege > add blank Screen makes every board show the same empty screen, while original tree data remains. Runtime invalidation deleted explicit board navigation after synchronization. | One document/navigation effect resets defaults then reapplies controlled per-board indices/overlay. No data reconstruction or template overwrite. | Mounted peer screens and overlay survive add/change-initial/reorder; actual local reproduction recovered original HT and popup while new blank alone remains empty. Clicking components and save/reopen retain contents. | Locally verified |
+| CF-03 | P1 | Creation on the target popup and shared purpose tabs obscured predecessor versus destination. | Exit entry belongs to final source screen's Close Page port. Picker separately shows predecessor page, predecessor event and display target. Remove target-side trigger buttons and mixed-purpose tabs. A binding creates the existing canonical green close-event edge, not another trigger field. | Mounted source-port replacement by bound edge; actual local close port > existing current popup > confirm; underlying Offering binding, source/target edge and runtime dismissal agree. | Locally verified |
+| CF-04 | P1 | After adding an intro, the editor popup backdrop showed initial intro rather than purchase screen that triggers the offer. | Editor backdrop resolves the same final close-source as the trigger; runtime still uses actual dismissal snapshot. | New mounted predecessor-background test; actual local save/reopen backdrop contains HT purchase content, not intro; preview Continue > HT > close > offer > cancel ends flow. | Locally verified |
+
+Tests: 287/287 full suite passed; final initial-port positioning adjustment additionally passed 39 affected workflow/exit/scroll tests. Final Vite build passed and diff whitespace check passed. Parameter reference regenerated: 32 component types, 3341 rows.
+
+Local evidence: `/tmp/paywall-flow-predecessor-local.png`, `/tmp/paywall-flow-canvas-local.png`. All local changes/save-reopen tests used an isolated agent origin, not user draft storage.
+
+Preserved: original four HT template definitions, source assets, SKU and copy; OpenPage/URL detail links remain outside funnel edges; only final non-hidden non-auxiliary screen can trigger an exit offer; no real purchase integration claimed.
+
+Production acceptance follows in the delivery receipt. This is a scoped creation/transition repair, not a claim of complete RevenueCat equivalence.

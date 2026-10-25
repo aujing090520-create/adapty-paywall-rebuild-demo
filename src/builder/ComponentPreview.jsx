@@ -226,7 +226,6 @@ export default function ComponentPreview({ document, selectedId, onSelect, editi
   const previousDocument = useRef(document);
   const viewport = useRef(null), [scale, setScale] = useState(0.82);
   const navigationKey = JSON.stringify(Object.entries(navigation ?? {}).sort(([a], [b]) => a.localeCompare(b)));
-  useEffect(() => { setRuntime((current) => ({ ...current, ...navigation })); }, [navigationKey]);
   useEffect(() => {
     const previous = indexDocument(previousDocument.current).nodes;
     previousDocument.current = document;
@@ -242,9 +241,9 @@ export default function ComponentPreview({ document, selectedId, onSelect, editi
           delete next.selectedPackage;
         }
       }
-      return next;
+      return { ...next, ...navigation };
     });
-  }, [document]);
+  }, [document, navigationKey]);
   useLayoutEffect(() => { const resize = () => setScale((viewport.current?.clientWidth ?? 320) / 390); const observer = new ResizeObserver(resize); if (viewport.current) observer.observe(viewport.current); resize(); return () => observer.disconnect(); }, []);
   useEffect(() => {
     if (!editing) return;

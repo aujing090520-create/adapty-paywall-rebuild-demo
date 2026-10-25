@@ -71,7 +71,7 @@ export function setInitialStep(document, id) {
   const props = { ...flow.props, initialStepId: id, defaultIndex: undefined };
   return updateComponent(document, flow.id, { ...flow, props });
 }
-export function addWorkflowStep(document, { source, screenId, beforeId, afterId } = {}) {
+export function addWorkflowStep(document, { source, screenId, beforeId, afterId, connectionButtonId } = {}) {
   if (workflowContext(document).steps.length >= MAX_STEPS) return { document, error: '最多支持10个步骤' };
   let next = ensureFlow(pinDestinations(document));
   const { flow, steps, initial, final } = workflowContext(next);
@@ -86,6 +86,15 @@ export function addWorkflowStep(document, { source, screenId, beforeId, afterId 
     const result = pasteFragment(next, flow.id, copyFragment(explicitSource, screen.id), at);
     next = result.document; id = result.ids[0];
     if (!id) return { document, error: '无法导入该屏幕，原内容保留' };
+    if (connectionButtonId) {
+      // Fragment cloning preserves child order, but deliberately replaces every id.
+      const copied = indexDocument(next).nodes.get(id);
+      const counterpart = (original, clone) => original.id === connectionButtonId ? clone : original.children.map((child, index) => clone.children[index] && counterpart(child, clone.children[index])).find(Boolean);
+      const button = counterpart(screen, copied);
+      if (button?.type !== 'Button' || button.props.action?.action !== 'NextScreen') return { document, error: '请选择有效的步骤连接按钮' };
+      const destination = flow.children[at];
+      if (destination) next = updateComponent(next, button.id, { props: { action: { ...button.props.action, actionPage: destination.id } } });
+    }
   } else {
     const names = new Set(flow.children.map((page) => page.name));
     let number = 1; while (names.has(`屏幕 ${number}`)) number++;

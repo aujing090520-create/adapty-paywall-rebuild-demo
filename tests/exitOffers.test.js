@@ -64,6 +64,21 @@ test('exit eligibility follows the final flow step, not HT auxiliary detail scre
   assert.equal(isExitOfferStep(doc), true); assert.equal(isExitOfferStep(doc, { flow: 1 }), false);
 });
 
+test('editing exit popup backdrop is its predecessor purchase screen, not the initial intro',async()=>{
+  const background=fixture();
+  background.root.children=[component('flow','Flow','步骤',{initialStepId:'intro'},[
+    component('intro','Screen','介绍',{},[component('intro-copy','Text','介绍正文',{text:'Intro'})]),
+    component('purchase','Screen','购买',{},[component('purchase-copy','Text','购买正文',{text:'Purchase'})]),
+  ])];
+  const offer=fixture('offer');
+  offer.settings={presentationSurfaceId:'popup'};
+  offer.root.children=[component('popup','BottomSheet','挽留',{presentation:'overlay'},[component('offer-copy','Text','优惠',{text:'Offer'})])];
+  const {renderer}=await mount(offer,[],{editing:true,backdropDocument:background,navigation:{overlay:'popup'}});
+  const underlay=renderer.root.findByProps({className:'ne-exit-underlay'});
+  assert.equal(underlay.findAll(item=>typeof item.type==='string'&&item.props['data-component-id']==='purchase-copy').length,1);
+  assert.equal(underlay.findAll(item=>typeof item.type==='string'&&item.props['data-component-id']==='intro-copy').length,0);
+});
+
 test('exit trigger readback and runtime share the final visible non-auxiliary source, not canvas selection or names', () => {
   const doc = fixture(); doc.settings = { exitOfferOfferingId: 'offer' };
   const first = component('intro', 'Screen', '介绍'), last = component('purchase', 'Screen', '购买页面');
