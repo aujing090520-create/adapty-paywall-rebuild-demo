@@ -1,0 +1,39 @@
+{
+  "task": "后台配置任务级体验优化",
+  "route": "林凡 Demo 全局体验审查与改造",
+  "result_level": "已完成",
+  "source_commit": "bda8289",
+  "ledger": { "total": 8, "verified": 8, "unresolved": 0 },
+  "coverage": {
+    "affected": ["UX-01", "UX-02", "UX-03", "UX-04", "UX-05", "UX-06", "UX-07", "UX-08"],
+    "verified": ["UX-01", "UX-02", "UX-03", "UX-04", "UX-05", "UX-06", "UX-07", "UX-08"]
+  },
+  "verification_evidence": [
+    "npm test: 324/324 passed, 0 skipped, 0 failed; 13 new close-target tests plus actual App task integration",
+    "npm run build: 3.30s; git diff --check passed",
+    "All 45 templates: create native modal without SKU changes, source mutation or extra workflow Screens",
+    "Actual IAB local isolated origin: create, source-close preview, resume/repeated close, save/reload/reopen, unlink/undo, direct rebind, delete/undo, General rename/save and independent complete copy",
+    "Current-canvas picker defaults to actual document; unrelated saved historical offers excluded; explicit saved import is a copy; predecessor change clears pending selection",
+    "Legacy unlink/reopen retains popup in workspace; delete cleans all bindings and undo restores; saved source is not physically deleted",
+    "Actual App integration: empty-name save and save-through-navigation guarded; discard before Metrics return restores saved document; template replacement and navigation cancel/save/discard covered",
+    "GitHub main pushed ba95e56 -> bda8289; existing Vercel auto deployment, no duplicate manual deploy",
+    "Production HTTP HTML and actual IAB script /assets/index-CBsQv18j.js match final build; stylesheet /assets/index-Bon4AblI.css matches",
+    "Production tab31: new paywall -> blank builder -> native retention modal -> test source close -> actual gift popup displayed -> Continue -> close -> return editor; two boards and close edge remain; delete enabled; no test draft saved",
+    "Parameter reference regenerated: 32 component types, 3439 rows, HTML/MD/CSV",
+    "Screenshot /tmp/paywall-admin-ux-production.png sha256 442e6535e66e6fe4a21fe6943d66ecb8b30680afe6e14fb9372f63fae867dd89"
+  ],
+  "release": {
+    "repository": "https://github.com/aujing090520-create/adapty-paywall-rebuild-demo",
+    "branch": "main",
+    "production_url": "https://adapty-paywall-rebuild-demo.vercel.app/",
+    "javascript": "index-CBsQv18j.js",
+    "stylesheet": "index-Bon4AblI.css",
+    "production_scope": "Affected-path smoke only; full template and persistence acceptance is local/browser plus integration tests"
+  },
+  "limits": [
+    "Eight audited task workflows, not an exhaustive Cartesian product of every field and component",
+    "Payment, restore, analytics and SDK publication remain Demo boundaries; local Save does not claim service publication",
+    "Existing saved documents preserved; no bulk migration or clearing historical offers; test-results remains untouched and untracked"
+  ],
+  "next_action": "No further action remains in this delivery scope"
+}
