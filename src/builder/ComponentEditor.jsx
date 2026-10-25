@@ -23,7 +23,7 @@ import { exitOfferConnection, exitOfferSource } from './exitOffers.js';
 const StepPicker = React.lazy(()=>import('./StepPicker.jsx'));
 
 const libraryKey = 'paywall-component-library-v3';
-const fieldNames = { name: '商品名称', price: '主价格', reference: '参考价', supportingCopy: '辅助文案', savingCopy: '优惠说明', saveCopy: 'SAVE 文案', badgeText: '标签文字' };
+const fieldNames = { name: '商品名称', price: '主价格', reference: '参考价', monthlyPrice: 'SKU 月均价', referencePrice: 'SKU 原价', supportingCopy: '辅助文案', savingCopy: '优惠说明', saveCopy: 'SAVE 文案', badgeText: '标签文字' };
 const iconFor = (type,axis) => ({ Screen: Smartphone, Flow: Workflow, Stack:axis==='horizontal'?Columns2:axis==='overlay'?Layers:Rows2, Text: Type, Image: ImageIcon, Video, Icon: Star, Custom: Code, Package: PackageIcon, Button: MousePointerClick, PurchaseButton: CreditCard, Header: PanelTop, Footer: PanelBottom, BottomSheet: PanelBottom, Carousel: GalleryHorizontal, Tabs: Columns2, TabControl: Columns2, TabButton: MousePointerClick, Timeline: ListOrdered, Countdown: Clock3, Toggle: ToggleLeft, Switch: ToggleLeft, Wallet: CreditCard, ExpressCheckout: CreditCard }[type] ?? Layers);
 function Field({ label, children }) { return <label className="ne-field"><span>{label}</span>{children}</label>; }
 function Select({ label, value, onChange, options }) { return <Field label={label}><select aria-label={label} value={value ?? ''} onChange={(event) => onChange(event.target.value)}>{options.map((option) => { const [key, name] = Array.isArray(option) ? option : [option, option]; return <option key={key} value={key}>{name}</option>; })}</select></Field>; }

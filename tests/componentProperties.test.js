@@ -1285,3 +1285,24 @@ test('navigate back returns within the current flow before falling back to the m
   const source=fixture(component('flow','Flow','',{defaultIndex:1},[component('p1','Screen'),component('p2','Screen','',{},[button])]));
   const h=await mount(button,{source,editing:false});await act(async()=>h.node().props.onClick(event()));assert.ok(h.node('p1'));assert.equal(h.node('p2'),undefined);await h.close();
 });
+
+for (const id of ['ht-membership-plans','ht-payment-recovery','ht-sku-sheet']) {
+  test(`${id}: rebuilt checkout is configurable and its native close action dispatches dismissal`, async () => {
+    const template=templates.find(item=>item.id===id), source=upgradeCanonicalComponents(importComponentDocument(createBuilderNodes(id),template));
+    const nodes=indexDocument(source).nodes, checkout=nodes.get('purchase');
+    const h=await mount(checkout,{source,editing:false});
+    await h.change('固定高度','64');
+    assert.equal(h.node().props.style.height,'64px');
+    assert.deepEqual(h.document().products,source.products);
+    await act(async()=>h.node().props.onClick(event()));
+    assert.match(h.status(),/支付|购买/);
+    await h.close();
+    let renderer,dismissed=0;
+    try {
+      await act(async()=>{renderer=TestRenderer.create(React.createElement(Preview,{document:source,editing:false,onSelect(){},onStatus(){},onDismiss(){dismissed++;}}));});
+      const close=renderer.root.findAll(item=>item.type==='div'&&item.props.role==='button'&&item.props['aria-label']==='关闭')[0];
+      assert.ok(close);
+      await act(async()=>close.props.onClick(event()));assert.equal(dismissed,1);
+    } finally { if(renderer)await act(async()=>renderer.unmount()); }
+  });
+}

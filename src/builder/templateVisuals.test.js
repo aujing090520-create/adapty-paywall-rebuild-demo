@@ -17,16 +17,19 @@ test('legacy padding and asymmetric margins survive axis controls with no zero-d
   assert.equal(componentProps(component('explicit', 'Stack', '', { paddingVertical: 0, paddingHorizontal: 0, paddingTop: 20, paddingMode: 'axis' })).paddingVertical, 0);
 });
 
-test('four HT defaults retain node ids, copy, media and product records while calibrating visuals', () => {
+test('HT defaults preserve business data and retained content while three scenes rebuild their layout owners', () => {
   for (const id of ['ht-blue-privilege', 'ht-membership-plans', 'ht-payment-recovery', 'ht-sku-sheet']) {
     const before = load(id, false), after = load(id);
     assert.ok(validDocument(after));
     assert.deepEqual(after.products, before.products);
     const oldNodes = indexDocument(before).nodes, nextNodes = indexDocument(after).nodes;
-    assert.deepEqual([...nextNodes.keys()], [...oldNodes.keys()]);
+    if (id === 'ht-blue-privilege') assert.deepEqual([...nextNodes.keys()], [...oldNodes.keys()]);
+    else assert.equal(after.htSceneVersion, 1);
     for (const [key, node] of oldNodes) {
+      if (!nextNodes.has(key)) continue;
       for (const prop of ['text', 'runs', 'src', 'binding', 'action', 'dataKey']) assert.deepEqual(nextNodes.get(key).props[prop], node.props[prop], `${id}:${key}:${prop}`);
     }
+    for (const key of ['purchase','legal','links']) if (oldNodes.has(key)) assert.ok(nextNodes.has(key), `${id}:${key}`);
   }
 });
 
@@ -75,9 +78,12 @@ test('RevenueCat gallery trees do not receive HT-only defaults', () => {
   assert.deepEqual(load('rc-source-1'), load('rc-source-1', false));
 });
 
-test('missing default recovery backdrop is restored but an uploaded page background stays intact', () => {
+test('rebuilt defaults expose a separate dimmed recovery backdrop without migrating old user drafts', () => {
   const previous = load('ht-payment-recovery', false), current = load('ht-payment-recovery');
-  assert.equal(migrateTemplateVisuals(previous, previous, current).root.props.backgroundImage, '/figma-paywall-assets/recovery-art.png');
+  const backdrop = indexDocument(current).nodes.get('recovery/backdrop');
+  assert.equal(backdrop.props.src, '/figma-paywall-assets/recovery-art.png');
+  assert.equal(backdrop.props.overlayOpacity, 48);
+  assert.equal(migrateTemplateVisuals(previous, previous, current), previous);
   const edited = updateComponent(previous, previous.root.id, { props: { backgroundImage: 'data:image/png;base64,custom' } });
   assert.equal(migrateTemplateVisuals(edited, previous, current).root.props.backgroundImage, 'data:image/png;base64,custom');
 });

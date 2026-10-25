@@ -1,5 +1,5 @@
 import { productPackageRows, listRowsFor, privilegeRowsFor, agreementSegmentsFor, heroTitleParts } from './fieldModels.js';
-import { resolveProductPrice, skuById, skuCopy } from '../productPricing.js';
+import { resolveProductPrice, productPriceFields, skuById, skuCopy } from '../productPricing.js';
 import { linkActionFor, visibleLinkLabels } from '../linkActions.js';
 import { HT_PRODUCT_DESIGN_DEFAULTS } from '../products/productStyleModel.js';
 import { calibrateTemplateVisuals } from './templateVisuals.js';
@@ -118,7 +118,8 @@ export function resolveComponentText(node, document, packageNode) {
   const sku = skuById(row.skuId);
   const value = sku ? { ...row, ...skuCopy(sku.id), name: sku.displayName } : row;
   const price = resolveProductPrice(value, packageNode?.props.priceMode ?? '1');
-  return String(({ price: price.main, reference: price.strike, name: value.name }[binding.field]) ?? value[binding.field] ?? '');
+  const fields = productPriceFields(value);
+  return String(({ price: price.main, reference: price.strike, name: value.name, monthlyPrice: fields.monthly, referencePrice: fields.referenceTotal }[binding.field]) ?? value[binding.field] ?? '');
 }
 
 // Legacy configuration is consumed once. Runtime edits never compile back to it.

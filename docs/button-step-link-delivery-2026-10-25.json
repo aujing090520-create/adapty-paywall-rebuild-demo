@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "result_level": "已完成",
+  "scope": "无效辅助图层清理、创建页面后的按钮行为与目标步骤关联",
+  "source_commit": "80ff389",
+  "production_url": "https://adapty-paywall-rebuild-demo.vercel.app/",
+  "ledger": { "total": 3, "verified": 3, "unresolved": 0 },
+  "coverage": { "affected": ["BL-01", "BL-02", "BL-03"], "verified": ["BL-01", "BL-02", "BL-03"] },
+  "verification_evidence": [
+    "292/292 tests and final Vite build passed; git diff whitespace check passed",
+    "Local IAB: create Knowledge screen, first click CTA selects Button, choose NextScreen and HT destination, clear/rebind edge, switch purchase/navigation purpose, preview reaches HT, save/reopen retains Action and Step",
+    "Original production domain serves index-BnRiPQA6.js matching final build",
+    "Production IAB tab26: canvas add step > Knowledge > create page > first click CTA > NextScreen > HT; Action and Step rendered, purchase connection visible; actual interactive preview CTA reaches HT products and legal copy",
+    "/tmp/paywall-button-link-local.png",
+    "/tmp/paywall-button-link-production.png"
+  ],
+  "evidence_boundaries": [
+    "Generated details removed from primary layer list, not deleted from stored data or existing links",
+    "Whole purchase template copied into an intro still has source Packages and the legitimate final-step-commerce warning; source commerce content was not silently removed",
+    "Production acceptance used unsaved agent session and did not overwrite user drafts; save/reopen tested on isolated local origin",
+    "Three newly reported HT default-template structure/style issues are a separate active batch, not covered by this receipt"
+  ],
+  "next_action": "按钮关联批次无剩余动作；继续三张HT模板默认结构与样式修复"
+}

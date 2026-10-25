@@ -102,7 +102,7 @@ typography(['Text']);
 add(['Text'],'文字规则','文字规则','textRules','切换默认或优惠分支的内容/格式；标准尺寸仍属于默认，不重复配置','预览使用当前选择规则，不是真实用户优惠资格判定',[['default','默认','默认文案与格式'],['introductory','首次优惠','首次优惠覆盖，未覆盖字段继承默认'],['promotional','促销优惠','促销优惠覆盖'],['multiphase','多阶段优惠','多阶段优惠覆盖']]);
 add(['Text'],'文字属性','文字内容','text / runs','编辑正文与真实选区格式；默认SKU绑定时只读，优惠分支可独立覆盖文案','优惠仅改格式时继续读取SKU；主动改优惠正文才覆盖，返回默认仍读原商品，不改SKU记录');
 for(const [label,key,meaning] of [['粗体','bold','切换选区粗体'],['斜体','italic','切换选区斜体'],['删除线','strikethrough','给选区加删除线'],['下划线','underline','给选区加下划线'],['行内代码','code','给选区使用等宽代码格式，不是HTML编辑'],['链接','link','为选区设置安全链接或移除链接'],['撤销/重做','history','撤销或恢复文字编辑']])add(['Text'],'文字工具',label,`runs.${key}`,meaning,'文字有选区时只改变选区；链接不接受脚本协议');
-add(['Text'],'商品绑定','商品字段','binding.field','选择此文字读取哪个商品字段；名称、价格等仍归商品记录所有','只在默认规则且已有商品绑定时显示',Object.entries({name:'商品名称',price:'主价格',reference:'参考价',supportingCopy:'辅助文案',savingCopy:'优惠说明',saveCopy:'SAVE 文案',badgeText:'标签文字'}).map(([key,label])=>[key,label,`读取所属商品的${label}`]));
+add(['Text'],'商品绑定','商品字段','binding.field','选择此文字读取哪个商品字段；名称、价格等仍归商品记录所有','只在默认规则且已有商品绑定时显示',Object.entries({name:'商品名称',price:'主价格',reference:'参考价',monthlyPrice:'SKU 月均价',referencePrice:'SKU 原价',supportingCopy:'辅助文案',savingCopy:'优惠说明',saveCopy:'SAVE 文案',badgeText:'标签文字'}).map(([key,label])=>[key,label,`读取所属商品的${label}`]));
 add(['Text'],'商品绑定','转为独立文字','binding','以当前实际文案解除绑定，后续不再随SKU更新','已有绑定且默认规则；不是复制第二份同时生效的字段');
 for(const [key,label] of PRODUCT_TEXT_VARIABLES)add(['Text'],'文字变量',label,`{{ ${key} }}`,'插入变量占位符；商品内部读取所属商品，商品外部读取当前选中商品','有对应商品数据才可显示；终身商品不生成订阅月数');
 for(const [key,label] of TIMER_TEXT_VARIABLES)add(['Text'],'倒计时变量',label,`{{ ${key} }}`,'插入当前倒计时值；补零如02，不补零如2','处于倒计时内容中；计时单位决定小时/分钟是否累计');
@@ -131,7 +131,7 @@ add(['Package'],'商品属性','商品 SKU','products[dataKey].skuId','选择示
 add(['Package'],'商品属性','价格显示','priceMode','决定绑定价格与参考价的计算/展示方式','有价格绑定的文字才受影响；终身商品不生成月均价',[['1','总价','主价格使用总价'],['0','月均价','主价格使用订阅月均价'],['3','总价 / 月均参考价','主价格总价，参考位月均'],['4','月均价 / 总参考价','主价格月均，参考位总价']]);
 add(['Package'],'商品属性','默认选中','defaultSelected','设置初次预览选中的商品；同一选择组只保留一个默认选中','不同选择组相互独立',[['true','是','同组其他默认选中清除'],['false','否','取消该商品默认选中']]);
 add(['Package'],'商品属性','选择组','group','决定哪些商品互斥选择','组ID相同的商品互斥，不同组独立');
-for(const [key,name] of Object.entries({name:'商品名称',price:'主价格',reference:'参考价',supportingCopy:'辅助文案',savingCopy:'优惠说明',saveCopy:'SAVE 文案',badgeText:'标签文字'}))add(['Package'],'示例商品数据',name,`products[dataKey].${key}`,'修改唯一示例商品记录，对应绑定文字同步更新','未绑定SKU；未创建对应绑定子文字时，不会凭空生成文字框');
+for(const [key,name] of Object.entries({name:'商品名称',price:'主价格',reference:'参考价',monthlyPrice:'月均价',referencePrice:'原价',supportingCopy:'辅助文案',savingCopy:'优惠说明',saveCopy:'SAVE 文案',badgeText:'标签文字'}))add(['Package'],'示例商品数据',name,`products[dataKey].${key}`,'修改唯一示例商品记录，对应绑定文字同步更新','未绑定SKU；未创建对应绑定子文字时，不会凭空生成文字框');
 add(all,'状态样式','状态','navigation.package-style','切换正在编辑和预览的状态；不是第二个“默认选中”字段','仅商品、标签按钮、指示器或处于商品/标签按钮内的子组件；文字正文和文字格式仍共用',[['default','默认','编辑默认标准属性'],['selected','选中 / 当前','编辑选中或激活标准属性；未覆盖值继承默认']]);
 
 add(['Button','PurchaseButton'],'动作属性','点击动作','action.action','设置按钮用途及交互行为；购买按钮选择导航时保留ID、内容与实际样式并转为普通按钮，选择购买则转回购买按钮','编辑态优先选中图层；交互预览才执行动作；仅显式选择行为才转换类型，不改原模板',[['None','未配置','不执行动作'],['NavigateTo','跳转到','继续选择导航目标'],['NextScreen','跳转到下一步骤','按目标屏幕ID跳转并记录访问历史，自动显示步骤选择'],['NavigateBack','返回上一屏幕','返回当前流程历史或关闭当前弹层'],['RestorePurchases','恢复购买','仅显示恢复购买演示提示，不发起交易'],['Dismiss','关闭付费墙','仅演示关闭，真实关闭已排除'],['Purchase','购买','显示购买结账方式；不把跳转伪装成购买']]);

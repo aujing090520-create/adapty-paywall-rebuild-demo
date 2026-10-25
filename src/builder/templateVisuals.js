@@ -1,4 +1,5 @@
 import { HT_PRODUCT_DESIGN_DEFAULTS } from '../products/productStyleModel.js';
+import { rebuildHtTemplateScene } from './htTemplateScenes.js';
 
 export const TEMPLATE_VISUAL_VERSION = 1;
 const edges = (prefix, vertical, horizontal = vertical) => ({ [`${prefix}Mode`]: 'individual', [`${prefix}Top`]: vertical, [`${prefix}Bottom`]: vertical, [`${prefix}Left`]: horizontal, [`${prefix}Right`]: horizontal });
@@ -87,11 +88,13 @@ export function calibrateTemplateVisuals(document, template, sources) {
   set('purchase/label', { fontSize: purchase.fontSize ?? 22, lineHeight: 1.2, fontWeight: 700 });
   set('legal', { color: (configs.get('legal') ?? {}).color ?? '#aaaaaa', textAlign: 'left', fontSize: (configs.get('legal') ?? {}).fontSize ?? 11, lineHeight: 1.32, ...edges('margin', 10, blue || member ? 18 : 0) });
   const apply = (node) => ({ ...node, props: { ...node.props, ...patch.get(node.id) }, children: node.children.map(apply) });
-  return { ...document, visualDefaultsVersion: TEMPLATE_VISUAL_VERSION, root: apply(document.root) };
+  return rebuildHtTemplateScene({ ...document, visualDefaultsVersion: TEMPLATE_VISUAL_VERSION, root: apply(document.root) }, template);
 }
 
 // Change only values still equal to the old generated defaults, never user content or structure.
 export function migrateTemplateVisuals(document, previous, current) {
+  // A structural default rebuild must not rewrite an existing user draft.
+  if (current.htSceneVersion) return document;
   if (document.visualDefaultsVersion === TEMPLATE_VISUAL_VERSION || !current.visualDefaultsVersion) return document;
   const index = (root, map = new Map()) => { map.set(root.id, root); root.children.forEach((child) => index(child, map)); return map; };
   const oldNodes = index(previous.root), newNodes = index(current.root);

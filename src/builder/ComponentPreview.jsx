@@ -203,6 +203,7 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
     return <Timeline node={node} props={props} attributes={attributes} style={style} render={(child, childLayout) => <NativeComponent key={child.id} node={child} packageNode={currentPackage} layoutStyle={childLayout} />} />;
   }
   if (['Button','TabButton','PurchaseButton'].includes(node.type)) {
+    if (node.children.length && node.children.every((child) => child.type === 'Icon')) { attributes['aria-label'] = node.name; attributes.title = node.name; }
     const blocked = props.action?.action === 'OpenPage' && isUnconfiguredDetailPage(context.nodeIndex.get(props.action.actionPage));
     return <div {...attributes} role="button" tabIndex={0} aria-disabled={!editing && blocked || undefined} style={{ ...style, ...containerStyle(visualNode), ...(!editing&&blocked?{cursor:'default'}:{}) }} onClick={(event) => { select(event); if (node.type === 'TabButton') setRuntime((current) => ({ ...current, [props.target]: props.index })); else if (!editing) { event.stopPropagation(); runAction(node); } }} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); if (editing) onSelect(node.id); else if (node.type === 'TabButton') setRuntime((current) => ({ ...current, [props.target]: props.index })); else runAction(node); } }}>{children()}</div>;
   }
