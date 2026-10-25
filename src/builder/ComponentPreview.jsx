@@ -225,7 +225,8 @@ export default function ComponentPreview({ document, selectedId, onSelect, editi
   const [runtime, setRuntime] = useState({});
   const previousDocument = useRef(document);
   const viewport = useRef(null), [scale, setScale] = useState(0.82);
-  useEffect(() => { setRuntime((current) => ({ ...current, ...navigation })); }, [navigation]);
+  const navigationKey = JSON.stringify(Object.entries(navigation ?? {}).sort(([a], [b]) => a.localeCompare(b)));
+  useEffect(() => { setRuntime((current) => ({ ...current, ...navigation })); }, [navigationKey]);
   useEffect(() => {
     const previous = indexDocument(previousDocument.current).nodes;
     previousDocument.current = document;
@@ -245,7 +246,18 @@ export default function ComponentPreview({ document, selectedId, onSelect, editi
     });
   }, [document]);
   useLayoutEffect(() => { const resize = () => setScale((viewport.current?.clientWidth ?? 320) / 390); const observer = new ResizeObserver(resize); if (viewport.current) observer.observe(viewport.current); resize(); return () => observer.disconnect(); }, []);
-  useEffect(() => { const root = viewport.current; const element = [...(root?.querySelectorAll('[data-component-id]') ?? [])].find((item) => item.dataset.componentId === selectedId); if (!root || !element) return; const outer = root.getBoundingClientRect(), inner = element.getBoundingClientRect(); if (inner.top < outer.top) root.scrollTop += inner.top - outer.top; else if (inner.bottom > outer.bottom) root.scrollTop += Math.min(inner.top - outer.top, inner.bottom - outer.bottom); }, [selectedId, navigation]);
+  useEffect(() => {
+    if (!editing) return;
+    const root = viewport.current;
+    const element = [...(root?.querySelectorAll('[data-component-id]') ?? [])].find((item) => item.dataset.componentId === selectedId);
+    if (!root || !element || element.matches('.nc-screen, .nc-flow')) return;
+    const outer = root.getBoundingClientRect(), inner = element.getBoundingClientRect();
+    // Rects include canvas zoom; scrollTop is measured before that transform.
+    const zoom = outer.height / root.clientHeight;
+    if (!(zoom > 0)) return;
+    if (inner.top < outer.top) root.scrollTop += (inner.top - outer.top) / zoom;
+    else if (inner.bottom > outer.bottom) root.scrollTop += Math.min(inner.top - outer.top, inner.bottom - outer.bottom) / zoom;
+  }, [selectedId, navigationKey, editing]);
   const runAction = (node) => {
     const action = node.props.action ?? {};
     if (!action.action || action.action === 'None') return;
