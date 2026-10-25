@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "result_level": "部分结果",
+  "ledger": { "total": 4, "verified": 3, "unresolved": 1 },
+  "coverage": {
+    "affected": ["EXIT-01", "EXIT-02", "EXIT-03", "EXIT-04"],
+    "verified": ["EXIT-01", "EXIT-02", "EXIT-03"]
+  },
+  "verification_evidence": [
+    "250/250 tests; build 3.07s; git diff --check",
+    "Local IAB: saved target, exit transition, full dismissal, reload binding; /tmp/paywall-exit-offer-local.png",
+    "52ca6c8 pushed origin/main; dpl_kevFRZqQAyvooAHa6G8ABzuYjhKw READY and production alias asset match",
+    "Production IAB tab11 list read succeeded; builder operation timed out after 60s; no runtime acceptance claim"
+  ]
+}
