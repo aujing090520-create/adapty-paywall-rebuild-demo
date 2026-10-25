@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "result_level": "已完成",
+  "scope": "统一空白/模板/已有内容创建退出优惠，过滤详情步骤边，修复联合预览从主流程开始",
+  "source_commit": "685c4538aac2f76fc32d565c691e8b27090db565",
+  "production_deployment": "dpl_7vZdMwjpB8gS2kRnAYVM1wUZLhAf",
+  "ledger": { "total": 5, "verified": 5, "unresolved": 0 },
+  "coverage": {
+    "affected": ["CR-01", "CR-02", "CR-03", "CR-04", "CR-05"],
+    "verified": ["CR-01", "CR-02", "CR-03", "CR-04", "CR-05"]
+  },
+  "verification_evidence": [
+    "276/276 tests; final Vite build 3.08s; git diff --check passed",
+    "Model: blank content/product isolation; copied default package/style/artwork/product IDs and link dependencies; popup purchase/cancel semantics",
+    "Picker/App: choose without creation, explicit confirmation, saved source, current surface, save/discard and original session ownership",
+    "Local IAB: template selection and cancellation, current popup confirmation, template popup creation, save/reload restores one close connection; zero benefit-link edges",
+    "Local and production IAB: preview from selected independent offer starts at main, dismiss displays retention, cancel ends flow",
+    "Production IAB: create flow > exit retention > template > popup selection > confirmation, visible source close event, resulting independent offer and close connection",
+    "Production READY and original domain JS/CSS match final build",
+    "/tmp/paywall-exit-create-picker-production.png",
+    "/tmp/paywall-exit-create-result-production.png"
+  ],
+  "evidence_boundaries": [
+    "Production blank/saved/cancel/save-reload not repeated; validated locally and in model/mounted tests",
+    "Template sources copy; current ordinary popup promotion converts only after explicit creation; no automatic deletion of same-named source content",
+    "Original four HT templates, media, copy and SKU data preserved",
+    "One existing exit binding owns configuration; no new persisted trigger field or real Billing/native dismissal integration",
+    "Not a claim of all RevenueCat component or template parity"
+  ]
+}
