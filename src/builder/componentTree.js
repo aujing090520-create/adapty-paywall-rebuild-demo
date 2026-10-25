@@ -1,4 +1,25 @@
-import { COMPONENT_NAMES } from './componentDocument.js';
+import { COMPONENT_NAMES, indexDocument } from './componentDocument.js';
+
+export const isOverlaySurface = (node) => node?.type === 'BottomSheet' || node?.type === 'Stack' && ['overlay', 'sheet'].includes(node.props.presentation);
+
+// Presentation roots are listed separately without changing their document ownership.
+export function surfaceContext(document, navigation = {}, selectedId) {
+  const { active, shared } = pageContext(document, navigation);
+  const surfaces = [];
+  const visit = (node) => {
+    if (node.type === 'Flow' || node.type === 'Screen' && node !== active) return;
+    if (isOverlaySurface(node)) surfaces.push(node);
+    node.children.forEach(visit);
+  };
+  [active, ...shared].forEach(visit);
+  const { nodes, parents } = indexDocument(document);
+  let selected = nodes.get(selectedId), surface;
+  while (selected) {
+    if (isOverlaySurface(selected)) { surface = selected; break; }
+    selected = nodes.get(parents.get(selected.id));
+  }
+  return { surfaces, surface, triggers: surface ? [...nodes.values()].filter((node) => node.props.action?.action === 'OpenSheet' && node.props.action.actionPage === surface.id) : [] };
+}
 
 export function pageContext(document, navigation = {}) {
   const flows = document.root.children.filter((node) => node.type === 'Flow');

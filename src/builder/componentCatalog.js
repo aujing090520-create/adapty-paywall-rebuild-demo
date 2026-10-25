@@ -4,7 +4,7 @@ import { component, createNativeComponent, canContain, indexDocument } from './c
 // Structural children are offered only by their owning container.
 export const COMPONENT_CATALOG = [
   { name: '基础', items: [ ['Text','文字'], ['Image','图片'], ['Video','视频'], ['Icon','图标'], ['Stack','布局容器'], ['Header','页头'], ['Footer','页脚'], ['Custom','自定义组件'] ] },
-  { name: '付费墙', items: [ ['Package','商品'], ['BottomSheet','底部弹层'], ['PurchaseButton','购买按钮'], ['ExpressCheckout','快捷结账'] ] },
+  { name: '付费墙', items: [ ['Package','商品'], ['BottomSheet','弹层'], ['PurchaseButton','购买按钮'], ['ExpressCheckout','快捷结账'] ] },
   { name: '交互', items: [ ['Tabs','标签页'], ['Switch','开关'], ['Button','按钮'], ['Carousel','轮播'] ] },
   { name: '内容', items: [ ['Countdown','倒计时'], ['Timeline','时间线'], ['SocialProof','口碑展示'], ['FeatureList','权益列表'], ['Award','奖项展示'] ] },
 ];
@@ -80,6 +80,10 @@ export function upgradeCanonicalComponents(document) {
   let changed=false;
   const ids = new Set(indexDocument(document).nodes.keys());
   const visit=(node)=>{
+    if(node.type==='Stack' && ['overlay','sheet'].includes(node.props.presentation)){
+      changed=true;
+      return {...node,type:'BottomSheet',children:node.children.map(visit)};
+    }
     if(node.type==='Carousel' && !node.props.pageControlVersion){
       changed=true;
       const children=node.children.map(visit);

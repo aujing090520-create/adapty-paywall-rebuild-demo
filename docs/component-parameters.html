@@ -1,8 +1,8 @@
 <!doctype html><html lang="zh-CN"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>组件参数功能表</title><style>
 *{box-sizing:border-box}body{margin:0;background:#fff;color:#24262b;font:14px/1.6 system-ui,-apple-system,sans-serif;letter-spacing:0}main{padding:24px;max-width:1800px;margin:auto}h1{font-size:24px;margin:0 0 12px}p{max-width:1200px;color:#60646c;margin:8px 0}a{color:#375dc1}header{border-bottom:1px solid #dedfe3;padding-bottom:16px}.filters{position:sticky;top:0;z-index:2;display:flex;flex-wrap:wrap;align-items:end;gap:12px;background:#fff;padding:16px 0;border-bottom:1px solid #dedfe3}.filters label{display:grid;gap:4px;font-size:12px;color:#5f636b}.filters input,.filters select{border:1px solid #cdd0d7;border-radius:4px;height:36px;padding:6px 10px;font:14px system-ui;color:#24262b;background:#fff}.filters input{width:320px;max-width:80vw}.filters span{margin-left:auto;color:#2b745c;font-size:13px}.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:1100px;font-size:12px;table-layout:fixed}th,td{border-bottom:1px solid #e4e6e9;padding:10px 12px;text-align:left;vertical-align:top;overflow-wrap:anywhere}th{background:#f4f5f7;font-weight:600}th:nth-child(1){width:100px}th:nth-child(2){width:130px}th:nth-child(3){width:150px}th:nth-child(4){width:170px}th:nth-child(5){width:140px}th:nth-child(8){width:150px}.key{font-family:ui-monospace,monospace;color:#67617c}tr:nth-child(even){background:#fcfcfd}tr[hidden]{display:none}h2{font-size:17px;margin:20px 0 6px}.notes{font-size:13px}code{font-family:ui-monospace,monospace} @media(max-width:600px){main{padding:16px}.filters span{margin-left:0}}
-</style><main><header><h1>组件参数功能表</h1><p>本表覆盖当前Demo的32种基础/结构组件，共3229条参数字段或选项记录。按实际中文面板和当前源码整理，不把它当作RevenueCat全部能力等价证明。新建值不是四张HT手动模板的默认值；模板和已存记录始终以自身配置为准。</p><p>更新：2026-10-25 · <a href="./component-parameters.csv">CSV表格</a> · <a href="https://adapty-paywall-rebuild-demo.vercel.app/">线上Demo</a></p></header>
+</style><main><header><h1>组件参数功能表</h1><p>本表覆盖当前Demo的32种基础/结构组件，共3231条参数字段或选项记录。按实际中文面板和当前源码整理，不把它当作RevenueCat全部能力等价证明。新建值不是四张HT手动模板的默认值；模板和已存记录始终以自身配置为准。</p><p>更新：2026-10-25 · <a href="./component-parameters.csv">CSV表格</a> · <a href="https://adapty-paywall-rebuild-demo.vercel.app/">线上Demo</a></p></header>
 <section class="notes"><h2>先分清三个不同概念</h2><p>轴向决定横向/纵向/叠放；对齐控制交叉轴位置；分布沿主轴分配剩余空间。按内容适应的容器没有多余空间时，分布可能同形；不能通过悄悄放大框体来伪造效果。子项间距是额外基础间隔，和外边距不是同一参数。</p><p>已修复：标准对齐始终三项，旧拉伸值只读保留；有界纵向容器的填满高度分配剩余空间，不再让每个子项各占100%。</p><h2>验收范围</h2><p>真实SKU后端、Billing交易、恢复/兑换/钱包交易和真实关闭不做。源端凹凸遮罩、完整媒体库/主题及跨标签组结构等未闭环项仍见审计台账；本表中的限制列明确区分演示与真实能力。</p><p>布局语义来源：<a href="https://www.revenuecat.com/docs/tools/paywalls/creating-paywalls/component-properties">RevenueCat官方组件属性</a>。其余字段按本地当前面板和真实渲染实现列出；没有重新核对全部原端隐藏字段的项目不宣称一致。</p></section>
-<div class="filters"><label>组件<select id="component"><option value="">全部组件</option><option>页面</option><option>布局容器</option><option>文字</option><option>图片</option><option>视频</option><option>图标</option><option>自定义组件</option><option>页头</option><option>页脚</option><option>商品</option><option>购买按钮</option><option>底部弹层</option><option>快捷结账</option><option>结账状态内容</option><option>钱包按钮</option><option>按钮</option><option>标签页</option><option>标签页面</option><option>标签按钮组</option><option>标签按钮</option><option>轮播</option><option>轮播页</option><option>分页控件</option><option>分页指示器</option><option>时间线</option><option>时间节点</option><option>开关</option><option>开关状态内容</option><option>开关控件</option><option>倒计时</option><option>倒计时状态内容</option><option>多页面流程</option></select></label><label>参数 / 功能搜索<input id="query" type="search" placeholder="搜索参数、字段或功能"></label><span id="count"></span></div><div class="table-wrap"><table><thead><tr><th>组件</th><th>配置模块</th><th>参数</th><th>内部字段</th><th>字段选项/范围</th><th>功能</th><th>生效条件/限制</th><th>新建默认值来源</th></tr></thead><tbody><tr data-component="页面"><td>页面</td><td>图层管理</td><td>图层名称</td><td class="key">name</td><td>当前值</td><td>只改变编辑器名称，不修改正文、价格或前端文案</td><td>页面使用“页面名称”；其他节点使用“图层名称”</td><td>页面</td></tr>
+<div class="filters"><label>组件<select id="component"><option value="">全部组件</option><option>页面</option><option>布局容器</option><option>文字</option><option>图片</option><option>视频</option><option>图标</option><option>自定义组件</option><option>页头</option><option>页脚</option><option>商品</option><option>购买按钮</option><option>弹层</option><option>快捷结账</option><option>结账状态内容</option><option>钱包按钮</option><option>按钮</option><option>标签页</option><option>标签页面</option><option>标签按钮组</option><option>标签按钮</option><option>轮播</option><option>轮播页</option><option>分页控件</option><option>分页指示器</option><option>时间线</option><option>时间节点</option><option>开关</option><option>开关状态内容</option><option>开关控件</option><option>倒计时</option><option>倒计时状态内容</option><option>多页面流程</option></select></label><label>参数 / 功能搜索<input id="query" type="search" placeholder="搜索参数、字段或功能"></label><span id="count"></span></div><div class="table-wrap"><table><thead><tr><th>组件</th><th>配置模块</th><th>参数</th><th>内部字段</th><th>字段选项/范围</th><th>功能</th><th>生效条件/限制</th><th>新建默认值来源</th></tr></thead><tbody><tr data-component="页面"><td>页面</td><td>图层管理</td><td>图层名称</td><td class="key">name</td><td>当前值</td><td>只改变编辑器名称，不修改正文、价格或前端文案</td><td>页面使用“页面名称”；其他节点使用“图层名称”</td><td>页面</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>图层管理</td><td>图层名称</td><td class="key">name</td><td>当前值</td><td>只改变编辑器名称，不修改正文、价格或前端文案</td><td>页面使用“页面名称”；其他节点使用“图层名称”</td><td>布局容器</td></tr>
 <tr data-component="文字"><td>文字</td><td>图层管理</td><td>图层名称</td><td class="key">name</td><td>当前值</td><td>只改变编辑器名称，不修改正文、价格或前端文案</td><td>页面使用“页面名称”；其他节点使用“图层名称”</td><td>文字</td></tr>
 <tr data-component="图片"><td>图片</td><td>图层管理</td><td>图层名称</td><td class="key">name</td><td>当前值</td><td>只改变编辑器名称，不修改正文、价格或前端文案</td><td>页面使用“页面名称”；其他节点使用“图层名称”</td><td>图片</td></tr>
@@ -13,7 +13,7 @@
 <tr data-component="页脚"><td>页脚</td><td>图层管理</td><td>图层名称</td><td class="key">name</td><td>当前值</td><td>只改变编辑器名称，不修改正文、价格或前端文案</td><td>页面使用“页面名称”；其他节点使用“图层名称”</td><td>页脚</td></tr>
 <tr data-component="商品"><td>商品</td><td>图层管理</td><td>图层名称</td><td class="key">name</td><td>当前值</td><td>只改变编辑器名称，不修改正文、价格或前端文案</td><td>页面使用“页面名称”；其他节点使用“图层名称”</td><td>商品</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>图层管理</td><td>图层名称</td><td class="key">name</td><td>当前值</td><td>只改变编辑器名称，不修改正文、价格或前端文案</td><td>页面使用“页面名称”；其他节点使用“图层名称”</td><td>购买按钮</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>图层管理</td><td>图层名称</td><td class="key">name</td><td>当前值</td><td>只改变编辑器名称，不修改正文、价格或前端文案</td><td>页面使用“页面名称”；其他节点使用“图层名称”</td><td>底部弹层</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>图层管理</td><td>图层名称</td><td class="key">name</td><td>当前值</td><td>只改变编辑器名称，不修改正文、价格或前端文案</td><td>页面使用“页面名称”；其他节点使用“图层名称”</td><td>弹层</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>图层管理</td><td>图层名称</td><td class="key">name</td><td>当前值</td><td>只改变编辑器名称，不修改正文、价格或前端文案</td><td>页面使用“页面名称”；其他节点使用“图层名称”</td><td>快捷结账</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>图层管理</td><td>图层名称</td><td class="key">name</td><td>当前值</td><td>只改变编辑器名称，不修改正文、价格或前端文案</td><td>页面使用“页面名称”；其他节点使用“图层名称”</td><td>结账状态内容</td></tr>
 <tr data-component="钱包按钮"><td>钱包按钮</td><td>图层管理</td><td>图层名称</td><td class="key">name</td><td>当前值</td><td>只改变编辑器名称，不修改正文、价格或前端文案</td><td>页面使用“页面名称”；其他节点使用“图层名称”</td><td>钱包按钮</td></tr>
@@ -54,8 +54,8 @@
 <tr data-component="商品"><td>商品</td><td>图层管理</td><td>显示状态</td><td class="key">hidden</td><td>隐藏</td><td>控制组件及其整棵子树是否渲染；从预览布局中移除，不保留占位</td><td>当前节点不是页面根节点</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>图层管理</td><td>显示状态</td><td class="key">hidden</td><td>显示</td><td>控制组件及其整棵子树是否渲染；渲染组件</td><td>当前节点不是页面根节点</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>图层管理</td><td>显示状态</td><td class="key">hidden</td><td>隐藏</td><td>控制组件及其整棵子树是否渲染；从预览布局中移除，不保留占位</td><td>当前节点不是页面根节点</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>图层管理</td><td>显示状态</td><td class="key">hidden</td><td>显示</td><td>控制组件及其整棵子树是否渲染；渲染组件</td><td>当前节点不是页面根节点</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>图层管理</td><td>显示状态</td><td class="key">hidden</td><td>隐藏</td><td>控制组件及其整棵子树是否渲染；从预览布局中移除，不保留占位</td><td>当前节点不是页面根节点</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>图层管理</td><td>显示状态</td><td class="key">hidden</td><td>显示</td><td>控制组件及其整棵子树是否渲染；渲染组件</td><td>当前节点不是页面根节点</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>图层管理</td><td>显示状态</td><td class="key">hidden</td><td>隐藏</td><td>控制组件及其整棵子树是否渲染；从预览布局中移除，不保留占位</td><td>当前节点不是页面根节点</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>图层管理</td><td>显示状态</td><td class="key">hidden</td><td>显示</td><td>控制组件及其整棵子树是否渲染；渲染组件</td><td>当前节点不是页面根节点</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>图层管理</td><td>显示状态</td><td class="key">hidden</td><td>隐藏</td><td>控制组件及其整棵子树是否渲染；从预览布局中移除，不保留占位</td><td>当前节点不是页面根节点</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>图层管理</td><td>显示状态</td><td class="key">hidden</td><td>显示</td><td>控制组件及其整棵子树是否渲染；渲染组件</td><td>当前节点不是页面根节点</td><td>依当前模板/条件继承</td></tr>
@@ -104,7 +104,7 @@
 <tr data-component="页脚"><td>页脚</td><td>图层管理</td><td>图层拖动</td><td class="key">图层树操作</td><td>当前值</td><td>在左侧图层树调整顺序，拖入容器时移动整棵子树，保留组件内容、样式及商品数据</td><td>不是右侧配置字段；目标必须允许容纳该节点且不能形成循环</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品"><td>商品</td><td>图层管理</td><td>图层拖动</td><td class="key">图层树操作</td><td>当前值</td><td>在左侧图层树调整顺序，拖入容器时移动整棵子树，保留组件内容、样式及商品数据</td><td>不是右侧配置字段；目标必须允许容纳该节点且不能形成循环</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>图层管理</td><td>图层拖动</td><td class="key">图层树操作</td><td>当前值</td><td>在左侧图层树调整顺序，拖入容器时移动整棵子树，保留组件内容、样式及商品数据</td><td>不是右侧配置字段；目标必须允许容纳该节点且不能形成循环</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>图层管理</td><td>图层拖动</td><td class="key">图层树操作</td><td>当前值</td><td>在左侧图层树调整顺序，拖入容器时移动整棵子树，保留组件内容、样式及商品数据</td><td>不是右侧配置字段；目标必须允许容纳该节点且不能形成循环</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>图层管理</td><td>图层拖动</td><td class="key">图层树操作</td><td>当前值</td><td>在左侧图层树调整顺序，拖入容器时移动整棵子树，保留组件内容、样式及商品数据</td><td>不是右侧配置字段；目标必须允许容纳该节点且不能形成循环</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>图层管理</td><td>图层拖动</td><td class="key">图层树操作</td><td>当前值</td><td>在左侧图层树调整顺序，拖入容器时移动整棵子树，保留组件内容、样式及商品数据</td><td>不是右侧配置字段；目标必须允许容纳该节点且不能形成循环</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>图层管理</td><td>图层拖动</td><td class="key">图层树操作</td><td>当前值</td><td>在左侧图层树调整顺序，拖入容器时移动整棵子树，保留组件内容、样式及商品数据</td><td>不是右侧配置字段；目标必须允许容纳该节点且不能形成循环</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="钱包按钮"><td>钱包按钮</td><td>图层管理</td><td>图层拖动</td><td class="key">图层树操作</td><td>当前值</td><td>在左侧图层树调整顺序，拖入容器时移动整棵子树，保留组件内容、样式及商品数据</td><td>不是右侧配置字段；目标必须允许容纳该节点且不能形成循环</td><td>依当前模板/条件继承</td></tr>
@@ -124,6 +124,8 @@
 <tr data-component="开关控件"><td>开关控件</td><td>图层管理</td><td>图层拖动</td><td class="key">图层树操作</td><td>当前值</td><td>在左侧图层树调整顺序，拖入容器时移动整棵子树，保留组件内容、样式及商品数据</td><td>不是右侧配置字段；目标必须允许容纳该节点且不能形成循环</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="倒计时"><td>倒计时</td><td>图层管理</td><td>图层拖动</td><td class="key">图层树操作</td><td>当前值</td><td>在左侧图层树调整顺序，拖入容器时移动整棵子树，保留组件内容、样式及商品数据</td><td>不是右侧配置字段；目标必须允许容纳该节点且不能形成循环</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="倒计时状态内容"><td>倒计时状态内容</td><td>图层管理</td><td>图层拖动</td><td class="key">图层树操作</td><td>当前值</td><td>在左侧图层树调整顺序，拖入容器时移动整棵子树，保留组件内容、样式及商品数据</td><td>不是右侧配置字段；目标必须允许容纳该节点且不能形成循环</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>弹层编辑</td><td>弹层图层</td><td class="key">editor.surface</td><td>当前值</td><td>在独立弹层分区编辑子组件，不参与主页面文档流；实际节点归属不变</td><td>编辑器分区，不是另一个Screen；旧挽留弹窗保留原位置与尺寸</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>弹层编辑</td><td>返回主页面</td><td class="key">editor.returnToPage</td><td>当前值</td><td>退出弹层编辑并选中所属页面，关闭预览浮层</td><td>只改变编辑上下文，不删除弹层、不关闭真实付费墙</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页面"><td>页面</td><td>布局</td><td>轴向</td><td class="key">axis</td><td>横向</td><td>控制直接子组件的排列方向；从左至右排列；主轴为水平方向</td><td>页面有固定页头/页脚时，仅滚动内容参与排列，页头/页脚不参与分布。只影响该容器的直接子组件</td><td>纵向</td></tr>
 <tr data-component="页面"><td>页面</td><td>布局</td><td>轴向</td><td class="key">axis</td><td>纵向</td><td>控制直接子组件的排列方向；从上至下排列；主轴为垂直方向</td><td>页面有固定页头/页脚时，仅滚动内容参与排列，页头/页脚不参与分布。只影响该容器的直接子组件</td><td>纵向</td></tr>
 <tr data-component="页面"><td>页面</td><td>布局</td><td>轴向</td><td class="key">axis</td><td>叠放</td><td>控制直接子组件的排列方向；子组件叠在同一网格位置，不产生逐项分布或间距</td><td>页面有固定页头/页脚时，仅滚动内容参与排列，页头/页脚不参与分布。只影响该容器的直接子组件</td><td>纵向</td></tr>
@@ -142,9 +144,9 @@
 <tr data-component="购买按钮"><td>购买按钮</td><td>布局</td><td>轴向</td><td class="key">axis</td><td>横向</td><td>控制直接子组件的排列方向；从左至右排列；主轴为水平方向</td><td>只影响该容器的直接子组件</td><td>纵向</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>布局</td><td>轴向</td><td class="key">axis</td><td>纵向</td><td>控制直接子组件的排列方向；从上至下排列；主轴为垂直方向</td><td>只影响该容器的直接子组件</td><td>纵向</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>布局</td><td>轴向</td><td class="key">axis</td><td>叠放</td><td>控制直接子组件的排列方向；子组件叠在同一网格位置，不产生逐项分布或间距</td><td>只影响该容器的直接子组件</td><td>纵向</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>布局</td><td>轴向</td><td class="key">axis</td><td>横向</td><td>控制直接子组件的排列方向；从左至右排列；主轴为水平方向</td><td>只影响该容器的直接子组件</td><td>纵向</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>布局</td><td>轴向</td><td class="key">axis</td><td>纵向</td><td>控制直接子组件的排列方向；从上至下排列；主轴为垂直方向</td><td>只影响该容器的直接子组件</td><td>纵向</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>布局</td><td>轴向</td><td class="key">axis</td><td>叠放</td><td>控制直接子组件的排列方向；子组件叠在同一网格位置，不产生逐项分布或间距</td><td>只影响该容器的直接子组件</td><td>纵向</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>布局</td><td>轴向</td><td class="key">axis</td><td>横向</td><td>控制直接子组件的排列方向；从左至右排列；主轴为水平方向</td><td>只影响该容器的直接子组件</td><td>纵向</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>布局</td><td>轴向</td><td class="key">axis</td><td>纵向</td><td>控制直接子组件的排列方向；从上至下排列；主轴为垂直方向</td><td>只影响该容器的直接子组件</td><td>纵向</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>布局</td><td>轴向</td><td class="key">axis</td><td>叠放</td><td>控制直接子组件的排列方向；子组件叠在同一网格位置，不产生逐项分布或间距</td><td>只影响该容器的直接子组件</td><td>纵向</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>布局</td><td>轴向</td><td class="key">axis</td><td>横向</td><td>控制直接子组件的排列方向；从左至右排列；主轴为水平方向</td><td>只影响该容器的直接子组件</td><td>纵向</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>布局</td><td>轴向</td><td class="key">axis</td><td>纵向</td><td>控制直接子组件的排列方向；从上至下排列；主轴为垂直方向</td><td>只影响该容器的直接子组件</td><td>纵向</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>布局</td><td>轴向</td><td class="key">axis</td><td>叠放</td><td>控制直接子组件的排列方向；子组件叠在同一网格位置，不产生逐项分布或间距</td><td>只影响该容器的直接子组件</td><td>纵向</td></tr>
@@ -190,9 +192,9 @@
 <tr data-component="购买按钮"><td>购买按钮</td><td>布局</td><td>对齐</td><td class="key">align</td><td>起始</td><td>控制交叉轴位置，不等同于文字段落对齐；横向时靠上，纵向时靠左；叠放时靠左上</td><td>子项若已填满交叉轴，或有自身alignSelf，位置可能不变化</td><td>居中</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>布局</td><td>对齐</td><td class="key">align</td><td>居中</td><td>控制交叉轴位置，不等同于文字段落对齐；交叉轴居中；叠放时两个方向均居中</td><td>子项若已填满交叉轴，或有自身alignSelf，位置可能不变化</td><td>居中</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>布局</td><td>对齐</td><td class="key">align</td><td>末尾</td><td>控制交叉轴位置，不等同于文字段落对齐；横向时靠下，纵向时靠右；叠放时靠右下</td><td>子项若已填满交叉轴，或有自身alignSelf，位置可能不变化</td><td>居中</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>布局</td><td>对齐</td><td class="key">align</td><td>起始</td><td>控制交叉轴位置，不等同于文字段落对齐；横向时靠上，纵向时靠左；叠放时靠左上</td><td>子项若已填满交叉轴，或有自身alignSelf，位置可能不变化</td><td>拉伸（旧配置）</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>布局</td><td>对齐</td><td class="key">align</td><td>居中</td><td>控制交叉轴位置，不等同于文字段落对齐；交叉轴居中；叠放时两个方向均居中</td><td>子项若已填满交叉轴，或有自身alignSelf，位置可能不变化</td><td>拉伸（旧配置）</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>布局</td><td>对齐</td><td class="key">align</td><td>末尾</td><td>控制交叉轴位置，不等同于文字段落对齐；横向时靠下，纵向时靠右；叠放时靠右下</td><td>子项若已填满交叉轴，或有自身alignSelf，位置可能不变化</td><td>拉伸（旧配置）</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>布局</td><td>对齐</td><td class="key">align</td><td>起始</td><td>控制交叉轴位置，不等同于文字段落对齐；横向时靠上，纵向时靠左；叠放时靠左上</td><td>子项若已填满交叉轴，或有自身alignSelf，位置可能不变化</td><td>拉伸（旧配置）</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>布局</td><td>对齐</td><td class="key">align</td><td>居中</td><td>控制交叉轴位置，不等同于文字段落对齐；交叉轴居中；叠放时两个方向均居中</td><td>子项若已填满交叉轴，或有自身alignSelf，位置可能不变化</td><td>拉伸（旧配置）</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>布局</td><td>对齐</td><td class="key">align</td><td>末尾</td><td>控制交叉轴位置，不等同于文字段落对齐；横向时靠下，纵向时靠右；叠放时靠右下</td><td>子项若已填满交叉轴，或有自身alignSelf，位置可能不变化</td><td>拉伸（旧配置）</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>布局</td><td>对齐</td><td class="key">align</td><td>起始</td><td>控制交叉轴位置，不等同于文字段落对齐；横向时靠上，纵向时靠左；叠放时靠左上</td><td>子项若已填满交叉轴，或有自身alignSelf，位置可能不变化</td><td>拉伸（旧配置）</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>布局</td><td>对齐</td><td class="key">align</td><td>居中</td><td>控制交叉轴位置，不等同于文字段落对齐；交叉轴居中；叠放时两个方向均居中</td><td>子项若已填满交叉轴，或有自身alignSelf，位置可能不变化</td><td>拉伸（旧配置）</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>布局</td><td>对齐</td><td class="key">align</td><td>末尾</td><td>控制交叉轴位置，不等同于文字段落对齐；横向时靠下，纵向时靠右；叠放时靠右下</td><td>子项若已填满交叉轴，或有自身alignSelf，位置可能不变化</td><td>拉伸（旧配置）</td></tr>
@@ -256,12 +258,12 @@
 <tr data-component="购买按钮"><td>购买按钮</td><td>布局</td><td>分布</td><td class="key">justify</td><td>起始</td><td>沿主轴安排整组子项及剩余空间；全部子项聚集在内容区主轴起点</td><td>横向或纵向；需有剩余空间。适应内容、子项填满或溢出时不同选项可能同形</td><td>起始</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>布局</td><td>分布</td><td class="key">justify</td><td>居中</td><td>沿主轴安排整组子项及剩余空间；整组子项在内容区沿主轴居中</td><td>横向或纵向；需有剩余空间。适应内容、子项填满或溢出时不同选项可能同形</td><td>起始</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>布局</td><td>分布</td><td class="key">justify</td><td>末尾</td><td>沿主轴安排整组子项及剩余空间；全部子项聚集在内容区主轴末端</td><td>横向或纵向；需有剩余空间。适应内容、子项填满或溢出时不同选项可能同形</td><td>起始</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>布局</td><td>分布</td><td class="key">justify</td><td>两端分布</td><td>沿主轴安排整组子项及剩余空间；首尾贴内容区主轴两端，把剩余空间均分到子项之间；一个子项靠起始</td><td>横向或纵向；需有剩余空间。适应内容、子项填满或溢出时不同选项可能同形</td><td>起始</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>布局</td><td>分布</td><td class="key">justify</td><td>各项两侧均分</td><td>沿主轴安排整组子项及剩余空间；每个子项两侧分配相同的额外空间；相邻额外间隔为首尾额外留白的两倍，基础gap另加</td><td>横向或纵向；需有剩余空间。适应内容、子项填满或溢出时不同选项可能同形</td><td>起始</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>布局</td><td>分布</td><td class="key">justify</td><td>各项等距</td><td>沿主轴安排整组子项及剩余空间；首端、尾端及子项之间分配相等的额外空间，内部基础gap仍保留</td><td>横向或纵向；需有剩余空间。适应内容、子项填满或溢出时不同选项可能同形</td><td>起始</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>布局</td><td>分布</td><td class="key">justify</td><td>起始</td><td>沿主轴安排整组子项及剩余空间；全部子项聚集在内容区主轴起点</td><td>横向或纵向；需有剩余空间。适应内容、子项填满或溢出时不同选项可能同形</td><td>起始</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>布局</td><td>分布</td><td class="key">justify</td><td>居中</td><td>沿主轴安排整组子项及剩余空间；整组子项在内容区沿主轴居中</td><td>横向或纵向；需有剩余空间。适应内容、子项填满或溢出时不同选项可能同形</td><td>起始</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>布局</td><td>分布</td><td class="key">justify</td><td>末尾</td><td>沿主轴安排整组子项及剩余空间；全部子项聚集在内容区主轴末端</td><td>横向或纵向；需有剩余空间。适应内容、子项填满或溢出时不同选项可能同形</td><td>起始</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>布局</td><td>分布</td><td class="key">justify</td><td>两端分布</td><td>沿主轴安排整组子项及剩余空间；首尾贴内容区主轴两端，把剩余空间均分到子项之间；一个子项靠起始</td><td>横向或纵向；需有剩余空间。适应内容、子项填满或溢出时不同选项可能同形</td><td>起始</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>布局</td><td>分布</td><td class="key">justify</td><td>各项两侧均分</td><td>沿主轴安排整组子项及剩余空间；每个子项两侧分配相同的额外空间；相邻额外间隔为首尾额外留白的两倍，基础gap另加</td><td>横向或纵向；需有剩余空间。适应内容、子项填满或溢出时不同选项可能同形</td><td>起始</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>布局</td><td>分布</td><td class="key">justify</td><td>各项等距</td><td>沿主轴安排整组子项及剩余空间；首端、尾端及子项之间分配相等的额外空间，内部基础gap仍保留</td><td>横向或纵向；需有剩余空间。适应内容、子项填满或溢出时不同选项可能同形</td><td>起始</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>布局</td><td>分布</td><td class="key">justify</td><td>起始</td><td>沿主轴安排整组子项及剩余空间；全部子项聚集在内容区主轴起点</td><td>横向或纵向；需有剩余空间。适应内容、子项填满或溢出时不同选项可能同形</td><td>起始</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>布局</td><td>分布</td><td class="key">justify</td><td>居中</td><td>沿主轴安排整组子项及剩余空间；整组子项在内容区沿主轴居中</td><td>横向或纵向；需有剩余空间。适应内容、子项填满或溢出时不同选项可能同形</td><td>起始</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>布局</td><td>分布</td><td class="key">justify</td><td>末尾</td><td>沿主轴安排整组子项及剩余空间；全部子项聚集在内容区主轴末端</td><td>横向或纵向；需有剩余空间。适应内容、子项填满或溢出时不同选项可能同形</td><td>起始</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>布局</td><td>分布</td><td class="key">justify</td><td>两端分布</td><td>沿主轴安排整组子项及剩余空间；首尾贴内容区主轴两端，把剩余空间均分到子项之间；一个子项靠起始</td><td>横向或纵向；需有剩余空间。适应内容、子项填满或溢出时不同选项可能同形</td><td>起始</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>布局</td><td>分布</td><td class="key">justify</td><td>各项两侧均分</td><td>沿主轴安排整组子项及剩余空间；每个子项两侧分配相同的额外空间；相邻额外间隔为首尾额外留白的两倍，基础gap另加</td><td>横向或纵向；需有剩余空间。适应内容、子项填满或溢出时不同选项可能同形</td><td>起始</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>布局</td><td>分布</td><td class="key">justify</td><td>各项等距</td><td>沿主轴安排整组子项及剩余空间；首端、尾端及子项之间分配相等的额外空间，内部基础gap仍保留</td><td>横向或纵向；需有剩余空间。适应内容、子项填满或溢出时不同选项可能同形</td><td>起始</td></tr>
@@ -322,7 +324,7 @@
 <tr data-component="页脚"><td>页脚</td><td>布局</td><td>子项间距</td><td class="key">gap</td><td>0–200 px</td><td>相邻直接子项之间的基础间隔；均分分布可在其上增加空间</td><td>横向或纵向；不是组件外边距</td><td>0</td></tr>
 <tr data-component="商品"><td>商品</td><td>布局</td><td>子项间距</td><td class="key">gap</td><td>0–200 px</td><td>相邻直接子项之间的基础间隔；均分分布可在其上增加空间</td><td>横向或纵向；不是组件外边距</td><td>0</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>布局</td><td>子项间距</td><td class="key">gap</td><td>0–200 px</td><td>相邻直接子项之间的基础间隔；均分分布可在其上增加空间</td><td>横向或纵向；不是组件外边距</td><td>0</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>布局</td><td>子项间距</td><td class="key">gap</td><td>0–200 px</td><td>相邻直接子项之间的基础间隔；均分分布可在其上增加空间</td><td>横向或纵向；不是组件外边距</td><td>16</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>布局</td><td>子项间距</td><td class="key">gap</td><td>0–200 px</td><td>相邻直接子项之间的基础间隔；均分分布可在其上增加空间</td><td>横向或纵向；不是组件外边距</td><td>16</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>布局</td><td>子项间距</td><td class="key">gap</td><td>0–200 px</td><td>相邻直接子项之间的基础间隔；均分分布可在其上增加空间</td><td>横向或纵向；不是组件外边距</td><td>8</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>布局</td><td>子项间距</td><td class="key">gap</td><td>0–200 px</td><td>相邻直接子项之间的基础间隔；均分分布可在其上增加空间</td><td>横向或纵向；不是组件外边距</td><td>0</td></tr>
 <tr data-component="标签页面"><td>标签页面</td><td>布局</td><td>子项间距</td><td class="key">gap</td><td>0–200 px</td><td>相邻直接子项之间的基础间隔；均分分布可在其上增加空间</td><td>横向或纵向；不是组件外边距</td><td>0</td></tr>
@@ -338,7 +340,7 @@
 <tr data-component="页脚"><td>页脚</td><td>兼容</td><td>当前对齐：拉伸（旧配置）</td><td class="key">align=stretch</td><td>当前值</td><td>只读显示旧值并维持旧布局；标准按钮始终三项，主动选择后替换旧值</td><td>只有已保存stretch时显示；不是第四个可选按钮</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品"><td>商品</td><td>兼容</td><td>当前对齐：拉伸（旧配置）</td><td class="key">align=stretch</td><td>当前值</td><td>只读显示旧值并维持旧布局；标准按钮始终三项，主动选择后替换旧值</td><td>只有已保存stretch时显示；不是第四个可选按钮</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>兼容</td><td>当前对齐：拉伸（旧配置）</td><td class="key">align=stretch</td><td>当前值</td><td>只读显示旧值并维持旧布局；标准按钮始终三项，主动选择后替换旧值</td><td>只有已保存stretch时显示；不是第四个可选按钮</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>兼容</td><td>当前对齐：拉伸（旧配置）</td><td class="key">align=stretch</td><td>当前值</td><td>只读显示旧值并维持旧布局；标准按钮始终三项，主动选择后替换旧值</td><td>只有已保存stretch时显示；不是第四个可选按钮</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>兼容</td><td>当前对齐：拉伸（旧配置）</td><td class="key">align=stretch</td><td>当前值</td><td>只读显示旧值并维持旧布局；标准按钮始终三项，主动选择后替换旧值</td><td>只有已保存stretch时显示；不是第四个可选按钮</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>兼容</td><td>当前对齐：拉伸（旧配置）</td><td class="key">align=stretch</td><td>当前值</td><td>只读显示旧值并维持旧布局；标准按钮始终三项，主动选择后替换旧值</td><td>只有已保存stretch时显示；不是第四个可选按钮</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>兼容</td><td>当前对齐：拉伸（旧配置）</td><td class="key">align=stretch</td><td>当前值</td><td>只读显示旧值并维持旧布局；标准按钮始终三项，主动选择后替换旧值</td><td>只有已保存stretch时显示；不是第四个可选按钮</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="标签页面"><td>标签页面</td><td>兼容</td><td>当前对齐：拉伸（旧配置）</td><td class="key">align=stretch</td><td>当前值</td><td>只读显示旧值并维持旧布局；标准按钮始终三项，主动选择后替换旧值</td><td>只有已保存stretch时显示；不是第四个可选按钮</td><td>依当前模板/条件继承</td></tr>
@@ -360,8 +362,8 @@
 <tr data-component="商品"><td>商品</td><td>兼容</td><td>换行（旧模板）</td><td class="key">wrap</td><td>不换行</td><td>允许横向子项换到下一行；保持一行</td><td>仅已存wrap=true且横向时显示；不自动修改旧模板</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>兼容</td><td>换行（旧模板）</td><td class="key">wrap</td><td>换行</td><td>允许横向子项换到下一行；空间不足时换行</td><td>仅已存wrap=true且横向时显示；不自动修改旧模板</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>兼容</td><td>换行（旧模板）</td><td class="key">wrap</td><td>不换行</td><td>允许横向子项换到下一行；保持一行</td><td>仅已存wrap=true且横向时显示；不自动修改旧模板</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>兼容</td><td>换行（旧模板）</td><td class="key">wrap</td><td>换行</td><td>允许横向子项换到下一行；空间不足时换行</td><td>仅已存wrap=true且横向时显示；不自动修改旧模板</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>兼容</td><td>换行（旧模板）</td><td class="key">wrap</td><td>不换行</td><td>允许横向子项换到下一行；保持一行</td><td>仅已存wrap=true且横向时显示；不自动修改旧模板</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>兼容</td><td>换行（旧模板）</td><td class="key">wrap</td><td>换行</td><td>允许横向子项换到下一行；空间不足时换行</td><td>仅已存wrap=true且横向时显示；不自动修改旧模板</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>兼容</td><td>换行（旧模板）</td><td class="key">wrap</td><td>不换行</td><td>允许横向子项换到下一行；保持一行</td><td>仅已存wrap=true且横向时显示；不自动修改旧模板</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>兼容</td><td>换行（旧模板）</td><td class="key">wrap</td><td>换行</td><td>允许横向子项换到下一行；空间不足时换行</td><td>仅已存wrap=true且横向时显示；不自动修改旧模板</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>兼容</td><td>换行（旧模板）</td><td class="key">wrap</td><td>不换行</td><td>允许横向子项换到下一行；保持一行</td><td>仅已存wrap=true且横向时显示；不自动修改旧模板</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>兼容</td><td>换行（旧模板）</td><td class="key">wrap</td><td>换行</td><td>允许横向子项换到下一行；空间不足时换行</td><td>仅已存wrap=true且横向时显示；不自动修改旧模板</td><td>依当前模板/条件继承</td></tr>
@@ -410,9 +412,9 @@
 <tr data-component="购买按钮"><td>购买按钮</td><td>尺寸</td><td>宽度</td><td class="key">widthMode</td><td>适应内容</td><td>决定尺寸的计算方式；尺寸随内容收缩，不凭空产生可分配空间</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>填满</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>尺寸</td><td>宽度</td><td class="key">widthMode</td><td>填满</td><td>决定尺寸的计算方式；使用父容器可用空间；纵向有界容器中的填满高度分摊剩余高度</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>填满</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>尺寸</td><td>宽度</td><td class="key">widthMode</td><td>固定</td><td>决定尺寸的计算方式；使用明确的设计像素尺寸，不是浏览器缩放后的截图尺寸</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>填满</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>尺寸</td><td>宽度</td><td class="key">widthMode</td><td>适应内容</td><td>决定尺寸的计算方式；尺寸随内容收缩，不凭空产生可分配空间</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>填满</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>尺寸</td><td>宽度</td><td class="key">widthMode</td><td>填满</td><td>决定尺寸的计算方式；使用父容器可用空间；纵向有界容器中的填满高度分摊剩余高度</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>填满</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>尺寸</td><td>宽度</td><td class="key">widthMode</td><td>固定</td><td>决定尺寸的计算方式；使用明确的设计像素尺寸，不是浏览器缩放后的截图尺寸</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>填满</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>尺寸</td><td>宽度</td><td class="key">widthMode</td><td>适应内容</td><td>决定尺寸的计算方式；尺寸随内容收缩，不凭空产生可分配空间</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>填满</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>尺寸</td><td>宽度</td><td class="key">widthMode</td><td>填满</td><td>决定尺寸的计算方式；使用父容器可用空间；纵向有界容器中的填满高度分摊剩余高度</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>填满</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>尺寸</td><td>宽度</td><td class="key">widthMode</td><td>固定</td><td>决定尺寸的计算方式；使用明确的设计像素尺寸，不是浏览器缩放后的截图尺寸</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>填满</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>尺寸</td><td>宽度</td><td class="key">widthMode</td><td>适应内容</td><td>决定尺寸的计算方式；尺寸随内容收缩，不凭空产生可分配空间</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>填满</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>尺寸</td><td>宽度</td><td class="key">widthMode</td><td>填满</td><td>决定尺寸的计算方式；使用父容器可用空间；纵向有界容器中的填满高度分摊剩余高度</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>填满</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>尺寸</td><td>宽度</td><td class="key">widthMode</td><td>固定</td><td>决定尺寸的计算方式；使用明确的设计像素尺寸，不是浏览器缩放后的截图尺寸</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>填满</td></tr>
@@ -468,7 +470,7 @@
 <tr data-component="页脚"><td>页脚</td><td>尺寸</td><td>固定宽度</td><td class="key">width</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>宽度选择固定时显示</td><td>160</td></tr>
 <tr data-component="商品"><td>商品</td><td>尺寸</td><td>固定宽度</td><td class="key">width</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>宽度选择固定时显示</td><td>160</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>尺寸</td><td>固定宽度</td><td class="key">width</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>宽度选择固定时显示</td><td>160</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>尺寸</td><td>固定宽度</td><td class="key">width</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>宽度选择固定时显示</td><td>160</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>尺寸</td><td>固定宽度</td><td class="key">width</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>宽度选择固定时显示</td><td>160</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>尺寸</td><td>固定宽度</td><td class="key">width</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>宽度选择固定时显示</td><td>160</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>尺寸</td><td>固定宽度</td><td class="key">width</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>宽度选择固定时显示</td><td>160</td></tr>
 <tr data-component="钱包按钮"><td>钱包按钮</td><td>尺寸</td><td>固定宽度</td><td class="key">width</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>宽度选择固定时显示</td><td>160</td></tr>
@@ -496,7 +498,7 @@
 <tr data-component="页脚"><td>页脚</td><td>尺寸</td><td>最小宽度</td><td class="key">minWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="商品"><td>商品</td><td>尺寸</td><td>最小宽度</td><td class="key">minWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>尺寸</td><td>最小宽度</td><td class="key">minWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>尺寸</td><td>最小宽度</td><td class="key">minWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>尺寸</td><td>最小宽度</td><td class="key">minWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>尺寸</td><td>最小宽度</td><td class="key">minWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>尺寸</td><td>最小宽度</td><td class="key">minWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="钱包按钮"><td>钱包按钮</td><td>尺寸</td><td>最小宽度</td><td class="key">minWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
@@ -522,7 +524,7 @@
 <tr data-component="页脚"><td>页脚</td><td>尺寸</td><td>最大宽度</td><td class="key">maxWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="商品"><td>商品</td><td>尺寸</td><td>最大宽度</td><td class="key">maxWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>尺寸</td><td>最大宽度</td><td class="key">maxWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>尺寸</td><td>最大宽度</td><td class="key">maxWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>尺寸</td><td>最大宽度</td><td class="key">maxWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>尺寸</td><td>最大宽度</td><td class="key">maxWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>尺寸</td><td>最大宽度</td><td class="key">maxWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="钱包按钮"><td>钱包按钮</td><td>尺寸</td><td>最大宽度</td><td class="key">maxWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
@@ -568,9 +570,9 @@
 <tr data-component="购买按钮"><td>购买按钮</td><td>尺寸</td><td>高度</td><td class="key">heightMode</td><td>适应内容</td><td>决定尺寸的计算方式；尺寸随内容收缩，不凭空产生可分配空间</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>适应内容</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>尺寸</td><td>高度</td><td class="key">heightMode</td><td>填满</td><td>决定尺寸的计算方式；使用父容器可用空间；纵向有界容器中的填满高度分摊剩余高度</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>适应内容</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>尺寸</td><td>高度</td><td class="key">heightMode</td><td>固定</td><td>决定尺寸的计算方式；使用明确的设计像素尺寸，不是浏览器缩放后的截图尺寸</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>适应内容</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>尺寸</td><td>高度</td><td class="key">heightMode</td><td>适应内容</td><td>决定尺寸的计算方式；尺寸随内容收缩，不凭空产生可分配空间</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>适应内容</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>尺寸</td><td>高度</td><td class="key">heightMode</td><td>填满</td><td>决定尺寸的计算方式；使用父容器可用空间；纵向有界容器中的填满高度分摊剩余高度</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>适应内容</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>尺寸</td><td>高度</td><td class="key">heightMode</td><td>固定</td><td>决定尺寸的计算方式；使用明确的设计像素尺寸，不是浏览器缩放后的截图尺寸</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>适应内容</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>尺寸</td><td>高度</td><td class="key">heightMode</td><td>适应内容</td><td>决定尺寸的计算方式；尺寸随内容收缩，不凭空产生可分配空间</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>适应内容</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>尺寸</td><td>高度</td><td class="key">heightMode</td><td>填满</td><td>决定尺寸的计算方式；使用父容器可用空间；纵向有界容器中的填满高度分摊剩余高度</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>适应内容</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>尺寸</td><td>高度</td><td class="key">heightMode</td><td>固定</td><td>决定尺寸的计算方式；使用明确的设计像素尺寸，不是浏览器缩放后的截图尺寸</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>适应内容</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>尺寸</td><td>高度</td><td class="key">heightMode</td><td>适应内容</td><td>决定尺寸的计算方式；尺寸随内容收缩，不凭空产生可分配空间</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>适应内容</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>尺寸</td><td>高度</td><td class="key">heightMode</td><td>填满</td><td>决定尺寸的计算方式；使用父容器可用空间；纵向有界容器中的填满高度分摊剩余高度</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>适应内容</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>尺寸</td><td>高度</td><td class="key">heightMode</td><td>固定</td><td>决定尺寸的计算方式；使用明确的设计像素尺寸，不是浏览器缩放后的截图尺寸</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>适应内容</td></tr>
@@ -623,7 +625,7 @@
 <tr data-component="页脚"><td>页脚</td><td>尺寸</td><td>固定高度</td><td class="key">height</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>高度选择固定时显示</td><td>160</td></tr>
 <tr data-component="商品"><td>商品</td><td>尺寸</td><td>固定高度</td><td class="key">height</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>高度选择固定时显示</td><td>160</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>尺寸</td><td>固定高度</td><td class="key">height</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>高度选择固定时显示</td><td>160</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>尺寸</td><td>固定高度</td><td class="key">height</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>高度选择固定时显示</td><td>160</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>尺寸</td><td>固定高度</td><td class="key">height</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>高度选择固定时显示</td><td>160</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>尺寸</td><td>固定高度</td><td class="key">height</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>高度选择固定时显示</td><td>160</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>尺寸</td><td>固定高度</td><td class="key">height</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>高度选择固定时显示</td><td>160</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>尺寸</td><td>固定高度</td><td class="key">height</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>高度选择固定时显示</td><td>160</td></tr>
@@ -650,7 +652,7 @@
 <tr data-component="页脚"><td>页脚</td><td>尺寸</td><td>最小高度</td><td class="key">minHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="商品"><td>商品</td><td>尺寸</td><td>最小高度</td><td class="key">minHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>尺寸</td><td>最小高度</td><td class="key">minHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>尺寸</td><td>最小高度</td><td class="key">minHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>尺寸</td><td>最小高度</td><td class="key">minHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>尺寸</td><td>最小高度</td><td class="key">minHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>尺寸</td><td>最小高度</td><td class="key">minHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>尺寸</td><td>最小高度</td><td class="key">minHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
@@ -675,7 +677,7 @@
 <tr data-component="页脚"><td>页脚</td><td>尺寸</td><td>最大高度</td><td class="key">maxHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="商品"><td>商品</td><td>尺寸</td><td>最大高度</td><td class="key">maxHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>尺寸</td><td>最大高度</td><td class="key">maxHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>尺寸</td><td>最大高度</td><td class="key">maxHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>尺寸</td><td>最大高度</td><td class="key">maxHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>尺寸</td><td>最大高度</td><td class="key">maxHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>尺寸</td><td>最大高度</td><td class="key">maxHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>尺寸</td><td>最大高度</td><td class="key">maxHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
@@ -711,8 +713,8 @@
 <tr data-component="商品"><td>商品</td><td>布局间距</td><td>内边距配置方式</td><td class="key">paddingMode</td><td>独立</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；分别编辑各边；切换时显式转换数值</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>布局间距</td><td>内边距配置方式</td><td class="key">paddingMode</td><td>轴向</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；纵向同时修改上下，横向同时修改左右</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>布局间距</td><td>内边距配置方式</td><td class="key">paddingMode</td><td>独立</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；分别编辑各边；切换时显式转换数值</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>布局间距</td><td>内边距配置方式</td><td class="key">paddingMode</td><td>轴向</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；纵向同时修改上下，横向同时修改左右</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>布局间距</td><td>内边距配置方式</td><td class="key">paddingMode</td><td>独立</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；分别编辑各边；切换时显式转换数值</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>布局间距</td><td>内边距配置方式</td><td class="key">paddingMode</td><td>轴向</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；纵向同时修改上下，横向同时修改左右</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>布局间距</td><td>内边距配置方式</td><td class="key">paddingMode</td><td>独立</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；分别编辑各边；切换时显式转换数值</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>布局间距</td><td>内边距配置方式</td><td class="key">paddingMode</td><td>轴向</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；纵向同时修改上下，横向同时修改左右</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>布局间距</td><td>内边距配置方式</td><td class="key">paddingMode</td><td>独立</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；分别编辑各边；切换时显式转换数值</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>布局间距</td><td>内边距配置方式</td><td class="key">paddingMode</td><td>轴向</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；纵向同时修改上下，横向同时修改左右</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
@@ -757,7 +759,7 @@
 <tr data-component="页脚"><td>页脚</td><td>布局间距</td><td>内边距纵向</td><td class="key">paddingVertical</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="商品"><td>商品</td><td>布局间距</td><td>内边距纵向</td><td class="key">paddingVertical</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>8</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>布局间距</td><td>内边距纵向</td><td class="key">paddingVertical</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>8</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>布局间距</td><td>内边距纵向</td><td class="key">paddingVertical</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>20</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>布局间距</td><td>内边距纵向</td><td class="key">paddingVertical</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>20</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>布局间距</td><td>内边距纵向</td><td class="key">paddingVertical</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>布局间距</td><td>内边距纵向</td><td class="key">paddingVertical</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>布局间距</td><td>内边距纵向</td><td class="key">paddingVertical</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
@@ -785,7 +787,7 @@
 <tr data-component="页脚"><td>页脚</td><td>布局间距</td><td>内边距横向</td><td class="key">paddingHorizontal</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="商品"><td>商品</td><td>布局间距</td><td>内边距横向</td><td class="key">paddingHorizontal</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>8</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>布局间距</td><td>内边距横向</td><td class="key">paddingHorizontal</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>8</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>布局间距</td><td>内边距横向</td><td class="key">paddingHorizontal</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>20</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>布局间距</td><td>内边距横向</td><td class="key">paddingHorizontal</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>20</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>布局间距</td><td>内边距横向</td><td class="key">paddingHorizontal</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>布局间距</td><td>内边距横向</td><td class="key">paddingHorizontal</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>布局间距</td><td>内边距横向</td><td class="key">paddingHorizontal</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
@@ -812,7 +814,7 @@
 <tr data-component="页脚"><td>页脚</td><td>布局间距</td><td>内边距上</td><td class="key">paddingTop</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="商品"><td>商品</td><td>布局间距</td><td>内边距上</td><td class="key">paddingTop</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>8</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>布局间距</td><td>内边距上</td><td class="key">paddingTop</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>8</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>布局间距</td><td>内边距上</td><td class="key">paddingTop</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>20</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>布局间距</td><td>内边距上</td><td class="key">paddingTop</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>20</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>布局间距</td><td>内边距上</td><td class="key">paddingTop</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>布局间距</td><td>内边距上</td><td class="key">paddingTop</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>布局间距</td><td>内边距上</td><td class="key">paddingTop</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
@@ -840,7 +842,7 @@
 <tr data-component="页脚"><td>页脚</td><td>布局间距</td><td>内边距右</td><td class="key">paddingRight</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="商品"><td>商品</td><td>布局间距</td><td>内边距右</td><td class="key">paddingRight</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>8</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>布局间距</td><td>内边距右</td><td class="key">paddingRight</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>8</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>布局间距</td><td>内边距右</td><td class="key">paddingRight</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>20</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>布局间距</td><td>内边距右</td><td class="key">paddingRight</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>20</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>布局间距</td><td>内边距右</td><td class="key">paddingRight</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>布局间距</td><td>内边距右</td><td class="key">paddingRight</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>布局间距</td><td>内边距右</td><td class="key">paddingRight</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
@@ -867,7 +869,7 @@
 <tr data-component="页脚"><td>页脚</td><td>布局间距</td><td>内边距下</td><td class="key">paddingBottom</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="商品"><td>商品</td><td>布局间距</td><td>内边距下</td><td class="key">paddingBottom</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>8</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>布局间距</td><td>内边距下</td><td class="key">paddingBottom</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>8</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>布局间距</td><td>内边距下</td><td class="key">paddingBottom</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>20</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>布局间距</td><td>内边距下</td><td class="key">paddingBottom</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>20</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>布局间距</td><td>内边距下</td><td class="key">paddingBottom</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>布局间距</td><td>内边距下</td><td class="key">paddingBottom</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>布局间距</td><td>内边距下</td><td class="key">paddingBottom</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
@@ -895,7 +897,7 @@
 <tr data-component="页脚"><td>页脚</td><td>布局间距</td><td>内边距左</td><td class="key">paddingLeft</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="商品"><td>商品</td><td>布局间距</td><td>内边距左</td><td class="key">paddingLeft</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>8</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>布局间距</td><td>内边距左</td><td class="key">paddingLeft</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>8</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>布局间距</td><td>内边距左</td><td class="key">paddingLeft</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>20</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>布局间距</td><td>内边距左</td><td class="key">paddingLeft</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>20</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>布局间距</td><td>内边距左</td><td class="key">paddingLeft</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>布局间距</td><td>内边距左</td><td class="key">paddingLeft</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>布局间距</td><td>内边距左</td><td class="key">paddingLeft</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
@@ -930,8 +932,8 @@
 <tr data-component="商品"><td>商品</td><td>布局间距</td><td>外边距配置方式</td><td class="key">marginMode</td><td>独立</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；分别编辑各边；切换时显式转换数值</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>布局间距</td><td>外边距配置方式</td><td class="key">marginMode</td><td>轴向</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；纵向同时修改上下，横向同时修改左右</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>布局间距</td><td>外边距配置方式</td><td class="key">marginMode</td><td>独立</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；分别编辑各边；切换时显式转换数值</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>布局间距</td><td>外边距配置方式</td><td class="key">marginMode</td><td>轴向</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；纵向同时修改上下，横向同时修改左右</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>布局间距</td><td>外边距配置方式</td><td class="key">marginMode</td><td>独立</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；分别编辑各边；切换时显式转换数值</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>布局间距</td><td>外边距配置方式</td><td class="key">marginMode</td><td>轴向</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；纵向同时修改上下，横向同时修改左右</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>布局间距</td><td>外边距配置方式</td><td class="key">marginMode</td><td>独立</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；分别编辑各边；切换时显式转换数值</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>布局间距</td><td>外边距配置方式</td><td class="key">marginMode</td><td>轴向</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；纵向同时修改上下，横向同时修改左右</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>布局间距</td><td>外边距配置方式</td><td class="key">marginMode</td><td>独立</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；分别编辑各边；切换时显式转换数值</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>布局间距</td><td>外边距配置方式</td><td class="key">marginMode</td><td>轴向</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；纵向同时修改上下，横向同时修改左右</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
@@ -975,7 +977,7 @@
 <tr data-component="页脚"><td>页脚</td><td>布局间距</td><td>外边距纵向</td><td class="key">marginVertical</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="商品"><td>商品</td><td>布局间距</td><td>外边距纵向</td><td class="key">marginVertical</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>8</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>布局间距</td><td>外边距纵向</td><td class="key">marginVertical</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>布局间距</td><td>外边距纵向</td><td class="key">marginVertical</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>布局间距</td><td>外边距纵向</td><td class="key">marginVertical</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>布局间距</td><td>外边距纵向</td><td class="key">marginVertical</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>布局间距</td><td>外边距纵向</td><td class="key">marginVertical</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>布局间距</td><td>外边距纵向</td><td class="key">marginVertical</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
@@ -1002,7 +1004,7 @@
 <tr data-component="页脚"><td>页脚</td><td>布局间距</td><td>外边距横向</td><td class="key">marginHorizontal</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="商品"><td>商品</td><td>布局间距</td><td>外边距横向</td><td class="key">marginHorizontal</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>8</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>布局间距</td><td>外边距横向</td><td class="key">marginHorizontal</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>12</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>布局间距</td><td>外边距横向</td><td class="key">marginHorizontal</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>布局间距</td><td>外边距横向</td><td class="key">marginHorizontal</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>布局间距</td><td>外边距横向</td><td class="key">marginHorizontal</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>布局间距</td><td>外边距横向</td><td class="key">marginHorizontal</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>布局间距</td><td>外边距横向</td><td class="key">marginHorizontal</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
@@ -1029,7 +1031,7 @@
 <tr data-component="页脚"><td>页脚</td><td>布局间距</td><td>外边距上</td><td class="key">marginTop</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="商品"><td>商品</td><td>布局间距</td><td>外边距上</td><td class="key">marginTop</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>8</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>布局间距</td><td>外边距上</td><td class="key">marginTop</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>布局间距</td><td>外边距上</td><td class="key">marginTop</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>布局间距</td><td>外边距上</td><td class="key">marginTop</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>布局间距</td><td>外边距上</td><td class="key">marginTop</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>布局间距</td><td>外边距上</td><td class="key">marginTop</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>布局间距</td><td>外边距上</td><td class="key">marginTop</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
@@ -1056,7 +1058,7 @@
 <tr data-component="页脚"><td>页脚</td><td>布局间距</td><td>外边距右</td><td class="key">marginRight</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="商品"><td>商品</td><td>布局间距</td><td>外边距右</td><td class="key">marginRight</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>8</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>布局间距</td><td>外边距右</td><td class="key">marginRight</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>12</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>布局间距</td><td>外边距右</td><td class="key">marginRight</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>布局间距</td><td>外边距右</td><td class="key">marginRight</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>布局间距</td><td>外边距右</td><td class="key">marginRight</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>布局间距</td><td>外边距右</td><td class="key">marginRight</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>布局间距</td><td>外边距右</td><td class="key">marginRight</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
@@ -1083,7 +1085,7 @@
 <tr data-component="页脚"><td>页脚</td><td>布局间距</td><td>外边距下</td><td class="key">marginBottom</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="商品"><td>商品</td><td>布局间距</td><td>外边距下</td><td class="key">marginBottom</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>8</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>布局间距</td><td>外边距下</td><td class="key">marginBottom</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>布局间距</td><td>外边距下</td><td class="key">marginBottom</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>布局间距</td><td>外边距下</td><td class="key">marginBottom</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>布局间距</td><td>外边距下</td><td class="key">marginBottom</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>布局间距</td><td>外边距下</td><td class="key">marginBottom</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>布局间距</td><td>外边距下</td><td class="key">marginBottom</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
@@ -1110,7 +1112,7 @@
 <tr data-component="页脚"><td>页脚</td><td>布局间距</td><td>外边距左</td><td class="key">marginLeft</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="商品"><td>商品</td><td>布局间距</td><td>外边距左</td><td class="key">marginLeft</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>8</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>布局间距</td><td>外边距左</td><td class="key">marginLeft</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>12</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>布局间距</td><td>外边距左</td><td class="key">marginLeft</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>布局间距</td><td>外边距左</td><td class="key">marginLeft</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>布局间距</td><td>外边距左</td><td class="key">marginLeft</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>布局间距</td><td>外边距左</td><td class="key">marginLeft</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>布局间距</td><td>外边距左</td><td class="key">marginLeft</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
@@ -1142,8 +1144,8 @@
 <tr data-component="商品"><td>商品</td><td>外观</td><td>外观启用</td><td class="key">appearanceEnabled</td><td>关闭</td><td>启用形状/圆角；移除后使用无圆角矩形；禁用此能力或不使用该状态</td><td>不删除子组件或其他独立模块</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>外观</td><td>外观启用</td><td class="key">appearanceEnabled</td><td>开启</td><td>启用形状/圆角；移除后使用无圆角矩形；启用此能力或使用该状态</td><td>不删除子组件或其他独立模块</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>外观</td><td>外观启用</td><td class="key">appearanceEnabled</td><td>关闭</td><td>启用形状/圆角；移除后使用无圆角矩形；禁用此能力或不使用该状态</td><td>不删除子组件或其他独立模块</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>外观</td><td>外观启用</td><td class="key">appearanceEnabled</td><td>开启</td><td>启用形状/圆角；移除后使用无圆角矩形；启用此能力或使用该状态</td><td>不删除子组件或其他独立模块</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>外观</td><td>外观启用</td><td class="key">appearanceEnabled</td><td>关闭</td><td>启用形状/圆角；移除后使用无圆角矩形；禁用此能力或不使用该状态</td><td>不删除子组件或其他独立模块</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>外观</td><td>外观启用</td><td class="key">appearanceEnabled</td><td>开启</td><td>启用形状/圆角；移除后使用无圆角矩形；启用此能力或使用该状态</td><td>不删除子组件或其他独立模块</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>外观</td><td>外观启用</td><td class="key">appearanceEnabled</td><td>关闭</td><td>启用形状/圆角；移除后使用无圆角矩形；禁用此能力或不使用该状态</td><td>不删除子组件或其他独立模块</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>外观</td><td>外观启用</td><td class="key">appearanceEnabled</td><td>开启</td><td>启用形状/圆角；移除后使用无圆角矩形；启用此能力或使用该状态</td><td>不删除子组件或其他独立模块</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>外观</td><td>外观启用</td><td class="key">appearanceEnabled</td><td>关闭</td><td>启用形状/圆角；移除后使用无圆角矩形；禁用此能力或不使用该状态</td><td>不删除子组件或其他独立模块</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>外观</td><td>外观启用</td><td class="key">appearanceEnabled</td><td>开启</td><td>启用形状/圆角；移除后使用无圆角矩形；启用此能力或使用该状态</td><td>不删除子组件或其他独立模块</td><td>依当前模板/条件继承</td></tr>
@@ -1188,8 +1190,8 @@
 <tr data-component="商品"><td>商品</td><td>外观</td><td>形状</td><td class="key">shape</td><td>胶囊</td><td>决定外框裁切形状；两端自动形成圆弧，隐藏无效圆角输入</td><td>外观模块启用；图片和图标的形状范围见专属字段</td><td>矩形</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>外观</td><td>形状</td><td class="key">shape</td><td>矩形</td><td>决定外框裁切形状；使用圆角数值</td><td>外观模块启用；图片和图标的形状范围见专属字段</td><td>胶囊</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>外观</td><td>形状</td><td class="key">shape</td><td>胶囊</td><td>决定外框裁切形状；两端自动形成圆弧，隐藏无效圆角输入</td><td>外观模块启用；图片和图标的形状范围见专属字段</td><td>胶囊</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>外观</td><td>形状</td><td class="key">shape</td><td>矩形</td><td>决定外框裁切形状；使用圆角数值</td><td>外观模块启用；图片和图标的形状范围见专属字段</td><td>矩形</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>外观</td><td>形状</td><td class="key">shape</td><td>胶囊</td><td>决定外框裁切形状；两端自动形成圆弧，隐藏无效圆角输入</td><td>外观模块启用；图片和图标的形状范围见专属字段</td><td>矩形</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>外观</td><td>形状</td><td class="key">shape</td><td>矩形</td><td>决定外框裁切形状；使用圆角数值</td><td>外观模块启用；图片和图标的形状范围见专属字段</td><td>矩形</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>外观</td><td>形状</td><td class="key">shape</td><td>胶囊</td><td>决定外框裁切形状；两端自动形成圆弧，隐藏无效圆角输入</td><td>外观模块启用；图片和图标的形状范围见专属字段</td><td>矩形</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>外观</td><td>形状</td><td class="key">shape</td><td>矩形</td><td>决定外框裁切形状；使用圆角数值</td><td>外观模块启用；图片和图标的形状范围见专属字段</td><td>矩形</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>外观</td><td>形状</td><td class="key">shape</td><td>胶囊</td><td>决定外框裁切形状；两端自动形成圆弧，隐藏无效圆角输入</td><td>外观模块启用；图片和图标的形状范围见专属字段</td><td>矩形</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>外观</td><td>形状</td><td class="key">shape</td><td>矩形</td><td>决定外框裁切形状；使用圆角数值</td><td>外观模块启用；图片和图标的形状范围见专属字段</td><td>矩形</td></tr>
@@ -1234,8 +1236,8 @@
 <tr data-component="商品"><td>商品</td><td>外观</td><td>圆角配置方式</td><td class="key">radiusMode</td><td>四角</td><td>统一圆角与四角独立共用同一几何数据；分别编辑四个角</td><td>矩形形状</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>外观</td><td>圆角配置方式</td><td class="key">radiusMode</td><td>统一</td><td>统一圆角与四角独立共用同一几何数据；四个角使用同一数值</td><td>矩形形状</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>外观</td><td>圆角配置方式</td><td class="key">radiusMode</td><td>四角</td><td>统一圆角与四角独立共用同一几何数据；分别编辑四个角</td><td>矩形形状</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>外观</td><td>圆角配置方式</td><td class="key">radiusMode</td><td>统一</td><td>统一圆角与四角独立共用同一几何数据；四个角使用同一数值</td><td>矩形形状</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>外观</td><td>圆角配置方式</td><td class="key">radiusMode</td><td>四角</td><td>统一圆角与四角独立共用同一几何数据；分别编辑四个角</td><td>矩形形状</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>外观</td><td>圆角配置方式</td><td class="key">radiusMode</td><td>统一</td><td>统一圆角与四角独立共用同一几何数据；四个角使用同一数值</td><td>矩形形状</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>外观</td><td>圆角配置方式</td><td class="key">radiusMode</td><td>四角</td><td>统一圆角与四角独立共用同一几何数据；分别编辑四个角</td><td>矩形形状</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>外观</td><td>圆角配置方式</td><td class="key">radiusMode</td><td>统一</td><td>统一圆角与四角独立共用同一几何数据；四个角使用同一数值</td><td>矩形形状</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>外观</td><td>圆角配置方式</td><td class="key">radiusMode</td><td>四角</td><td>统一圆角与四角独立共用同一几何数据；分别编辑四个角</td><td>矩形形状</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>外观</td><td>圆角配置方式</td><td class="key">radiusMode</td><td>统一</td><td>统一圆角与四角独立共用同一几何数据；四个角使用同一数值</td><td>矩形形状</td><td>依当前模板/条件继承</td></tr>
@@ -1273,7 +1275,7 @@
 <tr data-component="页脚"><td>页脚</td><td>外观</td><td>圆角</td><td class="key">radius</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>统一模式且形状为矩形</td><td>0</td></tr>
 <tr data-component="商品"><td>商品</td><td>外观</td><td>圆角</td><td class="key">radius</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>统一模式且形状为矩形</td><td>8</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>外观</td><td>圆角</td><td class="key">radius</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>统一模式且形状为矩形</td><td>0</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>外观</td><td>圆角</td><td class="key">radius</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>统一模式且形状为矩形</td><td>20</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>外观</td><td>圆角</td><td class="key">radius</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>统一模式且形状为矩形</td><td>20</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>外观</td><td>圆角</td><td class="key">radius</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>统一模式且形状为矩形</td><td>0</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>外观</td><td>圆角</td><td class="key">radius</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>统一模式且形状为矩形</td><td>0</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>外观</td><td>圆角</td><td class="key">radius</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>统一模式且形状为矩形</td><td>0</td></tr>
@@ -1296,7 +1298,7 @@
 <tr data-component="页脚"><td>页脚</td><td>外观</td><td>圆角左上</td><td class="key">radiusTopLeft</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品"><td>商品</td><td>外观</td><td>圆角左上</td><td class="key">radiusTopLeft</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>外观</td><td>圆角左上</td><td class="key">radiusTopLeft</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>外观</td><td>圆角左上</td><td class="key">radiusTopLeft</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>外观</td><td>圆角左上</td><td class="key">radiusTopLeft</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>外观</td><td>圆角左上</td><td class="key">radiusTopLeft</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>外观</td><td>圆角左上</td><td class="key">radiusTopLeft</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>外观</td><td>圆角左上</td><td class="key">radiusTopLeft</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
@@ -1319,7 +1321,7 @@
 <tr data-component="页脚"><td>页脚</td><td>外观</td><td>圆角右上</td><td class="key">radiusTopRight</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品"><td>商品</td><td>外观</td><td>圆角右上</td><td class="key">radiusTopRight</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>外观</td><td>圆角右上</td><td class="key">radiusTopRight</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>外观</td><td>圆角右上</td><td class="key">radiusTopRight</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>外观</td><td>圆角右上</td><td class="key">radiusTopRight</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>外观</td><td>圆角右上</td><td class="key">radiusTopRight</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>外观</td><td>圆角右上</td><td class="key">radiusTopRight</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>外观</td><td>圆角右上</td><td class="key">radiusTopRight</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
@@ -1342,7 +1344,7 @@
 <tr data-component="页脚"><td>页脚</td><td>外观</td><td>圆角右下</td><td class="key">radiusBottomRight</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品"><td>商品</td><td>外观</td><td>圆角右下</td><td class="key">radiusBottomRight</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>外观</td><td>圆角右下</td><td class="key">radiusBottomRight</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>外观</td><td>圆角右下</td><td class="key">radiusBottomRight</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>外观</td><td>圆角右下</td><td class="key">radiusBottomRight</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>外观</td><td>圆角右下</td><td class="key">radiusBottomRight</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>外观</td><td>圆角右下</td><td class="key">radiusBottomRight</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>外观</td><td>圆角右下</td><td class="key">radiusBottomRight</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
@@ -1365,7 +1367,7 @@
 <tr data-component="页脚"><td>页脚</td><td>外观</td><td>圆角左下</td><td class="key">radiusBottomLeft</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品"><td>商品</td><td>外观</td><td>圆角左下</td><td class="key">radiusBottomLeft</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>外观</td><td>圆角左下</td><td class="key">radiusBottomLeft</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>外观</td><td>圆角左下</td><td class="key">radiusBottomLeft</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>外观</td><td>圆角左下</td><td class="key">radiusBottomLeft</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>外观</td><td>圆角左下</td><td class="key">radiusBottomLeft</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>外观</td><td>圆角左下</td><td class="key">radiusBottomLeft</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>外观</td><td>圆角左下</td><td class="key">radiusBottomLeft</td><td>0–2000 px</td><td>设置框体对应角的圆角半径</td><td>四角模式且形状为矩形</td><td>依当前模板/条件继承</td></tr>
@@ -1395,8 +1397,8 @@
 <tr data-component="商品"><td>商品</td><td>填充</td><td>填充启用</td><td class="key">fillEnabled</td><td>关闭</td><td>启用背景涂色、图片或视频；关闭不删除已存素材；禁用此能力或不使用该状态</td><td>页面背景为必需模块，无移除入口</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>填充</td><td>填充启用</td><td class="key">fillEnabled</td><td>开启</td><td>启用背景涂色、图片或视频；关闭不删除已存素材；启用此能力或使用该状态</td><td>页面背景为必需模块，无移除入口</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>填充</td><td>填充启用</td><td class="key">fillEnabled</td><td>关闭</td><td>启用背景涂色、图片或视频；关闭不删除已存素材；禁用此能力或不使用该状态</td><td>页面背景为必需模块，无移除入口</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>填充</td><td>填充启用</td><td class="key">fillEnabled</td><td>开启</td><td>启用背景涂色、图片或视频；关闭不删除已存素材；启用此能力或使用该状态</td><td>页面背景为必需模块，无移除入口</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>填充</td><td>填充启用</td><td class="key">fillEnabled</td><td>关闭</td><td>启用背景涂色、图片或视频；关闭不删除已存素材；禁用此能力或不使用该状态</td><td>页面背景为必需模块，无移除入口</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>填充</td><td>填充启用</td><td class="key">fillEnabled</td><td>开启</td><td>启用背景涂色、图片或视频；关闭不删除已存素材；启用此能力或使用该状态</td><td>页面背景为必需模块，无移除入口</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>填充</td><td>填充启用</td><td class="key">fillEnabled</td><td>关闭</td><td>启用背景涂色、图片或视频；关闭不删除已存素材；禁用此能力或不使用该状态</td><td>页面背景为必需模块，无移除入口</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>填充</td><td>填充启用</td><td class="key">fillEnabled</td><td>开启</td><td>启用背景涂色、图片或视频；关闭不删除已存素材；启用此能力或使用该状态</td><td>页面背景为必需模块，无移除入口</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>填充</td><td>填充启用</td><td class="key">fillEnabled</td><td>关闭</td><td>启用背景涂色、图片或视频；关闭不删除已存素材；禁用此能力或不使用该状态</td><td>页面背景为必需模块，无移除入口</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>填充</td><td>填充启用</td><td class="key">fillEnabled</td><td>开启</td><td>启用背景涂色、图片或视频；关闭不删除已存素材；启用此能力或使用该状态</td><td>页面背景为必需模块，无移除入口</td><td>依当前模板/条件继承</td></tr>
@@ -1448,9 +1450,9 @@
 <tr data-component="购买按钮"><td>购买按钮</td><td>填充</td><td>背景类型</td><td class="key">fillType</td><td>颜色</td><td>选择唯一生效的背景来源；使用背景颜色</td><td>该填充启用；视频仅容器支持</td><td>颜色</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>填充</td><td>背景类型</td><td class="key">fillType</td><td>图片</td><td>选择唯一生效的背景来源；使用背景图片</td><td>该填充启用；视频仅容器支持</td><td>颜色</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>填充</td><td>背景类型</td><td class="key">fillType</td><td>视频</td><td>选择唯一生效的背景来源；容器背景静音循环自动播放视频</td><td>该填充启用；视频仅容器支持</td><td>颜色</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>填充</td><td>背景类型</td><td class="key">fillType</td><td>颜色</td><td>选择唯一生效的背景来源；使用背景颜色</td><td>该填充启用；视频仅容器支持</td><td>颜色</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>填充</td><td>背景类型</td><td class="key">fillType</td><td>图片</td><td>选择唯一生效的背景来源；使用背景图片</td><td>该填充启用；视频仅容器支持</td><td>颜色</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>填充</td><td>背景类型</td><td class="key">fillType</td><td>视频</td><td>选择唯一生效的背景来源；容器背景静音循环自动播放视频</td><td>该填充启用；视频仅容器支持</td><td>颜色</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>填充</td><td>背景类型</td><td class="key">fillType</td><td>颜色</td><td>选择唯一生效的背景来源；使用背景颜色</td><td>该填充启用；视频仅容器支持</td><td>颜色</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>填充</td><td>背景类型</td><td class="key">fillType</td><td>图片</td><td>选择唯一生效的背景来源；使用背景图片</td><td>该填充启用；视频仅容器支持</td><td>颜色</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>填充</td><td>背景类型</td><td class="key">fillType</td><td>视频</td><td>选择唯一生效的背景来源；容器背景静音循环自动播放视频</td><td>该填充启用；视频仅容器支持</td><td>颜色</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>填充</td><td>背景类型</td><td class="key">fillType</td><td>颜色</td><td>选择唯一生效的背景来源；使用背景颜色</td><td>该填充启用；视频仅容器支持</td><td>颜色</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>填充</td><td>背景类型</td><td class="key">fillType</td><td>图片</td><td>选择唯一生效的背景来源；使用背景图片</td><td>该填充启用；视频仅容器支持</td><td>颜色</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>填充</td><td>背景类型</td><td class="key">fillType</td><td>视频</td><td>选择唯一生效的背景来源；容器背景静音循环自动播放视频</td><td>该填充启用；视频仅容器支持</td><td>颜色</td></tr>
@@ -1506,7 +1508,7 @@
 <tr data-component="页脚"><td>页脚</td><td>填充</td><td>背景颜色</td><td class="key">background</td><td>纯色CSS颜色或渐变</td><td>设置此层独立涂色，不改变其他涂色或整组件透明度</td><td>背景类型为颜色；页面/页头纯色不透明度固定100</td><td>#ffffff</td></tr>
 <tr data-component="商品"><td>商品</td><td>填充</td><td>背景颜色</td><td class="key">background</td><td>纯色CSS颜色或渐变</td><td>设置此层独立涂色，不改变其他涂色或整组件透明度</td><td>背景类型为颜色；页面/页头纯色不透明度固定100</td><td>透明</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>填充</td><td>背景颜色</td><td class="key">background</td><td>纯色CSS颜色或渐变</td><td>设置此层独立涂色，不改变其他涂色或整组件透明度</td><td>背景类型为颜色；页面/页头纯色不透明度固定100</td><td>#000000</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>填充</td><td>背景颜色</td><td class="key">background</td><td>纯色CSS颜色或渐变</td><td>设置此层独立涂色，不改变其他涂色或整组件透明度</td><td>背景类型为颜色；页面/页头纯色不透明度固定100</td><td>#ffffff</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>填充</td><td>背景颜色</td><td class="key">background</td><td>纯色CSS颜色或渐变</td><td>设置此层独立涂色，不改变其他涂色或整组件透明度</td><td>背景类型为颜色；页面/页头纯色不透明度固定100</td><td>#ffffff</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>填充</td><td>背景颜色</td><td class="key">background</td><td>纯色CSS颜色或渐变</td><td>设置此层独立涂色，不改变其他涂色或整组件透明度</td><td>背景类型为颜色；页面/页头纯色不透明度固定100</td><td>透明</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>填充</td><td>背景颜色</td><td class="key">background</td><td>纯色CSS颜色或渐变</td><td>设置此层独立涂色，不改变其他涂色或整组件透明度</td><td>背景类型为颜色；页面/页头纯色不透明度固定100</td><td>透明</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>填充</td><td>背景颜色</td><td class="key">background</td><td>纯色CSS颜色或渐变</td><td>设置此层独立涂色，不改变其他涂色或整组件透明度</td><td>背景类型为颜色；页面/页头纯色不透明度固定100</td><td>透明</td></tr>
@@ -1530,7 +1532,7 @@
 <tr data-component="页脚"><td>页脚</td><td>填充</td><td>背景颜色不透明度</td><td class="key">backgroundOpacity</td><td>0–100%</td><td>只影响此颜色；0完全透明，100完全不透明</td><td>背景类型为颜色；页面/页头纯色不透明度固定100；渐变时由各色标透明度控制，外部数值固定100</td><td>100</td></tr>
 <tr data-component="商品"><td>商品</td><td>填充</td><td>背景颜色不透明度</td><td class="key">backgroundOpacity</td><td>0–100%</td><td>只影响此颜色；0完全透明，100完全不透明</td><td>背景类型为颜色；页面/页头纯色不透明度固定100；渐变时由各色标透明度控制，外部数值固定100</td><td>100</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>填充</td><td>背景颜色不透明度</td><td class="key">backgroundOpacity</td><td>0–100%</td><td>只影响此颜色；0完全透明，100完全不透明</td><td>背景类型为颜色；页面/页头纯色不透明度固定100；渐变时由各色标透明度控制，外部数值固定100</td><td>100</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>填充</td><td>背景颜色不透明度</td><td class="key">backgroundOpacity</td><td>0–100%</td><td>只影响此颜色；0完全透明，100完全不透明</td><td>背景类型为颜色；页面/页头纯色不透明度固定100；渐变时由各色标透明度控制，外部数值固定100</td><td>100</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>填充</td><td>背景颜色不透明度</td><td class="key">backgroundOpacity</td><td>0–100%</td><td>只影响此颜色；0完全透明，100完全不透明</td><td>背景类型为颜色；页面/页头纯色不透明度固定100；渐变时由各色标透明度控制，外部数值固定100</td><td>100</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>填充</td><td>背景颜色不透明度</td><td class="key">backgroundOpacity</td><td>0–100%</td><td>只影响此颜色；0完全透明，100完全不透明</td><td>背景类型为颜色；页面/页头纯色不透明度固定100；渐变时由各色标透明度控制，外部数值固定100</td><td>100</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>填充</td><td>背景颜色不透明度</td><td class="key">backgroundOpacity</td><td>0–100%</td><td>只影响此颜色；0完全透明，100完全不透明</td><td>背景类型为颜色；页面/页头纯色不透明度固定100；渐变时由各色标透明度控制，外部数值固定100</td><td>100</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>填充</td><td>背景颜色不透明度</td><td class="key">backgroundOpacity</td><td>0–100%</td><td>只影响此颜色；0完全透明，100完全不透明</td><td>背景类型为颜色；页面/页头纯色不透明度固定100；渐变时由各色标透明度控制，外部数值固定100</td><td>100</td></tr>
@@ -1554,7 +1556,7 @@
 <tr data-component="页脚"><td>页脚</td><td>填充 / 色板</td><td>背景颜色色值格式</td><td class="key">background</td><td>HEX / R / G / B / A</td><td>HEX、RGB、透明度是同一个颜色的不同表示，不能重复叠加透明度</td><td>背景类型为颜色；页面/页头纯色不透明度固定100</td><td>#ffffff</td></tr>
 <tr data-component="商品"><td>商品</td><td>填充 / 色板</td><td>背景颜色色值格式</td><td class="key">background</td><td>HEX / R / G / B / A</td><td>HEX、RGB、透明度是同一个颜色的不同表示，不能重复叠加透明度</td><td>背景类型为颜色；页面/页头纯色不透明度固定100</td><td>透明</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>填充 / 色板</td><td>背景颜色色值格式</td><td class="key">background</td><td>HEX / R / G / B / A</td><td>HEX、RGB、透明度是同一个颜色的不同表示，不能重复叠加透明度</td><td>背景类型为颜色；页面/页头纯色不透明度固定100</td><td>#000000</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>填充 / 色板</td><td>背景颜色色值格式</td><td class="key">background</td><td>HEX / R / G / B / A</td><td>HEX、RGB、透明度是同一个颜色的不同表示，不能重复叠加透明度</td><td>背景类型为颜色；页面/页头纯色不透明度固定100</td><td>#ffffff</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>填充 / 色板</td><td>背景颜色色值格式</td><td class="key">background</td><td>HEX / R / G / B / A</td><td>HEX、RGB、透明度是同一个颜色的不同表示，不能重复叠加透明度</td><td>背景类型为颜色；页面/页头纯色不透明度固定100</td><td>#ffffff</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>填充 / 色板</td><td>背景颜色色值格式</td><td class="key">background</td><td>HEX / R / G / B / A</td><td>HEX、RGB、透明度是同一个颜色的不同表示，不能重复叠加透明度</td><td>背景类型为颜色；页面/页头纯色不透明度固定100</td><td>透明</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>填充 / 色板</td><td>背景颜色色值格式</td><td class="key">background</td><td>HEX / R / G / B / A</td><td>HEX、RGB、透明度是同一个颜色的不同表示，不能重复叠加透明度</td><td>背景类型为颜色；页面/页头纯色不透明度固定100</td><td>透明</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>填充 / 色板</td><td>背景颜色色值格式</td><td class="key">background</td><td>HEX / R / G / B / A</td><td>HEX、RGB、透明度是同一个颜色的不同表示，不能重复叠加透明度</td><td>背景类型为颜色；页面/页头纯色不透明度固定100</td><td>透明</td></tr>
@@ -1578,7 +1580,7 @@
 <tr data-component="页脚"><td>页脚</td><td>填充 / 色板</td><td>背景颜色渐变角度</td><td class="key">background</td><td>角度</td><td>旋转线性渐变方向</td><td>打开该颜色色板并切换渐变</td><td>#ffffff</td></tr>
 <tr data-component="商品"><td>商品</td><td>填充 / 色板</td><td>背景颜色渐变角度</td><td class="key">background</td><td>角度</td><td>旋转线性渐变方向</td><td>打开该颜色色板并切换渐变</td><td>透明</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>填充 / 色板</td><td>背景颜色渐变角度</td><td class="key">background</td><td>角度</td><td>旋转线性渐变方向</td><td>打开该颜色色板并切换渐变</td><td>#000000</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>填充 / 色板</td><td>背景颜色渐变角度</td><td class="key">background</td><td>角度</td><td>旋转线性渐变方向</td><td>打开该颜色色板并切换渐变</td><td>#ffffff</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>填充 / 色板</td><td>背景颜色渐变角度</td><td class="key">background</td><td>角度</td><td>旋转线性渐变方向</td><td>打开该颜色色板并切换渐变</td><td>#ffffff</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>填充 / 色板</td><td>背景颜色渐变角度</td><td class="key">background</td><td>角度</td><td>旋转线性渐变方向</td><td>打开该颜色色板并切换渐变</td><td>透明</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>填充 / 色板</td><td>背景颜色渐变角度</td><td class="key">background</td><td>角度</td><td>旋转线性渐变方向</td><td>打开该颜色色板并切换渐变</td><td>透明</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>填充 / 色板</td><td>背景颜色渐变角度</td><td class="key">background</td><td>角度</td><td>旋转线性渐变方向</td><td>打开该颜色色板并切换渐变</td><td>透明</td></tr>
@@ -1602,7 +1604,7 @@
 <tr data-component="页脚"><td>页脚</td><td>填充 / 色板</td><td>背景颜色色标</td><td class="key">background</td><td>位置0–100%；颜色及透明度</td><td>调整每个色标的位置、颜色及透明度；可新增/移除色标</td><td>渐变模式；不是组件外部的不透明度</td><td>#ffffff</td></tr>
 <tr data-component="商品"><td>商品</td><td>填充 / 色板</td><td>背景颜色色标</td><td class="key">background</td><td>位置0–100%；颜色及透明度</td><td>调整每个色标的位置、颜色及透明度；可新增/移除色标</td><td>渐变模式；不是组件外部的不透明度</td><td>透明</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>填充 / 色板</td><td>背景颜色色标</td><td class="key">background</td><td>位置0–100%；颜色及透明度</td><td>调整每个色标的位置、颜色及透明度；可新增/移除色标</td><td>渐变模式；不是组件外部的不透明度</td><td>#000000</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>填充 / 色板</td><td>背景颜色色标</td><td class="key">background</td><td>位置0–100%；颜色及透明度</td><td>调整每个色标的位置、颜色及透明度；可新增/移除色标</td><td>渐变模式；不是组件外部的不透明度</td><td>#ffffff</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>填充 / 色板</td><td>背景颜色色标</td><td class="key">background</td><td>位置0–100%；颜色及透明度</td><td>调整每个色标的位置、颜色及透明度；可新增/移除色标</td><td>渐变模式；不是组件外部的不透明度</td><td>#ffffff</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>填充 / 色板</td><td>背景颜色色标</td><td class="key">background</td><td>位置0–100%；颜色及透明度</td><td>调整每个色标的位置、颜色及透明度；可新增/移除色标</td><td>渐变模式；不是组件外部的不透明度</td><td>透明</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>填充 / 色板</td><td>背景颜色色标</td><td class="key">background</td><td>位置0–100%；颜色及透明度</td><td>调整每个色标的位置、颜色及透明度；可新增/移除色标</td><td>渐变模式；不是组件外部的不透明度</td><td>透明</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>填充 / 色板</td><td>背景颜色色标</td><td class="key">background</td><td>位置0–100%；颜色及透明度</td><td>调整每个色标的位置、颜色及透明度；可新增/移除色标</td><td>渐变模式；不是组件外部的不透明度</td><td>透明</td></tr>
@@ -1626,7 +1628,7 @@
 <tr data-component="页脚"><td>页脚</td><td>填充</td><td>背景图片地址</td><td class="key">backgroundImage</td><td>当前值</td><td>上传或输入背景图片，替换该组件已有背景图</td><td>背景类型为图片；本Demo支持PNG/JPG/WebP/GIF，文件上限10MB</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品"><td>商品</td><td>填充</td><td>背景图片地址</td><td class="key">backgroundImage</td><td>当前值</td><td>上传或输入背景图片，替换该组件已有背景图</td><td>背景类型为图片；本Demo支持PNG/JPG/WebP/GIF，文件上限10MB</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>填充</td><td>背景图片地址</td><td class="key">backgroundImage</td><td>当前值</td><td>上传或输入背景图片，替换该组件已有背景图</td><td>背景类型为图片；本Demo支持PNG/JPG/WebP/GIF，文件上限10MB</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>填充</td><td>背景图片地址</td><td class="key">backgroundImage</td><td>当前值</td><td>上传或输入背景图片，替换该组件已有背景图</td><td>背景类型为图片；本Demo支持PNG/JPG/WebP/GIF，文件上限10MB</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>填充</td><td>背景图片地址</td><td class="key">backgroundImage</td><td>当前值</td><td>上传或输入背景图片，替换该组件已有背景图</td><td>背景类型为图片；本Demo支持PNG/JPG/WebP/GIF，文件上限10MB</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>填充</td><td>背景图片地址</td><td class="key">backgroundImage</td><td>当前值</td><td>上传或输入背景图片，替换该组件已有背景图</td><td>背景类型为图片；本Demo支持PNG/JPG/WebP/GIF，文件上限10MB</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>填充</td><td>背景图片地址</td><td class="key">backgroundImage</td><td>当前值</td><td>上传或输入背景图片，替换该组件已有背景图</td><td>背景类型为图片；本Demo支持PNG/JPG/WebP/GIF，文件上限10MB</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>填充</td><td>背景图片地址</td><td class="key">backgroundImage</td><td>当前值</td><td>上传或输入背景图片，替换该组件已有背景图</td><td>背景类型为图片；本Demo支持PNG/JPG/WebP/GIF，文件上限10MB</td><td>依当前模板/条件继承</td></tr>
@@ -1650,7 +1652,7 @@
 <tr data-component="页脚"><td>页脚</td><td>填充</td><td>素材地址</td><td class="key">backgroundVideo</td><td>当前值</td><td>上传或输入背景视频，不增加一个内容流中的视频子组件</td><td>背景类型为视频；新配置仅容器支持，其他类型保留旧视频值；本Demo上传MP4，上限10MB，不提供转码</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品"><td>商品</td><td>填充</td><td>素材地址</td><td class="key">backgroundVideo</td><td>当前值</td><td>上传或输入背景视频，不增加一个内容流中的视频子组件</td><td>背景类型为视频；新配置仅容器支持，其他类型保留旧视频值；本Demo上传MP4，上限10MB，不提供转码</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>填充</td><td>素材地址</td><td class="key">backgroundVideo</td><td>当前值</td><td>上传或输入背景视频，不增加一个内容流中的视频子组件</td><td>背景类型为视频；新配置仅容器支持，其他类型保留旧视频值；本Demo上传MP4，上限10MB，不提供转码</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>填充</td><td>素材地址</td><td class="key">backgroundVideo</td><td>当前值</td><td>上传或输入背景视频，不增加一个内容流中的视频子组件</td><td>背景类型为视频；新配置仅容器支持，其他类型保留旧视频值；本Demo上传MP4，上限10MB，不提供转码</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>填充</td><td>素材地址</td><td class="key">backgroundVideo</td><td>当前值</td><td>上传或输入背景视频，不增加一个内容流中的视频子组件</td><td>背景类型为视频；新配置仅容器支持，其他类型保留旧视频值；本Demo上传MP4，上限10MB，不提供转码</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>填充</td><td>素材地址</td><td class="key">backgroundVideo</td><td>当前值</td><td>上传或输入背景视频，不增加一个内容流中的视频子组件</td><td>背景类型为视频；新配置仅容器支持，其他类型保留旧视频值；本Demo上传MP4，上限10MB，不提供转码</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>填充</td><td>素材地址</td><td class="key">backgroundVideo</td><td>当前值</td><td>上传或输入背景视频，不增加一个内容流中的视频子组件</td><td>背景类型为视频；新配置仅容器支持，其他类型保留旧视频值；本Demo上传MP4，上限10MB，不提供转码</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>填充</td><td>素材地址</td><td class="key">backgroundVideo</td><td>当前值</td><td>上传或输入背景视频，不增加一个内容流中的视频子组件</td><td>背景类型为视频；新配置仅容器支持，其他类型保留旧视频值；本Demo上传MP4，上限10MB，不提供转码</td><td>依当前模板/条件继承</td></tr>
@@ -1695,10 +1697,10 @@
 <tr data-component="购买按钮"><td>购买按钮</td><td>填充</td><td>背景适配</td><td class="key">backgroundFit</td><td>完整显示</td><td>控制背景素材如何适应框体；保持比例完整显示，框体与素材比例不同时会有留白</td><td>背景类型为图片/视频</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>填充</td><td>背景适配</td><td class="key">backgroundFit</td><td>拉伸</td><td>控制背景素材如何适应框体；铺满框体，允许改变素材比例</td><td>背景类型为图片/视频</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>填充</td><td>背景适配</td><td class="key">backgroundFit</td><td>原始尺寸</td><td>控制背景素材如何适应框体；保持素材固有尺寸，不自动缩放</td><td>背景类型为图片/视频</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>填充</td><td>背景适配</td><td class="key">backgroundFit</td><td>填满</td><td>控制背景素材如何适应框体；保持比例铺满框体，超出的部分裁切</td><td>背景类型为图片/视频</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>填充</td><td>背景适配</td><td class="key">backgroundFit</td><td>完整显示</td><td>控制背景素材如何适应框体；保持比例完整显示，框体与素材比例不同时会有留白</td><td>背景类型为图片/视频</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>填充</td><td>背景适配</td><td class="key">backgroundFit</td><td>拉伸</td><td>控制背景素材如何适应框体；铺满框体，允许改变素材比例</td><td>背景类型为图片/视频</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>填充</td><td>背景适配</td><td class="key">backgroundFit</td><td>原始尺寸</td><td>控制背景素材如何适应框体；保持素材固有尺寸，不自动缩放</td><td>背景类型为图片/视频</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>填充</td><td>背景适配</td><td class="key">backgroundFit</td><td>填满</td><td>控制背景素材如何适应框体；保持比例铺满框体，超出的部分裁切</td><td>背景类型为图片/视频</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>填充</td><td>背景适配</td><td class="key">backgroundFit</td><td>完整显示</td><td>控制背景素材如何适应框体；保持比例完整显示，框体与素材比例不同时会有留白</td><td>背景类型为图片/视频</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>填充</td><td>背景适配</td><td class="key">backgroundFit</td><td>拉伸</td><td>控制背景素材如何适应框体；铺满框体，允许改变素材比例</td><td>背景类型为图片/视频</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>填充</td><td>背景适配</td><td class="key">backgroundFit</td><td>原始尺寸</td><td>控制背景素材如何适应框体；保持素材固有尺寸，不自动缩放</td><td>背景类型为图片/视频</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>填充</td><td>背景适配</td><td class="key">backgroundFit</td><td>填满</td><td>控制背景素材如何适应框体；保持比例铺满框体，超出的部分裁切</td><td>背景类型为图片/视频</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>填充</td><td>背景适配</td><td class="key">backgroundFit</td><td>完整显示</td><td>控制背景素材如何适应框体；保持比例完整显示，框体与素材比例不同时会有留白</td><td>背景类型为图片/视频</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>填充</td><td>背景适配</td><td class="key">backgroundFit</td><td>拉伸</td><td>控制背景素材如何适应框体；铺满框体，允许改变素材比例</td><td>背景类型为图片/视频</td><td>依当前模板/条件继承</td></tr>
@@ -1777,8 +1779,8 @@
 <tr data-component="商品"><td>商品</td><td>边框</td><td>边框启用</td><td class="key">borderEnabled</td><td>关闭</td><td>添加或移除描边，描边占用框体内部尺寸；禁用此能力或不使用该状态</td><td>图标需先开启图标背景；指示器只有描边没有阴影</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>边框</td><td>边框启用</td><td class="key">borderEnabled</td><td>开启</td><td>添加或移除描边，描边占用框体内部尺寸；启用此能力或使用该状态</td><td>图标需先开启图标背景；指示器只有描边没有阴影</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>边框</td><td>边框启用</td><td class="key">borderEnabled</td><td>关闭</td><td>添加或移除描边，描边占用框体内部尺寸；禁用此能力或不使用该状态</td><td>图标需先开启图标背景；指示器只有描边没有阴影</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>边框</td><td>边框启用</td><td class="key">borderEnabled</td><td>开启</td><td>添加或移除描边，描边占用框体内部尺寸；启用此能力或使用该状态</td><td>图标需先开启图标背景；指示器只有描边没有阴影</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>边框</td><td>边框启用</td><td class="key">borderEnabled</td><td>关闭</td><td>添加或移除描边，描边占用框体内部尺寸；禁用此能力或不使用该状态</td><td>图标需先开启图标背景；指示器只有描边没有阴影</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>边框</td><td>边框启用</td><td class="key">borderEnabled</td><td>开启</td><td>添加或移除描边，描边占用框体内部尺寸；启用此能力或使用该状态</td><td>图标需先开启图标背景；指示器只有描边没有阴影</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>边框</td><td>边框启用</td><td class="key">borderEnabled</td><td>关闭</td><td>添加或移除描边，描边占用框体内部尺寸；禁用此能力或不使用该状态</td><td>图标需先开启图标背景；指示器只有描边没有阴影</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>边框</td><td>边框启用</td><td class="key">borderEnabled</td><td>开启</td><td>添加或移除描边，描边占用框体内部尺寸；启用此能力或使用该状态</td><td>图标需先开启图标背景；指示器只有描边没有阴影</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>边框</td><td>边框启用</td><td class="key">borderEnabled</td><td>关闭</td><td>添加或移除描边，描边占用框体内部尺寸；禁用此能力或不使用该状态</td><td>图标需先开启图标背景；指示器只有描边没有阴影</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>边框</td><td>边框启用</td><td class="key">borderEnabled</td><td>开启</td><td>添加或移除描边，描边占用框体内部尺寸；启用此能力或使用该状态</td><td>图标需先开启图标背景；指示器只有描边没有阴影</td><td>依当前模板/条件继承</td></tr>
@@ -1824,7 +1826,7 @@
 <tr data-component="页脚"><td>页脚</td><td>边框</td><td>边框颜色</td><td class="key">borderColor</td><td>纯色CSS颜色或渐变</td><td>设置此层独立涂色，不改变其他涂色或整组件透明度</td><td>边框模块已启用</td><td>#dedee3</td></tr>
 <tr data-component="商品"><td>商品</td><td>边框</td><td>边框颜色</td><td class="key">borderColor</td><td>纯色CSS颜色或渐变</td><td>设置此层独立涂色，不改变其他涂色或整组件透明度</td><td>边框模块已启用</td><td>#cccccc</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>边框</td><td>边框颜色</td><td class="key">borderColor</td><td>纯色CSS颜色或渐变</td><td>设置此层独立涂色，不改变其他涂色或整组件透明度</td><td>边框模块已启用</td><td>#dedee3</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>边框</td><td>边框颜色</td><td class="key">borderColor</td><td>纯色CSS颜色或渐变</td><td>设置此层独立涂色，不改变其他涂色或整组件透明度</td><td>边框模块已启用</td><td>#dedee3</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>边框</td><td>边框颜色</td><td class="key">borderColor</td><td>纯色CSS颜色或渐变</td><td>设置此层独立涂色，不改变其他涂色或整组件透明度</td><td>边框模块已启用</td><td>#dedee3</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>边框</td><td>边框颜色</td><td class="key">borderColor</td><td>纯色CSS颜色或渐变</td><td>设置此层独立涂色，不改变其他涂色或整组件透明度</td><td>边框模块已启用</td><td>#dedee3</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>边框</td><td>边框颜色</td><td class="key">borderColor</td><td>纯色CSS颜色或渐变</td><td>设置此层独立涂色，不改变其他涂色或整组件透明度</td><td>边框模块已启用</td><td>#dedee3</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>边框</td><td>边框颜色</td><td class="key">borderColor</td><td>纯色CSS颜色或渐变</td><td>设置此层独立涂色，不改变其他涂色或整组件透明度</td><td>边框模块已启用</td><td>#dedee3</td></tr>
@@ -1851,7 +1853,7 @@
 <tr data-component="页脚"><td>页脚</td><td>边框</td><td>边框颜色不透明度</td><td class="key">borderOpacity</td><td>0–100%</td><td>只影响此颜色；0完全透明，100完全不透明</td><td>边框模块已启用；渐变时由各色标透明度控制，外部数值固定100</td><td>100</td></tr>
 <tr data-component="商品"><td>商品</td><td>边框</td><td>边框颜色不透明度</td><td class="key">borderOpacity</td><td>0–100%</td><td>只影响此颜色；0完全透明，100完全不透明</td><td>边框模块已启用；渐变时由各色标透明度控制，外部数值固定100</td><td>100</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>边框</td><td>边框颜色不透明度</td><td class="key">borderOpacity</td><td>0–100%</td><td>只影响此颜色；0完全透明，100完全不透明</td><td>边框模块已启用；渐变时由各色标透明度控制，外部数值固定100</td><td>100</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>边框</td><td>边框颜色不透明度</td><td class="key">borderOpacity</td><td>0–100%</td><td>只影响此颜色；0完全透明，100完全不透明</td><td>边框模块已启用；渐变时由各色标透明度控制，外部数值固定100</td><td>100</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>边框</td><td>边框颜色不透明度</td><td class="key">borderOpacity</td><td>0–100%</td><td>只影响此颜色；0完全透明，100完全不透明</td><td>边框模块已启用；渐变时由各色标透明度控制，外部数值固定100</td><td>100</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>边框</td><td>边框颜色不透明度</td><td class="key">borderOpacity</td><td>0–100%</td><td>只影响此颜色；0完全透明，100完全不透明</td><td>边框模块已启用；渐变时由各色标透明度控制，外部数值固定100</td><td>100</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>边框</td><td>边框颜色不透明度</td><td class="key">borderOpacity</td><td>0–100%</td><td>只影响此颜色；0完全透明，100完全不透明</td><td>边框模块已启用；渐变时由各色标透明度控制，外部数值固定100</td><td>100</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>边框</td><td>边框颜色不透明度</td><td class="key">borderOpacity</td><td>0–100%</td><td>只影响此颜色；0完全透明，100完全不透明</td><td>边框模块已启用；渐变时由各色标透明度控制，外部数值固定100</td><td>100</td></tr>
@@ -1878,7 +1880,7 @@
 <tr data-component="页脚"><td>页脚</td><td>边框 / 色板</td><td>边框颜色色值格式</td><td class="key">borderColor</td><td>HEX / R / G / B / A</td><td>HEX、RGB、透明度是同一个颜色的不同表示，不能重复叠加透明度</td><td>边框模块已启用</td><td>#dedee3</td></tr>
 <tr data-component="商品"><td>商品</td><td>边框 / 色板</td><td>边框颜色色值格式</td><td class="key">borderColor</td><td>HEX / R / G / B / A</td><td>HEX、RGB、透明度是同一个颜色的不同表示，不能重复叠加透明度</td><td>边框模块已启用</td><td>#cccccc</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>边框 / 色板</td><td>边框颜色色值格式</td><td class="key">borderColor</td><td>HEX / R / G / B / A</td><td>HEX、RGB、透明度是同一个颜色的不同表示，不能重复叠加透明度</td><td>边框模块已启用</td><td>#dedee3</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>边框 / 色板</td><td>边框颜色色值格式</td><td class="key">borderColor</td><td>HEX / R / G / B / A</td><td>HEX、RGB、透明度是同一个颜色的不同表示，不能重复叠加透明度</td><td>边框模块已启用</td><td>#dedee3</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>边框 / 色板</td><td>边框颜色色值格式</td><td class="key">borderColor</td><td>HEX / R / G / B / A</td><td>HEX、RGB、透明度是同一个颜色的不同表示，不能重复叠加透明度</td><td>边框模块已启用</td><td>#dedee3</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>边框 / 色板</td><td>边框颜色色值格式</td><td class="key">borderColor</td><td>HEX / R / G / B / A</td><td>HEX、RGB、透明度是同一个颜色的不同表示，不能重复叠加透明度</td><td>边框模块已启用</td><td>#dedee3</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>边框 / 色板</td><td>边框颜色色值格式</td><td class="key">borderColor</td><td>HEX / R / G / B / A</td><td>HEX、RGB、透明度是同一个颜色的不同表示，不能重复叠加透明度</td><td>边框模块已启用</td><td>#dedee3</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>边框 / 色板</td><td>边框颜色色值格式</td><td class="key">borderColor</td><td>HEX / R / G / B / A</td><td>HEX、RGB、透明度是同一个颜色的不同表示，不能重复叠加透明度</td><td>边框模块已启用</td><td>#dedee3</td></tr>
@@ -1905,7 +1907,7 @@
 <tr data-component="页脚"><td>页脚</td><td>边框 / 色板</td><td>边框颜色渐变角度</td><td class="key">borderColor</td><td>角度</td><td>旋转线性渐变方向</td><td>打开该颜色色板并切换渐变</td><td>#dedee3</td></tr>
 <tr data-component="商品"><td>商品</td><td>边框 / 色板</td><td>边框颜色渐变角度</td><td class="key">borderColor</td><td>角度</td><td>旋转线性渐变方向</td><td>打开该颜色色板并切换渐变</td><td>#cccccc</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>边框 / 色板</td><td>边框颜色渐变角度</td><td class="key">borderColor</td><td>角度</td><td>旋转线性渐变方向</td><td>打开该颜色色板并切换渐变</td><td>#dedee3</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>边框 / 色板</td><td>边框颜色渐变角度</td><td class="key">borderColor</td><td>角度</td><td>旋转线性渐变方向</td><td>打开该颜色色板并切换渐变</td><td>#dedee3</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>边框 / 色板</td><td>边框颜色渐变角度</td><td class="key">borderColor</td><td>角度</td><td>旋转线性渐变方向</td><td>打开该颜色色板并切换渐变</td><td>#dedee3</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>边框 / 色板</td><td>边框颜色渐变角度</td><td class="key">borderColor</td><td>角度</td><td>旋转线性渐变方向</td><td>打开该颜色色板并切换渐变</td><td>#dedee3</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>边框 / 色板</td><td>边框颜色渐变角度</td><td class="key">borderColor</td><td>角度</td><td>旋转线性渐变方向</td><td>打开该颜色色板并切换渐变</td><td>#dedee3</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>边框 / 色板</td><td>边框颜色渐变角度</td><td class="key">borderColor</td><td>角度</td><td>旋转线性渐变方向</td><td>打开该颜色色板并切换渐变</td><td>#dedee3</td></tr>
@@ -1932,7 +1934,7 @@
 <tr data-component="页脚"><td>页脚</td><td>边框 / 色板</td><td>边框颜色色标</td><td class="key">borderColor</td><td>位置0–100%；颜色及透明度</td><td>调整每个色标的位置、颜色及透明度；可新增/移除色标</td><td>渐变模式；不是组件外部的不透明度</td><td>#dedee3</td></tr>
 <tr data-component="商品"><td>商品</td><td>边框 / 色板</td><td>边框颜色色标</td><td class="key">borderColor</td><td>位置0–100%；颜色及透明度</td><td>调整每个色标的位置、颜色及透明度；可新增/移除色标</td><td>渐变模式；不是组件外部的不透明度</td><td>#cccccc</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>边框 / 色板</td><td>边框颜色色标</td><td class="key">borderColor</td><td>位置0–100%；颜色及透明度</td><td>调整每个色标的位置、颜色及透明度；可新增/移除色标</td><td>渐变模式；不是组件外部的不透明度</td><td>#dedee3</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>边框 / 色板</td><td>边框颜色色标</td><td class="key">borderColor</td><td>位置0–100%；颜色及透明度</td><td>调整每个色标的位置、颜色及透明度；可新增/移除色标</td><td>渐变模式；不是组件外部的不透明度</td><td>#dedee3</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>边框 / 色板</td><td>边框颜色色标</td><td class="key">borderColor</td><td>位置0–100%；颜色及透明度</td><td>调整每个色标的位置、颜色及透明度；可新增/移除色标</td><td>渐变模式；不是组件外部的不透明度</td><td>#dedee3</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>边框 / 色板</td><td>边框颜色色标</td><td class="key">borderColor</td><td>位置0–100%；颜色及透明度</td><td>调整每个色标的位置、颜色及透明度；可新增/移除色标</td><td>渐变模式；不是组件外部的不透明度</td><td>#dedee3</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>边框 / 色板</td><td>边框颜色色标</td><td class="key">borderColor</td><td>位置0–100%；颜色及透明度</td><td>调整每个色标的位置、颜色及透明度；可新增/移除色标</td><td>渐变模式；不是组件外部的不透明度</td><td>#dedee3</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>边框 / 色板</td><td>边框颜色色标</td><td class="key">borderColor</td><td>位置0–100%；颜色及透明度</td><td>调整每个色标的位置、颜色及透明度；可新增/移除色标</td><td>渐变模式；不是组件外部的不透明度</td><td>#dedee3</td></tr>
@@ -1959,7 +1961,7 @@
 <tr data-component="页脚"><td>页脚</td><td>边框</td><td>边框宽度</td><td class="key">borderWidth</td><td>0–20 px</td><td>调整描边厚度，不是外边距</td><td>边框启用</td><td>0</td></tr>
 <tr data-component="商品"><td>商品</td><td>边框</td><td>边框宽度</td><td class="key">borderWidth</td><td>0–20 px</td><td>调整描边厚度，不是外边距</td><td>边框启用</td><td>1</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>边框</td><td>边框宽度</td><td class="key">borderWidth</td><td>0–20 px</td><td>调整描边厚度，不是外边距</td><td>边框启用</td><td>0</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>边框</td><td>边框宽度</td><td class="key">borderWidth</td><td>0–20 px</td><td>调整描边厚度，不是外边距</td><td>边框启用</td><td>0</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>边框</td><td>边框宽度</td><td class="key">borderWidth</td><td>0–20 px</td><td>调整描边厚度，不是外边距</td><td>边框启用</td><td>0</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>边框</td><td>边框宽度</td><td class="key">borderWidth</td><td>0–20 px</td><td>调整描边厚度，不是外边距</td><td>边框启用</td><td>0</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>边框</td><td>边框宽度</td><td class="key">borderWidth</td><td>0–20 px</td><td>调整描边厚度，不是外边距</td><td>边框启用</td><td>0</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>边框</td><td>边框宽度</td><td class="key">borderWidth</td><td>0–20 px</td><td>调整描边厚度，不是外边距</td><td>边框启用</td><td>0</td></tr>
@@ -1993,8 +1995,8 @@
 <tr data-component="商品"><td>商品</td><td>阴影</td><td>阴影启用</td><td class="key">shadowEnabled</td><td>关闭</td><td>添加或移除外投影；禁用此能力或不使用该状态</td><td>图标需开启图标背景</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>阴影</td><td>阴影启用</td><td class="key">shadowEnabled</td><td>开启</td><td>添加或移除外投影；启用此能力或使用该状态</td><td>图标需开启图标背景</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>阴影</td><td>阴影启用</td><td class="key">shadowEnabled</td><td>关闭</td><td>添加或移除外投影；禁用此能力或不使用该状态</td><td>图标需开启图标背景</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>阴影</td><td>阴影启用</td><td class="key">shadowEnabled</td><td>开启</td><td>添加或移除外投影；启用此能力或使用该状态</td><td>图标需开启图标背景</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>阴影</td><td>阴影启用</td><td class="key">shadowEnabled</td><td>关闭</td><td>添加或移除外投影；禁用此能力或不使用该状态</td><td>图标需开启图标背景</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>阴影</td><td>阴影启用</td><td class="key">shadowEnabled</td><td>开启</td><td>添加或移除外投影；启用此能力或使用该状态</td><td>图标需开启图标背景</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>阴影</td><td>阴影启用</td><td class="key">shadowEnabled</td><td>关闭</td><td>添加或移除外投影；禁用此能力或不使用该状态</td><td>图标需开启图标背景</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>阴影</td><td>阴影启用</td><td class="key">shadowEnabled</td><td>开启</td><td>添加或移除外投影；启用此能力或使用该状态</td><td>图标需开启图标背景</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>阴影</td><td>阴影启用</td><td class="key">shadowEnabled</td><td>关闭</td><td>添加或移除外投影；禁用此能力或不使用该状态</td><td>图标需开启图标背景</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>阴影</td><td>阴影启用</td><td class="key">shadowEnabled</td><td>开启</td><td>添加或移除外投影；启用此能力或使用该状态</td><td>图标需开启图标背景</td><td>依当前模板/条件继承</td></tr>
@@ -2038,7 +2040,7 @@
 <tr data-component="页脚"><td>页脚</td><td>阴影</td><td>X 偏移</td><td class="key">shadowX</td><td>-100–100 px</td><td>向右为正、向左为负</td><td>阴影启用</td><td>0</td></tr>
 <tr data-component="商品"><td>商品</td><td>阴影</td><td>X 偏移</td><td class="key">shadowX</td><td>-100–100 px</td><td>向右为正、向左为负</td><td>阴影启用</td><td>0</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>阴影</td><td>X 偏移</td><td class="key">shadowX</td><td>-100–100 px</td><td>向右为正、向左为负</td><td>阴影启用</td><td>0</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>阴影</td><td>X 偏移</td><td class="key">shadowX</td><td>-100–100 px</td><td>向右为正、向左为负</td><td>阴影启用</td><td>0</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>阴影</td><td>X 偏移</td><td class="key">shadowX</td><td>-100–100 px</td><td>向右为正、向左为负</td><td>阴影启用</td><td>0</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>阴影</td><td>X 偏移</td><td class="key">shadowX</td><td>-100–100 px</td><td>向右为正、向左为负</td><td>阴影启用</td><td>0</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>阴影</td><td>X 偏移</td><td class="key">shadowX</td><td>-100–100 px</td><td>向右为正、向左为负</td><td>阴影启用</td><td>0</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>阴影</td><td>X 偏移</td><td class="key">shadowX</td><td>-100–100 px</td><td>向右为正、向左为负</td><td>阴影启用</td><td>0</td></tr>
@@ -2064,7 +2066,7 @@
 <tr data-component="页脚"><td>页脚</td><td>阴影</td><td>Y 偏移</td><td class="key">shadowY</td><td>-100–100 px</td><td>向下为正、向上为负</td><td>阴影启用</td><td>-4</td></tr>
 <tr data-component="商品"><td>商品</td><td>阴影</td><td>Y 偏移</td><td class="key">shadowY</td><td>-100–100 px</td><td>向下为正、向上为负</td><td>阴影启用</td><td>0</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>阴影</td><td>Y 偏移</td><td class="key">shadowY</td><td>-100–100 px</td><td>向下为正、向上为负</td><td>阴影启用</td><td>0</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>阴影</td><td>Y 偏移</td><td class="key">shadowY</td><td>-100–100 px</td><td>向下为正、向上为负</td><td>阴影启用</td><td>0</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>阴影</td><td>Y 偏移</td><td class="key">shadowY</td><td>-100–100 px</td><td>向下为正、向上为负</td><td>阴影启用</td><td>0</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>阴影</td><td>Y 偏移</td><td class="key">shadowY</td><td>-100–100 px</td><td>向下为正、向上为负</td><td>阴影启用</td><td>0</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>阴影</td><td>Y 偏移</td><td class="key">shadowY</td><td>-100–100 px</td><td>向下为正、向上为负</td><td>阴影启用</td><td>0</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>阴影</td><td>Y 偏移</td><td class="key">shadowY</td><td>-100–100 px</td><td>向下为正、向上为负</td><td>阴影启用</td><td>0</td></tr>
@@ -2090,7 +2092,7 @@
 <tr data-component="页脚"><td>页脚</td><td>阴影</td><td>模糊</td><td class="key">shadowBlur</td><td>0–100 px</td><td>扩大投影模糊范围</td><td>阴影启用</td><td>16</td></tr>
 <tr data-component="商品"><td>商品</td><td>阴影</td><td>模糊</td><td class="key">shadowBlur</td><td>0–100 px</td><td>扩大投影模糊范围</td><td>阴影启用</td><td>0</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>阴影</td><td>模糊</td><td class="key">shadowBlur</td><td>0–100 px</td><td>扩大投影模糊范围</td><td>阴影启用</td><td>0</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>阴影</td><td>模糊</td><td class="key">shadowBlur</td><td>0–100 px</td><td>扩大投影模糊范围</td><td>阴影启用</td><td>0</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>阴影</td><td>模糊</td><td class="key">shadowBlur</td><td>0–100 px</td><td>扩大投影模糊范围</td><td>阴影启用</td><td>0</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>阴影</td><td>模糊</td><td class="key">shadowBlur</td><td>0–100 px</td><td>扩大投影模糊范围</td><td>阴影启用</td><td>0</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>阴影</td><td>模糊</td><td class="key">shadowBlur</td><td>0–100 px</td><td>扩大投影模糊范围</td><td>阴影启用</td><td>0</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>阴影</td><td>模糊</td><td class="key">shadowBlur</td><td>0–100 px</td><td>扩大投影模糊范围</td><td>阴影启用</td><td>0</td></tr>
@@ -2116,7 +2118,7 @@
 <tr data-component="页脚"><td>页脚</td><td>阴影</td><td>阴影颜色</td><td class="key">shadowColor</td><td>纯色CSS颜色</td><td>设置此层独立涂色，不改变其他涂色或整组件透明度</td><td>阴影启用</td><td>#000000</td></tr>
 <tr data-component="商品"><td>商品</td><td>阴影</td><td>阴影颜色</td><td class="key">shadowColor</td><td>纯色CSS颜色</td><td>设置此层独立涂色，不改变其他涂色或整组件透明度</td><td>阴影启用</td><td>#000000</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>阴影</td><td>阴影颜色</td><td class="key">shadowColor</td><td>纯色CSS颜色</td><td>设置此层独立涂色，不改变其他涂色或整组件透明度</td><td>阴影启用</td><td>#000000</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>阴影</td><td>阴影颜色</td><td class="key">shadowColor</td><td>纯色CSS颜色</td><td>设置此层独立涂色，不改变其他涂色或整组件透明度</td><td>阴影启用</td><td>#000000</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>阴影</td><td>阴影颜色</td><td class="key">shadowColor</td><td>纯色CSS颜色</td><td>设置此层独立涂色，不改变其他涂色或整组件透明度</td><td>阴影启用</td><td>#000000</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>阴影</td><td>阴影颜色</td><td class="key">shadowColor</td><td>纯色CSS颜色</td><td>设置此层独立涂色，不改变其他涂色或整组件透明度</td><td>阴影启用</td><td>#000000</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>阴影</td><td>阴影颜色</td><td class="key">shadowColor</td><td>纯色CSS颜色</td><td>设置此层独立涂色，不改变其他涂色或整组件透明度</td><td>阴影启用</td><td>#000000</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>阴影</td><td>阴影颜色</td><td class="key">shadowColor</td><td>纯色CSS颜色</td><td>设置此层独立涂色，不改变其他涂色或整组件透明度</td><td>阴影启用</td><td>#000000</td></tr>
@@ -2142,7 +2144,7 @@
 <tr data-component="页脚"><td>页脚</td><td>阴影</td><td>阴影颜色不透明度</td><td class="key">shadowOpacity</td><td>0–100%</td><td>只影响此颜色；0完全透明，100完全不透明</td><td>阴影启用；渐变时由各色标透明度控制，外部数值固定100</td><td>20</td></tr>
 <tr data-component="商品"><td>商品</td><td>阴影</td><td>阴影颜色不透明度</td><td class="key">shadowOpacity</td><td>0–100%</td><td>只影响此颜色；0完全透明，100完全不透明</td><td>阴影启用；渐变时由各色标透明度控制，外部数值固定100</td><td>100</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>阴影</td><td>阴影颜色不透明度</td><td class="key">shadowOpacity</td><td>0–100%</td><td>只影响此颜色；0完全透明，100完全不透明</td><td>阴影启用；渐变时由各色标透明度控制，外部数值固定100</td><td>100</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>阴影</td><td>阴影颜色不透明度</td><td class="key">shadowOpacity</td><td>0–100%</td><td>只影响此颜色；0完全透明，100完全不透明</td><td>阴影启用；渐变时由各色标透明度控制，外部数值固定100</td><td>100</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>阴影</td><td>阴影颜色不透明度</td><td class="key">shadowOpacity</td><td>0–100%</td><td>只影响此颜色；0完全透明，100完全不透明</td><td>阴影启用；渐变时由各色标透明度控制，外部数值固定100</td><td>100</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>阴影</td><td>阴影颜色不透明度</td><td class="key">shadowOpacity</td><td>0–100%</td><td>只影响此颜色；0完全透明，100完全不透明</td><td>阴影启用；渐变时由各色标透明度控制，外部数值固定100</td><td>100</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>阴影</td><td>阴影颜色不透明度</td><td class="key">shadowOpacity</td><td>0–100%</td><td>只影响此颜色；0完全透明，100完全不透明</td><td>阴影启用；渐变时由各色标透明度控制，外部数值固定100</td><td>100</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>阴影</td><td>阴影颜色不透明度</td><td class="key">shadowOpacity</td><td>0–100%</td><td>只影响此颜色；0完全透明，100完全不透明</td><td>阴影启用；渐变时由各色标透明度控制，外部数值固定100</td><td>100</td></tr>
@@ -2168,7 +2170,7 @@
 <tr data-component="页脚"><td>页脚</td><td>阴影 / 色板</td><td>阴影颜色色值格式</td><td class="key">shadowColor</td><td>HEX / R / G / B / A</td><td>HEX、RGB、透明度是同一个颜色的不同表示，不能重复叠加透明度</td><td>阴影启用</td><td>#000000</td></tr>
 <tr data-component="商品"><td>商品</td><td>阴影 / 色板</td><td>阴影颜色色值格式</td><td class="key">shadowColor</td><td>HEX / R / G / B / A</td><td>HEX、RGB、透明度是同一个颜色的不同表示，不能重复叠加透明度</td><td>阴影启用</td><td>#000000</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>阴影 / 色板</td><td>阴影颜色色值格式</td><td class="key">shadowColor</td><td>HEX / R / G / B / A</td><td>HEX、RGB、透明度是同一个颜色的不同表示，不能重复叠加透明度</td><td>阴影启用</td><td>#000000</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>阴影 / 色板</td><td>阴影颜色色值格式</td><td class="key">shadowColor</td><td>HEX / R / G / B / A</td><td>HEX、RGB、透明度是同一个颜色的不同表示，不能重复叠加透明度</td><td>阴影启用</td><td>#000000</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>阴影 / 色板</td><td>阴影颜色色值格式</td><td class="key">shadowColor</td><td>HEX / R / G / B / A</td><td>HEX、RGB、透明度是同一个颜色的不同表示，不能重复叠加透明度</td><td>阴影启用</td><td>#000000</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>阴影 / 色板</td><td>阴影颜色色值格式</td><td class="key">shadowColor</td><td>HEX / R / G / B / A</td><td>HEX、RGB、透明度是同一个颜色的不同表示，不能重复叠加透明度</td><td>阴影启用</td><td>#000000</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>阴影 / 色板</td><td>阴影颜色色值格式</td><td class="key">shadowColor</td><td>HEX / R / G / B / A</td><td>HEX、RGB、透明度是同一个颜色的不同表示，不能重复叠加透明度</td><td>阴影启用</td><td>#000000</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>阴影 / 色板</td><td>阴影颜色色值格式</td><td class="key">shadowColor</td><td>HEX / R / G / B / A</td><td>HEX、RGB、透明度是同一个颜色的不同表示，不能重复叠加透明度</td><td>阴影启用</td><td>#000000</td></tr>
@@ -2194,7 +2196,7 @@
 <tr data-component="页脚"><td>页脚</td><td>兼容</td><td>组件透明度（旧模板）</td><td class="key">opacity</td><td>0–100%</td><td>影响整个组件及其子树；不等同于某个颜色透明度</td><td>仅已存非100%记录时显示</td><td>100</td></tr>
 <tr data-component="商品"><td>商品</td><td>兼容</td><td>组件透明度（旧模板）</td><td class="key">opacity</td><td>0–100%</td><td>影响整个组件及其子树；不等同于某个颜色透明度</td><td>仅已存非100%记录时显示</td><td>100</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>兼容</td><td>组件透明度（旧模板）</td><td class="key">opacity</td><td>0–100%</td><td>影响整个组件及其子树；不等同于某个颜色透明度</td><td>仅已存非100%记录时显示</td><td>100</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>兼容</td><td>组件透明度（旧模板）</td><td class="key">opacity</td><td>0–100%</td><td>影响整个组件及其子树；不等同于某个颜色透明度</td><td>仅已存非100%记录时显示</td><td>100</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>兼容</td><td>组件透明度（旧模板）</td><td class="key">opacity</td><td>0–100%</td><td>影响整个组件及其子树；不等同于某个颜色透明度</td><td>仅已存非100%记录时显示</td><td>100</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>兼容</td><td>组件透明度（旧模板）</td><td class="key">opacity</td><td>0–100%</td><td>影响整个组件及其子树；不等同于某个颜色透明度</td><td>仅已存非100%记录时显示</td><td>100</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>兼容</td><td>组件透明度（旧模板）</td><td class="key">opacity</td><td>0–100%</td><td>影响整个组件及其子树；不等同于某个颜色透明度</td><td>仅已存非100%记录时显示</td><td>100</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>兼容</td><td>组件透明度（旧模板）</td><td class="key">opacity</td><td>0–100%</td><td>影响整个组件及其子树；不等同于某个颜色透明度</td><td>仅已存非100%记录时显示</td><td>100</td></tr>
@@ -2372,8 +2374,8 @@
 <tr data-component="商品"><td>商品</td><td>状态样式</td><td>状态</td><td class="key">navigation.package-style</td><td>选中 / 当前</td><td>切换正在编辑和预览的状态；不是第二个“默认选中”字段；编辑选中或激活标准属性；未覆盖值继承默认</td><td>仅商品、标签按钮、指示器或处于商品/标签按钮内的子组件；文字正文和文字格式仍共用</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>状态样式</td><td>状态</td><td class="key">navigation.package-style</td><td>默认</td><td>切换正在编辑和预览的状态；不是第二个“默认选中”字段；编辑默认标准属性</td><td>仅商品、标签按钮、指示器或处于商品/标签按钮内的子组件；文字正文和文字格式仍共用</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>状态样式</td><td>状态</td><td class="key">navigation.package-style</td><td>选中 / 当前</td><td>切换正在编辑和预览的状态；不是第二个“默认选中”字段；编辑选中或激活标准属性；未覆盖值继承默认</td><td>仅商品、标签按钮、指示器或处于商品/标签按钮内的子组件；文字正文和文字格式仍共用</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>状态样式</td><td>状态</td><td class="key">navigation.package-style</td><td>默认</td><td>切换正在编辑和预览的状态；不是第二个“默认选中”字段；编辑默认标准属性</td><td>仅商品、标签按钮、指示器或处于商品/标签按钮内的子组件；文字正文和文字格式仍共用</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>状态样式</td><td>状态</td><td class="key">navigation.package-style</td><td>选中 / 当前</td><td>切换正在编辑和预览的状态；不是第二个“默认选中”字段；编辑选中或激活标准属性；未覆盖值继承默认</td><td>仅商品、标签按钮、指示器或处于商品/标签按钮内的子组件；文字正文和文字格式仍共用</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>状态样式</td><td>状态</td><td class="key">navigation.package-style</td><td>默认</td><td>切换正在编辑和预览的状态；不是第二个“默认选中”字段；编辑默认标准属性</td><td>仅商品、标签按钮、指示器或处于商品/标签按钮内的子组件；文字正文和文字格式仍共用</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>状态样式</td><td>状态</td><td class="key">navigation.package-style</td><td>选中 / 当前</td><td>切换正在编辑和预览的状态；不是第二个“默认选中”字段；编辑选中或激活标准属性；未覆盖值继承默认</td><td>仅商品、标签按钮、指示器或处于商品/标签按钮内的子组件；文字正文和文字格式仍共用</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>状态样式</td><td>状态</td><td class="key">navigation.package-style</td><td>默认</td><td>切换正在编辑和预览的状态；不是第二个“默认选中”字段；编辑默认标准属性</td><td>仅商品、标签按钮、指示器或处于商品/标签按钮内的子组件；文字正文和文字格式仍共用</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>状态样式</td><td>状态</td><td class="key">navigation.package-style</td><td>选中 / 当前</td><td>切换正在编辑和预览的状态；不是第二个“默认选中”字段；编辑选中或激活标准属性；未覆盖值继承默认</td><td>仅商品、标签按钮、指示器或处于商品/标签按钮内的子组件；文字正文和文字格式仍共用</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>状态样式</td><td>状态</td><td class="key">navigation.package-style</td><td>默认</td><td>切换正在编辑和预览的状态；不是第二个“默认选中”字段；编辑默认标准属性</td><td>仅商品、标签按钮、指示器或处于商品/标签按钮内的子组件；文字正文和文字格式仍共用</td><td>依当前模板/条件继承</td></tr>
@@ -2424,7 +2426,7 @@
 <tr data-component="按钮"><td>按钮</td><td>动作属性</td><td>导航目标</td><td class="key">action.action</td><td>自定义链接</td><td>选择具体目的地；打开配置URL</td><td>点击动作是跳转到</td><td>NavigateTo</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>动作属性</td><td>导航目标</td><td class="key">action.action</td><td>网页购买</td><td>选择具体目的地；演示网页购买，不发起交易</td><td>点击动作是跳转到</td><td>NavigateTo</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>动作属性</td><td>导航目标</td><td class="key">action.action</td><td>优惠码兑换</td><td>选择具体目的地；演示兑换入口</td><td>点击动作是跳转到</td><td>NavigateTo</td></tr>
-<tr data-component="按钮"><td>按钮</td><td>动作属性</td><td>导航目标</td><td class="key">action.action</td><td>弹层</td><td>选择具体目的地；打开已绑定的真实底部弹层</td><td>点击动作是跳转到</td><td>NavigateTo</td></tr>
+<tr data-component="按钮"><td>按钮</td><td>动作属性</td><td>导航目标</td><td class="key">action.action</td><td>弹层</td><td>选择具体目的地；打开已绑定且未隐藏的弹层，包括旧模板挽留弹窗</td><td>点击动作是跳转到</td><td>NavigateTo</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>动作属性</td><td>导航目标</td><td class="key">action.action</td><td>页面</td><td>选择具体目的地；进入已绑定且内容可用的流程页面</td><td>点击动作是跳转到</td><td>NavigateTo</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>动作属性</td><td>导航目标</td><td class="key">action.action</td><td>下一页</td><td>选择具体目的地；进入当前多页流程的下一页面</td><td>点击动作是跳转到</td><td>NavigateTo</td></tr>
 <tr data-component="按钮"><td>按钮</td><td>动作属性</td><td>链接地址</td><td class="key">action.actionUrl</td><td>当前值</td><td>设置隐私、条款或URL目标</td><td>导航目标为隐私政策/服务条款/自定义链接</td><td>依当前模板/条件继承</td></tr>
@@ -2877,7 +2879,7 @@
 <tr data-component="页脚"><td>页脚</td><td>编辑器工具</td><td>上移</td><td class="key">moveBefore</td><td>当前值</td><td>在同一父容器中前移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品"><td>商品</td><td>编辑器工具</td><td>上移</td><td class="key">moveBefore</td><td>当前值</td><td>在同一父容器中前移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>编辑器工具</td><td>上移</td><td class="key">moveBefore</td><td>当前值</td><td>在同一父容器中前移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>编辑器工具</td><td>上移</td><td class="key">moveBefore</td><td>当前值</td><td>在同一父容器中前移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>编辑器工具</td><td>上移</td><td class="key">moveBefore</td><td>当前值</td><td>在同一父容器中前移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>编辑器工具</td><td>上移</td><td class="key">moveBefore</td><td>当前值</td><td>在同一父容器中前移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>编辑器工具</td><td>上移</td><td class="key">moveBefore</td><td>当前值</td><td>在同一父容器中前移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="钱包按钮"><td>钱包按钮</td><td>编辑器工具</td><td>上移</td><td class="key">moveBefore</td><td>当前值</td><td>在同一父容器中前移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
@@ -2909,7 +2911,7 @@
 <tr data-component="页脚"><td>页脚</td><td>编辑器工具</td><td>下移</td><td class="key">moveAfter</td><td>当前值</td><td>在同一父容器中后移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品"><td>商品</td><td>编辑器工具</td><td>下移</td><td class="key">moveAfter</td><td>当前值</td><td>在同一父容器中后移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>编辑器工具</td><td>下移</td><td class="key">moveAfter</td><td>当前值</td><td>在同一父容器中后移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>编辑器工具</td><td>下移</td><td class="key">moveAfter</td><td>当前值</td><td>在同一父容器中后移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>编辑器工具</td><td>下移</td><td class="key">moveAfter</td><td>当前值</td><td>在同一父容器中后移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>编辑器工具</td><td>下移</td><td class="key">moveAfter</td><td>当前值</td><td>在同一父容器中后移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>编辑器工具</td><td>下移</td><td class="key">moveAfter</td><td>当前值</td><td>在同一父容器中后移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="钱包按钮"><td>钱包按钮</td><td>编辑器工具</td><td>下移</td><td class="key">moveAfter</td><td>当前值</td><td>在同一父容器中后移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
@@ -2941,7 +2943,7 @@
 <tr data-component="页脚"><td>页脚</td><td>编辑器工具</td><td>复制组件</td><td class="key">duplicate</td><td>当前值</td><td>复制真实子树，重新生成节点和商品记录ID</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品"><td>商品</td><td>编辑器工具</td><td>复制组件</td><td class="key">duplicate</td><td>当前值</td><td>复制真实子树，重新生成节点和商品记录ID</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>编辑器工具</td><td>复制组件</td><td class="key">duplicate</td><td>当前值</td><td>复制真实子树，重新生成节点和商品记录ID</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>编辑器工具</td><td>复制组件</td><td class="key">duplicate</td><td>当前值</td><td>复制真实子树，重新生成节点和商品记录ID</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>编辑器工具</td><td>复制组件</td><td class="key">duplicate</td><td>当前值</td><td>复制真实子树，重新生成节点和商品记录ID</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>编辑器工具</td><td>复制组件</td><td class="key">duplicate</td><td>当前值</td><td>复制真实子树，重新生成节点和商品记录ID</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>编辑器工具</td><td>复制组件</td><td class="key">duplicate</td><td>当前值</td><td>复制真实子树，重新生成节点和商品记录ID</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="钱包按钮"><td>钱包按钮</td><td>编辑器工具</td><td>复制组件</td><td class="key">duplicate</td><td>当前值</td><td>复制真实子树，重新生成节点和商品记录ID</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
@@ -2973,7 +2975,7 @@
 <tr data-component="页脚"><td>页脚</td><td>编辑器工具</td><td>删除组件</td><td class="key">remove</td><td>当前值</td><td>删除本组件子树，页面根节点禁止删除</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品"><td>商品</td><td>编辑器工具</td><td>删除组件</td><td class="key">remove</td><td>当前值</td><td>删除本组件子树，页面根节点禁止删除</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>编辑器工具</td><td>删除组件</td><td class="key">remove</td><td>当前值</td><td>删除本组件子树，页面根节点禁止删除</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>编辑器工具</td><td>删除组件</td><td class="key">remove</td><td>当前值</td><td>删除本组件子树，页面根节点禁止删除</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>编辑器工具</td><td>删除组件</td><td class="key">remove</td><td>当前值</td><td>删除本组件子树，页面根节点禁止删除</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>编辑器工具</td><td>删除组件</td><td class="key">remove</td><td>当前值</td><td>删除本组件子树，页面根节点禁止删除</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>编辑器工具</td><td>删除组件</td><td class="key">remove</td><td>当前值</td><td>删除本组件子树，页面根节点禁止删除</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="钱包按钮"><td>钱包按钮</td><td>编辑器工具</td><td>删除组件</td><td class="key">remove</td><td>当前值</td><td>删除本组件子树，页面根节点禁止删除</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
@@ -3005,7 +3007,7 @@
 <tr data-component="页脚"><td>页脚</td><td>编辑器工具</td><td>保存到组件库</td><td class="key">library.save</td><td>当前值</td><td>保存可复用子树，绑定文案以当前值转为独立文字，不转移SKU所有权</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品"><td>商品</td><td>编辑器工具</td><td>保存到组件库</td><td class="key">library.save</td><td>当前值</td><td>保存可复用子树，绑定文案以当前值转为独立文字，不转移SKU所有权</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>编辑器工具</td><td>保存到组件库</td><td class="key">library.save</td><td>当前值</td><td>保存可复用子树，绑定文案以当前值转为独立文字，不转移SKU所有权</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>编辑器工具</td><td>保存到组件库</td><td class="key">library.save</td><td>当前值</td><td>保存可复用子树，绑定文案以当前值转为独立文字，不转移SKU所有权</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>编辑器工具</td><td>保存到组件库</td><td class="key">library.save</td><td>当前值</td><td>保存可复用子树，绑定文案以当前值转为独立文字，不转移SKU所有权</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>编辑器工具</td><td>保存到组件库</td><td class="key">library.save</td><td>当前值</td><td>保存可复用子树，绑定文案以当前值转为独立文字，不转移SKU所有权</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>编辑器工具</td><td>保存到组件库</td><td class="key">library.save</td><td>当前值</td><td>保存可复用子树，绑定文案以当前值转为独立文字，不转移SKU所有权</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="钱包按钮"><td>钱包按钮</td><td>编辑器工具</td><td>保存到组件库</td><td class="key">library.save</td><td>当前值</td><td>保存可复用子树，绑定文案以当前值转为独立文字，不转移SKU所有权</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
@@ -3037,7 +3039,7 @@
 <tr data-component="页脚"><td>页脚</td><td>编辑器工具</td><td>打开组件库</td><td class="key">library.open</td><td>当前值</td><td>插入已保存的组件，或管理组件库记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品"><td>商品</td><td>编辑器工具</td><td>打开组件库</td><td class="key">library.open</td><td>当前值</td><td>插入已保存的组件，或管理组件库记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>编辑器工具</td><td>打开组件库</td><td class="key">library.open</td><td>当前值</td><td>插入已保存的组件，或管理组件库记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>编辑器工具</td><td>打开组件库</td><td class="key">library.open</td><td>当前值</td><td>插入已保存的组件，或管理组件库记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>编辑器工具</td><td>打开组件库</td><td class="key">library.open</td><td>当前值</td><td>插入已保存的组件，或管理组件库记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>编辑器工具</td><td>打开组件库</td><td class="key">library.open</td><td>当前值</td><td>插入已保存的组件，或管理组件库记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>编辑器工具</td><td>打开组件库</td><td class="key">library.open</td><td>当前值</td><td>插入已保存的组件，或管理组件库记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="钱包按钮"><td>钱包按钮</td><td>编辑器工具</td><td>打开组件库</td><td class="key">library.open</td><td>当前值</td><td>插入已保存的组件，或管理组件库记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
@@ -3069,7 +3071,7 @@
 <tr data-component="页脚"><td>页脚</td><td>编辑器工具</td><td>重命名</td><td class="key">rename</td><td>当前值</td><td>修改图层名而非前端正文</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品"><td>商品</td><td>编辑器工具</td><td>重命名</td><td class="key">rename</td><td>当前值</td><td>修改图层名而非前端正文</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>编辑器工具</td><td>重命名</td><td class="key">rename</td><td>当前值</td><td>修改图层名而非前端正文</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>编辑器工具</td><td>重命名</td><td class="key">rename</td><td>当前值</td><td>修改图层名而非前端正文</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>编辑器工具</td><td>重命名</td><td class="key">rename</td><td>当前值</td><td>修改图层名而非前端正文</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>编辑器工具</td><td>重命名</td><td class="key">rename</td><td>当前值</td><td>修改图层名而非前端正文</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>编辑器工具</td><td>重命名</td><td class="key">rename</td><td>当前值</td><td>修改图层名而非前端正文</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="钱包按钮"><td>钱包按钮</td><td>编辑器工具</td><td>重命名</td><td class="key">rename</td><td>当前值</td><td>修改图层名而非前端正文</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
@@ -3101,7 +3103,7 @@
 <tr data-component="页脚"><td>页脚</td><td>编辑器工具</td><td>包入布局容器</td><td class="key">wrap</td><td>当前值</td><td>新建真实Stack包裹当前节点，不生成虚构图层</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品"><td>商品</td><td>编辑器工具</td><td>包入布局容器</td><td class="key">wrap</td><td>当前值</td><td>新建真实Stack包裹当前节点，不生成虚构图层</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>编辑器工具</td><td>包入布局容器</td><td class="key">wrap</td><td>当前值</td><td>新建真实Stack包裹当前节点，不生成虚构图层</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>编辑器工具</td><td>包入布局容器</td><td class="key">wrap</td><td>当前值</td><td>新建真实Stack包裹当前节点，不生成虚构图层</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>编辑器工具</td><td>包入布局容器</td><td class="key">wrap</td><td>当前值</td><td>新建真实Stack包裹当前节点，不生成虚构图层</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>编辑器工具</td><td>包入布局容器</td><td class="key">wrap</td><td>当前值</td><td>新建真实Stack包裹当前节点，不生成虚构图层</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>编辑器工具</td><td>包入布局容器</td><td class="key">wrap</td><td>当前值</td><td>新建真实Stack包裹当前节点，不生成虚构图层</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="钱包按钮"><td>钱包按钮</td><td>编辑器工具</td><td>包入布局容器</td><td class="key">wrap</td><td>当前值</td><td>新建真实Stack包裹当前节点，不生成虚构图层</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
@@ -3133,7 +3135,7 @@
 <tr data-component="页脚"><td>页脚</td><td>编辑器工具</td><td>复制/粘贴组件</td><td class="key">clipboard.fragment</td><td>当前值</td><td>应用内剪贴板复制真实子树，跨模板粘贴时隔离商品记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品"><td>商品</td><td>编辑器工具</td><td>复制/粘贴组件</td><td class="key">clipboard.fragment</td><td>当前值</td><td>应用内剪贴板复制真实子树，跨模板粘贴时隔离商品记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>编辑器工具</td><td>复制/粘贴组件</td><td class="key">clipboard.fragment</td><td>当前值</td><td>应用内剪贴板复制真实子树，跨模板粘贴时隔离商品记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>编辑器工具</td><td>复制/粘贴组件</td><td class="key">clipboard.fragment</td><td>当前值</td><td>应用内剪贴板复制真实子树，跨模板粘贴时隔离商品记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>编辑器工具</td><td>复制/粘贴组件</td><td class="key">clipboard.fragment</td><td>当前值</td><td>应用内剪贴板复制真实子树，跨模板粘贴时隔离商品记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>编辑器工具</td><td>复制/粘贴组件</td><td class="key">clipboard.fragment</td><td>当前值</td><td>应用内剪贴板复制真实子树，跨模板粘贴时隔离商品记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>编辑器工具</td><td>复制/粘贴组件</td><td class="key">clipboard.fragment</td><td>当前值</td><td>应用内剪贴板复制真实子树，跨模板粘贴时隔离商品记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="钱包按钮"><td>钱包按钮</td><td>编辑器工具</td><td>复制/粘贴组件</td><td class="key">clipboard.fragment</td><td>当前值</td><td>应用内剪贴板复制真实子树，跨模板粘贴时隔离商品记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
@@ -3165,7 +3167,7 @@
 <tr data-component="页脚"><td>页脚</td><td>编辑器工具</td><td>复制/粘贴样式</td><td class="key">clipboard.styles</td><td>当前值</td><td>复制受支持样式字段，不复制文案、动作、素材或SKU；完整徽标样式复制仍未闭环</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品"><td>商品</td><td>编辑器工具</td><td>复制/粘贴样式</td><td class="key">clipboard.styles</td><td>当前值</td><td>复制受支持样式字段，不复制文案、动作、素材或SKU；完整徽标样式复制仍未闭环</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>编辑器工具</td><td>复制/粘贴样式</td><td class="key">clipboard.styles</td><td>当前值</td><td>复制受支持样式字段，不复制文案、动作、素材或SKU；完整徽标样式复制仍未闭环</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>编辑器工具</td><td>复制/粘贴样式</td><td class="key">clipboard.styles</td><td>当前值</td><td>复制受支持样式字段，不复制文案、动作、素材或SKU；完整徽标样式复制仍未闭环</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>编辑器工具</td><td>复制/粘贴样式</td><td class="key">clipboard.styles</td><td>当前值</td><td>复制受支持样式字段，不复制文案、动作、素材或SKU；完整徽标样式复制仍未闭环</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>编辑器工具</td><td>复制/粘贴样式</td><td class="key">clipboard.styles</td><td>当前值</td><td>复制受支持样式字段，不复制文案、动作、素材或SKU；完整徽标样式复制仍未闭环</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>编辑器工具</td><td>复制/粘贴样式</td><td class="key">clipboard.styles</td><td>当前值</td><td>复制受支持样式字段，不复制文案、动作、素材或SKU；完整徽标样式复制仍未闭环</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="钱包按钮"><td>钱包按钮</td><td>编辑器工具</td><td>复制/粘贴样式</td><td class="key">clipboard.styles</td><td>当前值</td><td>复制受支持样式字段，不复制文案、动作、素材或SKU；完整徽标样式复制仍未闭环</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
@@ -3199,7 +3201,7 @@
 <tr data-component="页脚"><td>页脚</td><td>预览</td><td>交互预览</td><td class="key">editing</td><td>当前值</td><td>在选图层编辑与执行点击/拖动行为之间切换</td><td>编辑态点击先选组件；真实付款、恢复与关闭行为排除</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品"><td>商品</td><td>预览</td><td>交互预览</td><td class="key">editing</td><td>当前值</td><td>在选图层编辑与执行点击/拖动行为之间切换</td><td>编辑态点击先选组件；真实付款、恢复与关闭行为排除</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>预览</td><td>交互预览</td><td class="key">editing</td><td>当前值</td><td>在选图层编辑与执行点击/拖动行为之间切换</td><td>编辑态点击先选组件；真实付款、恢复与关闭行为排除</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="底部弹层"><td>底部弹层</td><td>预览</td><td>交互预览</td><td class="key">editing</td><td>当前值</td><td>在选图层编辑与执行点击/拖动行为之间切换</td><td>编辑态点击先选组件；真实付款、恢复与关闭行为排除</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="弹层"><td>弹层</td><td>预览</td><td>交互预览</td><td class="key">editing</td><td>当前值</td><td>在选图层编辑与执行点击/拖动行为之间切换</td><td>编辑态点击先选组件；真实付款、恢复与关闭行为排除</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="快捷结账"><td>快捷结账</td><td>预览</td><td>交互预览</td><td class="key">editing</td><td>当前值</td><td>在选图层编辑与执行点击/拖动行为之间切换</td><td>编辑态点击先选组件；真实付款、恢复与关闭行为排除</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="结账状态内容"><td>结账状态内容</td><td>预览</td><td>交互预览</td><td class="key">editing</td><td>当前值</td><td>在选图层编辑与执行点击/拖动行为之间切换</td><td>编辑态点击先选组件；真实付款、恢复与关闭行为排除</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="钱包按钮"><td>钱包按钮</td><td>预览</td><td>交互预览</td><td class="key">editing</td><td>当前值</td><td>在选图层编辑与执行点击/拖动行为之间切换</td><td>编辑态点击先选组件；真实付款、恢复与关闭行为排除</td><td>依当前模板/条件继承</td></tr>

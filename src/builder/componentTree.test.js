@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { component } from './componentDocument.js';
-import { treeChildren, compositionSummary, initialCollapsed, pageContext, isUnconfiguredDetailPage } from './componentTree.js';
+import { treeChildren, compositionSummary, initialCollapsed, pageContext, isUnconfiguredDetailPage, surfaceContext } from './componentTree.js';
 import { createCatalogComponent, upgradeCanonicalComponents } from './componentCatalog.js';
 
 test('page navigation exposes only the active real screen without rewriting its modules',()=>{
@@ -69,4 +69,24 @@ test('only generated detail shells are gated, and real configured content makes 
   assert.ok(!isUnconfiguredDetailPage(page));
   assert.ok(!isUnconfiguredDetailPage(component('user-created','Screen','用户空页面')));
   assert.ok(!isUnconfiguredDetailPage(undefined));
+});
+
+test('surface roots stay owned by their real parent but are scoped to the current screen',()=>{
+  const sheet=component('sheet','BottomSheet','挽留', {presentation:'overlay'},[component('offer','Text','优惠',{text:'保留文案'})]);
+  const button=component('launch','Button','查看优惠',{action:{action:'OpenSheet',actionPage:'sheet'}},[sheet]);
+  const main=component('main','Screen','主页面',{},[button]);
+  const second=component('second','Screen','第二页',{},[component('second-sheet','BottomSheet','另一弹层',{presentation:'sheet'})]);
+  const doc={version:3,products:{},root:component('root','Screen','外壳',{},[component('flow','Flow','流程',{},[main,second])])};
+  const before=structuredClone(doc),context=surfaceContext(doc,{},'offer');
+  assert.deepEqual(context.surfaces,[sheet]);assert.equal(context.surface,sheet);assert.deepEqual(context.triggers,[button]);
+  assert.deepEqual(surfaceContext(doc,{flow:1},'second').surfaces.map(node=>node.id),['second-sheet']);
+  assert.equal(surfaceContext(doc,{},'main').surface,undefined);assert.deepEqual(doc,before);
+});
+
+test('legacy retention becomes a sheet once, preserving every id, property, child and product',()=>{
+  const old=component('retention','Stack','挽留弹窗',{presentation:'overlay',paddingTop:31,width:345,fontSize:13,background:'#fafafa'},[component('gift','Image','礼物',{src:'/original.png',height:150}),component('copy','Text','正文',{text:'我的文案',fontSize:21})]);
+  const doc={version:3,templateId:'ht',products:{original:{skuId:'my-sku'}},root:component('root','Screen','主页面',{},[old])};
+  const before=structuredClone(doc),next=upgradeCanonicalComponents(doc);
+  assert.equal(next.root.children[0].type,'BottomSheet');assert.deepEqual({...next.root.children[0],type:'Stack'},old);
+  assert.deepEqual(next.products,doc.products);assert.deepEqual(doc,before);assert.equal(upgradeCanonicalComponents(next),next);
 });

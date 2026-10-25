@@ -254,7 +254,7 @@ export default function ComponentPreview({ document, selectedId, onSelect, editi
     if (action.action === 'NavigateTo') { onStatus('请先选择跳转目标'); return; }
     if (action.action === 'OpenSheet') {
       const target = indexDocument(document).nodes.get(action.actionPage);
-      if (target?.type === 'BottomSheet') setRuntime((current)=>({...current,overlay:target.id})); else onStatus('请先选择有效的底部弹层');
+      if (target?.type === 'BottomSheet' && !target.props.hidden) setRuntime((current)=>({...current,overlay:target.id})); else onStatus('请先选择有效的弹层');
     } else if (action.action === 'CloseSheet') {
       setRuntime((current)=>({...current,overlay:null}));
     } else if (action.action === 'NavigateBack') {
