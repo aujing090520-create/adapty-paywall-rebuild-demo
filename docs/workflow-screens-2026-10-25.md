@@ -25,7 +25,7 @@
 | WF-03 | 下一步无目标Step字段、返回按下标 | 已修改：目标ID与连线同源；分支跳转后按历史返回；明确清空目标可报未绑定 |
 | WF-04 | 步骤复制/排序/删除及资源隔离 | 已修改：本地真实复制、删除、前后排序通过；模型测试覆盖10步上限、删除目标、SKU隔离 |
 | WF-05 | 来源模板误变空白、内层Flow回归 | 已修改：模板ID参数修正并增加选择器回归；最近Flow解析保持原覆盖；真实模板图片已加载 |
-| WF-06 | HT模板、预览与发布 | 本地介绍Screen到HT购买Screen已验证，商品3个、原领取文案存在；发布回读后补充 |
+| WF-06 | HT模板、预览与发布 | 已发布：线上新增/目标/连线/前进/历史返回及初始保存刷新通过；介绍Screen连接HT购买屏幕、3商品及原领取文案存在，原图重新挂载后实际加载成功 |
 
 ## 验证边界
 
@@ -34,3 +34,12 @@
 - 初始切换保存为付费墙页面，重开及交互预览实际读取其ID；之后恢复介绍屏幕。HT验收用RC介绍Screen作为新前置步骤，不改HT源默认素材和参数。
 - /tmp/paywall-workflow-ht-local.png为新代码实际截图，包含全Screen树、Continue连线和右侧动作/步骤配置；非修改参考图。
 - 参数表相应更新。不以本轮局部步骤功能宣称整个RevenueCat产品、全部新增步骤模板或全组件审计已经等价完成。
+
+## 生产交付
+
+- 源码01e12a840e0e0bbf900093f15c461a029e57e7d6已推送；GitHub集成部署dpl_Hcr3huZvCg6wjBsW35LyeQhNuive为READY，主域名入口JS index-D3bMzZp_.js及CSS index-5pEWbQen.css匹配最终构建。
+- 隔离生产origin https://adapty-paywall-rebuild-demo-p6egyrmaf.vercel.app/ 实际验证：新增空白Screen、按钮动作/步骤、自动连线、从初始屏幕前进和按真实历史返回；保存后刷新重开，初始步骤与连接恢复。未清用户主域名草稿。
+- 随后未保存的HT场景核验：导入真实权益介绍Screen，Continue目标为特权首页；旧画板目录为0，完整Screen树与实际连接可见，HT源图和三个商品正常。最终截图/tmp/paywall-workflow-production.png。
+- 导入介绍原图曾complete=true/naturalWidth=0。原URL的HTTP诊断返回200；一次进入预览重新挂载后，预览与返回编辑均complete=true/naturalWidth>0。保留原图URL，未替图或宣称消除了第三方素材网络依赖。
+- 内部浏览器在上下文恢复后数字ID重新分配，旧ID3实际为MCP Apps；库存确认原IAB及原标签仍在ID2。恢复同一浏览器/同一标签后截图和DOM正常，未切外部Chrome或改权限。
+- 本次生产没有重复执行复制/排序/删除、10步上限和SKU隔离；这些证据来自本地实际操作及回归测试，不冒充线上测试。
