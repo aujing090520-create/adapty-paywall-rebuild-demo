@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "result_level": "已完成",
+  "scope": "画布步骤创建入口和连线、独立画板空白回归、前置关闭事件与挽留目标、来源背景",
+  "source_commit": "33ec235",
+  "production_url": "https://adapty-paywall-rebuild-demo.vercel.app/",
+  "ledger": { "total": 4, "verified": 4, "unresolved": 0 },
+  "issues": [
+    { "id": "CF-01", "priority": "P1", "status": "已修改", "outcome": "画布初始步骤加号、显式创建页面、真实按钮目标连线及入口定位" },
+    { "id": "CF-02", "priority": "P0", "status": "已修改", "outcome": "默认状态重置后仍保留每块画板自己的页面和弹层" },
+    { "id": "CF-03", "priority": "P1", "status": "已修改", "outcome": "来源关闭连接点配置，前置页面/前置事件/显示目标分开呈现" },
+    { "id": "CF-04", "priority": "P1", "status": "已修改", "outcome": "编辑弹窗背景显示实际关闭来源，运行预览保留真实关闭快照" }
+  ],
+  "coverage": { "affected": ["CF-01", "CF-02", "CF-03", "CF-04"], "verified": ["CF-01", "CF-02", "CF-03", "CF-04"] },
+  "verification_evidence": [
+    "287/287 full suite passed; final initial-port positioning adjustment passed 39 affected workflow/exit/scroll tests",
+    "Final Vite production build passed in 6.57 seconds; diff whitespace check passed",
+    "Mounted actual Editor and peer boards: select blank without creating, explicit confirmation, old content and popup survive creation, initial changes, reordering and component selection",
+    "Local IAB: template source > choose screen > confirm creates Continue edge to original screen; source remains unchanged; saved and reopened three actual boards and two canonical edges",
+    "Local IAB: Continue -> HT purchase -> close -> offer -> cancel ends flow; edited popup backdrop uses purchase page, not intro",
+    "Original production domain HTTP serves index-Yl4EcFtq.js and index-8yCPeVT0.css matching final build",
+    "Production IAB: canvas entry rather than toolbar, blank confirmation creates only one empty new board while HT and popup contents remain; source Close Page port opens predecessor/target relation with retention selected",
+    "/tmp/paywall-flow-predecessor-production.png",
+    "/tmp/paywall-flow-predecessor-local.png",
+    "/tmp/paywall-flow-canvas-local.png"
+  ],
+  "evidence_boundaries": [
+    "Production creation/readback batch timed out; same tab recovered once and final actual state verified without duplicate creation",
+    "Production copied-template connection, save/reopen and runtime dismissal sequence were not repeated; verified locally and with mounted tests",
+    "Blank screen is intentionally empty and unconnected unless an actual button action is configured; no decorative fake edge or automatic invented button",
+    "Four original HT source templates, copy, assets, SKU and saved user drafts unchanged",
+    "No complete RevenueCat equivalence or real billing/native SDK integration claimed"
+  ],
+  "next_action": "本次范围无剩余动作"
+}
