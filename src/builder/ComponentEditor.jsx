@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Plus, Trash2, Copy, ChevronRight, ChevronDown, ArrowUp, ArrowDown, Eye, EyeOff, Pencil, Save, FolderOpen, X, Layers, Type, Image as ImageIcon, Package as PackageIcon, MoreHorizontal, MousePointerClick, Smartphone, Workflow, GalleryHorizontal, PanelTop, PanelBottom, Clock3, ToggleLeft, ListOrdered, Video, Star, Code, CreditCard, Columns2, Rows2 } from 'lucide-react';
+import { Plus, Trash2, Copy, ChevronRight, ChevronDown, ArrowUp, ArrowDown, Eye, EyeOff, Pencil, Save, FolderOpen, X, Layers, Type, Image as ImageIcon, Package as PackageIcon, MoreHorizontal, MousePointerClick, Smartphone, Workflow, GalleryHorizontal, PanelTop, PanelBottom, Clock3, ToggleLeft, ListOrdered, Video, Star, Code, CreditCard, Columns2, Rows2, Minus, Maximize2 } from 'lucide-react';
 import { COMPONENT_NAMES, CONTAINER_TYPES, componentProps, importComponentDocument, indexDocument, validDocument, updateComponent, insertComponent, canContain, readComponentDocument, saveComponentDocument, cloneComponent, captureNativeComponent, resolveComponentText } from './componentDocument.js';
 import { DEMO_SKUS } from '../productPricing.js';
 import PaywallPresentation from './PaywallPresentation.jsx';
@@ -15,6 +15,7 @@ import RevenueCatProperties from './RevenueCatProperties.jsx';
 import { migrateTemplateVisuals } from './templateVisuals.js';
 import { defaultPackagePatch, sequencePages } from './propertyModel.js';
 import {fontResources,withFontResources} from './fontStyles.js';
+import { documentArtboards } from './artboards.js';
 
 const libraryKey = 'paywall-component-library-v3';
 const fieldNames = { name: '商品名称', price: '主价格', reference: '参考价', supportingCopy: '辅助文案', savingCopy: '优惠说明', saveCopy: 'SAVE 文案', badgeText: '标签文字' };
@@ -35,25 +36,43 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
       return { document: upgradeCanonicalComponents(importComponentDocument(initialNodes, template)), error: error.message };
     }
   });
-  const [document, setDocument] = useState(initial.document);
+  const [mainDocument, setMainDocument] = useState(initial.document);
+  const [focusedOfferingId, setFocusedOfferingId] = useState(null);
+  const boundExit = offerings.find((offering) => offering.id === mainDocument.settings?.exitOfferOfferingId);
+  const activeExit = focusedOfferingId && boundExit?.id === focusedOfferingId ? boundExit : null;
+  const document = activeExit?.document ?? mainDocument;
+  const owner = activeExit?.id ?? null;
+  const scope = owner ?? 'main';
+  const setDocument = (update) => {
+    if (activeExit) onExitOfferChange?.(activeExit.id, typeof update === 'function' ? update(document) : update);
+    else setMainDocument(update);
+  };
   const [saveError, setSaveError] = useState(initial.error);
   const blockedSave = Boolean(initial.error);
-  const latest = useRef(document);
-  useEffect(() => { onDocumentChange?.(document); }, [document, onDocumentChange]);
-  const [selectedId, setSelectedId] = useState(() => initial.document.settings?.presentationSurfaceId ?? pageContext(initial.document).active.id);
-  const [collapsed, setCollapsed] = useState(() => { const next = initialCollapsed(initial.document.root); next.delete(initial.document.settings?.presentationSurfaceId); return next; });
-  const [editing, setEditing] = useState(true), [navigation, setNavigation] = useState(() => initial.document.settings?.presentationSurfaceId ? { overlay: initial.document.settings.presentationSurfaceId } : {});
-  const patchNavigation = React.useCallback((values)=>setNavigation((current)=>({...current,...values})),[]);
-  const previousDocument=useRef(document);
-  useEffect(()=>{const before=previousDocument.current;previousDocument.current=document;setNavigation((current)=>reconcileTabNavigation(before,document,current));},[document]);
+  const latest = useRef(document), latestMain = useRef(mainDocument);
+  latestMain.current = mainDocument;
+  useEffect(() => { onDocumentChange?.(mainDocument); }, [mainDocument, onDocumentChange]);
+  const [contexts, setContexts] = useState({});
+  const context = contexts[scope] ?? {};
+  const setContext = (key, update, target = scope) => setContexts((current) => ({ ...current, [target]: { ...current[target], [key]: typeof update === 'function' ? update(current[target]?.[key] ?? (key === 'collapsed' ? initialCollapsed(document.root) : {})) : update } }));
+  const selectedId = context.selectedId ?? document.settings?.presentationSurfaceId ?? pageContext(document).active.id;
+  const setSelectedId = (update) => setContext('selectedId', update);
+  const collapsed = useMemo(() => { const next = context.collapsed ?? initialCollapsed(document.root); if (context.collapsed) return next; next.delete(document.settings?.presentationSurfaceId); return next; }, [context.collapsed, document]);
+  const setCollapsed = (update) => setContext('collapsed', update);
+  const [editing, setEditing] = useState(true);
+  const navigation = context.navigation ?? (document.settings?.presentationSurfaceId ? { overlay: document.settings.presentationSurfaceId } : {});
+  const setNavigation = (update) => setContext('navigation', update);
+  const [zoom, setZoom] = useState(0.55);
+  const boardElements = useRef(new Map());
+  const boardScroll = useRef(null);
+  const patchNavigation = React.useCallback((values)=>setContexts((current)=>({ ...current, [scope]: { ...current[scope], navigation: { ...current[scope]?.navigation, ...values } } })),[scope]);
+  const previousDocuments=useRef(new Map());
+  useEffect(()=>{const before=previousDocuments.current.get(scope);previousDocuments.current.set(scope,document);if(before&&before!==document)setNavigation((current)=>reconcileTabNavigation(before,document,current));},[document,scope]);
   const [addTarget, setAddTarget] = useState(null), [dragId, setDragId] = useState(null), [status, setStatus] = useState('');
   const [layerMenu,setLayerMenu] = useState(null), [renaming,setRenaming] = useState(null);
   const [library, setLibrary] = useState(readLibrary), [libraryOpen, setLibraryOpen] = useState(false);
   const [libraryName, setLibraryName] = useState('');
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [editingExit, setEditingExit] = useState(false);
-  const boundExit = offerings.find((offering) => offering.id === document.settings?.exitOfferOfferingId);
-  const changeBoundExit = React.useCallback((next) => onExitOfferChange?.(boundExit?.id, next), [onExitOfferChange, boundExit?.id]);
   const { nodes, parents } = useMemo(() => indexDocument(document), [document]);
   const pages = pageContext(document, navigation);
   const { surfaces, surface, triggers } = surfaceContext(document, navigation, selectedId);
@@ -73,18 +92,21 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
   };
   useEffect(() => {
     if (blockedSave || persistence === 'session') return;
-    const timer = setTimeout(() => setSaveError(saveComponentDocument(localStorage, document) ? '' : '本地保存失败，请缩小媒体文件后重试'), 250);
+    const timer = setTimeout(() => setSaveError(saveComponentDocument(localStorage, mainDocument) ? '' : '本地保存失败，请缩小媒体文件后重试'), 250);
     return () => clearTimeout(timer);
-  }, [document, blockedSave, persistence]);
-  useEffect(() => { if (persistence === 'session') return; const flush = () => { if (!blockedSave) saveComponentDocument(localStorage, latest.current); }; window.addEventListener('pagehide', flush); return () => { flush(); window.removeEventListener('pagehide', flush); }; }, [blockedSave, persistence]);
-  const select = (id) => {
+  }, [mainDocument, blockedSave, persistence]);
+  useEffect(() => { if (persistence === 'session') return; const flush = () => { if (!blockedSave) saveComponentDocument(localStorage, latestMain.current); }; window.addEventListener('pagehide', flush); return () => { flush(); window.removeEventListener('pagehide', flush); }; }, [blockedSave, persistence]);
+  const select = (id, source = document, targetOwner = owner) => {
     setSettingsOpen(false);
-    setSelectedId(id); setEditing(true);
-    const reveal = {}; const expand = new Set(); let current = nodes.get(id);
+    setAddTarget(null); setLayerMenu(null); setRenaming(null);
+    setFocusedOfferingId(targetOwner); setEditing(true);
+    const targetScope = targetOwner ?? 'main';
+    const { nodes: sourceNodes, parents: sourceParents } = indexDocument(source);
+    const reveal = {}; const expand = new Set(); let current = sourceNodes.get(id);
     while (current) {
       expand.add(current.id);
       if (['overlay','sheet'].includes(current.props.presentation)) reveal.overlay = current.id;
-      const owner = nodes.get(parents.get(current.id));
+      const owner = sourceNodes.get(sourceParents.get(current.id));
       if (owner && ['Tabs', 'Carousel', 'Flow'].includes(owner.type)) {const index=sequencePages(owner).findIndex((item)=>item.id===current.id);if(index>=0)reveal[owner.id]=index;}
       if (owner?.type === 'Switch' && current.type === 'SwitchCase') reveal[owner.id] = current.props.index;
       if (owner?.type === 'ExpressCheckout' && current.type === 'CheckoutState') reveal[owner.id] = current.props.state;
@@ -92,9 +114,16 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
       current = owner;
     }
     if (!reveal.overlay) reveal.overlay = null;
-    setCollapsed((old) => new Set([...old].filter((key) => !expand.has(key))));
-    setNavigation((current) => ({ ...current, ...reveal }));
+    setContexts((all) => { const old = all[targetScope] ?? {}; return { ...all, [targetScope]: { ...old, selectedId: id, collapsed: new Set([...(old.collapsed ?? initialCollapsed(source.root))].filter((key) => !expand.has(key))), navigation: { ...old.navigation, ...reveal } } }; });
   };
+  const mainNavigation = contexts.main?.navigation ?? {};
+  const boards = useMemo(() => { const main=documentArtboards(mainDocument,null,mainNavigation),exit=boundExit?documentArtboards(boundExit.document,boundExit.id,contexts[boundExit.id]?.navigation??{}):[];return [...main.slice(0,1),...exit,...main.slice(1)]; }, [mainDocument, boundExit, contexts]);
+  const activeBoard = boards.find((board) => board.owner === owner && board.node.id === (surface?.id ?? pages.active.id)) ?? boards.find((board) => board.owner === owner);
+  const fitBoards = () => { const width=boardScroll.current?.clientWidth;if(width)setZoom(Math.max(0.3,Math.min(0.75,Math.floor(((width-40-48*(Math.min(boards.length,2)-1))/(390*Math.min(boards.length,2)))*20)/20))); };
+  useEffect(()=>{fitBoards();},[boards.length]);
+  useEffect(()=>{const element=boardElements.current.get(activeBoard?.key),scroll=boardScroll.current;if(!element||!scroll)return;const rect=element.getBoundingClientRect(),outer=scroll.getBoundingClientRect();if(rect.left<outer.left||rect.right>outer.right)scroll.scrollTo({left:scroll.scrollLeft+rect.left-outer.left-20});},[activeBoard?.key]);
+  const focusBoard = (board) => select(board.node.id, board.document, board.owner);
+  const focusExit = () => { const board = boards.find((item) => item.owner === boundExit?.id); if (board) focusBoard(board); };
   const patch = (props) => setDocument((current) => patchComponentProperties(current, selected.id, props));
   const add = (type) => {
     const owner = nodes.get(addTarget); if(!owner)return;
@@ -134,7 +163,7 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
     const visibleChildren = treeChildren(node, navigation).filter((child) => !isOverlaySurface(child));
     const content = node.type === 'Text' ? resolveComponentText(node, document, findPackage(node.id, nodes, parents)) : '';
     const displayLabel=node.name&&node.name!==COMPONENT_NAMES[node.type]?node.name:content||node.name||COMPONENT_NAMES[node.type];
-    return <React.Fragment key={node.id}><div data-layer-id={node.id} data-layer-type={node.type} className={`ne-tree-row ${selected.id === node.id ? 'selected' : ''}${node.props.hidden?' is-hidden':''}`} style={{ paddingLeft: 8 + depth * 20 }} draggable={node.id !== document.root.id&&node.id!==pages.active.id&&!renaming} onDragStart={(event) => { event.stopPropagation(); setDragId(node.id); event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('text/plain', node.id); }} onDragEnd={() => setDragId(null)} onDragOver={(event) => { event.preventDefault(); event.stopPropagation(); }} onDrop={(event) => drop(event, node, false)}>
+    return <React.Fragment key={node.id}><div data-layer-id={node.id} data-layer-type={node.type} className={`ne-tree-row ${selected.id === node.id ? 'selected' : ''}${node.props.hidden?' is-hidden':''}`} style={{ paddingLeft: 8 + depth * 20 }} draggable={node.id !== document.root.id&&node.id!==pages.active.id&&node.id!==document.settings?.presentationSurfaceId&&!renaming} onDragStart={(event) => { event.stopPropagation(); setDragId(node.id); event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('text/plain', node.id); }} onDragEnd={() => setDragId(null)} onDragOver={(event) => { event.preventDefault(); event.stopPropagation(); }} onDrop={(event) => drop(event, node, false)}>
       {visibleChildren.length?<button type="button" className="ne-icon ne-expand" title={isCollapsed ? '展开' : '收起'} aria-label={`${isCollapsed?'展开':'收起'}${displayLabel}`} aria-expanded={!isCollapsed} onClick={() => setCollapsed((old) => { const next = new Set(old); if (next.has(node.id)) next.delete(node.id); else next.add(node.id); return next; })}>{isCollapsed ? <ChevronRight size={15} /> : <ChevronDown size={15} />}</button>:<span className="ne-leaf-spacer" aria-hidden="true"/>}
       {renaming?.id===node.id?<input className="ne-tree-rename" aria-label="重命名图层" autoFocus value={node.name} onChange={(event)=>setDocument((current)=>updateComponent(current,node.id,{name:event.target.value}))} onBlur={()=>setRenaming(null)} onKeyDown={(event)=>{if(event.key==='Enter')setRenaming(null);if(event.key==='Escape'){setDocument((current)=>updateComponent(current,node.id,{name:renaming.before}));setRenaming(null);}}}/>:<button className="ne-tree-select" onClick={() => select(node.id)} title={`${COMPONENT_NAMES[node.type]}：${displayLabel}${content&&content!==displayLabel?`\n${content}`:''}`} aria-label={`${displayLabel}${node.props.hidden?'（隐藏）':''}`}><Icon size={16} /><span className="ne-tree-label">{displayLabel}</span>{node.props.hidden&&<EyeOff size={13} className="ne-layer-hidden" aria-hidden="true"/>}</button>}
       <div className="ne-row-actions">{CONTAINER_TYPES.has(node.type)&&catalogFor(node).length>0&&<button type="button" className="ne-icon" title="添加子组件" aria-label={`向${node.name}添加组件`} onClick={()=>openAdd(node.id)}><Plus size={14}/></button>}<button type="button" className="ne-icon" data-layer-menu-trigger title="更多操作" aria-label={`${displayLabel}的更多操作`} onClick={(event)=>openMenu(event,node.id)}><MoreHorizontal size={16}/></button></div>
@@ -149,32 +178,31 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
   };
   const changeProduct = (key, value) => setDocument((current) => ({ ...current, products: { ...current.products, [p.dataKey ?? selected.id]: { ...current.products[p.dataKey ?? selected.id], [key]: value } }, root: updateComponent(current, selected.id, { props: { dataKey: p.dataKey ?? selected.id } }).root }));
   const createExit = (id) => {
-    const next = onCreateExitOffer?.(document, id);
+    const next = onCreateExitOffer?.(mainDocument, id);
     if (!next) return setStatus('退出优惠创建失败，原内容仍保留');
-    setDocument(next); setSelectedId(pageContext(next).active.id); setSettingsOpen(true); setEditingExit(true);
+    setMainDocument(next); setFocusedOfferingId(next.settings.exitOfferOfferingId); setSettingsOpen(false); setEditing(true); setAddTarget(null);
   };
-  if (editingExit && boundExit && onExitOfferChange) return <div className="ne-linked-exit" data-no-translate="true"><header><button type="button" className="secondary" onClick={() => { setEditingExit(false); setSettingsOpen(true); }}><ArrowUp size={16}/>返回主付费墙</button><strong>退出优惠 · {boundExit.name}</strong></header><ComponentEditor key={boundExit.id} template={{ id: boundExit.document.templateId }} initialNodes={[]} initialDocument={boundExit.document} onDocumentChange={changeBoundExit} persistence="session" currentPaywallId={boundExit.id} isExitOffer backdropDocument={document}/></div>;
   return <div className="native-editor" data-no-translate="true">
     {saveError && <p className="ne-error" role="alert">{saveError}{blockedSave ? '。为保护原记录，本次未覆盖保存。' : ''}</p>}
-    <div className="ne-workspace-tools"><button type="button" className={`secondary${settingsOpen ? ' active' : ''}`} aria-pressed={settingsOpen} onClick={() => { setSettingsOpen((value) => !value); setAddTarget(null); }}><Settings size={16}/>付费墙设置</button></div>
+    <div className="ne-workspace-tools"><button type="button" className={`secondary${settingsOpen ? ' active' : ''}`} aria-pressed={settingsOpen} onClick={() => { setFocusedOfferingId(null); setSettingsOpen((value) => !value); setAddTarget(null); }}><Settings size={16}/>付费墙设置</button></div>
     <div className="builder ne-builder">
-      <aside className="ne-layers">{pickerParent?<ComponentPicker parent={pickerParent} onBack={()=>setAddTarget(null)} onAdd={add}/>:<><section className="ne-page-management" aria-label="页面管理"><div className="ne-page-heading"><strong>页面</strong>{pages.flow&&<button className="ne-icon" title="全局外观" aria-label="全局外观" onClick={()=>select(document.root.id)}><Layers size={15}/></button>}</div><Select label="编辑页面" value={pages.active.id} options={pages.pages.map((page)=>[page.id,`${page.name}${isUnconfiguredDetailPage(page)?' · 内容待补充':''}`])} onChange={(id)=>{setAddTarget(null);select(id);}}/></section><header><strong>图层</strong><button className="ne-icon" title="添加组件" aria-label="添加组件" onClick={() => openAdd(insertionParent.id===document.root.id?pages.active.id:insertionParent.id)}><Plus size={17} /></button></header><div className="ne-tree">
-        <div role="tree" aria-label="组件图层">{renderTree(isExitOffer && nodes.has(document.settings?.presentationSurfaceId) ? nodes.get(document.settings.presentationSurfaceId) : pages.active)}{pages.shared.some((node)=>!isOverlaySurface(node))&&<><div className="ne-shared-heading">共享图层</div>{pages.shared.filter((node)=>!isOverlaySurface(node)).map((node)=>renderTree(node))}</>}</div>
-        {!isExitOffer && surfaces.length>0&&<section className="ne-surfaces" aria-label="弹层"><h3>弹层</h3><div role="tree" aria-label="弹层图层">{surfaces.map((node)=>renderTree(node))}</div></section>}
-        {!isExitOffer && <section className="ne-surfaces ne-exit-entry" aria-label="退出优惠"><h3>退出优惠</h3><button type="button" className="ne-tree-select" onClick={() => { if (boundExit && onExitOfferChange) setEditingExit(true); else setSettingsOpen(true); }}><PanelBottom size={16}/><span className="ne-tree-label">{boundExit?.name ?? '未配置'}</span><ChevronRight size={15}/></button></section>}
+      <aside className="ne-layers">{pickerParent?<ComponentPicker parent={pickerParent} onBack={()=>setAddTarget(null)} onAdd={add}/>:<><section className="ne-board-list" aria-label="画板"><strong>画板</strong>{boards.map((board)=><button type="button" key={board.key} className={activeBoard?.key===board.key?'active':''} aria-label={`定位画板：${board.label}`} aria-pressed={activeBoard?.key===board.key} onClick={()=>focusBoard(board)}>{board.kind==='页面'?<Smartphone size={15}/>:<PanelBottom size={15}/>}<span>{board.label}</span><small>{board.kind}</small></button>)}</section>{pages.flow&&<section className="ne-page-management" aria-label="页面管理"><div className="ne-page-heading"><strong>页面</strong>{pages.flow&&<button className="ne-icon" title="全局外观" aria-label="全局外观" onClick={()=>select(document.root.id)}><Layers size={15}/></button>}</div><Select label="编辑页面" value={pages.active.id} options={pages.pages.map((page)=>[page.id,`${page.name}${isUnconfiguredDetailPage(page)?' · 内容待补充':''}`])} onChange={(id)=>{setAddTarget(null);select(id);}}/></section>}<header><strong>图层</strong><button className="ne-icon" title="添加组件" aria-label="添加组件" onClick={() => openAdd(insertionParent.id===document.root.id?pages.active.id:insertionParent.id)}><Plus size={17} /></button></header><div className="ne-tree">
+        <div role="tree" aria-label="组件图层">{renderTree(document.settings?.presentationSurfaceId && nodes.has(document.settings.presentationSurfaceId) ? nodes.get(document.settings.presentationSurfaceId) : pages.active)}{!document.settings?.presentationSurfaceId&&pages.shared.some((node)=>!isOverlaySurface(node))&&<><div className="ne-shared-heading">共享图层</div>{pages.shared.filter((node)=>!isOverlaySurface(node)).map((node)=>renderTree(node))}</>}</div>
+        {!document.settings?.presentationSurfaceId && !isExitOffer && surfaces.length>0&&<section className="ne-surfaces" aria-label="弹层"><h3>弹层</h3><div role="tree" aria-label="弹层图层">{surfaces.map((node)=>renderTree(node))}</div></section>}
+        {!activeExit && !isExitOffer && !boundExit && <section className="ne-surfaces ne-exit-entry" aria-label="退出优惠"><h3>退出优惠</h3><button type="button" className="ne-tree-select" onClick={() => setSettingsOpen(true)}><PanelBottom size={16}/><span className="ne-tree-label">未配置</span><ChevronRight size={15}/></button></section>}
       </div></>}
       </aside>
-      <div className="canvas-area ne-canvas"><div className="device-controls"><span>iPhone · 390 × 844</span><button className="secondary" onClick={() => { setEditing(!editing); setNavigation((current)=>({ ...current, overlay: surface?.id ?? null })); }}>{editing ? <Eye size={15} /> : <Pencil size={15} />}{editing ? '交互预览' : '返回编辑'}</button></div>
-        {!isExitOffer && surface&&<div className="ne-surface-context" aria-label="当前弹层"><button type="button" className="ne-icon" aria-label="返回主页面" title="返回主页面" onClick={()=>select(pages.active.id)}><ArrowUp size={16}/></button><strong>{surface.name}</strong>{triggers.map((node)=><button type="button" className="ne-surface-trigger" key={node.id} onClick={()=>select(node.id)} title={`定位触发按钮：${node.name}`}>{node.name}</button>)}{onCreateExitOffer && <button type="button" className="secondary" onClick={() => createExit(surface.id)}>转为退出优惠</button>}</div>}
-        {isUnconfiguredDetailPage(pages.active)&&<div className="ne-page-draft" role="status">内容待补充 · 暂不开放预览跳转</div>}<PaywallPresentation key={editing ? 'editing' : 'interactive'} document={document} selectedId={selected.id} onSelect={select} editing={editing} navigation={navigation} onNavigate={(next)=>setNavigation((current)=>({...current,...next}))} onStatus={setStatus} offerings={offerings} currentPaywallId={currentPaywallId} backdropDocument={backdropDocument}/>{status && <div className="ne-status" role="status"><span>{status}</span><button className="ne-icon" title="关闭提示" onClick={() => setStatus('')}><X size={14} /></button></div>}</div>
-      <aside className="ne-properties">{settingsOpen ? <><header><strong>付费墙设置</strong><button type="button" className="ne-icon" aria-label="返回组件属性" title="返回组件属性" onClick={() => setSettingsOpen(false)}><X size={16}/></button></header><PaywallSettings document={document} offerings={offerings} currentPaywallId={currentPaywallId} surfaces={surfaces} onCreate={!isExitOffer && onCreateExitOffer ? createExit : undefined} onEdit={onExitOfferChange ? () => setEditingExit(true) : undefined} onChange={(settings) => setDocument((current) => ({ ...current, settings }))}/></> : <><header><strong>{COMPONENT_NAMES[selected.type]}</strong><div className="ne-actions"><button className="ne-icon" title="保存到组件库" aria-label="保存到组件库" onClick={() => setLibraryOpen(true)}><Save size={16} /></button><button className="ne-icon" title="打开组件库" aria-label="打开组件库" onClick={() => setLibraryOpen(true)}><FolderOpen size={16} /></button></div></header>
+      <div className="canvas-area ne-canvas ne-artboard-canvas"><div className="device-controls"><span>iPhone · 390 × 844</span><div className="ne-zoom"><button className="ne-icon" aria-label="缩小画布" title="缩小画布" disabled={zoom<=0.3} onClick={()=>setZoom((value)=>Math.max(0.3,Math.round((value-0.1)*100)/100))}><Minus size={15}/></button><select aria-label="画布缩放" value={zoom} onChange={(event)=>setZoom(Number(event.target.value))}>{[0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1].map((value)=><option value={value} key={value}>{Math.round(value*100)}%</option>)}</select><button className="ne-icon" aria-label="放大画布" title="放大画布" disabled={zoom>=1} onClick={()=>setZoom((value)=>Math.min(1,Math.round((value+0.1)*100)/100))}><Plus size={15}/></button><button className="ne-icon" aria-label="适应画布" title="适应画布" onClick={fitBoards}><Maximize2 size={15}/></button></div><button className="secondary" onClick={() => setEditing(!editing)}>{editing ? <Eye size={15} /> : <Pencil size={15} />}{editing ? '交互预览' : '返回编辑'}</button></div>
+        {!activeExit && !isExitOffer && surface&&<div className="ne-surface-context" aria-label="当前弹层"><strong>{surface.name}</strong>{triggers.map((node)=><button type="button" className="ne-surface-trigger" key={node.id} onClick={()=>select(node.id)} title={`定位触发按钮：${node.name}`}>{node.name}</button>)}{onCreateExitOffer && <button type="button" className="secondary" onClick={() => createExit(surface.id)}>转为退出优惠</button>}</div>}
+        {editing?<div ref={boardScroll} className="ne-artboard-scroll" role="region" aria-label="多画板画布" tabIndex={0}><div className="ne-artboard-track">{boards.map((board)=><section key={board.key} ref={(element)=>{if(element)boardElements.current.set(board.key,element);else boardElements.current.delete(board.key);}} className={`ne-artboard${activeBoard?.key===board.key?' active':''}`} aria-label={`画板：${board.label}`} data-board-owner={board.owner??'main'} style={{width:390*zoom}}><header><button type="button" aria-label={`选择画板：${board.label}`} aria-pressed={activeBoard?.key===board.key} onClick={()=>focusBoard(board)}><span>{board.label}</span><small>{board.kind}</small></button></header><div className="ne-artboard-frame" style={{height:844*zoom}}><div className="ne-artboard-scale" style={{transform:`scale(${zoom})`}}><PaywallPresentation document={board.document} selectedId={activeBoard?.key===board.key?selected.id:undefined} onSelect={(id)=>select(id,board.document,board.owner)} editing navigation={board.navigation} onStatus={setStatus} currentPaywallId={board.owner??currentPaywallId} backdropDocument={board.owner?mainDocument:backdropDocument}/></div></div></section>)}</div></div>:<div className="ne-interactive-board"><PaywallPresentation key={`interactive:${scope}`} document={document} selectedId={selected.id} onSelect={select} editing={false} navigation={navigation} onNavigate={(next)=>setNavigation((current)=>({...current,...next}))} onStatus={setStatus} offerings={offerings} currentPaywallId={owner??currentPaywallId} backdropDocument={activeExit?mainDocument:backdropDocument}/></div>}{status && <div className="ne-status" role="status"><span>{status}</span><button className="ne-icon" title="关闭提示" onClick={() => setStatus('')}><X size={14} /></button></div>}</div>
+      <aside className="ne-properties">{settingsOpen ? <><header><strong>付费墙设置</strong><button type="button" className="ne-icon" aria-label="返回组件属性" title="返回组件属性" onClick={() => setSettingsOpen(false)}><X size={16}/></button></header><PaywallSettings document={mainDocument} offerings={offerings} currentPaywallId={currentPaywallId} surfaces={surfaceContext(mainDocument,mainNavigation).surfaces} onCreate={!isExitOffer && onCreateExitOffer ? createExit : undefined} onEdit={onExitOfferChange ? focusExit : undefined} onChange={(settings) => setMainDocument((current) => ({ ...current, settings }))}/></> : <><header><strong>{COMPONENT_NAMES[selected.type]}</strong><div className="ne-actions"><button className="ne-icon" title="保存到组件库" aria-label="保存到组件库" onClick={() => setLibraryOpen(true)}><Save size={16} /></button><button className="ne-icon" title="打开组件库" aria-label="打开组件库" onClick={() => setLibraryOpen(true)}><FolderOpen size={16} /></button></div></header>
         <section><Field label={isPageRoot?'页面名称':'图层名称'}><input value={selected.name} onChange={(event) => setDocument((current) => updateComponent(current, selected.id, { name: event.target.value }))} /></Field><div className="ne-actions"><button className="ne-icon" title="上移" aria-label="上移" disabled={isPageRoot || !parent || parent.children[0]?.id === selected.id} onClick={() => reorder(-1)}><ArrowUp size={16} /></button><button className="ne-icon" title="下移" aria-label="下移" disabled={isPageRoot || !parent || parent.children.at(-1)?.id === selected.id} onClick={() => reorder(1)}><ArrowDown size={16} /></button><button className="ne-icon" title="复制组件" aria-label="复制组件" disabled={isPageRoot || !parent} onClick={() => duplicateAt(selected.id)}><Copy size={16} /></button><button className="ne-icon danger" title="删除组件" aria-label="删除组件" disabled={isPageRoot || !parent} onClick={() => { setDocument((current) => removeComponent(current, selected.id)); setSelectedId(parent.id); }}><Trash2 size={16} /></button></div>{!isPageRoot&&<Select label="显示状态" value={p.hidden ? 'hidden' : 'visible'} onChange={(value) => patch({ hidden: value === 'hidden' })} options={[[ 'visible', '显示' ], [ 'hidden', '隐藏' ]]} />}
         </section>
-        <RevenueCatProperties key={selected.id} selected={selected} p={p} patch={patch} document={document} nodes={nodes} parents={parents} resolveText={resolveComponentText} findPackage={findPackage} changeProduct={changeProduct} fieldNames={fieldNames} demoSkus={DEMO_SKUS} navigation={navigation} setNavigation={patchNavigation} onStatus={setStatus} onFontsChange={saveFonts} onPageControl={(enabled)=>setDocument((current)=>togglePageControl(current,selected.id,enabled))} onMediaType={(type) => setDocument((current) => updateComponent(current, selected.id, { type }))} setDefaultPackage={(value) => setDocument((current) => defaultPackagePatch(current, selected.id, value))} />
+        <RevenueCatProperties key={`${scope}:${selected.id}`} selected={selected} p={p} patch={patch} document={document} nodes={nodes} parents={parents} resolveText={resolveComponentText} findPackage={findPackage} changeProduct={changeProduct} fieldNames={fieldNames} demoSkus={DEMO_SKUS} navigation={navigation} setNavigation={patchNavigation} onStatus={setStatus} onFontsChange={saveFonts} onPageControl={(enabled)=>setDocument((current)=>togglePageControl(current,selected.id,enabled))} onMediaType={(type) => setDocument((current) => updateComponent(current, selected.id, { type }))} setDefaultPackage={(value) => setDocument((current) => defaultPackagePatch(current, selected.id, value))} />
         </>}
       </aside>
     </div>
-    {menuNode&&<LayerActionsMenu menu={layerMenu} node={menuNode} isRoot={menuNode.id===document.root.id||menuNode.id===pages.active.id} canPaste={Boolean(editorClipboard.fragment?.roots.every((node)=>canContain(CONTAINER_TYPES.has(menuNode.type)?menuNode:nodes.get(parents.get(menuNode.id)),node)))} canWrap={Boolean(parents.get(menuNode.id)&&canContain(nodes.get(parents.get(menuNode.id)),{type:'Stack'})&&canContain({type:'Stack'},menuNode))} hasStyles={Boolean(editorClipboard.styles)} onAction={menuAction} onClose={()=>setLayerMenu(null)}/>}
+    {menuNode&&<LayerActionsMenu menu={layerMenu} node={menuNode} isRoot={menuNode.id===document.root.id||menuNode.id===pages.active.id||menuNode.id===document.settings?.presentationSurfaceId} canPaste={Boolean(editorClipboard.fragment?.roots.every((node)=>canContain(CONTAINER_TYPES.has(menuNode.type)?menuNode:nodes.get(parents.get(menuNode.id)),node)))} canWrap={Boolean(parents.get(menuNode.id)&&canContain(nodes.get(parents.get(menuNode.id)),{type:'Stack'})&&canContain({type:'Stack'},menuNode))} hasStyles={Boolean(editorClipboard.styles)} onAction={menuAction} onClose={()=>setLayerMenu(null)}/>}
     {libraryOpen && <div className="modal-backdrop"><section className="modal ne-library" role="dialog" aria-label="组件库"><header><h2>组件库</h2><button className="ne-icon" title="关闭组件库" onClick={() => setLibraryOpen(false)}><X size={18} /></button></header><div className="ne-library-body"><Field label="组件名称"><input value={libraryName} maxLength={40} onChange={(event) => setLibraryName(event.target.value)} /></Field><button className="secondary" onClick={saveLibrary}><Save size={16} />保存当前组件</button>{library.map((record) => <div className="ne-library-row" key={record.id}><span>{record.name} · {COMPONENT_NAMES[record.node.type]}</span><button className="secondary" disabled={!canContain(insertionParent, record.node)} onClick={() => { const node = cloneComponent(record.node); setDocument((current) => withFontResources(insertComponent(current, insertionParent.id, node),record.fonts)); setSelectedId(node.id); setLibraryOpen(false); }}>插入</button><button className="ne-icon danger" title={`删除 ${record.name}`} onClick={() => { const next = library.filter((item) => item.id !== record.id); try { localStorage.setItem(libraryKey, JSON.stringify(next)); setLibrary(next); } catch { setStatus('组件库保存失败'); } }}><Trash2 size={16} /></button></div>)}</div></section></div>}
   </div>;
 }

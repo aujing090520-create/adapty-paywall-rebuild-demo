@@ -683,7 +683,7 @@ test('layer tree uses one readable label, explicit indentation and inline expans
   } finally {if(editor){await act(async()=>editor.unmount());mounted.delete(editor);}globalThis.localStorage=previousStorage;globalThis.window=previousWindow;}
 });
 
-test('editor separates sheet roots, keeps selection in preview and returns without rewriting template content',async()=>{
+test('editor keeps sheets on peer artboards, previews the selected sheet and switches directly without rewriting content',async()=>{
   const previousStorage=globalThis.localStorage,previousWindow=globalThis.window,records=new Map();let editor;
   globalThis.localStorage={getItem:key=>records.get(key)??null,setItem:(key,value)=>records.set(key,value)};globalThis.window={addEventListener(){},removeEventListener(){}};
   const sheet=component('retention','Stack','挽留弹窗',{presentation:'overlay',paddingTop:24,background:'#f7f7f7'},[component('offer','Text','优惠',{text:'原优惠内容',fontSize:22}),component('close-sheet','Button','返回',{action:{action:'CloseSheet'}},[component('close-copy','Text','文字',{text:'返回'})])]);
@@ -696,15 +696,30 @@ test('editor separates sheet roots, keeps selection in preview and returns witho
     const clickLabel=async(label)=>act(async()=>editor.root.findAll(item=>item.type==='button'&&(item.props['aria-label']===label||item.children.some(child=>child===label)))[0].props.onClick(event()));
     const main=editor.root.findByProps({'aria-label':'组件图层'}),surfaces=editor.root.findByProps({'aria-label':'弹层图层'});
     assert.equal(main.findAll(item=>item.props['data-layer-id']==='retention').length,0);
-    assert.equal(surfaces.findAll(item=>item.props['data-layer-id']==='retention').length,1);assert.equal(componentNode('retention'),undefined);
+    assert.equal(surfaces.findAll(item=>item.props['data-layer-id']==='retention').length,1);assert.ok(componentNode('retention'));
+    assert.equal(editor.root.findAll(item=>item.type==='section'&&item.props.className?.startsWith('ne-artboard')).length,2);
     await select('retention');assert.ok(componentNode('retention'));assert.equal(componentNode('retention').props['data-component-type'],'BottomSheet');
     assert.ok(editor.root.findByProps({'aria-label':'当前弹层'}).findAllByType('button').some(button=>button.props.title==='定位触发按钮：查看优惠'));
     await clickLabel('交互预览');assert.ok(componentNode('retention'));await act(async()=>componentNode('close-sheet').props.onClick(event()));assert.equal(componentNode('retention'),undefined);
     await clickLabel('返回编辑');assert.ok(componentNode('retention'));
-    await clickLabel('返回主页面');assert.equal(componentNode('retention'),undefined);assert.ok(componentNode('launch'));
+    await clickLabel('选择画板：页面');assert.ok(componentNode('retention'));assert.ok(componentNode('launch'));
+    assert.equal(editor.root.findAll(item=>item.type==='button'&&item.props['aria-label']==='返回主页面').length,0);
     await act(async()=>editor.unmount());mounted.delete(editor);editor=null;
     const saved=readComponentDocument(localStorage,'audit');assert.deepEqual(saved.products,source.products);assert.deepEqual(saved.root,upgradeCanonicalComponents(source).root);
   } finally {if(editor){await act(async()=>editor.unmount());mounted.delete(editor);}globalThis.localStorage=previousStorage;globalThis.window=previousWindow;}
+});
+
+test('opening a saved standalone exit popup shows its real layer tree once without another page picker',async()=>{
+  const previousStorage=globalThis.localStorage,previousWindow=globalThis.window,records=new Map();let editor;
+  globalThis.localStorage={getItem:key=>records.get(key)??null,setItem:(key,value)=>records.set(key,value)};globalThis.window={addEventListener(){},removeEventListener(){}};
+  const source={...fixture(component('offer','BottomSheet','挽留弹窗',{presentation:'overlay'},[])),settings:{presentationSurfaceId:'offer'}};
+  saveComponentDocument(localStorage,source);
+  try {
+    await act(async()=>{editor=TestRenderer.create(React.createElement(Editor,{template:{id:'audit'},initialNodes:[]}));});
+    assert.equal(editor.root.findAll(item=>item.type==='div'&&item.props['data-layer-id']==='offer').length,1);
+    assert.equal(editor.root.findAll(item=>item.type==='select'&&item.props['aria-label']==='编辑页面').length,0);
+    assert.equal(editor.root.findAll(item=>item.type==='section'&&item.props.className?.startsWith('ne-artboard')).length,1);
+  } finally {if(editor)await act(async()=>editor.unmount());globalThis.localStorage=previousStorage;globalThis.window=previousWindow;}
 });
 
 test('alignment always has three standard options while legacy stretch stays unchanged until explicitly replaced',async()=>{

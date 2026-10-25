@@ -101,18 +101,24 @@ test('actual App converts, edits and saves an existing retention offer in one se
     const field=app.root.findAll(item=>item.type==='select'&&item.props['aria-label']==='退出优惠 Offering')[0];
     assert.ok(field.findAllByType('option').some(option=>option.props.value===`surface:${surface.id}`));
     await act(async()=>field.props.onChange({target:{value:`surface:${surface.id}`}}));
-    assert.ok(text(app.root).includes('返回主付费墙'));assert.equal(listSavedPaywalls(store).length,0);
+    assert.equal(text(app.root).includes('返回主付费墙'),false);assert.equal(listSavedPaywalls(store).length,0);
+    assert.equal(app.root.findAll(item=>item.type==='div'&&item.props['aria-label']==='多画板画布').length,1);
+    assert.ok(app.root.findAll(item=>item.type==='section'&&item.props.className?.startsWith('ne-artboard')).length>=2);
+    const beforeZoom=structuredClone(editor().props.initialDocument);
+    await act(async()=>app.root.findAll(item=>item.type==='select'&&item.props['aria-label']==='画布缩放')[0].props.onChange({target:{value:'0.75'}}));
+    assert.deepEqual(editor().props.initialDocument,beforeZoom,'workspace zoom never writes component parameters');
     await act(async()=>nameField().props.onChange({target:{value:'已编辑挽留优惠'}}));
-    await click('返回主付费墙');
+    await click('选择画板：特权首页');
+    assert.equal(nameField().props.value,'特权首页','selecting main board restores the main property owner');
     const main=editor().props.initialDocument,offerId=main.settings.exitOfferOfferingId;
     assert.equal(visit(main.root).some(node=>node.id===surface.id||node.name==='打开底部弹层'),false);
     assert.equal(listSavedPaywalls(store).length,0,'conversion and editing are not autosaved');
     await click('保存');assert.equal(listSavedPaywalls(store).length,2);
     assert.equal(readSavedPaywall(store,'test-2').document.settings.exitOfferOfferingId,offerId);
     assert.equal(readSavedPaywall(store,offerId).document.root.children[0].name,'已编辑挽留优惠');
-    await click('编辑退出优惠');await act(async()=>nameField().props.onChange({target:{value:'不应保存的新修改'}}));
+    await click('付费墙设置');await click('编辑退出优惠');await act(async()=>nameField().props.onChange({target:{value:'不应保存的新修改'}}));
     await click('放弃修改');await click('付费墙设置');await click('编辑退出优惠');assert.equal(nameField().props.value,'已编辑挽留优惠');
-    await click('返回主付费墙');await click('Paywalls');await open();
+    await click('选择画板：特权首页');await click('Paywalls');await open();
     assert.equal(editor().props.initialDocument.settings.exitOfferOfferingId,offerId);
     await click('付费墙设置');await click('编辑退出优惠');assert.equal(nameField().props.value,'已编辑挽留优惠');
   }finally{if(app)await act(async()=>app.unmount());for(const timer of timers)clearTimeout(timer);for(const[key,value]of Object.entries(previous))globalThis[key]=value;}
