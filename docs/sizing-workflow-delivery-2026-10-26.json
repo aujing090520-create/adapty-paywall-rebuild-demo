@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-26",
+  "status": "completed",
+  "sourceCommit": "462f2a5379fa11dbd1e601e20abf7a9ee231d19b",
+  "repository": "https://github.com/aujing090520-create/adapty-paywall-rebuild-demo",
+  "production": {
+    "url": "https://adapty-paywall-rebuild-demo.vercel.app/",
+    "deploymentId": 7315794555,
+    "deploymentState": "success",
+    "javascript": "index-BxxCf1kj.js",
+    "stylesheet": "index-CvVt3B45.css",
+    "mainHtmlMatchesBuild": true,
+    "actualBrowserScriptMatchesBuild": true,
+    "runtimeVerified": true,
+    "testDraftSaved": false
+  },
+  "validation": {
+    "tests": 340,
+    "passed": 340,
+    "failed": 0,
+    "skipped": 0,
+    "buildSeconds": 3.04,
+    "diffCheck": "passed",
+    "parameterReferenceComponents": 32,
+    "parameterReferenceRows": 3528
+  },
+  "localRuntime": {
+    "compactModal": {"width":280,"height":420,"radius":24,"saveReloadReopen":true},
+    "timedModal": {"width":310,"height":440,"radius":24},
+    "fillModal": {"width":350,"height":821},
+    "boundedModal": {"width":320,"height":400},
+    "sheetPlacement": {"alignment":"flex-end","screenInset":12},
+    "canvasScrollOnModal": {"before":0,"after":242.5,"outerPageBefore":186,"outerPageAfter":186},
+    "sourceCloseContinueSecondClose": "passed",
+    "firstScreenIndependentRetention": "passed",
+    "deleteUndo": {"boardsBefore":3,"afterDelete":2,"afterUndo":3},
+    "createdButtonNavigatesToSkuScreen": "passed",
+    "templateSmoke": [
+      {"template":"ht-membership-plans","packages":3,"mediaLoaded":true},
+      {"template":"ht-payment-recovery","packages":2,"mediaLoaded":true},
+      {"template":"ht-sku-sheet","packages":2,"mediaLoaded":true}
+    ],
+    "consoleErrors":0,
+    "screenshot":"paywall-sizing-local.png"
+  },
+  "productionRuntime": {
+    "nativeCreate": "passed",
+    "compactModal": {"width":280,"height":420,"radius":24,"sameInInteractivePreview":true},
+    "sourceCloseShowsModal": "passed",
+    "continueReturnsToSource": "passed",
+    "secondCloseEndsSession": "passed",
+    "returnToEditor": {"boards":2,"sizeReadout":"280 × 420 px"},
+    "unsavedTemplateReplacementGuard":"passed",
+    "legacyBlueModal": {"width":310,"height":440,"radius":24,"mediaLoaded":true},
+    "bindExistingDoesNotClone": {"boards":2,"source":"特权首页"},
+    "typeLabelsAndReadonlyIdentity": "passed",
+    "consoleErrors":0,
+    "screenshot":"paywall-sizing-production.png"
+  },
+  "boundaries": {
+    "proxyDnsOrPermissionsChanged":false,
+    "existingSavedDocumentsRewritten":false,
+    "untrackedTestResultsIncluded":false,
+    "businessPricesAndMediaReplaced":false,
+    "realSdkTransactionsTested":false,
+    "allTemplatePixelsOrPropertyCombinationsClaimed":false,
+    "retentionOnEachScreen":"Previously approved Demo extension",
+    "network":"Main-domain runtime verified; later documentation curl requests timed out twice during TLS. Access is intermittent, root cause unknown; proxy settings unchanged."
+  }
+}
