@@ -69,6 +69,9 @@ test('saved-content import is explicitly a copy with new IDs and isolated produc
   const source=createRetentionModal(doc(),'a').document, original=structuredClone(source), node=[...indexDocument(source).nodes.values()].find((item)=>item.type==='BottomSheet');
   const imported=importCloseTarget(doc(),'b',source,node.id);
   assert.ok(validDocument(imported.document)); assert.notEqual(imported.id,node.id); assert.equal(closeTargetId(imported.document,'b'),imported.id); assert.deepEqual(source,original);
+  const again=importCloseTarget(imported.document,'a',source,node.id);
+  assert.equal(indexDocument(again.document).nodes.get(again.id).name,'挽留弹窗 2');
+  assert.equal(indexDocument(again.document).nodes.get(imported.id).name,'挽留弹窗');
 });
 
 test('all current templates can create a centered retention modal without altering their SKU data or main Screen count', () => {

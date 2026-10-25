@@ -1228,7 +1228,7 @@ function TemplatesModal({ selected, setSelected, onClose, onOpenBuilder }) {
     return <label className="filter-option"><input type={list ? "checkbox" : "radio"} name={list ? undefined : group} checked={checked} onChange={() => list ? toggleListFilter(group, value) : setSingleFilter(group, value)} /> {children}</label>;
   };
   const pendingTemplate = pendingSelected === null ? null : templates[pendingSelected];
-  const tagLabels = { "1 product": "1 个商品", "2 products": "2 个商品", "3 products": "3 个商品", "4 products": "4 个商品", "5 products": "5 个商品", "Multi-step": "多步骤", Credits: "点数商品", "Web purchase": "网页购买", "Feature table": "权益表格", Reviews: "评价", Award: "奖项" };
+  const tagLabels = { "1 product": "1 个商品", "2 products": "2 个商品", "3 products": "3 个商品", "4 products": "4 个商品", "5 products": "5 个商品", "Multi-step": "多步骤", Credits: "点数商品", "Web purchase": "网页购买", "Feature table": "权益表格", Reviews: "评价", Award: "奖项", Timer:'倒计时', Carousel:'轮播', Toggle:'普通开关', Tabs:'标签页', 'Trial timeline':'试用时间线', 'Offer code':'优惠码', 'Social Proof':'口碑展示' };
   const displayTags = (template) => isEditableTemplate(template) ? template.tags.map((tag) => tagLabels[tag] ?? tag) : ["Source preview", "Structure pending"];
   const countBy = (matches) => catalogTemplates.filter(matches).length;
   const componentOptions = [["Free trial toggle", "免费试用开关"], ["Trial timeline", "试用时间线"], ["Reviews", "评价"], ["Timer", "倒计时"], ["Toggle", "普通开关"], ["Social Proof", "口碑展示"], ["Award", "奖项展示"], ["Tabs", "标签页"], ["Offer code", "优惠码"], ["Multi-step", "多步骤"], ["Credits", "点数商品"], ["Web purchase", "网页购买"], ["Feature table", "权益表格"]];
@@ -1247,12 +1247,12 @@ function TemplatesModal({ selected, setSelected, onClose, onOpenBuilder }) {
     <div className="template-modal"><aside>
       <div className="filter-heading"><strong>Filters</strong><span className="filter-count">{filteredTemplates.length}</span></div>
       <p>Number of products</p>
-      <Filter group="products" value="1 product" list>1 product ({countBy((item) => item.productCount === 1)})</Filter>
-      <Filter group="products" value="More than 1 product" list>More than 1 product ({countBy((item) => item.productCount > 1)})</Filter>
+      <Filter group="products" value="1 product" list>{`1 product (${countBy((item) => item.productCount === 1)})`}</Filter>
+      <Filter group="products" value="More than 1 product" list>{`More than 1 product (${countBy((item) => item.productCount > 1)})`}</Filter>
       <p>Image / video</p>
       <Filter group="media" value="All">All</Filter>
-      <Filter group="media" value="With Image or Video">With Image or Video ({countBy((item) => item.media !== "none")})</Filter>
-      <Filter group="media" value="No media">No media ({countBy((item) => item.media === "none")})</Filter>
+      <Filter group="media" value="With Image or Video">{`With Image or Video (${countBy((item) => item.media !== "none")})`}</Filter>
+      <Filter group="media" value="No media">{`No media (${countBy((item) => item.media === "none")})`}</Filter>
       <p>Components</p>
       {componentOptions.map(([value, label]) => <Filter key={value} group="components" value={value} list>{label} ({countBy((item) => (item.isNew ? item.components : sourceVerifiedTemplateComponents[item.id])?.includes(value))})</Filter>)}
       <p>Length</p><Filter group="length" value="All">All</Filter><Filter group="length" value="Short">Short</Filter><Filter group="length" value="Long">Long</Filter>

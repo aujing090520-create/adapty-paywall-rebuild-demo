@@ -36,6 +36,17 @@ test('step copies use independent product records and ids, including packages th
   result.document.products[plan.props.dataKey].price='¥99';assert.equal(doc.products.plan.price,'¥78');assert.ok(validDocument(result.document));
 });
 
+test('imported and repeatedly duplicated scenes receive unique labels without renaming existing screens',()=>{
+  const original=document([c('original','Screen','付费墙页面')]);
+  const imported=addWorkflowStep(original,{source:original,screenId:'original'});
+  assert.deepEqual(workflowContext(imported.document).steps.map(node=>node.name),['付费墙页面 2','付费墙页面']);
+  const first=duplicateWorkflowStep(imported.document,'original');
+  const second=duplicateWorkflowStep(first.document,'original');
+  const names=workflowContext(second.document).steps.map(node=>node.name);
+  assert.equal(new Set(names).size,names.length);assert.ok(names.includes('付费墙页面 副本 2'));
+  assert.equal(indexDocument(second.document).nodes.get('original').name,'付费墙页面');
+});
+
 test('up to ten real steps are allowed and HT auxiliary details remain separate preserved destinations',()=>{
   let doc=document([screen('main'),...Array.from({length:16},(_,i)=>screen('ht/detail-screen-'+i))]);
   for(let count=1;count<10;count++)doc=addWorkflowStep(doc).document;

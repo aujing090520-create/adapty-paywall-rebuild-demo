@@ -106,9 +106,9 @@ export function textPropertyPatch(node, patch) {
   return next;
 }
 
-export function dimensionModePatch(axis, mode) {
+export function dimensionModePatch(axis, mode, props = {}, measured) {
   const name = axis[0].toUpperCase() + axis.slice(1);
-  return { [`${axis}Mode`]: mode, ...(mode !== 'fill' ? { [`min${name}`]: 0, [`max${name}`]: 0, [`min${name}Enabled`]: false, [`max${name}Enabled`]: false } : {}) };
+  return { [`${axis}Mode`]: mode, ...(mode === 'fixed' && props[`${axis}Mode`] !== 'fixed' && measured > 0 ? { [axis]: Math.round(measured) } : {}), ...(mode !== 'fill' ? { [`min${name}`]: 0, [`max${name}`]: 0, [`min${name}Enabled`]: false, [`max${name}Enabled`]: false } : {}) };
 }
 
 export function imageMask(props) {
@@ -142,8 +142,20 @@ export function effectiveFillType(props) {
 }
 
 export function mainAxisFillStyle(props,parentProps) {
-  if(props.heightMode!=='fill'||parentProps?.axis!=='vertical'||!['fixed','fill'].includes(parentProps.heightMode))return {};
-  return {height:0,flexBasis:'0%',flexGrow:props.flexGrow??1,flexShrink:1};
+  if (props.heightMode !== 'fill' || !parentProps) return {};
+  if (parentProps.axis === 'horizontal') return { height: 'auto', alignSelf: 'stretch' };
+  if (parentProps.axis === 'vertical' && ['fixed','fill'].includes(parentProps.heightMode)) return {height:0,flexBasis:'0%',flexGrow:props.flexGrow??1,flexShrink:1};
+  return { height: 'auto', flexGrow: 0 };
+}
+
+export function hasBoundedHeight(node, nodes, parents, resolveProps = (item) => item.props, seen = new Set()) {
+  if (!node || seen.has(node.id)) return false;
+  const props = resolveProps(node);
+  if (props.heightMode === 'fixed') return true;
+  if (props.heightMode !== 'fill') return false;
+  if (['overlay','sheet'].includes(props.presentation) || !parents.get(node.id)) return true;
+  seen.add(node.id);
+  return hasBoundedHeight(nodes.get(parents.get(node.id)), nodes, parents, resolveProps, seen);
 }
 
 export function checkedControl(props, id, runtime, nodes) {

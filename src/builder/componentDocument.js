@@ -46,6 +46,18 @@ export const componentProps = (node) => {
   return props;
 };
 export const component = (id, type, name, props = {}, children = []) => ({ id, type, name: name || COMPONENT_NAMES[type], props, children });
+export function componentLayerLabel(node, content = '') {
+  if (node.type === 'Screen') return node.name || COMPONENT_NAMES.Screen;
+  if (node.type === 'Text') return content.trim() || COMPONENT_NAMES.Text;
+  return COMPONENT_NAMES[node.type] || node.type;
+}
+export function uniqueSceneName(document, preferred, exceptId) {
+  const names = new Set([...indexDocument(document).nodes.values()].filter((node) => node.id !== exceptId && ['Screen','BottomSheet'].includes(node.type)).map((node) => node.name));
+  const base = preferred?.trim() || '页面';
+  let name = base, number = 2;
+  while (names.has(name)) name = `${base} ${number++}`;
+  return name;
+}
 const text = (id, value, props = {}) => component(id, 'Text', '', { text: String(value ?? ''), ...props });
 const stack = (id, name, children, props = {}) => component(id, 'Stack', name, props, children.filter(Boolean));
 const image = (id, src, props = {}) => component(id, 'Image', '', { src: src ?? '', heightMode: 'fixed', height: 180, objectFit: 'contain', ...props });

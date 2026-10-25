@@ -45,3 +45,16 @@ test('all template display titles have Chinese labels and remain searchable by t
     assert.ok(matchesInterfaceText(template.title, template.title), template.title);
   }
 });
+
+test('custom paywall row action labels translate without translating the custom name', () => {
+  assert.equal(translateInterfaceText('Actions for My custom offer','zh-CN'),'My custom offer的操作');
+  assert.equal(translateInterfaceText('My custom offer的操作','en'),'Actions for My custom offer');
+});
+
+test('template metadata translates independent tags and current filter counts', () => {
+  assert.equal(translateInterfaceText('3 个商品 · Carousel · Timer','zh-CN'),'3 个商品 · 轮播图 · 倒计时');
+  assert.equal(translateInterfaceText('1 product (12)','zh-CN'),'1 个产品（12）');
+  assert.equal(translateInterfaceText('More than 1 product (33)','zh-CN'),'多个商品（33）');
+  assert.equal(translateInterfaceText('With Image or Video (43)','zh-CN'),'含图片或视频（43）');
+  assert.equal(translateInterfaceText('No media (2)','zh-CN'),'无媒体（2）');
+});

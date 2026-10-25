@@ -6,7 +6,7 @@ import { componentProps, resolveComponentText, indexDocument } from './component
 import { isUnconfiguredDetailPage, flowInitialIndex } from './componentTree.js';
 import { stepDestination } from './workflow.js';
 import { canvasSelectionTarget } from './canvasSelection.js';
-import { stateStyleProps, countdownSeconds, checkedControl, activeComponents, countdownValues, countdownDeadline, imageMask, paintColor, cornerRadius, selectionOwner, sequencePages, BADGE_DEFAULTS, mainAxisFillStyle } from './propertyModel.js';
+import { stateStyleProps, countdownSeconds, checkedControl, activeComponents, countdownValues, countdownDeadline, imageMask, paintColor, cornerRadius, selectionOwner, sequencePages, BADGE_DEFAULTS, mainAxisFillStyle, hasBoundedHeight } from './propertyModel.js';
 import { interpolateVariables } from './textVariables.js';
 import { TimelinePreview, TimelineItemPreview } from './TimelinePreview.jsx';
 import { actionLink,customCheckoutLink } from './actionLinks.js';
@@ -114,7 +114,8 @@ function PageSequence({ node, context, props, attributes, style, children }) {
   const peek = Math.max(0, Math.min(100, Number(props.pagePeek) || 0)), spacing = Math.max(0, Number(props.pageSpacing) || 0);
   const control=node.children.find((child)=>child.type==='PageControl');
   const pagination=control?children([control],false):!props.pageControlVersion && count>1?<div className="nc-pagination">{pages.map((child,index)=><button type="button" key={child.id} aria-label={`第 ${index+1} 页`} aria-current={chosen===index?'true':undefined} style={{color:chosen===index?props.activeDotColor??props.dotColor:props.dotColor}} onClick={(event)=>{event.stopPropagation();context.setRuntime((current)=>({...current,[node.id]:index}));}}>●</button>)}</div>:null;
-  return <CarouselContext.Provider value={{id:node.id,pages,chosen}}><div {...attributes} style={{...style,display:'flex',flexDirection:'column',gap:0}}><BackgroundVideo props={props}/>{props.pageControlPosition === 'top' && pagination}<div ref={carouselRef} className="nc-carousel-viewport" style={{overflow:'hidden',minWidth:0,width:'100%'}}><div className="nc-carousel-track" style={{display:'flex',gap:spacing,alignItems:({top:'flex-start',center:'center',bottom:'flex-end'}[props.pageAlignment??'top']),touchAction:'pan-y pinch-zoom',...(!carousel ? {transform:`translateX(calc(${peek}px - ${chosen} * (100% - ${peek*2}px + ${spacing}px)))`} : {})}}>{pages.map((child,index)=><div key={child.id} data-carousel-page={index} aria-hidden={index!==chosen} style={{flex:`0 0 calc(100% - ${peek*2}px)`,minWidth:0}}>{children([child],false)}</div>)}</div></div>{props.pageControlPosition !== 'top' && pagination}</div></CarouselContext.Provider>;
+  const bounded = props.heightMode !== 'fit';
+  return <CarouselContext.Provider value={{id:node.id,pages,chosen}}><div {...attributes} style={{...style,display:'flex',flexDirection:'column',gap:0}}><BackgroundVideo props={props}/>{props.pageControlPosition === 'top' && pagination}<div ref={carouselRef} className="nc-carousel-viewport" style={{overflow:'hidden',minWidth:0,width:'100%',...(bounded?{flex:'1 1 0%',minHeight:0}:{})}}><div className="nc-carousel-track" style={{display:'flex',...(bounded?{height:'100%'}:{}),gap:spacing,alignItems:({top:'flex-start',center:'center',bottom:'flex-end'}[props.pageAlignment??'top']),touchAction:'pan-y pinch-zoom',...(!carousel ? {transform:`translateX(calc(${peek}px - ${chosen} * (100% - ${peek*2}px + ${spacing}px)))`} : {})}}>{pages.map((child,index)=><div key={child.id} data-carousel-page={index} aria-hidden={index!==chosen} style={{flex:`0 0 calc(100% - ${peek*2}px)`,minWidth:0,...(bounded?{height:'100%'}:{})}}>{children([child],false)}</div>)}</div></div>{props.pageControlPosition !== 'top' && pagination}</div></CarouselContext.Provider>;
 }
 export function NativeComponent({ node, packageNode = null, floating = false, layoutStyle }) {
   const context = useContext(PreviewContext);
@@ -143,12 +144,24 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
     onSelect(canvasSelectionTarget(node, selectedId, context.nodeIndex, context.parentIndex));
   };
   const parentNode=context.nodeIndex.get(context.parentIndex.get(node.id));
-  const parentOwner=parentNode&&selectionOwner(parentNode,context.nodeIndex,context.parentIndex);
-  const parentProps=parentNode?componentProps({...parentNode,props:parentOwner?.id===owner?.id&&owner?stateStyleProps(parentNode.props,stateSelected):parentNode.props}):null;
-  const style = { ...componentStyle(visualNode), ...mainAxisFillStyle(props,parentProps), ...layoutStyle };
-  const attributes = { 'data-component-id': node.id, 'data-component-type': node.type, 'data-axis': props.axis, 'data-width': props.widthMode, 'data-height': props.heightMode, className: `nc-node nc-${node.type.toLowerCase()} ${props.presentation === 'overlay' ? 'nc-overlay' : ''} ${editing && selectedId === node.id ? 'nc-inspected' : ''} ${editing && context.hoveredId === node.id ? 'nc-hovered' : ''}`, style, onClick: select };
+  const effectiveProps = (candidate) => componentProps({...candidate,props:owner && selectionOwner(candidate,context.nodeIndex,context.parentIndex)?.id===owner.id ? stateStyleProps(candidate.props,stateSelected) : candidate.props});
+  const parentProps=parentNode?effectiveProps(parentNode):null;
+  if (parentProps?.heightMode === 'fill' && !hasBoundedHeight(parentNode, context.nodeIndex, context.parentIndex, effectiveProps)) parentProps.heightMode = 'fit';
+  const style = { ...componentStyle(visualNode), ...(!floating ? mainAxisFillStyle(props,parentProps) : {}), ...layoutStyle };
+  if (node.type === 'Screen') {
+    style.minHeight = props.minHeight > 0 ? props.minHeight : node.id === document.root.id && props.heightMode === 'fit' ? 844 : 0;
+    if (node.id === document.root.id && props.heightMode === 'fill') style.height = 844;
+  }
+  if (floating) {
+    style.flexShrink = 1;
+    for (const axis of ['Width','Height']) {
+      style[`max${axis}`] = props[`max${axis}`] > 0 ? `min(100%, ${props[`max${axis}`]}px)` : '100%';
+      if (props[`min${axis}`] > 0) style[`min${axis}`] = `min(100%, ${props[`min${axis}`]}px)`;
+    }
+  }
+  const attributes = { 'data-component-id': node.id, 'data-component-type': node.type, 'data-axis': props.axis, 'data-width': props.widthMode, 'data-height': props.heightMode, className: `nc-node nc-${node.type.toLowerCase()} ${floating ? 'nc-modal-surface' : ''} ${editing && selectedId === node.id ? 'nc-inspected' : ''} ${editing && context.hoveredId === node.id ? 'nc-hovered' : ''}`, style, onClick: select };
   const children = (items = node.children, background = true) => <>{background && <BackgroundVideo props={props} />}{items.map((child) => <NativeComponent key={child.id} node={child} packageNode={currentPackage} />)}{background&&<ComponentBadge node={visualNode} document={document} packageNode={variablePackage} timer={timer}/>}</>;
-  if(node.type==='PageControl')return <div {...attributes} style={{...style,width:'auto',height:'auto',display:'flex',justifyContent:'center',alignItems:'center',gap:props.gap}}>{children()}</div>;
+  if(node.type==='PageControl')return <div {...attributes} style={{...style,display:'flex',justifyContent:'center',alignItems:'center',gap:props.gap}}>{children()}</div>;
   if(node.type==='Indicators')return <>{sequence?.pages.map((page,index)=>{
     const active=index===sequence.chosen && (!editing || selectedId!==node.id || runtime[`package-style:${node.id}`]==='selected');
     const dotStyle=componentStyle({...node,props:stateStyleProps(baseProps,active)});
@@ -347,5 +360,5 @@ export default function ComponentPreview({ document, selectedId, onSelect, editi
     const element = event.target.closest?.('[data-component-id]');
     setHoveredId(canvasSelectionTarget(nodeIndex.get(element?.dataset.componentId), selectedId, nodeIndex, parentIndex));
   };
-  return <PreviewContext.Provider value={{ document, nodeIndex, parentIndex, selectedId, onSelect, editing, hoveredId: inspectable ? hoveredId : null, runtime, setRuntime, runAction, onStatus, selectedPackage,packages }}><style>{fontStyles(document.fonts)}</style><div className="phone native-phone" onPointerMove={hover} onPointerLeave={()=>setHoveredId(null)}><div className="nc-viewport" ref={viewport} onScroll={()=>setHoveredId(null)}><div className="nc-design" style={{ zoom: scale }}><NativeComponent node={document.root} /></div></div>{overlay && <div className="nc-floating-overlay"><div className="nc-floating-backdrop" onClick={()=>{ if (!editing && dismissOnBackdrop && overlay.id === document.settings?.presentationSurfaceId) dismissPaywall(); else setRuntime((current)=>({...current,overlay:null})); }}/><div className="nc-floating-design" style={{zoom:scale,height:(viewport.current?.clientHeight??844)/scale}}><NativeComponent node={overlay} floating/></div></div>}{runtime.webLink && <div className="nc-web-preview" role="dialog" aria-label="网页预览"><header><span>{runtime.webLink.title}</span><button type="button" aria-label="关闭网页预览" title="关闭网页预览" onClick={()=>setRuntime((current)=>({...current,webLink:null}))}><X size={18}/></button></header><iframe title="网页预览内容" src={runtime.webLink.url} sandbox="allow-scripts allow-forms allow-popups" referrerPolicy="no-referrer"/></div>}</div></PreviewContext.Provider>;
+  return <PreviewContext.Provider value={{ document, nodeIndex, parentIndex, selectedId, onSelect, editing, hoveredId: inspectable ? hoveredId : null, runtime, setRuntime, runAction, onStatus, selectedPackage,packages }}><style>{fontStyles(document.fonts)}</style><div className="phone native-phone" onPointerMove={hover} onPointerLeave={()=>setHoveredId(null)}><div className="nc-viewport" ref={viewport} onScroll={()=>setHoveredId(null)}><div className="nc-design" style={{ zoom: scale }}><NativeComponent node={document.root} /></div></div>{overlay && <div className="nc-floating-overlay"><div className="nc-floating-backdrop" onClick={()=>{ if (!editing && dismissOnBackdrop && overlay.id === document.settings?.presentationSurfaceId) dismissPaywall(); else setRuntime((current)=>({...current,overlay:null})); }}/><div className="nc-floating-design" data-presentation={overlay.props.presentation} style={{zoom:scale,height:(viewport.current?.clientHeight??844)/scale,padding:overlay.props.surfaceInset ?? (overlay.props.presentation === 'sheet' ? 0 : 20)}}><NativeComponent node={overlay} floating/></div></div>}{runtime.webLink && <div className="nc-web-preview" role="dialog" aria-label="网页预览"><header><span>{runtime.webLink.title}</span><button type="button" aria-label="关闭网页预览" title="关闭网页预览" onClick={()=>setRuntime((current)=>({...current,webLink:null}))}><X size={18}/></button></header><iframe title="网页预览内容" src={runtime.webLink.url} sandbox="allow-scripts allow-forms allow-popups" referrerPolicy="no-referrer"/></div>}</div></PreviewContext.Provider>;
 }

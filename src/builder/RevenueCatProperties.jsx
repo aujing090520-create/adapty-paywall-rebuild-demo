@@ -44,20 +44,52 @@ function PaintField({ label, property, opacityKey, p, patch, opacityReadOnly = f
 function CornerField({ p, patch }) {
   return <div className="rc-corner-field">{p.radiusMode === 'individual' ? <div className="rc-four-values">{CORNER_KEYS.map((key, index) => <NumberField key={key} label={`圆角${['左上', '右上', '右下', '左下'][index]}`} value={p[key] ?? p.radius} onChange={(value) => patch({ [key]: value })} />)}</div> : <NumberField label="圆角" value={p.radius} onChange={(radius) => patch({ radius })} />}<button type="button" className="rc-spacing-toggle" aria-label={`圆角切换为${p.radiusMode === 'individual' ? '统一' : '四角'}配置`} title="切换圆角配置" onClick={() => patch(cornerModePatch(p))}><SquareDashed size={18} /></button></div>;
 }
-function SegmentedField({ label, value, onChange, options, icon = false }) { return <Field label={label}><div className={`rc-segmented ${icon ? 'rc-icon-segmented' : ''}`}>{options.map(([key, name, Glyph]) => <button type="button" key={key} className={String(value) === String(key) ? 'active' : ''} aria-label={name} aria-pressed={String(value) === String(key)} title={name} onClick={() => onChange(key)}>{icon && Glyph ? <Glyph size={21} strokeWidth={2.8} /> : name}</button>)}</div></Field>; }
+function SegmentedField({ label, value, onChange, options, icon = false }) { return <Field label={label}><div className={`rc-segmented ${icon ? 'rc-icon-segmented' : ''}`}>{options.map(([key, name, Glyph, description]) => <button type="button" key={key} className={String(value) === String(key) ? 'active' : ''} aria-label={name} aria-pressed={String(value) === String(key)} title={description || name} onClick={() => onChange(key)}>{icon && Glyph ? <Glyph size={21} strokeWidth={2.8} /> : name}</button>)}</div></Field>; }
 function CheckboxField({label,checked,onChange,disabled=false}) { return <label className="rc-checkbox-field"><span>{label}</span><input type="checkbox" aria-label={label} checked={checked} disabled={disabled} onChange={(event)=>onChange(event.target.checked)}/></label>; }
 function OptionalToggle({ enabled, onChange }) { return <button type="button" className={`rc-optional-toggle ${enabled ? 'active' : ''}`} aria-label={enabled ? '移除配置' : '添加配置'} title={enabled ? '移除配置' : '添加配置'} aria-pressed={enabled} onClick={() => onChange(!enabled)}>{enabled ? <X size={15}/> : <Plus size={15}/>}</button>; }
 const typeNames = { check: '勾选', lock: '锁', star: '星标', bell: '铃铛', moon: '月亮', heart: '爱心', group: '用户组', clock: '时钟', gift: '礼物', arrow: '箭头', dumbbell: '哑铃', weight: '重量', running: '跑步', download: '下载', map: '地图', flower: '花朵', activity: '活动', ticket: '票券', noads: '无广告', blocks: '方块', archive: '归档', shirt: '衣服', seat: '座位', scan: '扫描', help: '帮助', access: '登录', number: '数字' };
 
-function SizeField({ axis, label, p, patch, fixedOnly = false, allowConstraints = true }) {
+function SizeField({ axis, label, p, patch, fixedOnly = false, allowConstraints = true, measured, parent }) {
   const [adding, setAdding] = React.useState(false);
   const name = axis[0].toUpperCase() + axis.slice(1), mode = p[`${axis}Mode`];
   return <div className="rc-size-field">
-    {fixedOnly ? <NumberField label={label} value={p[axis]} onChange={(value) => patch({ [axis]: value, [`${axis}Mode`]: 'fixed' })} /> : <SegmentedField label={label} value={mode} options={[[ 'fit', '适应内容' ], [ 'fill', '填满' ], [ 'fixed', '固定' ]]} onChange={(value) => patch(dimensionModePatch(axis, value))} />}
+    {fixedOnly ? <NumberField label={label} value={p[axis]} onChange={(value) => patch({ [axis]: value, [`${axis}Mode`]: 'fixed' })} /> : <SegmentedField label={label} value={mode} options={[
+      [ 'fit', '适应内容', null, axis === 'width' ? '由文字、图片或子组件决定宽度，最长不超过父容器可用宽度。' : '由内容、内边距和子项间距决定高度；图片、视频按原始比例计算。' ],
+      [ 'fill', '填满', null, axis === 'width' ? '占用父容器可用宽度；横向排列时与其他填满组件分配剩余宽度。' : parent?.heightMode === 'fit' && parent?.axis !== 'horizontal' ? '父容器高度随内容变化，当前按内容撑开。父容器改为固定高度后，可分配剩余高度。' : '纵向排列时分配父容器的剩余高度；横向排列时与同排组件等高。' ],
+      [ 'fixed', '固定', null, '使用输入的设计像素，包含内边距和边框；不包含外边距。画布缩放不会改变该数值。' ],
+    ]} onChange={(value) => patch(dimensionModePatch(axis, value, p, measured))} />}
     {!fixedOnly && mode === 'fixed' && <NumberField label={`固定${label}`} value={p[axis]} onChange={(value) => patch({ [axis]: value })} />}
     {!fixedOnly && allowConstraints && mode === 'fill' && <><button type="button" className="ne-icon" aria-label={`添加${label}约束`} title={`添加${label}约束`} aria-expanded={adding} onClick={() => setAdding(!adding)}><Plus size={15} /></button>{adding && <div role="menu" className="rc-limit-menu">{[['min', '最小'], ['max', '最大']].filter(([bound]) => !(p[`${bound}${name}Enabled`] || p[`${bound}${name}`] > 0)).map(([bound, text]) => <button type="button" role="menuitem" key={bound} onClick={() => { patch({ [`${bound}${name}Enabled`]: true, [`${bound}${name}`]: bound === 'min' ? 0 : Math.max(1, Number(p[axis]) || (axis === 'width' ? 390 : 844)) }); setAdding(false); }}>添加{text}{label}</button>)}</div>}</>}
     {!fixedOnly && [['min', '最小'], ['max', '最大']].filter(([bound]) => p[`${bound}${name}Enabled`] || p[`${bound}${name}`] > 0).map(([bound, text]) => <div className="rc-limit-row" key={bound}><NumberField label={`${text}${label}`} value={p[`${bound}${name}`]} onChange={(value) => patch({ [`${bound}${name}`]: value })} /><button type="button" className="ne-icon" aria-label={`移除${text}${label}`} title={`移除${text}${label}`} onClick={() => patch({ [`${bound}${name}`]: 0, [`${bound}${name}Enabled`]: false })}><X size={15} /></button></div>)}
   </div>;
+}
+
+function useRenderedSize(id) {
+  const [size, setSize] = React.useState({});
+  React.useLayoutEffect(() => {
+    if (typeof window === 'undefined' || !window.document?.querySelectorAll) return;
+    let observer, pending, current;
+    const connect = () => {
+      const node = [...window.document.querySelectorAll('.nc-inspected[data-component-id]')].find((element) => element.dataset.componentId === id);
+      if (node === current) return;
+      observer?.disconnect();
+      current = node;
+      if (!node) { setSize({}); return; }
+      const update = () => setSize((old) => old.width === node.offsetWidth && old.height === node.offsetHeight ? old : { width: node.offsetWidth, height: node.offsetHeight });
+      update();
+      observer = new ResizeObserver(update);
+      observer.observe(node);
+    };
+    setSize({});
+    connect();
+    // Floating content mounts after its preview session has selected the surface.
+    if (window.MutationObserver) {
+      pending = new window.MutationObserver(connect);
+      pending.observe(window.document.querySelector('.native-editor') ?? window.document.body, {childList:true,subtree:true});
+    }
+    return () => { observer?.disconnect(); pending?.disconnect(); };
+  }, [id]);
+  return size;
 }
 
 function SpacingField({ title, prefix, p, patch, verticalOnly = false }) {
@@ -148,12 +180,16 @@ function ContentSection({ selected, p, patch, document, nodes, parents, findPack
 }
 
 function LayoutSection({ selected, p, patch, parent }) {
-  if (selected.type === 'TimelineItem' || selected.type==='Countdown' || selected.type==='Toggle'&&p.switchControl) return null;
-  if(selected.type==='Wallet')return <PropertySection title="尺寸"><SizeField axis="width" label="宽度" p={p} patch={patch}/></PropertySection>;
-  if(selected.type==='Custom')return <PropertySection title="尺寸"><SizeField axis="width" label="宽度" p={p} patch={patch}/><SizeField axis="height" label="高度" p={p} patch={patch}/>{p.heightMode==='fit'&&<NumberField label="加载时初始高度" value={p.loadingHeight??300} onChange={(loadingHeight)=>patch({loadingHeight})}/>}</PropertySection>;
+  const measured = useRenderedSize(selected.id);
+  const sizeFields = (axis) => <SizeField axis={axis} label={axis === 'width' ? '宽度' : '高度'} p={p} patch={patch} measured={measured[axis]} parent={selected.type === 'BottomSheet' ? {heightMode:'fixed',axis:'vertical'} : parent && {...parent.props,heightMode:parent.props.heightMode ?? 'fit',axis:parent.props.axis ?? 'vertical'}} fixedOnly={selected.type === 'Icon'} allowConstraints={axis === 'height' || selected.type !== 'Screen'} />;
+  const sizeSection = <PropertySection title={selected.type === 'BottomSheet' ? '弹窗尺寸' : '尺寸'}>{sizeFields('width')}{sizeFields('height')}{measured.width !== undefined && <output className="rc-rendered-size" aria-label="实际尺寸" title="当前组件外框的设计像素尺寸，包含内边距和边框，不包含外边距；受父容器可用空间和尺寸约束影响。">{measured.width} × {measured.height} px</output>}</PropertySection>;
+  if (selected.type === 'TimelineItem' || selected.type==='Toggle'&&p.switchControl) return null;
+  if(selected.type==='Wallet')return <PropertySection title="尺寸">{sizeFields('width')}</PropertySection>;
+  if(selected.type==='Custom')return <>{sizeSection}{p.heightMode==='fit'&&<PropertySection title="加载占位"><NumberField label="加载时初始高度" value={p.loadingHeight??300} onChange={(loadingHeight)=>patch({loadingHeight})}/></PropertySection>}</>;
   if (selected.type === 'Indicators')return <PropertySection title="尺寸"><NumberField label="高度" value={p.height} onChange={(height)=>patch({height,heightMode:'fixed'})}/><NumberField label="宽度" value={p.width} onChange={(width)=>patch({width,widthMode:'fixed'})}/></PropertySection>;
-  const isContainer = CONTAINER_TYPES.has(selected.type) && !['Tabs', 'Carousel', 'PageControl', 'Timeline', 'TimelineItem', 'Switch','ExpressCheckout'].includes(selected.type);
+  const isContainer = CONTAINER_TYPES.has(selected.type) && !['Tabs', 'Carousel', 'PageControl', 'Timeline', 'TimelineItem', 'Switch','ExpressCheckout','Countdown'].includes(selected.type);
   return <>
+    {selected.type === 'BottomSheet' && <PropertySection title="弹窗位置"><Select label="显示位置" value={p.presentation === 'sheet' ? 'sheet' : 'overlay'} options={[[ 'overlay','屏幕居中' ],[ 'sheet','屏幕底部' ]]} onChange={(presentation)=>patch({presentation})}/><NumberField label="屏幕边距" value={p.surfaceInset ?? (p.presentation === 'sheet' ? 0 : 20)} max={160} onChange={(surfaceInset)=>patch({surfaceInset})}/></PropertySection>}
     {isContainer && <PropertySection title="布局" className="rc-layout-section">
       <SegmentedField label="轴向" value={p.axis} icon options={[[ 'horizontal', '横向', ArrowRight ], [ 'vertical', '纵向', ArrowDown ], [ 'overlay', '叠放', Layers3 ]]} onChange={(axis) => patch({ axis })} />
       <SegmentedField label="对齐" value={p.align} icon options={[[ 'start', '起始', p.axis === 'horizontal' ? AlignStartVertical : AlignStartHorizontal ], [ 'center', '居中', p.axis === 'horizontal' ? AlignCenterVertical : AlignCenterHorizontal ], [ 'end', '末尾', p.axis === 'horizontal' ? AlignEndVertical : AlignEndHorizontal ]]} onChange={(align) => patch({ align })} />
@@ -161,7 +197,7 @@ function LayoutSection({ selected, p, patch, parent }) {
       {p.axis !== 'overlay' && <><Select label="分布" value={p.justify} options={[[ 'between', '两端分布' ], [ 'around', '各项两侧均分' ], [ 'evenly', '各项等距' ], [ 'start', '起始' ], [ 'center', '居中' ], [ 'end', '末尾' ]]} onChange={(justify) => patch({ justify })} /><NumberField label="子项间距" value={p.gap} max={200} onChange={(gap) => patch({ gap })} /></>}
       {p.wrap && p.axis === 'horizontal' && <SegmentedField label="换行（旧模板）" value="yes" options={[[ 'no', '不换行' ], [ 'yes', '换行' ]]} onChange={(value) => patch({ wrap: value === 'yes' })} />}
     </PropertySection>}
-    {!['Carousel','PageControl'].includes(selected.type)&&<PropertySection title="尺寸"><SizeField axis="width" label="宽度" p={p} patch={patch} fixedOnly={selected.type === 'Icon'} allowConstraints={selected.type !== 'Screen'} /><SizeField axis="height" label="高度" p={p} patch={patch} fixedOnly={selected.type === 'Icon'} /></PropertySection>}
+    {sizeSection}
     <PropertySection title="布局间距" className="rc-spacing-section"><SpacingField title="内边距" prefix="padding" p={p} patch={patch} verticalOnly={selected.type==='Carousel'} />{selected.type !== 'Screen' && !(selected.type==='Icon'&&parent?.type==='TimelineItem') && <SpacingField title="外边距" prefix="margin" p={p} patch={patch} />}</PropertySection>
   </>;
 }

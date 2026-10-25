@@ -25,11 +25,11 @@ after(async () => { for (const renderer of mounted) await act(async () => render
 const event = (value) => ({ target: { value }, stopPropagation() {}, preventDefault() {} });
 const fixture = (node) => ({ version: 3, templateId: 'audit', products: { sample: { name: '年度', price: '¥100', billingMonths: 12 } }, root: component('page', 'Screen', '页面', {}, [node]) });
 
-async function mount(node, { editing = true, source } = {}) {
+async function mount(node, { editing = true, source, initialNavigation = {} } = {}) {
   let latest, status;
   function Harness() {
     const [document, setDocument] = React.useState(source ?? fixture(node));
-    const [navigation, setNavigation] = React.useState({});
+    const [navigation, setNavigation] = React.useState(initialNavigation);
     const selected = indexDocument(document).nodes.get(node.id);
     const { nodes, parents } = indexDocument(document);
     latest = document;
@@ -123,6 +123,31 @@ for (const type of COMPONENT_TYPES.filter((type) => !['Timeline', 'TimelineItem'
     await h.close();
   });
 }
+
+test('floating popup geometry and placement use actual properties rather than launcher layout', async () => {
+  const modal=component('sample','BottomSheet','旧自定义名',{presentation:'overlay',widthMode:'fixed',width:280,heightMode:'fixed',height:420},[component('title','Text','标题',{text:'确认要放弃优惠吗？'})]);
+  const h=await mount(modal,{source:{...fixture(modal),settings:{presentationSurfaceId:'sample'}},initialNavigation:{overlay:'sample'}});
+  assert.equal(h.node().props.style.width,'280px');assert.equal(h.node().props.style.height,'420px');
+  assert.match(h.node().props.className,/nc-modal-surface/);assert.doesNotMatch(h.node().props.className,/nc-overlay/);
+  await h.select('显示位置','sheet');
+  const frame=()=>h.renderer.root.findByProps({className:'nc-floating-design'});
+  assert.equal(frame().props['data-presentation'],'sheet');assert.equal(frame().props.style.padding,0);
+  await h.change('屏幕边距','30');assert.equal(frame().props.style.padding,30);
+  await h.segment('宽度','填满');assert.equal(h.node().props.style.width,'100%');
+  await h.segment('高度','填满');assert.equal(h.node().props.style.height,'100%');
+  await h.limit('高度','最小');await h.change('最小高度','1000');assert.equal(h.node().props.style.minHeight,'min(100%, 1000px)');
+  await h.close();
+});
+
+test('carousel and pagination expose size fields that reach their outer boxes', async () => {
+  for(const type of ['Carousel','PageControl']){
+    const h=await mount(createCatalogComponent(type,'sample'));
+    await h.segment('宽度','固定');await h.change('固定宽度','240');
+    await h.segment('高度','固定');await h.change('固定高度','180');
+    assert.equal(h.node().props.style.width,'240px');assert.equal(h.node().props.style.height,'180px');
+    await h.close();
+  }
+});
 
 test('text: global style fields and rich editor updates reach preview without fragment forms', async () => {
   const node = component('sample', 'Text', '文字', { text: '甲乙', runs: [{ text: '甲', color: '#ff0000', fontSize: 30, fontWeight: 800 }, { text: '乙' }], fontWeight: 700 });
@@ -669,11 +694,11 @@ test('layer tree uses one readable label, explicit indentation and inline expans
     const row=id=>editor.root.findAll(item=>item.type==='div'&&item.props['data-layer-id']===id)[0];
     const label=id=>row(id).findAll(item=>item.type==='button'&&item.props.className==='ne-tree-select')[0];
     const expand=id=>row(id).findAll(item=>item.type==='button'&&item.props.className==='ne-icon ne-expand')[0];
-    assert.deepEqual(label('hero').findByProps({className:'ne-tree-label'}).children,['主视觉']);assert.equal(row('hero').findAllByType('small').length,0);
+    assert.deepEqual(label('hero').findByProps({className:'ne-tree-label'}).children,['布局容器']);assert.equal(row('hero').findAllByType('small').length,0);
     assert.equal(row('hero').props.style.paddingLeft,28);assert.equal(expand('hero').props['aria-expanded'],false);
     await act(async()=>expand('hero').props.onClick());assert.equal(expand('hero').props['aria-expanded'],true);assert.equal(row('copy').props.style.paddingLeft,48);
     await act(async()=>expand('copy').props.onClick());assert.equal(row('body').props.style.paddingLeft,68);assert.equal(label('body').props['aria-label'],'会员专属权益长文案');assert.equal(expand('body'),undefined);
-    assert.equal(label('heading').findByProps({className:'ne-tree-label'}).children.join(''),'标题');assert.match(label('heading').props.title,/实际标题正文/);assert.equal(label('heading').props['aria-label'],'标题（隐藏）');
+    assert.equal(label('heading').findByProps({className:'ne-tree-label'}).children.join(''),'实际标题正文');assert.match(label('heading').props.title,/实际标题正文/);assert.equal(label('heading').props['aria-label'],'实际标题正文（隐藏）');
     assert.equal(label('image').props['aria-label'],'图片');assert.equal(label('hero').findAllByType('svg')[0].props.className.includes('lucide-rows2'),true);assert.equal(label('copy').findAllByType('svg')[0].props.className.includes('lucide-columns2'),true);
     await act(async()=>label('body').props.onClick());
     assert.equal(editor.root.findAll(item=>item.type==='select'&&item.props['aria-label']==='所在容器').length,0);
@@ -754,8 +779,8 @@ test('vertical Fill uses remaining flex space only under a bounded main axis and
   assert.equal(h.node('fill').props.style.height,0);assert.equal(h.node('fill').props.style.flexGrow,1);assert.equal(h.node('fill').props.style.flexShrink,1);
   assert.equal(h.node('fill').props.style.minHeight,30);assert.equal(h.node('fill').props.style.maxHeight,280);
   assert.equal(h.document().root.children[0].children[1].props.heightMode,'fill');
-  await h.segment('高度','适应内容');assert.equal(h.node('fill').props.style.height,'100%');assert.equal(h.node('fill').props.style.flexGrow,undefined);
-  await h.segment('高度','固定');await h.segment('轴向','横向');assert.equal(h.node('fill').props.style.height,'100%');
+  await h.segment('高度','适应内容');assert.equal(h.node('fill').props.style.height,'auto');assert.equal(h.node('fill').props.style.flexGrow,0);
+  await h.segment('高度','固定');await h.segment('轴向','横向');assert.equal(h.node('fill').props.style.height,'auto');assert.equal(h.node('fill').props.style.alignSelf,'stretch');
   await h.close();
 });
 
@@ -1024,7 +1049,8 @@ test('countdown date, count-from units and padded variables update the configure
     await h.select('计时单位','minutes');assert.deepEqual(h.node('sample/countdown-text').children,['02 : 51 : 3064 : 05']);
     await h.change('目标时间（UTC）','2026-10-23T00:00:00Z');assert.ok(h.node('sample/ended'));
     await h.change('目标时间（UTC）','invalid');assert.equal(h.node('sample/fallback'),undefined);await h.check('自定义兜底内容',true);assert.ok(h.node('sample/fallback'));
-    for(const label of ['宽度','高度','轴向','内边距纵向','形状','预览状态'])assert.equal(h.renderer.root.findAll((item)=>item.props['aria-label']===label).length,0,label);
+    for(const label of ['轴向','形状','预览状态'])assert.equal(h.renderer.root.findAll((item)=>item.props['aria-label']===label).length,0,label);
+    await h.segment('高度','固定');await h.change('固定高度','120');assert.equal(h.node().props.style.height,'120px');
     await h.close();
   }finally{Date.now=original;}
 });

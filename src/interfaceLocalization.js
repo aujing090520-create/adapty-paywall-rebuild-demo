@@ -9,6 +9,11 @@ export function translateInterfaceText(value, locale, editor = false) {
   const dictionary = locale === 'zh-CN' ? zhCopy : enCopy;
   const translate = (label) => {
     if (dictionary[label]) return dictionary[label];
+    const actions = locale === 'zh-CN' ? label.match(/^Actions for (.+)$/) : label.match(/^(.+)的操作$/);
+    if (actions) return locale === 'zh-CN' ? `${actions[1]}的操作` : `Actions for ${actions[1]}`;
+    if (label.includes(' · ')) return label.split(' · ').map(translate).join(' · ');
+    const counted = label.match(/^(.+?)\s*[（(](\d+)[）)]$/);
+    if (counted && dictionary[counted[1].trim()]) return `${translate(counted[1].trim())}${locale === 'zh-CN' ? '（' : ' ('}${counted[2]}${locale === 'zh-CN' ? '）' : ')'}`;
     if (locale !== 'zh-CN' || !editor) return label;
     const known = insensitiveCopy.get(label.toLowerCase());
     if (known) return known;

@@ -1,4 +1,4 @@
-import { component, indexDocument, updateComponent, removeComponent } from './componentDocument.js';
+import { component, indexDocument, updateComponent, removeComponent, uniqueSceneName } from './componentDocument.js';
 import { copyFragment, pasteFragment, patchComponentProperties } from './componentOperations.js';
 import { pageContext, flowInitialIndex } from './componentTree.js';
 
@@ -110,6 +110,8 @@ export function addWorkflowStep(document, { source, screenId, beforeId, afterId,
     next = updateComponent(next, flow.id, { children: [...flow.children.slice(0, at), screen, ...flow.children.slice(at)] });
   }
   // Inserting an intro before the current initial step starts the flow there.
+  const created = indexDocument(next).nodes.get(id);
+  next = updateComponent(next, id, { name: uniqueSceneName(next, created.name, id) });
   next = setInitialStep(next, before === initial?.id || steps.length === 1 ? id : initial.id);
   return { document: next, id };
 }
@@ -124,7 +126,7 @@ export function moveWorkflowStep(document, id, direction) {
 export function duplicateWorkflowStep(document, id) {
   const { initial } = workflowContext(document);
   const result = addWorkflowStep(document, { source: document, screenId: id, afterId: id });
-  if (result.id) result.document = setInitialStep(updateComponent(result.document, result.id, { name: `${indexDocument(document).nodes.get(id).name} 副本` }),initial.id);
+  if (result.id) result.document = setInitialStep(updateComponent(result.document, result.id, { name: uniqueSceneName(result.document, `${indexDocument(document).nodes.get(id).name} 副本`, result.id) }),initial.id);
   return result;
 }
 export function removeWorkflowStep(document, id) {

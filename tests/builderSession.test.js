@@ -95,6 +95,8 @@ test('actual App links, edits and saves an existing canvas popup without copying
   const click=async name=>{const target=app.root.findAll(item=>item.type==='button'&&(text(item).trim()===name||item.props['aria-label']===name))[0];assert.ok(target,`button ${name}`);await act(async()=>target.props.onClick({stopPropagation(){},preventDefault(){}}));};
   const editor=()=>app.root.findAll(item=>typeof item.type==='function'&&item.type.name==='ComponentEditor'&&!item.props.isExitOffer)[0];
   const nameField=()=>app.root.findAll(item=>item.type==='label'&&item.props.className==='ne-field'&&item.children.some(child=>typeof child==='object'&&['页面名称','弹窗名称'].includes(text(child))))[0].findByType('input');
+  const widthField=()=>app.root.findAll(item=>item.type==='input'&&item.props['aria-label']==='固定宽度')[0];
+  const fixedWidth=async()=>{const field=app.root.findAll(item=>item.type==='label'&&item.props.className==='rc-field'&&item.children.some(child=>typeof child==='object'&&text(child)==='宽度'))[0];await act(async()=>field.findAll(item=>item.type==='button'&&item.props['aria-label']==='固定')[0].props.onClick());};
   const open=async()=>{const row=app.root.findAll(item=>item.type==='tr'&&item.findAllByType('strong').some(label=>text(label)==='test 2'))[0];await act(async()=>row.props.onClick());await click('Open Builder');};
   try{
     await act(async()=>{app=TestRenderer.create(React.createElement(App));});await open();await click('更换模板');
@@ -114,7 +116,8 @@ test('actual App links, edits and saves an existing canvas popup without copying
     const beforeZoom=structuredClone(editor().props.initialDocument);
     await act(async()=>app.root.findAll(item=>item.type==='select'&&item.props['aria-label']==='画布缩放')[0].props.onChange({target:{value:'0.75'}}));
     assert.deepEqual(editor().props.initialDocument,beforeZoom,'workspace zoom never writes component parameters');
-    await act(async()=>nameField().props.onChange({target:{value:'已编辑挽留优惠'}}));
+    await fixedWidth();await act(async()=>widthField().props.onChange({target:{value:'280'}}));
+    assert.equal(app.root.findAll(item=>item.type==='input'&&item.props['aria-label']==='重命名图层').length,0);
     await click('选择画板：特权首页');
     assert.equal(nameField().props.value,'特权首页','selecting main board restores the main property owner');
     const main=editor().props.initialDocument,offerId=closeTargetId(main,workflowContext(main).initial.id);
@@ -122,12 +125,12 @@ test('actual App links, edits and saves an existing canvas popup without copying
     assert.equal(listSavedPaywalls(store).length,0,'conversion and editing are not autosaved');
     await click('保存');assert.equal(listSavedPaywalls(store).length,1);
     assert.equal(closeTargetId(readSavedPaywall(store,'test-2').document,workflowContext(main).initial.id),offerId);
-    assert.equal(indexDocument(readSavedPaywall(store,'test-2').document).nodes.get(offerId).name,'已编辑挽留优惠');
-    await click('付费墙设置');await click('编辑关联内容');await act(async()=>nameField().props.onChange({target:{value:'不应保存的新修改'}}));
-    await click('放弃修改');await click('付费墙设置');await click('编辑关联内容');assert.equal(nameField().props.value,'已编辑挽留优惠');
+    assert.equal(indexDocument(readSavedPaywall(store,'test-2').document).nodes.get(offerId).props.width,280);
+    await click('付费墙设置');await click('编辑关联内容');await act(async()=>widthField().props.onChange({target:{value:'320'}}));
+    await click('放弃修改');await click('付费墙设置');await click('编辑关联内容');assert.equal(widthField().props.value,'280');
     await click('选择画板：特权首页');await click('Paywalls');await open();
     assert.equal(closeTargetId(editor().props.initialDocument,workflowContext(main).initial.id),offerId);
-    await click('付费墙设置');await click('编辑关联内容');assert.equal(nameField().props.value,'已编辑挽留优惠');
+    await click('付费墙设置');await click('编辑关联内容');assert.equal(widthField().props.value,'280');
     let expanded=addWorkflowStep(addWorkflowStep(editor().props.initialDocument).document).document;
     const sources=workflowContext(expanded).steps.slice(0,2);
     for(const source of sources){

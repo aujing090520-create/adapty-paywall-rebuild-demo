@@ -1,4 +1,4 @@
-import { component, indexDocument, insertComponent, removeComponent, updateComponent } from './componentDocument.js';
+import { component, indexDocument, insertComponent, removeComponent, updateComponent, uniqueSceneName } from './componentDocument.js';
 import { workflowContext } from './workflow.js';
 import { copyFragment, pasteFragment } from './componentOperations.js';
 
@@ -31,9 +31,7 @@ export function modalPresentationDocument(document, id) {
 }
 
 export function createRetentionModal(document, sourceId, blank = false) {
-  const id = crypto.randomUUID(), names = new Set([...indexDocument(document).nodes.values()].map((node) => node.name));
-  let name = '挽留弹窗', number = 2;
-  while (names.has(name)) name = `挽留弹窗 ${number++}`;
+  const id = crypto.randomUUID(), name = uniqueSceneName(document, '挽留弹窗');
   const text = (key, value, props = {}) => component(`${id}/${key}`, 'Text', value, { text: value, textAlign: 'center', ...props });
   const button = (key, value, props = {}) => component(`${id}/${key}`, 'Button', value, { action: { action: 'CloseSheet' }, paddingVertical: 12, ...props }, [text(`${key}/label`, value)]);
   const node = component(id, 'BottomSheet', name, { presentation: 'overlay', retentionScene: true, background: '#ffffff', radius: 8, gap: 16, paddingHorizontal: 24, paddingVertical: 24 }, blank ? [] : [
@@ -58,7 +56,8 @@ export function importCloseTarget(document, sourceId, source, nodeId) {
   const result = pasteFragment(document, document.root.id, fragment);
   const id = result.ids[0];
   if (!id) return { document, error: '无法复制该内容' };
-  return { document: bindCloseTarget(result.document, sourceId, id), id };
+  const next = updateComponent(result.document, id, {name: uniqueSceneName(result.document, indexDocument(result.document).nodes.get(id).name, id)});
+  return { document: bindCloseTarget(next, sourceId, id), id };
 }
 
 export function removeCanvasModal(document, id) {

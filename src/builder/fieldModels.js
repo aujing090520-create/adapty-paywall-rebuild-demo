@@ -67,6 +67,7 @@ export function isTextNodeType(type) {
 }
 
 export const zhCopy = {
+  'More than 1 product': '多个商品', 'With Image or Video': '含图片或视频', 'Offer code': '优惠码',
   'Paywall screen': '付费墙页面', 'Welcome Screen': '欢迎页面', 'Step': '步骤', 'Slide': '轮播页', 'Tab': '标签页',
   'Title': '标题', 'Description': '描述', 'Continue button': '继续按钮', 'Close button': '关闭按钮', 'Restore Purchases': '恢复购买',
   'Next step': '下一步骤', 'Previous step': '上一步骤', 'Select a screen': '选择页面', 'Add step': '添加步骤', 'Initial step': '初始步骤',
