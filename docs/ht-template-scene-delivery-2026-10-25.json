@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "result_level": "已完成",
+  "scope": "会员套餐页、支付未完成页、SKU半窗三张模板的默认场景结构和样式",
+  "source_commit": "2182b69",
+  "production_url": "https://adapty-paywall-rebuild-demo.vercel.app/",
+  "ledger": { "total": 3, "verified": 3, "unresolved": 0 },
+  "issues": [
+    { "id": "HTD-01", "priority": "P1", "status": "已修改", "outcome": "会员场景分组、关闭、套餐标题、原始素材叠放、SKU月均价" },
+    { "id": "HTD-02", "priority": "P1", "status": "已修改", "outcome": "来源背景遮罩、恢复半窗、紧凑价格与角标、关闭按钮" },
+    { "id": "HTD-03", "priority": "P1", "status": "已修改", "outcome": "SKU标题副标题栏、358x156图片槽、原价绑定、原生购买和关闭" }
+  ],
+  "coverage": { "affected": ["HTD-01", "HTD-02", "HTD-03"], "verified": ["HTD-01", "HTD-02", "HTD-03"] },
+  "verification_evidence": [
+    "Original Figma specifications and actual preview nodes read; source manifest in ht-template-scene-rebuild-2026-10-25.md",
+    "302/302 tests passed, final build 2.89 seconds, git diff whitespace check passed",
+    "Actual isolated local builder applied/saved/reopened each template; correct group, real PurchaseButton and close control retained",
+    "Mounted actual preview tests verify each template's editable checkout, unchanged SKU ownership and dismissal callback",
+    "Original production URL serves index-cB2aqB1g.js matching final build",
+    "Production IAB tab26 applied all three templates: member sheet/monthly 40.67 and both assets; recovery sheet/monthly 28.17 and both assets; SKU header/title owner/reference 488 and original art; all images loaded",
+    "Production SKU interactive close renders closed paywall state; returned to editor without saving production test content",
+    "/tmp/ht-membership-production.png",
+    "/tmp/ht-recovery-production.png",
+    "/tmp/ht-sku-production.png",
+    "/tmp/ht-membership-plans-final.png",
+    "/tmp/ht-payment-recovery-final.png",
+    "/tmp/ht-sku-sheet-final.png"
+  ],
+  "evidence_boundaries": [
+    "Structural rebuild applies to fresh/reapplied defaults only; existing saved drafts are deliberately not overwritten",
+    "Business copy, SKU prices, discounts, legal text and links remain current configuration rather than Figma placeholder values; retained legal text can extend scrolling",
+    "Membership contains one actual configured Slide and one indicator; no fake six-page carousel is claimed",
+    "Visible sheets are editable groups inside one Screen scene; canvas step creation stays available",
+    "No whole-page reference raster used as UI, no source image edits, no Figma writeback, no real payment, no full RevenueCat parity claimed"
+  ],
+  "next_action": "本次范围无剩余动作"
+}

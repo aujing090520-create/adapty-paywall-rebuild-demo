@@ -30,3 +30,5 @@
 - Final fresh captures: `/tmp/ht-membership-plans-final.png`, `/tmp/ht-payment-recovery-final.png`, `/tmp/ht-sku-sheet-final.png`. Native viewport is 830px; scroll totals 849, 833 and 875px. All referenced images loaded successfully.
 - Full parameter reference regenerated: 32 component types, 3367 rows. New bindings explicitly distinguish SKU monthly price and SKU reference total.
 - Production verification is recorded in the delivery receipt after release.
+
+Production closure: source `2182b69` pushed; original domain serves `index-cB2aqB1g.js`. Actual IAB applied each of the three templates and read the new groups, SKU monthly/reference values, native checkout/close controls and loaded assets. SKU preview close rendered the closed state, then returned to the editor. No production test content saved. All three issues are 已修改; receipt `ht-template-scene-delivery-2026-10-25.json` records exact boundaries and screenshots.
