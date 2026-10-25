@@ -60,6 +60,7 @@ export function indexDocument(document) {
 }
 export function validDocument(document) {
   if (document?.version !== DOCUMENT_VERSION || document.root?.type !== 'Screen' || !document.products || typeof document.products !== 'object') return false;
+  if (document.settings !== undefined && (!document.settings || typeof document.settings !== 'object' || Array.isArray(document.settings) || document.settings.exitOfferOfferingId !== undefined && typeof document.settings.exitOfferOfferingId !== 'string')) return false;
   if(document.fonts!==undefined&&(!Array.isArray(document.fonts)||document.fonts.some(font=>!font||typeof font.id!=='string'||typeof font.family!=='string'||!Array.isArray(font.faces)||font.faces.some(face=>!face||typeof face.src!=='string'))))return false;
   const ids = new Set();
   const visit = (node, depth = 0) => {

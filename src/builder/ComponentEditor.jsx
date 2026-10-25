@@ -2,7 +2,9 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Plus, Trash2, Copy, ChevronRight, ChevronDown, ArrowUp, ArrowDown, Eye, EyeOff, Pencil, Save, FolderOpen, X, Layers, Type, Image as ImageIcon, Package as PackageIcon, MoreHorizontal, MousePointerClick, Smartphone, Workflow, GalleryHorizontal, PanelTop, PanelBottom, Clock3, ToggleLeft, ListOrdered, Video, Star, Code, CreditCard, Columns2, Rows2 } from 'lucide-react';
 import { COMPONENT_NAMES, CONTAINER_TYPES, componentProps, importComponentDocument, indexDocument, validDocument, updateComponent, insertComponent, canContain, readComponentDocument, saveComponentDocument, cloneComponent, captureNativeComponent, resolveComponentText } from './componentDocument.js';
 import { DEMO_SKUS } from '../productPricing.js';
-import ComponentPreview from './ComponentPreview.jsx';
+import PaywallPresentation from './PaywallPresentation.jsx';
+import PaywallSettings from './PaywallSettings.jsx';
+import { Settings } from 'lucide-react';
 import ComponentPicker from './ComponentPicker.jsx';
 import LayerActionsMenu from './LayerActionsMenu.jsx';
 import { createCatalogComponent, upgradeCanonicalComponents, catalogFor, createTabSelector } from './componentCatalog.js';
@@ -21,7 +23,7 @@ function Field({ label, children }) { return <label className="ne-field"><span>{
 function Select({ label, value, onChange, options }) { return <Field label={label}><select aria-label={label} value={value ?? ''} onChange={(event) => onChange(event.target.value)}>{options.map((option) => { const [key, name] = Array.isArray(option) ? option : [option, option]; return <option key={key} value={key}>{name}</option>; })}</select></Field>; }
 function readLibrary() { try { const value = JSON.parse(localStorage.getItem(libraryKey) ?? '[]'); return Array.isArray(value) ? value.filter((item) => item?.name && validDocument({ version: 3, products: {}, fonts:item.fonts, root: { id: '$library', type: 'Screen', props: {}, children: [item.node] } })) : []; } catch { return []; } }
 
-export default function ComponentEditor({ template, initialNodes, initialDocument, onDocumentChange, persistence = 'legacy' }) {
+export default function ComponentEditor({ template, initialNodes, initialDocument, onDocumentChange, persistence = 'legacy', offerings = [], currentPaywallId }) {
   const [initial] = useState(() => {
     try {
       const saved = persistence === 'session' ? initialDocument : readComponentDocument(localStorage, template?.id ?? 'blank');
@@ -48,6 +50,7 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
   const [layerMenu,setLayerMenu] = useState(null), [renaming,setRenaming] = useState(null);
   const [library, setLibrary] = useState(readLibrary), [libraryOpen, setLibraryOpen] = useState(false);
   const [libraryName, setLibraryName] = useState('');
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const { nodes, parents } = useMemo(() => indexDocument(document), [document]);
   const pages = pageContext(document, navigation);
   const { surfaces, surface, triggers } = surfaceContext(document, navigation, selectedId);
@@ -72,6 +75,7 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
   }, [document, blockedSave, persistence]);
   useEffect(() => { if (persistence === 'session') return; const flush = () => { if (!blockedSave) saveComponentDocument(localStorage, latest.current); }; window.addEventListener('pagehide', flush); return () => { flush(); window.removeEventListener('pagehide', flush); }; }, [blockedSave, persistence]);
   const select = (id) => {
+    setSettingsOpen(false);
     setSelectedId(id); setEditing(true);
     const reveal = {}; const expand = new Set(); let current = nodes.get(id);
     while (current) {
@@ -143,6 +147,7 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
   const changeProduct = (key, value) => setDocument((current) => ({ ...current, products: { ...current.products, [p.dataKey ?? selected.id]: { ...current.products[p.dataKey ?? selected.id], [key]: value } }, root: updateComponent(current, selected.id, { props: { dataKey: p.dataKey ?? selected.id } }).root }));
   return <div className="native-editor" data-no-translate="true">
     {saveError && <p className="ne-error" role="alert">{saveError}{blockedSave ? '。为保护原记录，本次未覆盖保存。' : ''}</p>}
+    <div className="ne-workspace-tools"><button type="button" className={`secondary${settingsOpen ? ' active' : ''}`} aria-pressed={settingsOpen} onClick={() => { setSettingsOpen((value) => !value); setAddTarget(null); }}><Settings size={16}/>付费墙设置</button></div>
     <div className="builder ne-builder">
       <aside className="ne-layers">{pickerParent?<ComponentPicker parent={pickerParent} onBack={()=>setAddTarget(null)} onAdd={add}/>:<><section className="ne-page-management" aria-label="页面管理"><div className="ne-page-heading"><strong>页面</strong>{pages.flow&&<button className="ne-icon" title="全局外观" aria-label="全局外观" onClick={()=>select(document.root.id)}><Layers size={15}/></button>}</div><Select label="编辑页面" value={pages.active.id} options={pages.pages.map((page)=>[page.id,`${page.name}${isUnconfiguredDetailPage(page)?' · 内容待补充':''}`])} onChange={(id)=>{setAddTarget(null);select(id);}}/></section><header><strong>图层</strong><button className="ne-icon" title="添加组件" aria-label="添加组件" onClick={() => openAdd(insertionParent.id===document.root.id?pages.active.id:insertionParent.id)}><Plus size={17} /></button></header><div className="ne-tree">
         <div role="tree" aria-label="组件图层">{renderTree(pages.active)}{pages.shared.some((node)=>!isOverlaySurface(node))&&<><div className="ne-shared-heading">共享图层</div>{pages.shared.filter((node)=>!isOverlaySurface(node)).map((node)=>renderTree(node))}</>}</div>
@@ -151,11 +156,12 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
       </aside>
       <div className="canvas-area ne-canvas"><div className="device-controls"><span>iPhone · 390 × 844</span><button className="secondary" onClick={() => { setEditing(!editing); setNavigation((current)=>({ ...current, overlay: surface?.id ?? null })); }}>{editing ? <Eye size={15} /> : <Pencil size={15} />}{editing ? '交互预览' : '返回编辑'}</button></div>
         {surface&&<div className="ne-surface-context" aria-label="当前弹层"><button type="button" className="ne-icon" aria-label="返回主页面" title="返回主页面" onClick={()=>select(pages.active.id)}><ArrowUp size={16}/></button><strong>{surface.name}</strong>{triggers.map((node)=><button type="button" className="ne-surface-trigger" key={node.id} onClick={()=>select(node.id)} title={`定位触发按钮：${node.name}`}>{node.name}</button>)}</div>}
-        {isUnconfiguredDetailPage(pages.active)&&<div className="ne-page-draft" role="status">内容待补充 · 暂不开放预览跳转</div>}<ComponentPreview document={document} selectedId={selected.id} onSelect={select} editing={editing} navigation={navigation} onNavigate={(next)=>setNavigation((current)=>({...current,...next}))} onStatus={setStatus} />{status && <div className="ne-status" role="status"><span>{status}</span><button className="ne-icon" title="关闭提示" onClick={() => setStatus('')}><X size={14} /></button></div>}</div>
-      <aside className="ne-properties"><header><strong>{COMPONENT_NAMES[selected.type]}</strong><div className="ne-actions"><button className="ne-icon" title="保存到组件库" aria-label="保存到组件库" onClick={() => setLibraryOpen(true)}><Save size={16} /></button><button className="ne-icon" title="打开组件库" aria-label="打开组件库" onClick={() => setLibraryOpen(true)}><FolderOpen size={16} /></button></div></header>
+        {isUnconfiguredDetailPage(pages.active)&&<div className="ne-page-draft" role="status">内容待补充 · 暂不开放预览跳转</div>}<PaywallPresentation key={editing ? 'editing' : 'interactive'} document={document} selectedId={selected.id} onSelect={select} editing={editing} navigation={navigation} onNavigate={(next)=>setNavigation((current)=>({...current,...next}))} onStatus={setStatus} offerings={offerings} currentPaywallId={currentPaywallId}/>{status && <div className="ne-status" role="status"><span>{status}</span><button className="ne-icon" title="关闭提示" onClick={() => setStatus('')}><X size={14} /></button></div>}</div>
+      <aside className="ne-properties">{settingsOpen ? <><header><strong>付费墙设置</strong><button type="button" className="ne-icon" aria-label="返回组件属性" title="返回组件属性" onClick={() => setSettingsOpen(false)}><X size={16}/></button></header><PaywallSettings document={document} offerings={offerings} currentPaywallId={currentPaywallId} onChange={(settings) => setDocument((current) => ({ ...current, settings }))}/></> : <><header><strong>{COMPONENT_NAMES[selected.type]}</strong><div className="ne-actions"><button className="ne-icon" title="保存到组件库" aria-label="保存到组件库" onClick={() => setLibraryOpen(true)}><Save size={16} /></button><button className="ne-icon" title="打开组件库" aria-label="打开组件库" onClick={() => setLibraryOpen(true)}><FolderOpen size={16} /></button></div></header>
         <section><Field label={isPageRoot?'页面名称':'图层名称'}><input value={selected.name} onChange={(event) => setDocument((current) => updateComponent(current, selected.id, { name: event.target.value }))} /></Field><div className="ne-actions"><button className="ne-icon" title="上移" aria-label="上移" disabled={isPageRoot || !parent || parent.children[0]?.id === selected.id} onClick={() => reorder(-1)}><ArrowUp size={16} /></button><button className="ne-icon" title="下移" aria-label="下移" disabled={isPageRoot || !parent || parent.children.at(-1)?.id === selected.id} onClick={() => reorder(1)}><ArrowDown size={16} /></button><button className="ne-icon" title="复制组件" aria-label="复制组件" disabled={isPageRoot || !parent} onClick={() => duplicateAt(selected.id)}><Copy size={16} /></button><button className="ne-icon danger" title="删除组件" aria-label="删除组件" disabled={isPageRoot || !parent} onClick={() => { setDocument((current) => removeComponent(current, selected.id)); setSelectedId(parent.id); }}><Trash2 size={16} /></button></div>{!isPageRoot&&<Select label="显示状态" value={p.hidden ? 'hidden' : 'visible'} onChange={(value) => patch({ hidden: value === 'hidden' })} options={[[ 'visible', '显示' ], [ 'hidden', '隐藏' ]]} />}
         </section>
         <RevenueCatProperties key={selected.id} selected={selected} p={p} patch={patch} document={document} nodes={nodes} parents={parents} resolveText={resolveComponentText} findPackage={findPackage} changeProduct={changeProduct} fieldNames={fieldNames} demoSkus={DEMO_SKUS} navigation={navigation} setNavigation={patchNavigation} onStatus={setStatus} onFontsChange={saveFonts} onPageControl={(enabled)=>setDocument((current)=>togglePageControl(current,selected.id,enabled))} onMediaType={(type) => setDocument((current) => updateComponent(current, selected.id, { type }))} setDefaultPackage={(value) => setDocument((current) => defaultPackagePatch(current, selected.id, value))} />
+        </>}
       </aside>
     </div>
     {menuNode&&<LayerActionsMenu menu={layerMenu} node={menuNode} isRoot={menuNode.id===document.root.id||menuNode.id===pages.active.id} canPaste={Boolean(editorClipboard.fragment?.roots.every((node)=>canContain(CONTAINER_TYPES.has(menuNode.type)?menuNode:nodes.get(parents.get(menuNode.id)),node)))} canWrap={Boolean(parents.get(menuNode.id)&&canContain(nodes.get(parents.get(menuNode.id)),{type:'Stack'})&&canContain({type:'Stack'},menuNode))} hasStyles={Boolean(editorClipboard.styles)} onAction={menuAction} onClose={()=>setLayerMenu(null)}/>}

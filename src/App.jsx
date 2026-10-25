@@ -11,6 +11,7 @@ import { linkActionFor, visibleLinkLabels } from "./linkActions.js";
 import { DEMO_SKUS, PRICE_DISPLAY_MODES, billingMonths, productPriceFields, resolveProductPrice, skuById, skuCopy, templateSkuId } from "./productPricing.js";
 import { clearLocalDemoSettings, beginLocalDemoReset, cancelLocalDemoReset } from "./templateStorage.js";
 import { listSavedPaywalls, readSavedPaywall, savePaywall, removeSavedPaywall } from './paywallStorage.js';
+import { savedOfferings } from './builder/exitOffers.js';
 import { clearCustomBundles } from "./builder/customStorage.js";
 import { productTranslation } from "./productPlacement.js";
 import { productArrangement } from "./productArrangement.js";
@@ -404,6 +405,7 @@ export default function App() {
   }, [paywalls, search, stateFilter]);
 
   const selected = paywalls.find((item) => item.id === selectedId) ?? paywalls[0];
+  const offerings = useMemo(() => savedOfferings(listSavedPaywalls(window.localStorage), builderOrigin === 'create' ? undefined : selectedId), [paywalls, builderOrigin, selectedId]);
 
   const restoreBuilder = (record = null) => {
     const index = record ? templates.findIndex((template) => template.id === record.templateId) : -1;
@@ -590,6 +592,7 @@ export default function App() {
               builderDirty={builderDocument !== savedDocument}
               saveBuilder={saveBuilder}
               discardBuilder={discardBuilder}
+              offerings={offerings}
               setBuilderNodes={setBuilderNodes}
               updateBuilderNode={updateBuilderNode}
               removeBuilderNode={removeBuilderNode}
@@ -621,6 +624,7 @@ export default function App() {
               builderDirty={builderDocument !== savedDocument}
               saveBuilder={saveBuilder}
               discardBuilder={discardBuilder}
+              offerings={offerings}
               setBuilderNodes={setBuilderNodes}
               updateBuilderNode={updateBuilderNode}
               removeBuilderNode={removeBuilderNode}
@@ -842,7 +846,7 @@ function CreatePaywall({ draft, setDraft, setView, setModal }) {
   );
 }
 
-function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setView, duplicate, setModal, markUnknown, builderNodes, setBuilderNodes, updateBuilderNode, removeBuilderNode, activeNode, setActiveNode, appliedTemplate, builderDocument, setBuilderDocument, builderRevision, builderDirty, saveBuilder, discardBuilder, templateLinks, setTemplateLinks, notify }) {
+function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setView, duplicate, setModal, markUnknown, builderNodes, setBuilderNodes, updateBuilderNode, removeBuilderNode, activeNode, setActiveNode, appliedTemplate, builderDocument, setBuilderDocument, builderRevision, builderDirty, saveBuilder, discardBuilder, offerings, templateLinks, setTemplateLinks, notify }) {
 
   const [productPickerOpen, setProductPickerOpen] = useState(false);
   const [transientProducts, setTransientProducts] = useState([]);
@@ -853,7 +857,7 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
       {isNew ? <><button className="back" onClick={() => setView("create")}><ArrowLeft size={18} /> 创建付费墙</button><div className="workspace-heading"><div><span className="eyebrow">新建付费墙</span><h1>{selected.name}</h1></div></div></> : <WorkspaceHeader selected={selected} setView={setView} duplicate={duplicate} setModal={setModal} markUnknown={markUnknown} />}
       <div className="detail-tabs"><button onClick={() => setView(isNew ? "create" : "general")}>General</button><button className="active">Builder & Generator</button></div>
       <div className="template-context observed-tree"><span>模板</span><strong>{template.title}</strong><button className="secondary" onClick={() => setModal({ kind: "templates" })}><LayoutTemplate size={15} /> 更换模板</button><div className="builder-save-actions"><span role="status">{builderDirty ? '未保存' : '已保存'}</span><button type="button" className="secondary" onClick={discardBuilder}>放弃修改</button><button type="button" className="primary" onClick={saveBuilder}><Save size={15}/>保存</button></div></div>
-      <ComponentEditor key={`${template.id}:${builderRevision}`} template={template} initialNodes={initialNodes} initialDocument={builderDocument} onDocumentChange={setBuilderDocument} persistence="session" />
+      <ComponentEditor key={`${template.id}:${builderRevision}`} template={template} initialNodes={initialNodes} initialDocument={builderDocument} onDocumentChange={setBuilderDocument} persistence="session" offerings={offerings} currentPaywallId={isNew ? undefined : selected.id}/>
     </section>;
   }
 

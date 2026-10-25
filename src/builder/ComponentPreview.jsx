@@ -14,6 +14,7 @@ import CustomComponentPreview from './CustomComponentPreview.jsx';
 import {safeTextLink,richTextFontFamily} from './richTextModel.js';
 import {textRuleProps} from './textRules.js';
 import {fontStyles} from './fontStyles.js';
+import { isExitOfferStep } from './exitOffers.js';
 
 const PreviewContext = createContext(null);
 const TimerContext = createContext(null);
@@ -219,7 +220,7 @@ function Countdown({ props }) {
   const parts = [Math.floor(remaining / 3600), Math.floor(remaining / 60) % 60, remaining % 60];
   return <span className="nc-countdown"><span style={{ color: props.prefixColor }}>{props.prefix}</span>{parts.map((part, index) => <React.Fragment key={index}>{index > 0 && <span>:</span>}<strong style={{ background: props.digitBackground, borderRadius: 4, padding: '0 3px' }}>{String(part).padStart(2, '0')}</strong></React.Fragment>)}<span>{props.suffix}</span></span>;
 }
-export default function ComponentPreview({ document, selectedId, onSelect, editing, navigation, onNavigate, onStatus }) {
+export default function ComponentPreview({ document, selectedId, onSelect, editing, navigation, onNavigate, onStatus, onDismiss, dismissRequest = 0 }) {
   const [runtime, setRuntime] = useState({});
   const previousDocument = useRef(document);
   const viewport = useRef(null), [scale, setScale] = useState(0.82);
@@ -263,7 +264,9 @@ export default function ComponentPreview({ document, selectedId, onSelect, editi
       while(flow&&flow.type!=='Flow')flow=nodes.get(parents.get(flow.id));
       const index=flow?(runtime[flow.id]??flow.props.defaultIndex??0):0;
       if(flow&&index>0){const next={[flow.id]:index-1};setRuntime((current)=>({...current,...next}));onNavigate?.(next);if(viewport.current)viewport.current.scrollTop=0;}
-      else onStatus('关闭预览');
+      else dismissPaywall();
+    } else if (action.action === 'Dismiss') {
+      dismissPaywall();
     } else if (['OpenURL','OpenPrivacy','OpenTerms'].includes(action.action)) {
       const link = actionLink(action);
       if (!link) onStatus('请填写有效链接；仅深链方式支持应用协议');
@@ -296,6 +299,13 @@ export default function ComponentPreview({ document, selectedId, onSelect, editi
       onStatus('网页付费墙预览：未发起真实交易');
     } else onStatus(({ RestorePurchases: '恢复购买预览', Dismiss: '关闭预览', WebCheckout: '网页结账预览', OfferCodeRedemption: '优惠码兑换预览', OpenPage: '页面跳转预览' }[action.action]) ?? '未配置点击动作');
   };
+  const dismissPaywall = () => onDismiss ? onDismiss({ eligible: isExitOfferStep(document, runtime) }) : onStatus('关闭预览');
+  const previousDismissRequest = useRef(dismissRequest);
+  useEffect(() => {
+    if (previousDismissRequest.current === dismissRequest) return;
+    previousDismissRequest.current = dismissRequest;
+    if (!editing) dismissPaywall();
+  }, [dismissRequest, editing]);
   const {nodes:nodeIndex,parents:parentIndex} = indexDocument(document), overlay = nodeIndex.get(runtime.overlay);
   const packages = activeComponents(document,runtime).filter((item)=>item.type==='Package');
   const selectedPackage = packages.find((item)=>item.id===runtime.selectedPackage) ?? packages.find((item)=>runtime[`package:${item.props.group??item.id}`]===item.id) ?? packages.find((item)=>item.props.defaultSelected && runtime[`package:${item.props.group??item.id}`]===undefined);
