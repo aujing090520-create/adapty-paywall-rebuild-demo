@@ -1,6 +1,6 @@
 import ComponentEditor from './builder/ComponentEditor.jsx';
 import { Field } from './builder/BuilderProperties.jsx';
-import { isTextNodeType, productPackageRows, zhCopy, listRowsFor, privilegeRowsFor, agreementSegmentsFor, textRunsFor, validTextLink, helloTalkTemplateDefaults, heroTitleParts, privilegeColumnsFor, safeButtonUrl } from './builder/fieldModels.js';
+import { isTextNodeType, productPackageRows, listRowsFor, privilegeRowsFor, agreementSegmentsFor, textRunsFor, validTextLink, helloTalkTemplateDefaults, heroTitleParts, privilegeColumnsFor, safeButtonUrl } from './builder/fieldModels.js';
 import { PRODUCT_LAYOUTS, productLayout, PRODUCT_PART_DEFAULT_SIZES, HT_PRODUCT_DESIGN_DEFAULTS, PRODUCT_PARTS, productFontSize, validHexColor, productGradient, productPartStyle } from './products/productStyleModel.js';
 import { useProductCardPlacement } from './products/useProductCardPlacement.js';
 import { ProductPackageCard } from './products/ProductPackageCard.jsx';
@@ -15,6 +15,7 @@ import { savedOfferings, createExitOffer, workspaceExitOfferIds, exitOfferId, bi
 import { workflowContext } from './builder/workflow.js';
 import { indexDocument, importComponentDocument } from './builder/componentDocument.js';
 import { clearCustomBundles } from "./builder/customStorage.js";
+import { localizeInterface } from './interfaceLocalization.js';
 import { productTranslation } from "./productPlacement.js";
 import { productArrangement } from "./productArrangement.js";
 import { PRODUCT_REGIONS, contentRegions, moveContentPart, contentSlot } from "./productContentOrder.js";
@@ -317,34 +318,6 @@ const localeLabels = {
 };
 
 
-
-const enCopy = { ...Object.fromEntries(Object.entries(zhCopy).map(([english, chinese]) => [chinese, english])), "特权列表": "List", "商品套餐": "Products" };
-
-function localizeInterface(root, locale) {
-  if (!root) return;
-  const dictionary = locale === "zh-CN" ? zhCopy : enCopy;
-  const replace = (value) => {
-    const leading = value.match(/^\s*/)?.[0] ?? "";
-    const trailing = value.match(/\s*$/)?.[0] ?? "";
-    const core = value.slice(leading.length, value.length - trailing.length);
-    return dictionary[core] ? leading + dictionary[core] + trailing : value;
-  };
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-    acceptNode: (node) => {
-      const parent = node.parentElement;
-      return parent && !parent.closest("[data-no-translate]") && !["SCRIPT", "STYLE"].includes(parent.tagName) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
-    },
-  });
-  const nodes = [];
-  while (walker.nextNode()) nodes.push(walker.currentNode);
-  nodes.forEach((node) => { const next = replace(node.nodeValue); if (next !== node.nodeValue) node.nodeValue = next; });
-  root.querySelectorAll("[placeholder],[aria-label],[title]").forEach((element) => {
-    ["placeholder", "aria-label", "title"].forEach((attribute) => {
-      const value = element.getAttribute(attribute);
-      if (value && dictionary[value]) element.setAttribute(attribute, dictionary[value]);
-    });
-  });
-}
 
 const freshPaywallDraft = () => ({
   name: 'RESEARCH - Rebuild Draft', businessType: paywallBusinessTypes[0], businessScene: paywallScenesByBusinessType[paywallBusinessTypes[0]][0], publicAccount: paywallPublicAccounts[0], note: '', offerRows: defaultPaywallOfferRows(), defaultProductId: 'DEMO-BLUE-YEAR', products: [],

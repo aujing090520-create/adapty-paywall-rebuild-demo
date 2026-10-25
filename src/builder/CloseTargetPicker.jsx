@@ -4,6 +4,7 @@ import { canvasCloseTargets } from './closeTargets.js';
 import { exitContentChoices, exitOfferTarget } from './exitOffers.js';
 import { workflowContext } from './workflow.js';
 import { indexDocument } from './componentDocument.js';
+import { matchesInterfaceText } from '../interfaceLocalization.js';
 
 export default function CloseTargetPicker({ document, source, offerings = [], boundOfferings = [], initialId, onBack, onCreate, onBind, onBindSaved, onImport, onSourceChange }) {
   const [tab, setTab] = useState('canvas'), [query, setQuery] = useState('');
@@ -11,7 +12,7 @@ export default function CloseTargetPicker({ document, source, offerings = [], bo
   const [library, setLibrary] = useState(null);
   const targets = canvasCloseTargets(document, source.id);
   const current = exitOfferTarget(document, offerings, undefined, source.id);
-  const match = (name) => name.toLowerCase().includes(query.toLowerCase());
+  const match = (name) => matchesInterfaceText(name, query);
   const choose = (item) => setSelected(item);
   const localNode = targets.find((node) => node.id === selected?.id);
   const apply = () => selected?.local ? onBind(selected.id) : selected?.existing ? onBindSaved(selected.owner) : selected?.source && onImport(selected.source, selected.id);
