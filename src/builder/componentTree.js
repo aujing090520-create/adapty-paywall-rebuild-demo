@@ -46,8 +46,13 @@ export function isUnconfiguredDetailPage(page) {
 export function treeChildren(node, navigation = {}) {
   if(node.type==='Countdown' && node.props.fallbackEnabled===false)return node.children.filter((child)=>child.props.state!=='fallback');
   if (node.type !== 'Flow') return node.children;
-  const index = navigation[node.id] ?? node.props.defaultIndex ?? 0;
+  const index = navigation[node.id] ?? flowInitialIndex(node);
   return node.children.length ? [node.children[index] ?? node.children[0]] : [];
+}
+
+export function flowInitialIndex(flow) {
+  const at = flow.children.findIndex((page) => page.id === flow.props.initialStepId);
+  return at >= 0 ? at : flow.props.defaultIndex ?? 0;
 }
 
 export function compositionSummary(node) {

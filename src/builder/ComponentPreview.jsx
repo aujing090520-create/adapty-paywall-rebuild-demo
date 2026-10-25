@@ -3,7 +3,8 @@ import useEmblaCarousel from 'embla-carousel-react';
 import Fade from 'embla-carousel-fade';
 import { Check, LockKeyhole, Star, Bell, Moon, Heart, Users, Clock3, Gift, ChevronRight, Dumbbell, Download, MapPin, Flower2, Activity, Ticket, Ban, Blocks, Archive, Shirt, Armchair, ScanSearch, CircleHelp, LogIn, PersonStanding, X } from 'lucide-react';
 import { componentProps, resolveComponentText, indexDocument } from './componentDocument.js';
-import { isUnconfiguredDetailPage } from './componentTree.js';
+import { isUnconfiguredDetailPage, flowInitialIndex } from './componentTree.js';
+import { stepDestination } from './workflow.js';
 import { stateStyleProps, countdownSeconds, checkedControl, activeComponents, countdownValues, countdownDeadline, imageMask, paintColor, cornerRadius, selectionOwner, sequencePages, BADGE_DEFAULTS, mainAxisFillStyle } from './propertyModel.js';
 import { interpolateVariables } from './textVariables.js';
 import { TimelinePreview, TimelineItemPreview } from './TimelinePreview.jsx';
@@ -70,7 +71,7 @@ function richTextContent({p,value,document,packageNode,timer,editing}) {
 }
 function PageSequence({ node, context, props, attributes, style, children }) {
   const pages = sequencePages(node), count = pages.length;
-  const chosen = Math.max(0, Math.min(Math.max(0, count - 1), context.runtime[node.id] ?? props.defaultIndex ?? 0));
+  const chosen = Math.max(0, Math.min(Math.max(0, count - 1), context.runtime[node.id] ?? (node.type === 'Flow' ? flowInitialIndex(node) : props.defaultIndex ?? 0)));
   const fade=props.transitionAnimation==='fade';
   const plugins=useMemo(()=>fade?[Fade()]:[],[fade]);
   const [carouselRef, carousel] = useEmblaCarousel({ active: node.type === 'Carousel', align: 'center', containScroll:false, loop: Boolean(props.loop), startIndex: props.defaultIndex ?? 0, watchDrag: !context.editing },plugins);
@@ -233,7 +234,7 @@ export default function ComponentPreview({ document, selectedId, onSelect, editi
       for (const node of indexDocument(document).nodes.values()) {
         const old = previous.get(node.id);
         if (!old) continue;
-        if (node.props.defaultIndex !== old.props.defaultIndex || node.props.initial !== old.props.initial || node.props.previewState !== old.props.previewState) delete next[node.id];
+        if (node.props.defaultIndex !== old.props.defaultIndex || node.props.initialStepId !== old.props.initialStepId || node.props.initial !== old.props.initial || node.props.previewState !== old.props.previewState) { delete next[node.id]; delete next[`history:${node.id}`]; }
         if (node.type === 'Package' && (node.props.defaultSelected !== old.props.defaultSelected || node.props.group !== old.props.group)) {
           delete next[`package:${node.props.group ?? node.id}`];
           delete next[`package:${old.props.group ?? node.id}`];
@@ -249,6 +250,7 @@ export default function ComponentPreview({ document, selectedId, onSelect, editi
     const action = node.props.action ?? {};
     if (!action.action || action.action === 'None') return;
     if(['Purchase','WebCheckout','WebPaywall','CustomCheckout'].includes(action.action)) {
+      if(!isExitOfferStep(document,runtime)){onStatus('商品选择和购买只能在最终步骤进行');return;}
       const required=activeComponents(document,runtime).find((item)=>item.type==='Toggle'&&item.props.required&&!checkedControl(item.props,item.id,runtime,indexDocument(document).nodes));
       if(required){onStatus('请先勾选同意协议');return;}
     }
@@ -262,8 +264,10 @@ export default function ComponentPreview({ document, selectedId, onSelect, editi
       if (runtime.overlay) { setRuntime((current)=>({...current,overlay:null})); return; }
       const {nodes,parents}=indexDocument(document);let flow=nodes.get(parents.get(node.id));
       while(flow&&flow.type!=='Flow')flow=nodes.get(parents.get(flow.id));
-      const index=flow?(runtime[flow.id]??flow.props.defaultIndex??0):0;
-      if(flow&&index>0){const next={[flow.id]:index-1};setRuntime((current)=>({...current,...next}));onNavigate?.(next);if(viewport.current)viewport.current.scrollTop=0;}
+      const index=flow?(runtime[flow.id]??flowInitialIndex(flow)):0;
+      const history=flow?runtime[`history:${flow.id}`]??[]:[];
+      const previous=flow?flow.children.findIndex((page)=>page.id===history.at(-1)):-1;
+      if(flow&&(previous>=0||!flow.props.initialStepId&&index>0)){const next={[flow.id]:previous>=0?previous:index-1,[`history:${flow.id}`]:history.slice(0,-1)};setRuntime((current)=>({...current,...next}));onNavigate?.(next);if(viewport.current)viewport.current.scrollTop=0;}
       else dismissPaywall();
     } else if (action.action === 'Dismiss') {
       dismissPaywall();
@@ -276,14 +280,17 @@ export default function ComponentPreview({ document, selectedId, onSelect, editi
     } else if (action.action === 'OpenPage') {
       const { nodes, parents } = indexDocument(document), target = nodes.get(action.actionPage), owner = nodes.get(parents.get(target?.id));
       if (isUnconfiguredDetailPage(target)) { onStatus('该权益详情内容待补充，暂不开放跳转'); return; }
-      if (owner?.type === 'Flow') { const next = { [owner.id]: owner.children.findIndex((item) => item.id === target.id), overlay: null }; setRuntime((current) => ({ ...current, ...next })); onNavigate?.(next); if (viewport.current) viewport.current.scrollTop = 0; }
+      if (owner?.type === 'Flow') { const currentId=owner.children[runtime[owner.id]??flowInitialIndex(owner)]?.id; const next = { [owner.id]: owner.children.findIndex((item) => item.id === target.id), overlay: null, [`history:${owner.id}`]: [...runtime[`history:${owner.id}`]??[],currentId] }; setRuntime((current) => ({ ...current, ...next })); onNavigate?.(next); if (viewport.current) viewport.current.scrollTop = 0; }
       else onStatus('尚未配置有效的目标页面');
     } else if (action.action === 'NextScreen') {
       const {nodes,parents}=indexDocument(document);
       let flow=nodes.get(parents.get(node.id));
       while(flow&&flow.type!=='Flow')flow=nodes.get(parents.get(flow.id));
       flow ??= activeComponents(document,runtime).find((item)=>item.type==='Flow');
-      if (flow) { const next = { [flow.id]: Math.min(flow.children.length - 1, (runtime[flow.id] ?? flow.props.defaultIndex ?? 0) + 1) }; setRuntime((current) => ({ ...current, ...next })); onNavigate?.(next); }
+      const target=stepDestination(document,node);
+      if (!flow || !target || !flow.children.some((page)=>page.id===target.id)) return onStatus('请选择有效的目标步骤');
+      const currentId=flow.children[runtime[flow.id]??flowInitialIndex(flow)]?.id;
+      const next = { [flow.id]: flow.children.findIndex((page)=>page.id===target.id), overlay:null, [`history:${flow.id}`]: [...runtime[`history:${flow.id}`]??[],currentId] }; setRuntime((current) => ({ ...current, ...next })); onNavigate?.(next); if(viewport.current)viewport.current.scrollTop=0;
     } else if (action.action === 'CustomCheckout') {
       const {nodes,parents}=indexDocument(document);let owner=nodes.get(parents.get(node.id));
       while(owner&&owner.type!=='Package')owner=nodes.get(parents.get(owner.id));

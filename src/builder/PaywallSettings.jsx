@@ -1,11 +1,14 @@
 import React from 'react';
 import { exitOfferTarget } from './exitOffers.js';
+import { workflowContext, setInitialStep } from './workflow.js';
 
-export default function PaywallSettings({ document, offerings, currentPaywallId, onChange, surfaces = [], onCreate, onEdit }) {
+export default function PaywallSettings({ document, offerings, currentPaywallId, onChange, onDocumentChange, surfaces = [], onCreate, onEdit }) {
+  const workflow = workflowContext(document);
   const id = document.settings?.exitOfferOfferingId ?? '';
   const target = exitOfferTarget(document, offerings, currentPaywallId);
   const missing = id && !offerings.some((offering) => offering.id === id);
   return <section className="ne-paywall-settings" aria-label="付费墙设置">
+    {workflow.flow&&onDocumentChange&&<label className="ne-field"><span>初始步骤</span><select aria-label="初始步骤" value={workflow.initial?.id??''} onChange={(event)=>onDocumentChange(setInitialStep(document,event.target.value))}>{workflow.steps.map((page)=><option key={page.id} value={page.id}>{page.name}</option>)}</select></label>}
     <h3>退出优惠</h3>
     <label className="ne-field"><span>退出优惠 Offering</span><select aria-label="退出优惠 Offering" value={id} onChange={(event) => event.target.value.startsWith('surface:') ? onCreate?.(event.target.value.slice(8)) : onChange({ ...document.settings, exitOfferOfferingId: event.target.value })}>
       <option value="">不展示退出优惠</option>

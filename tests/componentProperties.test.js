@@ -604,7 +604,7 @@ test('next page action belongs to its nearest flow rather than another flow in t
 test('purchase checks only visible agreements and a linked switch follows its default state', async () => {
   const purchase = component('sample', 'PurchaseButton', '', { action: { action: 'Purchase' } });
   const toggle = component('agreement', 'Toggle', '同意协议', { initial: false, required: true });
-  const source = fixture(component('flow', 'Flow', '', {}, [component('p1', 'Screen', '', {}, [purchase, toggle, component('hidden', 'Toggle', '', { required: true, hidden: true })]), component('p2', 'Screen', '', {}, [component('other-page', 'Toggle', '', { required: true })])]));
+  const source = fixture(component('flow', 'Flow', '', {defaultIndex:1}, [component('p2', 'Screen', '', {}, [component('other-page', 'Toggle', '', { required: true })]),component('p1', 'Screen', '', {}, [purchase, toggle, component('hidden', 'Toggle', '', { required: true, hidden: true })])]));
   const h = await mount(purchase, { source, editing: false });
   await act(async () => h.node().props.onClick(event())); assert.equal(h.status(), '请先勾选同意协议');
   await act(async () => h.node('agreement').findByType('input').props.onChange({ target: { checked: true } }));
@@ -856,14 +856,14 @@ test('editing descendant state properties cannot reset the current editor page',
   let editor;
   try {
     await act(async()=>{editor=TestRenderer.create(React.createElement(Editor,{template:{id:'audit'},initialNodes:[]}));});mounted.add(editor);
-    const page=()=>editor.root.findAll((item)=>item.type==='select'&&item.props['aria-label']==='编辑页面')[0];
-    await act(async()=>page().props.onChange(event('second')));assert.equal(page().props.value,'second');
+    const page=()=>editor.root.findAll((item)=>item.type==='section'&&item.props.className==='ne-artboard active')[0];
+    await act(async()=>editor.root.findAll((item)=>item.type==='button'&&item.props['aria-label']==='选择画板：第二页')[0].props.onClick());assert.equal(page().props['aria-label'],'画板：第二页');
     await act(async()=>editor.root.findAll((item)=>item.type==='div'&&item.props['data-component-id']==='sample')[0].props.onClick(event()));
-    assert.equal(page().props.value,'second');
+    assert.equal(page().props['aria-label'],'画板：第二页');
     await act(async()=>editor.root.findAll((item)=>item.type==='button'&&item.props['aria-label']==='选中')[0].props.onClick());
-    assert.equal(page().props.value,'second');
+    assert.equal(page().props['aria-label'],'画板：第二页');
     await act(async()=>editor.root.findAll((item)=>item.type==='input'&&item.props['aria-label']==='内边距纵向')[0].props.onChange(event('12')));
-    assert.equal(page().props.value,'second');
+    assert.equal(page().props['aria-label'],'画板：第二页');
     assert.equal(editor.root.findAll((item)=>item.type==='div'&&item.props['data-component-id']==='sample')[0].props.style.padding,'12px 0px');
   } finally {
     if(editor){await act(async()=>editor.unmount());mounted.delete(editor);}globalThis.localStorage=oldStorage;globalThis.window=oldWindow;
@@ -1186,7 +1186,7 @@ test('all 45 templates preserve original copy, media and product data after fixe
 test('ordinary button navigation and purchase checkout use separate property flows', async () => {
   const b=await mount(component('sample','Button','按钮',{action:{action:'None'}}),{editing:false});
   const select=b.renderer.root.findAll((item)=>item.type==='select'&&item.props['aria-label']==='点击动作')[0];
-  assert.deepEqual(select.findAllByType('option').map((option)=>option.props.value),['None','NavigateTo','NavigateBack','RestorePurchases','Dismiss']);
+  assert.deepEqual(select.findAllByType('option').map((option)=>option.props.value),['None','NavigateTo','NextScreen','NavigateBack','RestorePurchases','Dismiss']);
   await b.select('点击动作','NavigateTo');await b.select('导航目标','OpenSheet');
   assert.equal(indexDocument(b.document()).nodes.get('sample').props.action.action,'OpenSheet');await b.close();
   const purchase=await mount(createCatalogComponent('PurchaseButton','sample'),{editing:false});

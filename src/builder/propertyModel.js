@@ -150,6 +150,11 @@ export function checkedControl(props, id, runtime, nodes) {
   return props.switchTarget ? (runtime[props.switchTarget] ?? nodes.get(props.switchTarget)?.props.defaultIndex ?? 0) === 1 : Boolean(runtime[id] ?? props.initial);
 }
 
+export function sequenceInitialIndex(node) {
+  const index = node.type === 'Flow' ? node.children.findIndex((page) => page.id === node.props.initialStepId) : -1;
+  return index >= 0 ? index : node.props.defaultIndex ?? 0;
+}
+
 export function activeComponents(document, runtime) {
   const nodes = new Map();
   const index = (node) => { nodes.set(node.id, node); node.children.forEach(index); };
@@ -163,7 +168,7 @@ export function activeComponents(document, runtime) {
     let children = node.children;
     if (['Flow','Tabs','Carousel'].includes(node.type)) {
       const pages = sequencePages(node);
-      children = [...(pages.length ? [pages[Math.max(0, Math.min(pages.length - 1, runtime[node.id] ?? node.props.defaultIndex ?? 0))]] : []), ...node.children.filter((child)=>child.type==='PageControl')];
+      children = [...(pages.length ? [pages[Math.max(0, Math.min(pages.length - 1, runtime[node.id] ?? sequenceInitialIndex(node)))]] : []), ...node.children.filter((child)=>child.type==='PageControl')];
     }
     if (node.type === 'Switch') children = children.filter((child) => child.type !== 'SwitchCase' || child.props.index === (runtime[node.id] ?? node.props.defaultIndex ?? 0));
     if (node.type === 'ExpressCheckout') children = children.filter((child) => child.props.state === (runtime[node.id] ?? node.props.previewState ?? 'available'));
