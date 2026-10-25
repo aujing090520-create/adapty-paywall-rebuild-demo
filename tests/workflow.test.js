@@ -46,6 +46,11 @@ test('edges come from button actions rather than board order; rename changes onl
   const doc=document([screen('a',[button('continue','NextScreen','c')]),screen('b'),screen('c')]);
   const edges=workflowEdges(updateComponent(doc,'c',{name:'新屏幕名'}));assert.deepEqual(edges.map(edge=>[edge.source,edge.target,edge.label]),[['a','c','continue']]);
 });
+test('detail links and external links never appear as funnel-step edges or rewrite their original actions',()=>{
+  const doc=document([screen('main',[button('权益行','OpenPage','detail'),button('external','OpenURL','https://example.com'),button('next','NextScreen','final')]),screen('final'),c('detail','Screen','详情',{auxiliary:true},[button('return','OpenPage','main')])]);
+  const before=structuredClone(doc);
+  assert.deepEqual(workflowEdges(doc).map(edge=>edge.id),['next']); assert.deepEqual(doc,before);
+});
 test('explicitly clearing a target does not silently fall back to the next array element',()=>{
   const doc=document([screen('a',[button('unbound','NextScreen',null)]),screen('b')]);
   assert.equal(stepDestination(doc,indexDocument(doc).nodes.get('unbound')),null);assert.equal(workflowEdges(doc).length,0);
@@ -64,6 +69,31 @@ test('the step template picker reads the selected real template and offers its t
     assert.ok(renderer.root.findAll(item=>item.type==='button'&&text(item)==='权益介绍').length);
     await act(async()=>renderer.root.findAll(item=>item.type==='button'&&text(item)==='权益介绍')[0].props.onClick());
     assert.equal(workflowContext(chosen.document).steps.length,3);assert.ok(indexDocument(chosen.document).nodes.get(chosen.id).children.length);
+  }finally{await act(async()=>renderer.unmount());}
+});
+test('exit creation shares sources but selection and cancellation never create until confirmation',async()=>{
+  const text=node=>typeof node==='string'?node:node.children?.map(text).join('')??'';
+  let renderer,created=[];
+  await act(async()=>{renderer=TestRenderer.create(React.createElement(Picker,{purpose:'exit',offerings:[],triggerSource:{name:'购买页'},onBack(){},onAdd(source,id){created.push({source,id});}}));});
+  const click=async label=>act(async()=>renderer.root.findAll(item=>item.type==='button'&&text(item).trim()===label)[0].props.onClick());
+  try{
+    assert.ok(text(renderer.root).includes('关闭「购买页」'));
+    assert.equal(renderer.root.findAll(item=>item.type==='button'&&text(item)==='创建退出优惠')[0].props.disabled,true);
+    await click('蓝色特权页');
+    await click('挽留弹窗弹窗');assert.equal(created.length,0);
+    await click('创建退出优惠');assert.equal(created.length,1);assert.equal(indexDocument(created[0].source).nodes.get(created[0].id).type,'BottomSheet');
+    await click('空白弹窗');assert.equal(created.length,1);await click('创建退出优惠');assert.equal(created.length,2);assert.equal(created[1].source,undefined);
+  }finally{await act(async()=>renderer.unmount());}
+});
+test('saved popup sources use their presentation root and current content uses the explicit promotion command',async()=>{
+  const text=node=>typeof node==='string'?node:node.children?.map(text).join('')??'';
+  const sheet=c('saved-sheet','BottomSheet','已存挽留',{},[]),source={version:3,products:{},settings:{presentationSurfaceId:sheet.id},root:screen('saved-root',[sheet])};
+  let renderer,chosen,promoted;
+  await act(async()=>{renderer=TestRenderer.create(React.createElement(Picker,{purpose:'exit',offerings:[{id:'saved',name:'已保存方案',document:source}],currentDocument:source,surfaces:[sheet],onBack(){},onUseSurface(id){promoted=id;},onAdd(document,id){chosen={document,id};}}));});
+  const click=async label=>act(async()=>renderer.root.findAll(item=>item.type==='button'&&text(item).trim()===label)[0].props.onClick());
+  try{
+    await click('已有内容');await click('已保存方案');await click('已存挽留弹窗');assert.equal(chosen,undefined);await click('创建退出优惠');assert.equal(chosen.id,sheet.id);assert.equal(chosen.document,source);
+    await click('已有内容');await click('已存挽留');assert.equal(promoted,undefined);await click('创建退出优惠');assert.equal(promoted,sheet.id);
   }finally{await act(async()=>renderer.unmount());}
 });
 test('preview starts from the configured initial screen and Back follows actual branch history, not screen array order',async()=>{

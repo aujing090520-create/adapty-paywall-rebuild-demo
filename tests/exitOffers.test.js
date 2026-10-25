@@ -4,7 +4,7 @@ import React from 'react';
 import TestRenderer, { act } from 'react-test-renderer';
 import { createServer } from 'vite';
 import { component, validDocument } from '../src/builder/componentDocument.js';
-import { savedOfferings, exitOfferTarget, isExitOfferStep, createExitOffer, exitOfferSource, exitOfferConnection } from '../src/builder/exitOffers.js';
+import { savedOfferings, exitOfferTarget, isExitOfferStep, createExitOffer, exitOfferSource, exitOfferConnection, exitContentChoices } from '../src/builder/exitOffers.js';
 import { readSavedPaywall, savePaywall, savePaywallBatch } from '../src/paywallStorage.js';
 import { indexDocument, importComponentDocument } from '../src/builder/componentDocument.js';
 import { createCatalogComponent } from '../src/builder/componentCatalog.js';
@@ -110,6 +110,17 @@ test('exit canvas connection opens the canonical settings and removing the bindi
   assert.equal(renderer.root.findAll((item) => item.type === 'button' && item.props['aria-label']?.startsWith('配置退出触发：')).length, 0);
   assert.deepEqual(latest.root, doc.root); assert.deepEqual(latest.products, doc.products);
 });
+test('preview from a selected independent exit board starts at the main page and requires closing it to enter the offer', async () => {
+  const doc = fixture('primary'); doc.settings = { exitOfferOfferingId: 'offer' };
+  let renderer;
+  await act(async () => { renderer = TestRenderer.create(React.createElement(Editor, { template: { id: 'blank' }, initialNodes: [], initialDocument: doc, persistence: 'session', offerings: savedOfferings([record('offer', fixture('offer'))]), currentPaywallId: 'primary', onExitOfferChange() {} })); }); mounted.add(renderer);
+  const click = async (name) => { const button = renderer.root.findAll((item) => item.type === 'button' && (item.props['aria-label'] === name || text(item) === name))[0]; assert.ok(button, name); await act(async () => button.props.onClick()); };
+  await click('选择画板：offer'); await click('交互预览');
+  const preview = renderer.root.findByType(Presentation);
+  assert.equal(preview.props.document, doc); assert.equal(preview.props.currentPaywallId, 'primary');
+  assert.ok(text(preview).includes('主付费墙')); assert.ok(text(preview).includes('¥100')); assert.equal(text(preview).includes('¥50'), false);
+  await click('关闭付费墙预览'); assert.ok(text(preview).includes('退出优惠 · offer')); assert.ok(text(preview).includes('¥50'));
+});
 
 test('closing the primary displays the saved offer with its own products; closing the offer ends the session without chaining', async () => {
   const doc = fixture('primary', [button('dismiss-main', 'Dismiss')]); doc.settings = { exitOfferOfferingId: 'offer' };
@@ -195,6 +206,50 @@ test('new exit offers have no ordinary launcher and multi-record explicit saving
   assert.deepEqual(readSavedPaywall(store, 'primary').document, doc);
   assert.ok(savePaywallBatch(store, records));
   assert.equal(readSavedPaywall(store, 'primary').document.settings.exitOfferOfferingId, 'new-exit');
+});
+
+test('blank exit creation is genuinely empty and does not inherit the main products or add a step/launcher', () => {
+  const doc = fixture(), before = structuredClone(doc), result = createExitOffer(doc, 'blank-exit', undefined, {});
+  assert.ok(validDocument(result.offerDocument));
+  const surface = indexDocument(result.offerDocument).nodes.get(result.offerDocument.settings.presentationSurfaceId);
+  assert.equal(surface.type, 'BottomSheet'); assert.deepEqual(surface.children, []); assert.deepEqual(result.offerDocument.products, {});
+  assert.deepEqual(doc, before); assert.deepEqual(result.mainDocument.root, before.root);
+  assert.equal(exitOfferTarget(result.mainDocument, [{ id: 'blank-exit', name: result.name, document: result.offerDocument, packageCount: 0 }]), null);
+});
+
+test('template and saved screen copies retain style, products, selected package and link dependencies with independent IDs', () => {
+  const template = templates.find((item) => item.id === 'ht-blue-privilege');
+  const source = importComponentDocument(createBuilderNodes(template.id), template), before = structuredClone(source), main = fixture();
+  const screen = exitContentChoices(source).find((node) => node.type === 'Screen');
+  const result = createExitOffer(main, 'copy', undefined, { source, nodeId: screen.id });
+  assert.ok(validDocument(result.offerDocument)); assert.deepEqual(source, before); assert.deepEqual(result.mainDocument.root, main.root);
+  const old = indexDocument(source).nodes, copied = indexDocument(result.offerDocument).nodes;
+  const originalPackages = [...indexDocument({ root: screen }).nodes.values()].filter((node) => node.type === 'Package');
+  const copiedPackages = [...copied.values()].filter((node) => node.type === 'Package');
+  assert.equal(copiedPackages.length, originalPackages.length);
+  for (const [index, node] of copiedPackages.entries()) {
+    const previous = originalPackages[index]; assert.notEqual(node.id, previous.id); assert.notEqual(node.props.dataKey, previous.props.dataKey);
+    assert.equal(node.props.defaultSelected, previous.props.defaultSelected ?? false);
+    assert.deepEqual(result.offerDocument.products[node.props.dataKey], source.products[previous.props.dataKey ?? previous.id]);
+  }
+  for (const node of copied.values()) if (node.props.action?.action === 'OpenPage') assert.ok(copied.has(node.props.action.actionPage), 'detail destination copied, never silently dropped');
+  assert.ok([...copied.keys()].every((id) => !old.has(id)));
+  copiedPackages[0].props.radius = 99; result.offerDocument.products[copiedPackages[0].props.dataKey].name = 'copy-only'; assert.deepEqual(source, before);
+});
+
+test('template popup source preserves its artwork and purchase content without copying unrelated screens or mutating the source', () => {
+  const template = templates.find((item) => item.id === 'ht-blue-privilege');
+  const source = importComponentDocument(createBuilderNodes(template.id), template), before = structuredClone(source), main = fixture();
+  const sheet = exitContentChoices(source).find((node) => node.type === 'BottomSheet');
+  const result = createExitOffer(main, 'popup-copy', undefined, { source, nodeId: sheet.id });
+  assert.ok(validDocument(result.offerDocument)); assert.deepEqual(source, before); assert.deepEqual(result.mainDocument.root, main.root);
+  const nodes = [...indexDocument(result.offerDocument).nodes.values()];
+  assert.equal(nodes.filter((node) => node.type === 'Screen').length, 1);
+  assert.ok(nodes.some((node) => node.type === 'PurchaseButton'));
+  assert.ok(nodes.some((node) => node.props.action?.action === 'Dismiss'));
+  assert.deepEqual(nodes.filter((node) => node.type === 'Image').map((node) => node.props.src), [...indexDocument({ root: sheet }).nodes.values()].filter((node) => node.type === 'Image').map((node) => node.props.src));
+  assert.equal(Object.keys(result.offerDocument.products).length, Object.keys(source.products).length);
+  assert.equal(createExitOffer(main, 'invalid', undefined, { source, nodeId: 'missing' }), null);
 });
 
 test('converted overlay presents over an inert primary page and cancel or backdrop ends the whole session', async () => {

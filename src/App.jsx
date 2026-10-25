@@ -416,9 +416,9 @@ export default function App() {
       return { ...current, [id]: { ...record, document, paywall: { ...record.paywall, products: Object.keys(document.products).length } } };
     });
   }, []);
-  const prepareExitOffer = React.useCallback((document, surfaceId) => {
+  const prepareExitOffer = React.useCallback((document, surfaceId, selection) => {
     const id = `local-exit-${crypto.randomUUID()}`;
-    const result = createExitOffer(document, id, surfaceId);
+    const result = createExitOffer(document, id, surfaceId, selection);
     if (!result) return null;
     const record = { version: 1, templateId: result.offerDocument.templateId, document: result.offerDocument, paywall: { id, name: result.name, state: 'Draft', products: Object.keys(result.offerDocument.products).length, startedAt: new Date().toLocaleDateString('zh-CN') } };
     setExitOfferDrafts((current) => ({ ...current, [id]: record }));

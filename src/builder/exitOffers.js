@@ -1,7 +1,8 @@
-import { component, indexDocument, validDocument, insertComponent } from './componentDocument.js';
+import { component, indexDocument, validDocument, insertComponent, updateComponent } from './componentDocument.js';
 import { pageContext } from './componentTree.js';
 import { createCatalogComponent } from './componentCatalog.js';
-import { workflowContext } from './workflow.js';
+import { workflowContext, stepDestination } from './workflow.js';
+import { copyFragment, pasteFragment } from './componentOperations.js';
 
 // A saved Demo paywall and its packages form one local Offering, not a Sheet.
 export function savedOfferings(records, currentPaywallId) {
@@ -11,7 +12,14 @@ export function savedOfferings(records, currentPaywallId) {
   }));
 }
 
-export function createExitOffer(document, offeringId, surfaceId) {
+export function exitContentChoices(document) {
+  const presentation = document.settings?.presentationSurfaceId;
+  if (presentation) return [indexDocument(document).nodes.get(presentation)].filter(Boolean);
+  return [...workflowContext(document).steps, ...[...indexDocument(document).nodes.values()].filter((node) => node.type === 'BottomSheet')];
+}
+
+export function createExitOffer(document, offeringId, surfaceId, selection) {
+  if (selection) return createSelectedExitOffer(document, offeringId, selection);
   let source = document;
   if (!surfaceId) {
     const launcher = createCatalogComponent('BottomSheet');
@@ -55,6 +63,57 @@ export function createExitOffer(document, offeringId, surfaceId) {
     name: clone.name, offerDocument,
     mainDocument: { ...document, root: remove(source.root)[0], settings: { ...document.settings, exitOfferOfferingId: offeringId } },
   };
+}
+
+function createSelectedExitOffer(document, offeringId, { source, nodeId } = {}) {
+  if (!source) {
+    const sheet = createCatalogComponent('BottomSheet').children.find((node) => node.type === 'BottomSheet');
+    sheet.name = '退出优惠'; sheet.children = [];
+    return { name: sheet.name, mainDocument: { ...document, settings: { ...document.settings, exitOfferOfferingId: offeringId } }, offerDocument: { version: document.version, templateId: 'blank', products: {}, settings: { presentationSurfaceId: sheet.id }, root: component(`${offeringId}/root`, 'Screen', sheet.name, { background: 'transparent', gap: 0 }, [sheet]) } };
+  }
+  if (!validDocument(source)) return null;
+  const selected = indexDocument(source).nodes.get(nodeId);
+  if (!selected || !['Screen', 'BottomSheet'].includes(selected.type)) return null;
+  let prepared = source;
+  for (const node of indexDocument(source).nodes.values()) {
+    if (node.type === 'Package' && !node.props.dataKey && source.products[node.id]) prepared = updateComponent(prepared, node.id, { props: { dataKey: node.id } });
+    if (node.props.action?.action === 'NextScreen' && node.props.action.actionPage !== null && !node.props.action.actionPage) {
+      const target = stepDestination(source, node);
+      if (target) prepared = updateComponent(prepared, node.id, { props: { action: { ...node.props.action, actionPage: target.id } } });
+    }
+  }
+  const nodes = indexDocument(prepared).nodes;
+  const chosen = nodes.get(nodeId), fragments = [], pending = [chosen], seen = new Set();
+  while (pending.length) {
+    const node = pending.shift();
+    if (seen.has(node.id)) continue;
+    for (const item of indexDocument({ root: node }).nodes.values()) seen.add(item.id);
+    if (node.type === 'BottomSheet') {
+      const converted = createExitOffer(prepared, `${offeringId}/source`, node.id);
+      const fragment = copyFragment(converted.offerDocument, node.id);
+      if (![...indexDocument({ root: node }).nodes.values()].some((item) => item.type === 'Package')) fragment.products = structuredClone(source.products);
+      fragment.roots = [component(crypto.randomUUID(), 'Screen', node.name, { background: 'transparent', gap: 0 }, fragment.roots)];
+      fragments.push(fragment);
+    } else fragments.push(copyFragment(prepared, node.id));
+    for (const item of indexDocument({ root: node }).nodes.values()) {
+      const target = nodes.get(item.props.action?.actionPage);
+      if (['OpenPage', 'NextScreen'].includes(item.props.action?.action) && target?.type === 'Screen' && !seen.has(target.id)) pending.push(target);
+    }
+  }
+  const flow = component(`${offeringId}/flow`, 'Flow', '步骤', { gap: 0 }, []);
+  const empty = { version: source.version, templateId: source.templateId, products: {}, root: component(`${offeringId}/root`, 'Screen', chosen.name, { background: 'transparent', gap: 0 }, [flow]) };
+  const fragment = { roots: fragments.flatMap((item) => item.roots), products: Object.assign({}, ...fragments.map((item) => item.products)), fonts: fragments.flatMap((item) => item.fonts ?? []) };
+  const copied = pasteFragment(empty, flow.id, fragment);
+  if (!copied.ids.length) return null;
+  const copiedNodes = indexDocument(copied.document).nodes, first = copiedNodes.get(copied.ids[0]);
+  let offerDocument = copied.document;
+  const originalPackages = fragment.roots.flatMap((root) => [...indexDocument({ root }).nodes.values()].filter((node) => node.type === 'Package'));
+  const copiedPackages = [...copiedNodes.values()].filter((node) => node.type === 'Package');
+  for (const [index, node] of copiedPackages.entries()) offerDocument = updateComponent(offerDocument, node.id, { props: { defaultSelected: originalPackages[index]?.props.defaultSelected ?? false } });
+  if (copied.ids.length === 1) offerDocument = { ...offerDocument, root: indexDocument(offerDocument).nodes.get(first.id) };
+  else offerDocument = updateComponent(offerDocument, flow.id, { props: { initialStepId: first.id } });
+  if (chosen.type === 'BottomSheet') offerDocument = { ...offerDocument, settings: { presentationSurfaceId: first.children[0].id } };
+  return { name: chosen.name, offerDocument, mainDocument: { ...document, settings: { ...document.settings, exitOfferOfferingId: offeringId } } };
 }
 
 export function exitOfferTarget(document, offerings, currentPaywallId) {

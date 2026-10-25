@@ -101,6 +101,9 @@ test('actual App converts, edits and saves an existing retention offer in one se
     const field=app.root.findAll(item=>item.type==='select'&&item.props['aria-label']==='退出优惠 Offering')[0];
     assert.ok(field.findAllByType('option').some(option=>option.props.value===`surface:${surface.id}`));
     await act(async()=>field.props.onChange({target:{value:`surface:${surface.id}`}}));
+    await act(async()=>{await server.ssrLoadModule('/src/builder/StepPicker.jsx');});
+    assert.equal(editor().props.initialDocument.settings?.exitOfferOfferingId,undefined,'selecting content is not creation');
+    await click('创建退出优惠');
     assert.equal(text(app.root).includes('返回主付费墙'),false);assert.equal(listSavedPaywalls(store).length,0);
     assert.equal(app.root.findAll(item=>item.type==='div'&&item.props['aria-label']==='多画板画布').length,1);
     assert.ok(app.root.findAll(item=>item.type==='section'&&item.props.className?.startsWith('ne-artboard')).length>=2);

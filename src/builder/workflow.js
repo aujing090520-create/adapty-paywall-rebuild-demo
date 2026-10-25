@@ -30,7 +30,7 @@ export function stepDestination(document, node) {
 export function workflowEdges(document) {
   return [...indexDocument(document).nodes.values()].flatMap((node) => {
     const target = stepDestination(document, node), source = owningScreen(document, node.id);
-    if (!target || !source) return [];
+    if (node.props.action?.action !== 'NextScreen' || !target || !source || auxiliaryScreen(target) || auxiliaryScreen(source)) return [];
     const text = node.children.find((child) => child.type === 'Text')?.props.text;
     return [{ id: node.id, source: source.id, target: target.id, label: node.name && node.name !== '按钮' ? node.name : text || '按钮', auxiliary: auxiliaryScreen(target) }];
   });
