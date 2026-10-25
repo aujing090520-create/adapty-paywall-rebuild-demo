@@ -1,6 +1,7 @@
 import { component, indexDocument, validDocument, insertComponent } from './componentDocument.js';
 import { pageContext } from './componentTree.js';
 import { createCatalogComponent } from './componentCatalog.js';
+import { workflowContext } from './workflow.js';
 
 // A saved Demo paywall and its packages form one local Offering, not a Sheet.
 export function savedOfferings(records, currentPaywallId) {
@@ -61,10 +62,21 @@ export function exitOfferTarget(document, offerings, currentPaywallId) {
   return offerings.find((offering) => offering.id === id && offering.id !== currentPaywallId && offering.packageCount > 0 && validDocument(offering.document)) ?? null;
 }
 
+export function exitOfferSource(document) {
+  return workflowContext(document).steps.filter((page) => !page.props.hidden).at(-1) ?? null;
+}
+
+export function exitOfferConnection(document, offerings, currentPaywallId) {
+  const source = exitOfferSource(document);
+  const target = exitOfferTarget(document, offerings, currentPaywallId);
+  if (!source || !target) return null;
+  const destination = workflowContext(target.document).initial ?? target.document.root;
+  return {
+    id: 'exit-offer', kind: 'exit', source: source.id, target: target.document.settings?.presentationSurfaceId ?? destination.id,
+    targetOwner: target.id, label: '关闭页面', description: `关闭「${source.name}」 → ${target.name}`,
+  };
+}
+
 export function isExitOfferStep(document, navigation = {}) {
-  const { flow, active } = pageContext(document, navigation);
-  if (!flow) return true;
-  // HT auxiliary detail screens are navigation destinations, not funnel steps.
-  const steps = flow.children.filter((page) => !/\/detail-screen-\d+$/.test(page.id) && !page.props.hidden);
-  return steps.at(-1)?.id === active.id;
+  return exitOfferSource(document)?.id === pageContext(document, navigation).active.id;
 }

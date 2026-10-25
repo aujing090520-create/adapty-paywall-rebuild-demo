@@ -4,7 +4,7 @@ import React from 'react';
 import TestRenderer, { act } from 'react-test-renderer';
 import { createServer } from 'vite';
 import { component, validDocument } from '../src/builder/componentDocument.js';
-import { savedOfferings, exitOfferTarget, isExitOfferStep, createExitOffer } from '../src/builder/exitOffers.js';
+import { savedOfferings, exitOfferTarget, isExitOfferStep, createExitOffer, exitOfferSource, exitOfferConnection } from '../src/builder/exitOffers.js';
 import { readSavedPaywall, savePaywall, savePaywallBatch } from '../src/paywallStorage.js';
 import { indexDocument, importComponentDocument } from '../src/builder/componentDocument.js';
 import { createCatalogComponent } from '../src/builder/componentCatalog.js';
@@ -62,6 +62,53 @@ test('exit eligibility follows the final flow step, not HT auxiliary detail scre
   assert.equal(isExitOfferStep(doc), false); assert.equal(isExitOfferStep(doc, { flow: 1 }), true);
   doc.root.children[0].children = [component('first', 'Screen', ''), component('first/detail-screen-0', 'Screen', '')];
   assert.equal(isExitOfferStep(doc), true); assert.equal(isExitOfferStep(doc, { flow: 1 }), false);
+});
+
+test('exit trigger readback and runtime share the final visible non-auxiliary source, not canvas selection or names', () => {
+  const doc = fixture(); doc.settings = { exitOfferOfferingId: 'offer' };
+  const first = component('intro', 'Screen', '介绍'), last = component('purchase', 'Screen', '购买页面');
+  const detail = component('custom-detail', 'Screen', '详情', { auxiliary: true });
+  doc.root.children = [component('flow', 'Flow', '', {}, [first, last, detail, component('hidden', 'Screen', '', { hidden: true })])];
+  const offerings = savedOfferings([record('offer', fixture('offer'))]);
+  const edge = exitOfferConnection(doc, offerings, 'primary');
+  assert.equal(exitOfferSource(doc).id, last.id);
+  assert.equal(edge.source, last.id); assert.equal(edge.targetOwner, 'offer'); assert.equal(edge.target, 'offer-root');
+  assert.equal(edge.description, '关闭「购买页面」 → offer');
+  assert.equal(isExitOfferStep(doc, { flow: 1 }), true); assert.equal(isExitOfferStep(doc, { flow: 2 }), false);
+  last.name = '重命名购买页面';
+  assert.match(exitOfferConnection(doc, offerings, 'primary').description, /重命名购买页面/);
+  doc.root.children[0].children = [last, first, detail];
+  assert.equal(exitOfferConnection(doc, offerings, 'primary').source, first.id);
+  assert.equal(isExitOfferStep(doc, { flow: 0 }), false); assert.equal(isExitOfferStep(doc, { flow: 1 }), true);
+  assert.equal(exitOfferConnection(doc, [], 'primary'), null);
+  assert.equal(exitOfferConnection(doc, [{ ...offerings[0], packageCount: 0 }], 'primary'), null);
+  doc.settings.exitOfferOfferingId = '';
+  assert.equal(exitOfferConnection(doc, offerings, 'primary'), null);
+});
+
+test('settings visibly report source, close event, destination and terminal result without adding a second trigger field', async () => {
+  const doc = fixture('购买页面'); doc.settings = { exitOfferOfferingId: 'offer' };
+  let renderer;
+  await act(async () => { renderer = TestRenderer.create(React.createElement(Settings, { document: doc, offerings: savedOfferings([record('offer', fixture('offer'))]), onChange() {} })); }); mounted.add(renderer);
+  const rule = renderer.root.findByProps({ 'aria-label': '退出优惠触发规则' });
+  for (const value of ['触发页面', '购买页面', '触发事件', '关闭页面', '展示内容', 'offer', '关闭优惠后', '结束整个付费墙流程']) assert.ok(text(rule).includes(value), value);
+  assert.equal(renderer.root.findAllByType('select').length, 1);
+  await act(async () => renderer.update(React.createElement(Settings, { document: { ...doc, settings: {} }, offerings: [], onChange() {} })));
+  assert.match(text(renderer.root), /未绑定，直接关闭/);
+});
+
+test('exit canvas connection opens the canonical settings and removing the binding removes the connection', async () => {
+  const doc = fixture('购买页面'); doc.settings = { exitOfferOfferingId: 'offer' };
+  let renderer, latest;
+  await act(async () => { renderer = TestRenderer.create(React.createElement(Editor, { template: { id: 'blank' }, initialNodes: [], initialDocument: doc, persistence: 'session', offerings: savedOfferings([record('offer', fixture('offer'))]), currentPaywallId: 'primary', onDocumentChange: (value) => { latest = value; } })); }); mounted.add(renderer);
+  const connection = renderer.root.findAll((item) => item.type === 'button' && item.props['aria-label']?.startsWith('配置退出触发：'));
+  assert.equal(connection.length, 1); assert.match(connection[0].props['aria-label'], /关闭「购买页面」 → offer/);
+  await act(async () => connection[0].props.onClick());
+  assert.ok(text(renderer.root.findByProps({ 'aria-label': '退出优惠触发规则' })).includes('购买页面'));
+  const field = renderer.root.findAll((item) => item.type === 'select' && item.props['aria-label'] === '退出优惠 Offering')[0];
+  await act(async () => field.props.onChange({ target: { value: '' } }));
+  assert.equal(renderer.root.findAll((item) => item.type === 'button' && item.props['aria-label']?.startsWith('配置退出触发：')).length, 0);
+  assert.deepEqual(latest.root, doc.root); assert.deepEqual(latest.products, doc.products);
 });
 
 test('closing the primary displays the saved offer with its own products; closing the offer ends the session without chaining', async () => {
