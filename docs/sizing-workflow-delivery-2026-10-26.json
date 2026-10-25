@@ -24,6 +24,20 @@
     "parameterReferenceComponents": 32,
     "parameterReferenceRows": 3528
   },
+  "documentationPublication": {
+    "sourceCommit":"8fae23031be27cf1c41d99453221c96b71cbc4aa",
+    "deploymentId":7316049203,
+    "deploymentState":"success",
+    "url":"https://adapty-paywall-rebuild-demo.vercel.app/docs/component-parameters.html",
+    "updatedDateReadback":"2026-10-26",
+    "actualBrowserVerified":true,
+    "modalWidthFilterRows":7,
+    "csvLinkReadback":true,
+    "htmlSourcePublicDistSha256":"b58edbf12c3e93fb7f09f0fdad9c5548da7662a2fcae9a32728bb056ff72c77c",
+    "csvSourceDistSha256":"918b286a6b4a5e91beba1bc11e4d95248a7a6d7ca7a306ceef6ffd21c3bd8665",
+    "consoleErrors":0,
+    "screenshot":"paywall-parameter-production.png"
+  },
   "localRuntime": {
     "compactModal": {"width":280,"height":420,"radius":24,"saveReloadReopen":true},
     "timedModal": {"width":310,"height":440,"radius":24},
