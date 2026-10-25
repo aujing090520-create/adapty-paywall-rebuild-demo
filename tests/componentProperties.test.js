@@ -674,6 +674,9 @@ test('layer tree uses one readable label, explicit indentation and inline expans
     await act(async()=>expand('copy').props.onClick());assert.equal(row('body').props.style.paddingLeft,68);assert.equal(label('body').props['aria-label'],'会员专属权益长文案');assert.equal(expand('body'),undefined);
     assert.equal(label('heading').findByProps({className:'ne-tree-label'}).children.join(''),'标题');assert.match(label('heading').props.title,/实际标题正文/);assert.equal(label('heading').props['aria-label'],'标题（隐藏）');
     assert.equal(label('image').props['aria-label'],'图片');assert.equal(label('hero').findAllByType('svg')[0].props.className.includes('lucide-rows2'),true);assert.equal(label('copy').findAllByType('svg')[0].props.className.includes('lucide-columns2'),true);
+    await act(async()=>label('body').props.onClick());
+    assert.equal(editor.root.findAll(item=>item.type==='select'&&item.props['aria-label']==='所在容器').length,0);
+    assert.equal(row('body').props.draggable,true);assert.equal(typeof row('hero').props.onDrop,'function');
     const tree=editor.root.findByProps({role:'tree'});assert.equal(tree.findAllByType('small').length,0);assert.equal(tree.findAll(item=>item.props.className==='ne-grip').length,0);
     await act(async()=>expand('hero').props.onClick());assert.equal(row('copy'),undefined);assert.equal(editor.root.findAll(item=>item.props['data-component-id']==='body').length,1);
     await act(async()=>editor.unmount());mounted.delete(editor);editor=null;assert.deepEqual(readComponentDocument(localStorage,'audit').root,source.root);
