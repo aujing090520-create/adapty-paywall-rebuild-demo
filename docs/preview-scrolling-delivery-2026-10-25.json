@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "result_level": "已完成",
+  "scope": "画板纵向滚动、缩放下选中定位及弹窗独立滚动",
+  "source_commit": "80e498c",
+  "production_url": "https://adapty-paywall-rebuild-demo.vercel.app/",
+  "ledger": { "total": 3, "verified": 3, "unresolved": 0 },
+  "coverage": {
+    "affected": ["SC-01", "SC-02", "SC-03"],
+    "verified": ["SC-01", "SC-02", "SC-03"]
+  },
+  "verification_evidence": [
+    "282/282 tests passed, including 6 new scroll regressions; production build and diff whitespace check passed",
+    "Mounted selection reveal at 30/50/75/100/150%: transformed deltas, equivalent navigation, property rerenders, whole-screen selection and interactive-preview boundaries",
+    "Local IAB 50/75/100% actual wheel up/down; phone 0 -> 28.5 -> 0, outer page 0 -> 720 after reaching phone boundary",
+    "Local IAB changing padding 0 -> 1 -> 0 preserves scrollTop 28.5",
+    "Local IAB long popup scrollTop 0 -> 321.02 -> 0, both background viewports unchanged at 0 and outer page unchanged at 523.5; original padding restored",
+    "GitHub main source pushed; production HTTP serves matching index-BHmnB_qu.js and index-DWwyJYo5.css",
+    "Production IAB 75% Blue Privilege: actual native down/down/up followed by same-tab recovery readback, outer scrollY 0 -> 720 and phone back at 0",
+    "/tmp/paywall-scroll-local.png",
+    "/tmp/paywall-scroll-production.png"
+  ],
+  "evidence_boundaries": [
+    "Intermediate production scrollTop samples were not retained because the combined readback exceeded the call limit; recovered final DOM state and screenshot were obtained",
+    "Popup isolation, configuration-rerender preservation and the other zoom levels were tested locally, not repeated in production",
+    "Physical touchscreen and continuous touchpad frame-rate were not measured; actual native wheel scrolling was verified",
+    "Vercel CLI deployment metadata unavailable after two network failures; production path and final asset identities verified directly",
+    "No template content, media, SKU, document geometry, workflow configuration or user saved drafts changed"
+  ],
+  "next_action": "本次范围无剩余动作"
+}

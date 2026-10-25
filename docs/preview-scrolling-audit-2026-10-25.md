@@ -12,4 +12,6 @@ Automated verification: 282/282 tests passed; production build passed; diff whit
 
 Local render: `/tmp/paywall-scroll-local.png`. All temporary parameter changes were isolated in an agent-owned browser origin and restored, never saved to the user's paywalls.
 
-Production acceptance is recorded separately in the delivery receipt after deployment.
+Production acceptance: original domain serves the final `index-BHmnB_qu.js` / `index-DWwyJYo5.css`; the actual 75% Blue Privilege board reports the new `overscroll-behavior:auto` and expected clientHeight 830 / scrollHeight 858. Native down/down/up inputs were followed by a recovered readback showing outer scrollY 0 -> 720 and phone scrollTop back at 0. Screenshot: `/tmp/paywall-scroll-production.png`. The combined action/readback call exceeded its limit, so intermediate production scrollTop values were not retained; detailed down/up values, modal isolation and configuration-rerender checks are from local IAB, not claimed as repeated in production. All SC-01/02/03 changes are verified and closed.
+
+Vercel CLI deployment-list metadata was unavailable after two network failures; direct HTTP asset identity and production browser render/scroll readback were used for release verification. No duplicate manual deployment, browser switch or permission change was performed.
