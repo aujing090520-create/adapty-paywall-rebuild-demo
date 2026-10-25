@@ -4,13 +4,16 @@ import React from 'react';
 import TestRenderer, { act } from 'react-test-renderer';
 import { createServer } from 'vite';
 import { component, validDocument } from '../src/builder/componentDocument.js';
-import { savedOfferings, exitOfferTarget, isExitOfferStep } from '../src/builder/exitOffers.js';
-import { readSavedPaywall, savePaywall } from '../src/paywallStorage.js';
+import { savedOfferings, exitOfferTarget, isExitOfferStep, createExitOffer } from '../src/builder/exitOffers.js';
+import { readSavedPaywall, savePaywall, savePaywallBatch } from '../src/paywallStorage.js';
+import { indexDocument, importComponentDocument } from '../src/builder/componentDocument.js';
+import { createCatalogComponent } from '../src/builder/componentCatalog.js';
+import { templates, createBuilderNodes } from '../src/templates/templateDefinitions.js';
 
 const button = (id, action, destination) => component(id, 'Button', id, { action: { action, actionPage: destination } }, [component(`${id}-text`, 'Text', '', { text: id })]);
 const fixture = (id = 'primary', children = []) => ({ version: 3, templateId: 'blank', products: { sku: { name: id, price: id === 'offer' ? '¥50' : '¥100' } }, root: component(`${id}-root`, 'Screen', id, {}, [component(`${id}-package`, 'Package', id, { dataKey: 'sku', defaultSelected: true }, [component(`${id}-price`, 'Text', '', { binding: { field: 'price' } })]), ...children]) });
 const record = (id, document, state = 'Draft') => ({ version: 1, paywall: { id, name: id, state }, templateId: document.templateId, document });
-const storage = () => { const map = new Map(); return { get length() { return map.size; }, key: (index) => [...map.keys()][index], getItem: (key) => map.get(key) ?? null, setItem: (key, value) => map.set(key, value) }; };
+const storage = () => { const map = new Map(); return { get length() { return map.size; }, key: (index) => [...map.keys()][index], getItem: (key) => map.get(key) ?? null, setItem: (key, value) => map.set(key, value), removeItem: (key) => map.delete(key) }; };
 
 let server, Presentation, Settings, Editor;
 const mounted = new Set();
@@ -18,7 +21,7 @@ const previous = { window: globalThis.window, ResizeObserver: globalThis.ResizeO
 before(async () => {
   globalThis.ResizeObserver = class { observe() {} disconnect() {} };
   globalThis.localStorage = storage();
-  globalThis.window = { addEventListener() {}, removeEventListener() {} };
+  globalThis.window = { addEventListener() {}, removeEventListener() {}, setInterval, clearInterval };
   server = await createServer({ configFile: false, logLevel: 'silent', server: { middlewareMode: true, hmr: false, watch: null } });
   Presentation = (await server.ssrLoadModule('/src/builder/PaywallPresentation.jsx')).default;
   Settings = (await server.ssrLoadModule('/src/builder/PaywallSettings.jsx')).default;
@@ -41,7 +44,7 @@ async function mount(document, offerings, props = {}) {
 test('Offering targets are independent saved paywalls; missing, self, inactive and productless targets cannot trigger', () => {
   const doc = fixture(), offer = fixture('offer');
   doc.settings = { exitOfferOfferingId: 'offer' };
-  const offerings = savedOfferings([record('primary', doc), record('offer', offer), record('inactive', offer, 'Inactive'), record('empty', { ...fixture('empty'), root: component('empty', 'Screen', '', {}, []) })], 'primary');
+  const offerings = savedOfferings([record('primary', doc), record('offer', offer), record('inactive', offer, 'Inactive'), record('empty', { ...fixture('empty'), products: {}, root: component('empty', 'Screen', '', {}, []) })], 'primary');
   assert.deepEqual(offerings.map((item) => item.id), ['offer', 'empty']);
   assert.equal(offerings[1].packageCount, 0);
   assert.equal(exitOfferTarget(doc, offerings, 'primary')?.document, offer);
@@ -108,4 +111,56 @@ test('actual editor owns exit configuration at document level and does not chang
   await act(async () => field.props.onChange({ target: { value: 'offer' } }));
   assert.equal(latest.settings.exitOfferOfferingId, 'offer'); assert.deepEqual(latest.root, doc.root); assert.deepEqual(latest.products, doc.products);
   assert.equal(doc.settings, undefined);
+});
+
+test('converting existing HT retention preserves copy, assets, geometry and products without a visible generated launcher', () => {
+  const template = templates.find((item) => item.id === 'ht-blue-privilege');
+  const doc = importComponentDocument(createBuilderNodes(template.id), template);
+  const original = structuredClone(doc);
+  const surface = [...indexDocument(doc).nodes.values()].find((node) => node.name === '挽留弹窗');
+  const launcher = createCatalogComponent('BottomSheet', 'launcher');
+  launcher.props.action.actionPage = surface.id;
+  doc.root.children.push(launcher);
+  const result = createExitOffer(doc, 'exit-id', surface.id);
+  assert.ok(validDocument(result.mainDocument)); assert.ok(validDocument(result.offerDocument));
+  assert.equal(result.mainDocument.settings.exitOfferOfferingId, 'exit-id');
+  const main = indexDocument(result.mainDocument).nodes, offer = indexDocument(result.offerDocument).nodes;
+  assert.equal(main.has(surface.id), false); assert.equal(main.has('launcher'), false);
+  assert.ok(main.has('launcher/sheet'), 'unrelated nested sheet is retained');
+  assert.deepEqual(offer.get(surface.id).props, surface.props);
+  assert.deepEqual(result.offerDocument.products, original.products); assert.notEqual(result.offerDocument.products, doc.products);
+  for (const node of indexDocument(original).nodes.values()) if (node.id.startsWith(surface.id) && ['Text', 'Image', 'Countdown'].includes(node.type) && node.id !== `${surface.id}/cancel`) assert.deepEqual(offer.get(node.id), node);
+  assert.equal(offer.get(`${surface.id}/cancel`).props.action.action, 'Dismiss');
+  assert.equal(offer.get(`${surface.id}/action`).type, 'PurchaseButton');
+  assert.deepEqual(doc.root.children.slice(0, -1), original.root.children, 'source document was not mutated');
+});
+
+test('new exit offers have no ordinary launcher and multi-record explicit saving rolls back if either write fails', () => {
+  const doc = fixture(); const result = createExitOffer(doc, 'new-exit');
+  assert.ok(result); assert.deepEqual(result.mainDocument.root, doc.root);
+  assert.equal([...indexDocument(result.offerDocument).nodes.values()].filter((node) => node.name === '打开底部弹层').length, 0);
+  const records = [record('new-exit', result.offerDocument), record('primary', result.mainDocument)];
+  const store = storage(); savePaywall(store, { id: 'primary', name: 'primary', state: 'Draft' }, doc);
+  let writes = 0;
+  const denied = { ...store, setItem(key, value) { writes++; if (writes === 2) throw new Error('quota'); store.setItem(key, value); } };
+  assert.equal(savePaywallBatch(denied, records), false);
+  assert.equal(readSavedPaywall(store, 'new-exit'), null);
+  assert.deepEqual(readSavedPaywall(store, 'primary').document, doc);
+  assert.ok(savePaywallBatch(store, records));
+  assert.equal(readSavedPaywall(store, 'primary').document.settings.exitOfferOfferingId, 'new-exit');
+});
+
+test('converted overlay presents over an inert primary page and cancel or backdrop ends the whole session', async () => {
+  const template = templates.find((item) => item.id === 'ht-blue-privilege');
+  const doc = importComponentDocument(createBuilderNodes(template.id), template);
+  const surface = [...indexDocument(doc).nodes.values()].find((node) => node.name === '挽留弹窗');
+  const result = createExitOffer(doc, 'converted', surface.id);
+  const h = await mount(result.mainDocument, savedOfferings([record('converted', result.offerDocument)]));
+  await h.click('关闭付费墙预览');
+  assert.ok(h.visible(`${surface.id}/cancel`));
+  assert.equal(h.renderer.root.findAll((node) => node.props.className === 'ne-exit-underlay' && node.props.inert === '').length, 1);
+  await h.click(`${surface.id}/cancel`); assert.ok(text(h.renderer.root).includes('付费墙已关闭'));
+  await h.click('重新预览'); await h.click('关闭付费墙预览');
+  const backdrop = h.renderer.root.findAll((node) => node.props.className === 'nc-floating-backdrop')[0];
+  await act(async () => backdrop.props.onClick()); assert.ok(text(h.renderer.root).includes('付费墙已关闭'));
 });

@@ -32,6 +32,22 @@ export function savePaywall(storage, paywall, document) {
   catch { return false; }
 }
 
+export function savePaywallBatch(storage, records) {
+  if (localSettingsResetting(storage) || !records.length || records.some((record) => !validRecord(record)) || new Set(records.map((record) => record.paywall.id)).size !== records.length) return false;
+  const previous = new Map();
+  try {
+    const writes = records.map((record) => [PAYWALL_SAVE_PREFIX + record.paywall.id, JSON.stringify(record)]);
+    for (const [key] of writes) previous.set(key, storage.getItem(key));
+    for (const [key, value] of writes) storage.setItem(key, value);
+    return true;
+  } catch {
+    for (const [key, value] of [...previous].reverse()) {
+      try { if (value === null) storage.removeItem(key); else storage.setItem(key, value); } catch { /* Keep the editing session available for retry. */ }
+    }
+    return false;
+  }
+}
+
 export function removeSavedPaywall(storage, id) {
   try { storage.removeItem(PAYWALL_SAVE_PREFIX + id); return true; }
   catch { return false; }

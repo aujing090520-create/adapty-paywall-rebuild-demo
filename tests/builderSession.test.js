@@ -78,3 +78,42 @@ test('actual App reapplies pristine templates, saves by paywall, discards edits 
     if(app)await act(async()=>app.unmount());for(const timer of timers)clearTimeout(timer);for(const [key,value] of Object.entries(previous))globalThis[key]=value;
   }
 });
+
+test('actual App converts, edits and saves an existing retention offer in one session without a launcher or premature persistence', async()=>{
+  const keys=['window','document','localStorage','MutationObserver','ResizeObserver','IntersectionObserver'];
+  const previous=Object.fromEntries(keys.map(key=>[key,globalThis[key]]));const store=storage(),timers=new Set();let app;
+  globalThis.localStorage=store;
+  globalThis.document={querySelector(){return null;},documentElement:{lang:'zh-CN',style:{}},body:{style:{}}};
+  globalThis.MutationObserver=class{observe(){}disconnect(){}};globalThis.ResizeObserver=class{observe(){}disconnect(){}};globalThis.IntersectionObserver=class{observe(){}disconnect(){}};
+  globalThis.window={localStorage:store,addEventListener(){},removeEventListener(){},setInterval,clearInterval,location:{reload(){}},setTimeout(fn,ms){const timer=setTimeout(fn,ms);timers.add(timer);return timer;},clearTimeout};
+  const text=node=>typeof node==='string'?node:node.children?.map(text).join('')??'';
+  const click=async name=>{const target=app.root.findAll(item=>item.type==='button'&&(text(item).trim()===name||item.props['aria-label']===name))[0];assert.ok(target,`button ${name}`);await act(async()=>target.props.onClick({stopPropagation(){},preventDefault(){}}));};
+  const editor=()=>app.root.findAll(item=>typeof item.type==='function'&&item.type.name==='ComponentEditor'&&!item.props.isExitOffer)[0];
+  const nameField=()=>app.root.findAll(item=>item.type==='label'&&item.props.className==='ne-field'&&item.children.some(child=>typeof child==='object'&&text(child)==='页面名称'))[0].findByType('input');
+  const open=async()=>{const row=app.root.findAll(item=>item.type==='tr'&&item.findAllByType('strong').some(label=>text(label)==='test 2'))[0];await act(async()=>row.props.onClick());await click('Open Builder');};
+  try{
+    await act(async()=>{app=TestRenderer.create(React.createElement(App));});await open();await click('更换模板');
+    const card=app.root.findAll(item=>item.type==='div'&&item.props.role==='button'&&item.findAllByType('strong').some(title=>text(title)==='蓝色特权页'))[0];await act(async()=>card.props.onClick());await click('Open in Builder');
+    const doc=editor().props.initialDocument;
+    const visit=node=>[node,...node.children.flatMap(visit)];
+    const surface=visit(doc.root).find(node=>node.name==='挽留弹窗');assert.ok(surface);
+    await click('付费墙设置');
+    const field=app.root.findAll(item=>item.type==='select'&&item.props['aria-label']==='退出优惠 Offering')[0];
+    assert.ok(field.findAllByType('option').some(option=>option.props.value===`surface:${surface.id}`));
+    await act(async()=>field.props.onChange({target:{value:`surface:${surface.id}`}}));
+    assert.ok(text(app.root).includes('返回主付费墙'));assert.equal(listSavedPaywalls(store).length,0);
+    await act(async()=>nameField().props.onChange({target:{value:'已编辑挽留优惠'}}));
+    await click('返回主付费墙');
+    const main=editor().props.initialDocument,offerId=main.settings.exitOfferOfferingId;
+    assert.equal(visit(main.root).some(node=>node.id===surface.id||node.name==='打开底部弹层'),false);
+    assert.equal(listSavedPaywalls(store).length,0,'conversion and editing are not autosaved');
+    await click('保存');assert.equal(listSavedPaywalls(store).length,2);
+    assert.equal(readSavedPaywall(store,'test-2').document.settings.exitOfferOfferingId,offerId);
+    assert.equal(readSavedPaywall(store,offerId).document.root.children[0].name,'已编辑挽留优惠');
+    await click('编辑退出优惠');await act(async()=>nameField().props.onChange({target:{value:'不应保存的新修改'}}));
+    await click('放弃修改');await click('付费墙设置');await click('编辑退出优惠');assert.equal(nameField().props.value,'已编辑挽留优惠');
+    await click('返回主付费墙');await click('Paywalls');await open();
+    assert.equal(editor().props.initialDocument.settings.exitOfferOfferingId,offerId);
+    await click('付费墙设置');await click('编辑退出优惠');assert.equal(nameField().props.value,'已编辑挽留优惠');
+  }finally{if(app)await act(async()=>app.unmount());for(const timer of timers)clearTimeout(timer);for(const[key,value]of Object.entries(previous))globalThis[key]=value;}
+});

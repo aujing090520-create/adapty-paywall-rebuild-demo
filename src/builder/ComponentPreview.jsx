@@ -220,7 +220,7 @@ function Countdown({ props }) {
   const parts = [Math.floor(remaining / 3600), Math.floor(remaining / 60) % 60, remaining % 60];
   return <span className="nc-countdown"><span style={{ color: props.prefixColor }}>{props.prefix}</span>{parts.map((part, index) => <React.Fragment key={index}>{index > 0 && <span>:</span>}<strong style={{ background: props.digitBackground, borderRadius: 4, padding: '0 3px' }}>{String(part).padStart(2, '0')}</strong></React.Fragment>)}<span>{props.suffix}</span></span>;
 }
-export default function ComponentPreview({ document, selectedId, onSelect, editing, navigation, onNavigate, onStatus, onDismiss, dismissRequest = 0 }) {
+export default function ComponentPreview({ document, selectedId, onSelect, editing, navigation, onNavigate, onStatus, onDismiss, dismissRequest = 0, dismissOnBackdrop = false }) {
   const [runtime, setRuntime] = useState({});
   const previousDocument = useRef(document);
   const viewport = useRef(null), [scale, setScale] = useState(0.82);
@@ -299,7 +299,7 @@ export default function ComponentPreview({ document, selectedId, onSelect, editi
       onStatus('网页付费墙预览：未发起真实交易');
     } else onStatus(({ RestorePurchases: '恢复购买预览', Dismiss: '关闭预览', WebCheckout: '网页结账预览', OfferCodeRedemption: '优惠码兑换预览', OpenPage: '页面跳转预览' }[action.action]) ?? '未配置点击动作');
   };
-  const dismissPaywall = () => onDismiss ? onDismiss({ eligible: isExitOfferStep(document, runtime) }) : onStatus('关闭预览');
+  const dismissPaywall = () => onDismiss ? onDismiss({ eligible: isExitOfferStep(document, runtime), snapshot: runtime }) : onStatus('关闭预览');
   const previousDismissRequest = useRef(dismissRequest);
   useEffect(() => {
     if (previousDismissRequest.current === dismissRequest) return;
@@ -309,5 +309,5 @@ export default function ComponentPreview({ document, selectedId, onSelect, editi
   const {nodes:nodeIndex,parents:parentIndex} = indexDocument(document), overlay = nodeIndex.get(runtime.overlay);
   const packages = activeComponents(document,runtime).filter((item)=>item.type==='Package');
   const selectedPackage = packages.find((item)=>item.id===runtime.selectedPackage) ?? packages.find((item)=>runtime[`package:${item.props.group??item.id}`]===item.id) ?? packages.find((item)=>item.props.defaultSelected && runtime[`package:${item.props.group??item.id}`]===undefined);
-  return <PreviewContext.Provider value={{ document, nodeIndex, parentIndex, selectedId, onSelect, editing, runtime, setRuntime, runAction, onStatus, selectedPackage,packages }}><style>{fontStyles(document.fonts)}</style><div className="phone native-phone"><div className="nc-viewport" ref={viewport}><div className="nc-design" style={{ zoom: scale }}><NativeComponent node={document.root} /></div></div>{overlay && <div className="nc-floating-overlay"><div className="nc-floating-backdrop" onClick={()=>setRuntime((current)=>({...current,overlay:null}))}/><div className="nc-floating-design" style={{zoom:scale,height:(viewport.current?.clientHeight??844)/scale}}><NativeComponent node={overlay} floating/></div></div>}{runtime.webLink && <div className="nc-web-preview" role="dialog" aria-label="网页预览"><header><span>{runtime.webLink.title}</span><button type="button" aria-label="关闭网页预览" title="关闭网页预览" onClick={()=>setRuntime((current)=>({...current,webLink:null}))}><X size={18}/></button></header><iframe title="网页预览内容" src={runtime.webLink.url} sandbox="allow-scripts allow-forms allow-popups" referrerPolicy="no-referrer"/></div>}</div></PreviewContext.Provider>;
+  return <PreviewContext.Provider value={{ document, nodeIndex, parentIndex, selectedId, onSelect, editing, runtime, setRuntime, runAction, onStatus, selectedPackage,packages }}><style>{fontStyles(document.fonts)}</style><div className="phone native-phone"><div className="nc-viewport" ref={viewport}><div className="nc-design" style={{ zoom: scale }}><NativeComponent node={document.root} /></div></div>{overlay && <div className="nc-floating-overlay"><div className="nc-floating-backdrop" onClick={()=>{ if (!editing && dismissOnBackdrop && overlay.id === document.settings?.presentationSurfaceId) dismissPaywall(); else setRuntime((current)=>({...current,overlay:null})); }}/><div className="nc-floating-design" style={{zoom:scale,height:(viewport.current?.clientHeight??844)/scale}}><NativeComponent node={overlay} floating/></div></div>}{runtime.webLink && <div className="nc-web-preview" role="dialog" aria-label="网页预览"><header><span>{runtime.webLink.title}</span><button type="button" aria-label="关闭网页预览" title="关闭网页预览" onClick={()=>setRuntime((current)=>({...current,webLink:null}))}><X size={18}/></button></header><iframe title="网页预览内容" src={runtime.webLink.url} sandbox="allow-scripts allow-forms allow-popups" referrerPolicy="no-referrer"/></div>}</div></PreviewContext.Provider>;
 }

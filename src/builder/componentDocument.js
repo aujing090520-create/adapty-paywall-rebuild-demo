@@ -61,6 +61,7 @@ export function indexDocument(document) {
 export function validDocument(document) {
   if (document?.version !== DOCUMENT_VERSION || document.root?.type !== 'Screen' || !document.products || typeof document.products !== 'object') return false;
   if (document.settings !== undefined && (!document.settings || typeof document.settings !== 'object' || Array.isArray(document.settings) || document.settings.exitOfferOfferingId !== undefined && typeof document.settings.exitOfferOfferingId !== 'string')) return false;
+  if (document.settings?.presentationSurfaceId !== undefined && typeof document.settings.presentationSurfaceId !== 'string') return false;
   if(document.fonts!==undefined&&(!Array.isArray(document.fonts)||document.fonts.some(font=>!font||typeof font.id!=='string'||typeof font.family!=='string'||!Array.isArray(font.faces)||font.faces.some(face=>!face||typeof face.src!=='string'))))return false;
   const ids = new Set();
   const visit = (node, depth = 0) => {
@@ -68,7 +69,7 @@ export function validDocument(document) {
     ids.add(node.id);
     return (CONTAINER_TYPES.has(node.type) || !node.children.length) && node.children.every((child) => visit(child, depth + 1));
   };
-  return visit(document.root);
+  return visit(document.root) && (!document.settings?.presentationSurfaceId || indexDocument(document).nodes.get(document.settings.presentationSurfaceId)?.type === 'BottomSheet');
 }
 export function updateComponent(document, id, patch) {
   const visit = (node) => node.id === id ? { ...node, ...patch, props: patch.props ? { ...node.props, ...patch.props } : node.props } : { ...node, children: node.children.map(visit) };

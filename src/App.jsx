@@ -10,8 +10,8 @@ import { linkActionFor, visibleLinkLabels } from "./linkActions.js";
 
 import { DEMO_SKUS, PRICE_DISPLAY_MODES, billingMonths, productPriceFields, resolveProductPrice, skuById, skuCopy, templateSkuId } from "./productPricing.js";
 import { clearLocalDemoSettings, beginLocalDemoReset, cancelLocalDemoReset } from "./templateStorage.js";
-import { listSavedPaywalls, readSavedPaywall, savePaywall, removeSavedPaywall } from './paywallStorage.js';
-import { savedOfferings } from './builder/exitOffers.js';
+import { listSavedPaywalls, readSavedPaywall, savePaywallBatch, removeSavedPaywall } from './paywallStorage.js';
+import { savedOfferings, createExitOffer } from './builder/exitOffers.js';
 import { clearCustomBundles } from "./builder/customStorage.js";
 import { productTranslation } from "./productPlacement.js";
 import { productArrangement } from "./productArrangement.js";
@@ -368,6 +368,7 @@ export default function App() {
   const [builderNodes, setBuilderNodes] = useState(() => createBuilderNodes());
   const [builderDocument, setBuilderDocument] = useState(null);
   const [savedDocument, setSavedDocument] = useState(null);
+  const [exitOfferDrafts, setExitOfferDrafts] = useState({});
   const [builderRevision, setBuilderRevision] = useState(0);
   const [resetPending, setResetPending] = useState(false);
   const [builderOrigin, setBuilderOrigin] = useState("existing");
@@ -405,9 +406,27 @@ export default function App() {
   }, [paywalls, search, stateFilter]);
 
   const selected = paywalls.find((item) => item.id === selectedId) ?? paywalls[0];
-  const offerings = useMemo(() => savedOfferings(listSavedPaywalls(window.localStorage), builderOrigin === 'create' ? undefined : selectedId), [paywalls, builderOrigin, selectedId]);
+  const savedRecords = useMemo(() => listSavedPaywalls(window.localStorage), [paywalls]);
+  const offerings = useMemo(() => savedOfferings([...savedRecords.filter((record) => !exitOfferDrafts[record.paywall.id]), ...Object.values(exitOfferDrafts)], builderOrigin === 'create' ? undefined : selectedId), [savedRecords, exitOfferDrafts, builderOrigin, selectedId]);
+  const changeExitOffer = React.useCallback((id, document) => {
+    setExitOfferDrafts((current) => {
+      if (current[id]?.document === document) return current;
+      const record = current[id] ?? readSavedPaywall(window.localStorage, id);
+      if (!record || !current[id] && JSON.stringify(record.document) === JSON.stringify(document)) return current;
+      return { ...current, [id]: { ...record, document, paywall: { ...record.paywall, products: Object.keys(document.products).length } } };
+    });
+  }, []);
+  const prepareExitOffer = React.useCallback((document, surfaceId) => {
+    const id = `local-exit-${crypto.randomUUID()}`;
+    const result = createExitOffer(document, id, surfaceId);
+    if (!result) return null;
+    const record = { version: 1, templateId: result.offerDocument.templateId, document: result.offerDocument, paywall: { id, name: result.name, state: 'Draft', products: Object.keys(result.offerDocument.products).length, startedAt: new Date().toLocaleDateString('zh-CN') } };
+    setExitOfferDrafts((current) => ({ ...current, [id]: record }));
+    return result.mainDocument;
+  }, []);
 
   const restoreBuilder = (record = null) => {
+    setExitOfferDrafts({});
     const index = record ? templates.findIndex((template) => template.id === record.templateId) : -1;
     setAppliedTemplate(index < 0 ? null : index);
     setTemplateSelected(index < 0 ? null : index);
@@ -471,6 +490,7 @@ export default function App() {
     setActiveNode((current) => removed.has(current) ? (remaining[0]?.id ?? null) : current);
   };
   const applyTemplate = (templateIndex) => {
+    setExitOfferDrafts({});
     const template = templates[templateIndex];
     const nextNodes = createBuilderNodes(template.id);
     setBuilderDocument(null);
@@ -491,8 +511,11 @@ export default function App() {
   const saveBuilder = () => {
     if (!builderDocument) return notify('请先打开构建器，确认页面内容后保存。');
     const paywall = builderOrigin === 'create' ? { id: `local-${crypto.randomUUID()}`, name: draft.name.trim() || '未命名付费墙', state: 'Draft', products: Object.keys(builderDocument.products).length, startedAt: new Date().toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' }), config: structuredClone(draft) } : { ...selected, products: Object.keys(builderDocument.products).length };
-    if (!savePaywall(window.localStorage, paywall, builderDocument)) return notify('本地保存失败，当前编辑仍保留，请检查存储空间。');
-    setPaywalls((items) => items.some((item) => item.id === paywall.id) ? items.map((item) => item.id === paywall.id ? paywall : item) : [...items, paywall]);
+    const exitDraft = exitOfferDrafts[builderDocument.settings?.exitOfferOfferingId];
+    const records = [...(exitDraft ? [exitDraft] : []), { version: 1, paywall, templateId: builderDocument.templateId, document: builderDocument }];
+    if (!savePaywallBatch(window.localStorage, records)) return notify('本地保存失败，主付费墙与退出优惠的编辑仍保留，请检查存储空间。');
+    setPaywalls((items) => records.reduce((all, record) => all.some((item) => item.id === record.paywall.id) ? all.map((item) => item.id === record.paywall.id ? record.paywall : item) : [...all, record.paywall], items));
+    setExitOfferDrafts({});
     setSelectedId(paywall.id);
     setBuilderOrigin('existing');
     setSavedDocument(builderDocument);
@@ -502,7 +525,7 @@ export default function App() {
   const discardBuilder = () => {
     const record = builderOrigin === 'existing' ? readSavedPaywall(window.localStorage, selected.id) : null;
     if (record) restoreBuilder(record);
-    else { setBuilderDocument(null); setBuilderNodes(appliedTemplate === null ? [] : createBuilderNodes(templates[appliedTemplate].id)); setBuilderRevision((value) => value + 1); }
+    else { setExitOfferDrafts({}); setBuilderDocument(null); setBuilderNodes(appliedTemplate === null ? [] : createBuilderNodes(templates[appliedTemplate].id)); setBuilderRevision((value) => value + 1); }
     notify(record ? '已恢复上次保存的付费墙。' : '已恢复模板默认内容。');
   };
 
@@ -589,10 +612,12 @@ export default function App() {
               builderDocument={builderDocument}
               setBuilderDocument={setBuilderDocument}
               builderRevision={builderRevision}
-              builderDirty={builderDocument !== savedDocument}
+              builderDirty={builderDocument !== savedDocument || Object.keys(exitOfferDrafts).length > 0}
               saveBuilder={saveBuilder}
               discardBuilder={discardBuilder}
               offerings={offerings}
+              prepareExitOffer={prepareExitOffer}
+              changeExitOffer={changeExitOffer}
               setBuilderNodes={setBuilderNodes}
               updateBuilderNode={updateBuilderNode}
               removeBuilderNode={removeBuilderNode}
@@ -621,10 +646,12 @@ export default function App() {
               builderDocument={builderDocument}
               setBuilderDocument={setBuilderDocument}
               builderRevision={builderRevision}
-              builderDirty={builderDocument !== savedDocument}
+              builderDirty={builderDocument !== savedDocument || Object.keys(exitOfferDrafts).length > 0}
               saveBuilder={saveBuilder}
               discardBuilder={discardBuilder}
               offerings={offerings}
+              prepareExitOffer={prepareExitOffer}
+              changeExitOffer={changeExitOffer}
               setBuilderNodes={setBuilderNodes}
               updateBuilderNode={updateBuilderNode}
               removeBuilderNode={removeBuilderNode}
@@ -846,7 +873,7 @@ function CreatePaywall({ draft, setDraft, setView, setModal }) {
   );
 }
 
-function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setView, duplicate, setModal, markUnknown, builderNodes, setBuilderNodes, updateBuilderNode, removeBuilderNode, activeNode, setActiveNode, appliedTemplate, builderDocument, setBuilderDocument, builderRevision, builderDirty, saveBuilder, discardBuilder, offerings, templateLinks, setTemplateLinks, notify }) {
+function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setView, duplicate, setModal, markUnknown, builderNodes, setBuilderNodes, updateBuilderNode, removeBuilderNode, activeNode, setActiveNode, appliedTemplate, builderDocument, setBuilderDocument, builderRevision, builderDirty, saveBuilder, discardBuilder, offerings, prepareExitOffer, changeExitOffer, templateLinks, setTemplateLinks, notify }) {
 
   const [productPickerOpen, setProductPickerOpen] = useState(false);
   const [transientProducts, setTransientProducts] = useState([]);
@@ -857,7 +884,7 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
       {isNew ? <><button className="back" onClick={() => setView("create")}><ArrowLeft size={18} /> 创建付费墙</button><div className="workspace-heading"><div><span className="eyebrow">新建付费墙</span><h1>{selected.name}</h1></div></div></> : <WorkspaceHeader selected={selected} setView={setView} duplicate={duplicate} setModal={setModal} markUnknown={markUnknown} />}
       <div className="detail-tabs"><button onClick={() => setView(isNew ? "create" : "general")}>General</button><button className="active">Builder & Generator</button></div>
       <div className="template-context observed-tree"><span>模板</span><strong>{template.title}</strong><button className="secondary" onClick={() => setModal({ kind: "templates" })}><LayoutTemplate size={15} /> 更换模板</button><div className="builder-save-actions"><span role="status">{builderDirty ? '未保存' : '已保存'}</span><button type="button" className="secondary" onClick={discardBuilder}>放弃修改</button><button type="button" className="primary" onClick={saveBuilder}><Save size={15}/>保存</button></div></div>
-      <ComponentEditor key={`${template.id}:${builderRevision}`} template={template} initialNodes={initialNodes} initialDocument={builderDocument} onDocumentChange={setBuilderDocument} persistence="session" offerings={offerings} currentPaywallId={isNew ? undefined : selected.id}/>
+      <ComponentEditor key={`${template.id}:${builderRevision}`} template={template} initialNodes={initialNodes} initialDocument={builderDocument} onDocumentChange={setBuilderDocument} persistence="session" offerings={offerings} currentPaywallId={isNew ? undefined : selected.id} onCreateExitOffer={prepareExitOffer} onExitOfferChange={changeExitOffer}/>
     </section>;
   }
 
