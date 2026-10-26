@@ -70,7 +70,7 @@ for (const order of [7, 8, 9]) test(`${order}: OFF/ON are complete isolated pack
   const sw = index.nodes.get(`rc-source-${order}-switch`);
   assert.equal(index.nodes.get(index.parents.get(sw.id)).type, 'Footer');
   assert.deepEqual(sw.children.map((entry) => entry.props.index), [0, 1]);
-  assert.deepEqual(sw.children.map((entry) => componentLayerLabel(entry)), ['开关状态内容 · 关闭', '开关状态内容 · 开启']);
+  assert.deepEqual(sw.children.map((entry) => componentLayerLabel(entry)), ['关闭 · 开关状态内容', '开启 · 开关状态内容']);
   assert.deepEqual(document.products, raw(order).products);
   const states = [0, 1].map((at) => activeComponents(document, { [sw.id]: at }));
   for (const at of [0, 1]) {

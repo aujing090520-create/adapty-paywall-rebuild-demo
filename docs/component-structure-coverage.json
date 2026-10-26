@@ -2524,7 +2524,7 @@
   },
   "sourceHashes": {
     "src/builder/componentCatalog.js": "94af6a424d98f3d59d1bc3c8bde530b14cdf33247372af0472504b1a0a25e63a",
-    "src/builder/componentDocument.js": "a02fce733c20e3ff4e8ab25a064a8f9901dbafae32b36eb55d92fdaa8a4e30cb",
+    "src/builder/componentDocument.js": "f3f4963b28f8b2ee62c6ffd5e24f5f8161189bbc11ae26b08d8755c883bd2c3c",
     "src/builder/componentOperations.js": "f1b5585d9f44dd1ac753b2cfe5a036864f4e49d16800b064fad8c587438dccb9",
     "src/builder/ComponentPreview.jsx": "b2edbdb42b4d01428c9a45d8c228909f36fb891cec408904e9bc9c8f7217e9cb",
     "src/builder/screenLayout.js": "3bab6b36c926bdaa63a22da6dd608cd5a3543b537db8c2e7926c3821486406db",
