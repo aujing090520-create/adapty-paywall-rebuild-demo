@@ -337,6 +337,7 @@ test('navigation row Fit height is intrinsic inside an overlay instead of stretc
   const node=component('sample','Stack','导航栏',{navigationRow:true,axis:'overlay',overlayAlignment:'top-left',heightMode:'fit',paddingVertical:16},[component('back','Button','返回',{widthMode:'fixed',width:32,heightMode:'fixed',height:32})]);
   const h=await mount(node);
   assert.equal(h.node().props.style.height,'fit-content');
+  assert.equal(h.node().props.style.zIndex,2,'navigation stays above later image siblings after logical tree ordering');
   await h.segment('高度','固定');await h.change('固定高度','80');assert.equal(h.node().props.style.height,'80px');
   await h.segment('高度','适应内容');assert.equal(h.node().props.style.height,'fit-content');
   await h.close();

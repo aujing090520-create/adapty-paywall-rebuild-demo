@@ -37,3 +37,9 @@ Verify source hierarchy; old generated-header repair; custom Header preservation
 - Marked navigation rows now render intrinsic Fit height; fixed and fill modes remain independent. Other generic Stack defaults are unchanged.
 - Fresh browser measurements: row 63.985 design px, button 31.992px, inset 15.996px, hero still 226.2px (fractional device/canvas rounding). The selection outline now corresponds to the navigation strip.
 - Final result: 381 passed, 0 failed, 0 skipped; build 3.20s. Final JS index-Cewh8MwR.js, CSS index-KpQ6Ek7Z.css. Local screenshot: /tmp/paywall-navigation-row-blue-local.png.
+
+## NAV-03: Logical Layer Order
+
+- User correction: layer order must read top-to-bottom and outside-to-inside; navigation belongs before the image, not after image/copy. Bounded change to Blue navigation ordering, with the same existing-remote release authorization; no visual redesign or action/SKU edits.
+- New defaults put the actual navigation Stack first in hero children. Version-one drafts migrate that ordering once, preserving child IDs, actions, modal ownership, remaining sibling order and deliberately deleted navigation. Navigation paint priority remains above its image siblings.
+- Local actual readback: main > hero > navigation > Back > Icon > image > copy; the pointer target is the Icon, all images load and Back closes preview. Automated result: 382 passed, 0 failed, 0 skipped; build 3.62s. JS index-PZQ11YJx.js, CSS index-KpQ6Ek7Z.css.

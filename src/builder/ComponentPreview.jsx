@@ -43,6 +43,7 @@ export function componentStyle(node) {
     padding: props.paddingMode === 'individual' ? ['Top', 'Right', 'Bottom', 'Left'].map((side) => `${numeric(`padding${side}`)}px`).join(' ') : `${numeric('paddingVertical', numeric('paddingTop'))}px ${numeric('paddingHorizontal', numeric('paddingRight'))}px`,
     margin: props.marginMode === 'individual' ? ['Top', 'Right', 'Bottom', 'Left'].map((side) => `${numeric(`margin${side}`)}px`).join(' ') : `${numeric('marginVertical', numeric('marginTop'))}px ${numeric('marginHorizontal', numeric('marginRight'))}px`,
     alignSelf: props.alignSelf === 'auto' ? undefined : props.alignSelf,
+    zIndex: props.navigationRow ? 2 : undefined,
     ...(props.fillEnabled !== false && props.textBackground && props.textBackground !== 'transparent' ? { background: paintColor(props.textBackground, props.backgroundOpacity) } : {}),
     ...(props.fillEnabled !== false && props.fillType === 'image' && props.backgroundImage ? { backgroundImage: `url(${JSON.stringify(safeMediaSource(props.backgroundImage))})`, backgroundSize: ({fill:'100% 100%',none:'auto'}[props.backgroundFit]) ?? props.backgroundFit ?? 'cover', backgroundPosition: props.backgroundPosition ?? 'center', backgroundRepeat: props.backgroundRepeat ?? 'no-repeat' } : {}),
   };

@@ -15,6 +15,8 @@ test('Blue default is hero > overlay navigation Stack > Back Button > editable I
   const document=load(),{nodes,parents}=indexDocument(document);
   assert.ok(validDocument(document));
   assert.equal(parents.get('hero-image/navigation'),'hero-image');
+  assert.equal(nodes.get('hero-image').children[0].id,'hero-image/navigation');
+  assert.equal(nodes.get('hero-image').children[1].id,'hero-image/image');
   assert.equal(nodes.get('hero-image/navigation').type,'Stack');
   assert.equal(nodes.get('hero-image/navigation').props.axis,'overlay');
   assert.equal(nodes.get('hero-image/navigation').props.overlayAlignment,'top-left');
@@ -57,6 +59,23 @@ test('missing old Blue default is added once while existing custom navigation is
   const nextConfigured=upgradeNavigationRows(configured.document);
   assert.ok(!indexDocument(nextConfigured).nodes.has('hero-image/back'));
   assert.deepEqual(indexDocument(nextConfigured).nodes.get(configured.id),indexDocument(configured.document).nodes.get(configured.id));
+});
+
+test('version-one Blue drafts move navigation before image without changing actions, modal ownership or other children',()=>{
+  const source=load(),hero=indexDocument(source).nodes.get('hero-image');
+  let old=updateComponent(source,hero.id,{children:[...hero.children.slice(1),hero.children[0]]});
+  old={...old,navigationRowsVersion:1};
+  const bound=createButtonModal(old,'hero-image/back'),before=indexDocument(bound.document),next=upgradeNavigationRows(bound.document),after=indexDocument(next);
+  assert.equal(next.navigationRowsVersion,2);
+  assert.equal(after.nodes.get(hero.id).children[0].id,'hero-image/navigation');
+  assert.deepEqual(after.nodes.get(hero.id).children.slice(1).map(node=>node.id),hero.children.slice(1).map(node=>node.id));
+  assert.deepEqual(after.nodes.get('hero-image/navigation'),before.nodes.get('hero-image/navigation'));
+  assert.deepEqual(after.nodes.get(bound.id),before.nodes.get(bound.id));
+  assert.equal(after.parents.get(bound.id),'hero-image/back');
+  assert.deepEqual(next.products,old.products);
+  assert.equal(upgradeNavigationRows(next),next);
+  const removed={...removeComponent(old,'hero-image/navigation'),navigationRowsVersion:1};
+  assert.ok(!indexDocument(upgradeNavigationRows(removed)).nodes.has('hero-image/navigation'));
 });
 
 test('nine-position alignment preserves legacy layout and survives style copying and selected-state resolution',()=>{
