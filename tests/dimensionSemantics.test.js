@@ -39,3 +39,19 @@ test('floating modal CSS no longer overrides configured geometry', () => {
     });
   });
 });
+
+test('selection uses an edit-only high-contrast overlay without changing component geometry or intercepting input', () => {
+  const css=postcss.parse(fs.readFileSync(new URL('../src/builder/componentEditor.css',import.meta.url),'utf8'));
+  const selected={};
+  css.walkRules('.nc-inspected::after',rule=>rule.walkDecls(decl=>{selected[decl.prop]=decl.value;}));
+  assert.equal(selected.position,'absolute');
+  assert.equal(selected.inset,'0');
+  assert.equal(selected['pointer-events'],'none');
+  assert.equal(selected.border,'3px solid #245cff');
+  assert.equal(selected['box-shadow'],'inset 0 0 0 1px #ffffff,0 0 0 1px #ffffff');
+  assert.equal(selected['border-radius'],'inherit');
+  assert.ok(!['width','height','padding','margin','transform'].some(prop=>prop in selected));
+  let hover;
+  css.walkRules('.nc-hovered:not(.nc-inspected)',rule=>rule.walkDecls('outline',decl=>{hover=decl.value;}));
+  assert.match(hover,/dashed/);
+});
