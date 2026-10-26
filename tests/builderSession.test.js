@@ -139,8 +139,9 @@ test('actual App links, edits and saves an existing canvas popup without copying
     const bindings=modalBindings(editor().props.initialDocument),ids=bindings.map(({modal})=>modal.id);
     assert.ok(ids.includes(offerId));assert.equal(ids.length,new Set(ids).size);
     assert.equal(ids.length,existingIds.length+1);assert.ok(existingIds.every(id=>ids.includes(id)));
-    assert.equal(bindings.at(-1).modal.children.length,0);
-    assert.equal(bindings.at(-1).button.name,'返回按钮');
+    const addedBinding=bindings.find(({modal})=>!existingIds.includes(modal.id));
+    assert.equal(addedBinding.modal.children.length,0);
+    assert.equal(addedBinding.button.name,'返回按钮');
     await click('保存');
     const reopened=readSavedPaywall(store,'test-2').document;
     assert.deepEqual(modalBindings(reopened).map(({modal})=>modal.id),ids);

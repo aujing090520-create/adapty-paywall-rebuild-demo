@@ -5,6 +5,12 @@ export const CORNER_KEYS = ['radiusTopLeft', 'radiusTopRight', 'radiusBottomRigh
 export const PAINT_OPACITY_KEYS = ['colorOpacity', 'backgroundOpacity', 'borderOpacity', 'shadowOpacity', 'overlayOpacity', 'iconBackgroundOpacity'];
 STATE_STYLE_KEYS.push('radiusMode', 'iconBackgroundEnabled', 'borderEnabled', 'shadowEnabled', ...CORNER_KEYS, ...PAINT_OPACITY_KEYS);
 STATE_STYLE_KEYS.push('mask', 'overlayColor', 'overlayEnabled', 'iconBackground');
+STATE_STYLE_KEYS.push('overlayAlignment');
+
+export const OVERLAY_ALIGNMENTS = Object.fromEntries(['top','center','bottom'].flatMap((vertical) => ['left','center','right'].map((horizontal) => [`${vertical}-${horizontal}`,{alignItems:{top:'start',center:'center',bottom:'end'}[vertical],justifyItems:{left:'start',center:'center',right:'end'}[horizontal]}])));
+export function overlayAlignmentStyle(props) {
+  return OVERLAY_ALIGNMENTS[props.overlayAlignment] ?? {alignItems:props.align,justifyItems:props.align};
+}
 STATE_STYLE_KEYS.push('appearanceEnabled', 'maskEnabled');
 export const sequencePages = (node) => node.type === 'Carousel' ? node.children.filter((child)=>child.type==='Slide') : node.children;
 export function utcDateTimeInput(value) {

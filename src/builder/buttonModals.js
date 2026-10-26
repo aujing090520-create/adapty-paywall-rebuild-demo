@@ -5,6 +5,7 @@ import { owningScreen, owningModal, workflowContext } from './workflow.js';
 import { createCatalogComponent } from './componentCatalog.js';
 import { pageContext } from './componentTree.js';
 import { copyFragment, pasteFragment } from './componentOperations.js';
+import { appendNavigationButton } from './navigationRows.js';
 
 const buttons = new Set(['Button', 'PurchaseButton']);
 
@@ -71,14 +72,7 @@ export function addNavigationButton(document, screenId, kind = 'close') {
   const screen = indexDocument(document).nodes.get(screenId);
   if (screen?.type !== 'Screen') return { document, id: null };
   const button = navigationButton(kind);
-  const header = screen.children.find((node) => node.type === 'Header');
-  if (header) return { document: insertComponent(document, header.id, button), id: button.id };
-  const row = component(crypto.randomUUID(), 'Header', '页头', {
-    axis: 'horizontal', align: 'center', justify: kind === 'back' ? 'start' : 'end', gap: 8,
-    background: 'transparent', paddingHorizontal: 16, paddingVertical: 8,
-    shadowOpacity: 0,
-  }, [button]);
-  return { document: updateComponent(document, screenId, { children: [row, ...screen.children] }), id: button.id };
+  return { document: appendNavigationButton(document,screenId,button), id: button.id };
 }
 
 export function upgradeButtonModals(document, offerings = [], currentPaywallId) {

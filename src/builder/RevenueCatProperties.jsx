@@ -7,6 +7,7 @@ import { PRODUCT_TEXT_VARIABLES, TIMER_TEXT_VARIABLES } from './textVariables.js
 import {isGradient,pickerColor,pickerPaint} from './colorModel.js';
 import IconField from './IconField.jsx';
 import { TEXT_RULES, textRuleName, textRuleProps, textRulePatch } from './textRules.js';
+import { ArrowUpLeft, ArrowUp, ArrowUpRight, ArrowLeft, ArrowDownLeft, ArrowDownRight, Dot } from 'lucide-react';
 const ColorPickerPopup=React.lazy(()=>import('./ColorPickerPopup.jsx'));
 const RichTextEditor=React.lazy(()=>import('./RichTextEditor.jsx'));
 const FontManager=React.lazy(()=>import('./FontManager.jsx'));
@@ -195,8 +196,8 @@ function LayoutSection({ selected, p, patch, parent }) {
     {selected.type === 'BottomSheet' && <PropertySection title="弹窗位置"><Select label="显示位置" value={p.presentation === 'sheet' ? 'sheet' : 'overlay'} options={[[ 'overlay','屏幕居中' ],[ 'sheet','屏幕底部' ]]} onChange={(presentation)=>patch({presentation})}/><NumberField label="屏幕边距" value={p.surfaceInset ?? (p.presentation === 'sheet' ? 0 : 20)} max={160} onChange={(surfaceInset)=>patch({surfaceInset})}/></PropertySection>}
     {isContainer && <PropertySection title="布局" className="rc-layout-section">
       <SegmentedField label="轴向" value={p.axis} icon options={[[ 'horizontal', '横向', ArrowRight ], [ 'vertical', '纵向', ArrowDown ], [ 'overlay', '叠放', Layers3 ]]} onChange={(axis) => patch({ axis })} />
-      <SegmentedField label="对齐" value={p.align} icon options={[[ 'start', '起始', p.axis === 'horizontal' ? AlignStartVertical : AlignStartHorizontal ], [ 'center', '居中', p.axis === 'horizontal' ? AlignCenterVertical : AlignCenterHorizontal ], [ 'end', '末尾', p.axis === 'horizontal' ? AlignEndVertical : AlignEndHorizontal ]]} onChange={(align) => patch({ align })} />
-      {p.align==='stretch'&&<div className="rc-legacy-alignment" role="status">当前对齐：拉伸（旧配置）</div>}
+      {p.axis === 'overlay' ? <div className="rc-overlay-alignment"><span>对齐</span><div role="group" aria-label="叠放对齐" className="rc-overlay-grid">{[['top-left','左上',ArrowUpLeft],['top-center','上方居中',ArrowUp],['top-right','右上',ArrowUpRight],['center-left','左侧居中',ArrowLeft],['center-center','居中',Dot],['center-right','右侧居中',ArrowRight],['bottom-left','左下',ArrowDownLeft],['bottom-center','下方居中',ArrowDown],['bottom-right','右下',ArrowDownRight]].map(([value,label,Icon])=><button type="button" key={value} aria-label={label} title={label} aria-pressed={(p.overlayAlignment??{start:'top-left',center:'center-center',end:'bottom-right'}[p.align])===value} onClick={()=>patch({overlayAlignment:value})}><Icon size={16}/></button>)}</div></div> : <SegmentedField label="对齐" value={p.align} icon options={[[ 'start', '起始', p.axis === 'horizontal' ? AlignStartVertical : AlignStartHorizontal ], [ 'center', '居中', p.axis === 'horizontal' ? AlignCenterVertical : AlignCenterHorizontal ], [ 'end', '末尾', p.axis === 'horizontal' ? AlignEndVertical : AlignEndHorizontal ]]} onChange={(align) => patch({ align })} />}
+      {p.align==='stretch'&&!p.overlayAlignment&&<div className="rc-legacy-alignment" role="status">当前对齐：拉伸（旧配置）</div>}
       {p.axis !== 'overlay' && <><Select label="分布" value={p.justify} options={[[ 'between', '两端分布' ], [ 'around', '各项两侧均分' ], [ 'evenly', '各项等距' ], [ 'start', '起始' ], [ 'center', '居中' ], [ 'end', '末尾' ]]} onChange={(justify) => patch({ justify })} /><NumberField label="子项间距" value={p.gap} max={200} onChange={(gap) => patch({ gap })} /></>}
       {p.wrap && p.axis === 'horizontal' && <SegmentedField label="换行（旧模板）" value="yes" options={[[ 'no', '不换行' ], [ 'yes', '换行' ]]} onChange={(value) => patch({ wrap: value === 'yes' })} />}
     </PropertySection>}

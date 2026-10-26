@@ -327,7 +327,9 @@ test('all container axes and alignment fields map to flex/grid without pretendin
   assert.equal(h.node().props.style.flexWrap, 'wrap'); await h.segment('换行（旧模板）', '不换行'); assert.equal(h.node().props.style.flexWrap, 'nowrap');
   await h.select('分布', 'around'); assert.equal(h.node().props.style.justifyContent, 'space-around');
   await h.select('分布', 'evenly'); assert.equal(h.node().props.style.justifyContent, 'space-evenly');
-  await h.click('叠放'); await h.click('末尾'); assert.equal(h.node().props.style.display, 'grid'); assert.equal(h.node().props.style.justifyItems, 'end');
+  await h.click('叠放'); await h.click('右上'); assert.equal(h.node().props.style.display, 'grid'); assert.equal(h.node().props.style.justifyItems, 'end');assert.equal(h.node().props.style.alignItems,'start');
+  const grid=h.renderer.root.findByProps({'aria-label':'叠放对齐'});assert.equal(grid.findAllByType('button').length,9);
+  await h.click('左下');assert.equal(h.node().props.style.justifyItems,'start');assert.equal(h.node().props.style.alignItems,'end');
   await h.close();
 });
 

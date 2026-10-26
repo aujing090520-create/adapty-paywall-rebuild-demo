@@ -23,6 +23,7 @@ import WorkflowConnections, { STEP_BOARD_GAP, STEP_CANVAS_GUTTER } from './Workf
 import { flowInitialIndex } from './componentTree.js';
 import { GripVertical } from 'lucide-react';
 import { upgradeButtonModals, buttonModalEdges, createButtonModal, attachButtonModal, addNavigationButton, navigationButton } from './buttonModals.js';
+import { upgradeNavigationRows } from './navigationRows.js';
 import { exitOfferConnections, exitOfferSource, exitOfferId, workspaceExitOfferIds, exitOfferTarget, bindExitOffer } from './exitOffers.js';
 import { bindCloseTarget, closeTargetId, createRetentionModal, importCloseTarget, removeCanvasModal, modalPresentationDocument } from './closeTargets.js';
 const StepPicker = React.lazy(()=>import('./StepPicker.jsx'));
@@ -42,9 +43,9 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
       if (saved && (!validDocument(saved) || saved.templateId !== (template?.id ?? 'blank'))) throw new Error('已保存的付费墙内容无效，原记录仍然保留');
       const defaults = importComponentDocument(initialNodes, template);
       const document = saved ? persistence === 'session' ? saved : migrateTemplateVisuals(saved, importComponentDocument(initialNodes, template, false), defaults) : defaults;
-      return { document: upgradeButtonModals(upgradeCanonicalComponents(document), offerings, currentPaywallId), error: '' };
+      return { document: upgradeNavigationRows(upgradeButtonModals(upgradeCanonicalComponents(document), offerings, currentPaywallId)), error: '' };
     } catch (error) {
-      return { document: upgradeButtonModals(upgradeCanonicalComponents(importComponentDocument(initialNodes, template)), offerings, currentPaywallId), error: error.message };
+      return { document: upgradeNavigationRows(upgradeButtonModals(upgradeCanonicalComponents(importComponentDocument(initialNodes, template)), offerings, currentPaywallId)), error: error.message };
     }
   });
   const [mainDocument, setMainDocument] = useState(initial.document);

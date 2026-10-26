@@ -6,6 +6,7 @@ import { componentProps, resolveComponentText, indexDocument } from './component
 import { isUnconfiguredDetailPage, flowInitialIndex } from './componentTree.js';
 import { stepDestination, owningModal } from './workflow.js';
 import { openSheetNavigation, closeSheetNavigation } from './buttonModals.js';
+import { overlayAlignmentStyle } from './propertyModel.js';
 import { canvasSelectionTarget } from './canvasSelection.js';
 import { stateStyleProps, countdownSeconds, checkedControl, activeComponents, countdownValues, countdownDeadline, imageMask, paintColor, cornerRadius, selectionOwner, sequencePages, BADGE_DEFAULTS, mainAxisFillStyle, hasBoundedHeight } from './propertyModel.js';
 import { interpolateVariables } from './textVariables.js';
@@ -48,7 +49,7 @@ export function componentStyle(node) {
 }
 function containerStyle(node) {
   const p = componentProps(node);
-  if (p.axis === 'overlay') return { display: 'grid', alignItems: p.align, justifyItems: p.align };
+  if (p.axis === 'overlay') return { display: 'grid', ...overlayAlignmentStyle(p) };
   return { display: 'flex', flexDirection: p.axis === 'horizontal' ? 'row' : 'column', gap: `${Math.max(0, Number(p.gap) || 0)}px`, alignItems: ({ start: 'flex-start', end: 'flex-end', stretch: 'stretch', center: 'center' }[p.align]) ?? 'stretch', justifyContent: ({ start: 'flex-start', end: 'flex-end', center: 'center', between: 'space-between', around: 'space-around', evenly: 'space-evenly' }[p.justify]) ?? 'flex-start', flexWrap: p.wrap ? 'wrap' : 'nowrap' };
 }
 function BackgroundVideo({ props }) {
