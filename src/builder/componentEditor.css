@@ -1,5 +1,7 @@
 .native-editor{min-width:0;color:#26262c;font-size:13px;container-type:inline-size;container-name:paywall-workbench;overflow-anchor:none}
 body:has(.native-editor){min-width:0}
+html:has(.native-editor),body:has(.native-editor){overscroll-behavior-x:none}
+.native-editor .ne-artboard-scroll{scroll-behavior:auto}
 .native-editor .ne-builder{grid-template-columns:270px minmax(330px,1fr) 330px;align-items:stretch;height:auto;min-height:0;overflow:hidden}
 .ne-layers,.ne-properties{background:#fff;min-width:0;text-align:left}
 .ne-layers{border-right:1px solid #e4e4eb;position:relative}

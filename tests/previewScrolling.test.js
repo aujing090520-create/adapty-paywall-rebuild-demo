@@ -61,6 +61,8 @@ test('editing scroll can chain vertically while modal and interactive preview ke
   assert.equal(declarations('.nc-floating-design>.nc-node')['overscroll-behavior'], 'contain');
   assert.equal(declarations('.ne-artboard-scale .nc-modal-surface')['overscroll-behavior'], 'auto');
   assert.equal(declarations('.nc-viewport')['overscroll-behavior'], 'contain');
+  assert.equal(declarations('html:has(.native-editor),body:has(.native-editor)')['overscroll-behavior-x'],'none');
+  assert.equal(declarations('.native-editor .ne-artboard-scroll')['scroll-behavior'],'auto');
 });
 
 test('desktop panels and canvas have independent bounded scroll areas', () => {

@@ -12,6 +12,7 @@ import { editorClipboard, copyFragment, pasteFragment, copyStyles, pasteStyles, 
 import { treeChildren, initialCollapsed, pageContext, isOverlaySurface, surfaceContext } from './componentTree.js';
 import './componentEditor.css';
 import useWorkbenchHeight from './useWorkbenchHeight.js';
+import useCanvasWheel from './useCanvasWheel.js';
 import RevenueCatProperties from './RevenueCatProperties.jsx';
 import { migrateTemplateVisuals } from './templateVisuals.js';
 import { defaultPackagePatch, sequencePages } from './propertyModel.js';
@@ -74,6 +75,7 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
   const [zoom, setZoom] = useState(0.55);
   const boardElements = useRef(new Map());
   const boardScroll = useRef(null);
+  useCanvasWheel(boardScroll, editing);
   const workbench = useWorkbenchHeight();
   const patchNavigation = React.useCallback((values)=>setContexts((current)=>({ ...current, [scope]: { ...current[scope], navigation: { ...current[scope]?.navigation, ...values } } })),[scope]);
   const previousDocuments=useRef(new Map());
