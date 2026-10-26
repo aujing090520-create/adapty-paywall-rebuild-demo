@@ -15,7 +15,7 @@ export default function PaywallPresentation({ offerings = [], currentPaywallId, 
   const consumed = useRef(new Set());
   const dismiss = ({ snapshot }) => {
     const sourceId = pageContext(props.document, snapshot).active.id;
-    const target = !offer && !consumed.current.has(sourceId) && exitOfferTarget(props.document, offerings, currentPaywallId, sourceId);
+    const target = !props.document.settings?.buttonModalVersion && !offer && !consumed.current.has(sourceId) && exitOfferTarget(props.document, offerings, currentPaywallId, sourceId);
     if (target) { consumed.current.add(sourceId); setUnderlayNavigation({ ...snapshot, overlay: null, webLink: null }); setOffer(target); setRequest(0); }
     else setClosed(true);
   };

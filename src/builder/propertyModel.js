@@ -188,6 +188,7 @@ export function activeComponents(document, runtime) {
     if(node.type==='Countdown'&&node.props.fallbackEnabled===false)children=children.filter((child)=>child.props.state!=='fallback');
     children.forEach(visit);
   };
-  visit(document.root);
+  const modal = document.settings?.buttonModalVersion && nodes.get(runtime.overlay);
+  visit(modal?.type === 'BottomSheet' ? modal : document.root);
   return result;
 }

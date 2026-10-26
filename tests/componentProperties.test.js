@@ -695,12 +695,16 @@ test('layer tree uses one readable label, explicit indentation and inline expans
     const label=id=>row(id).findAll(item=>item.type==='button'&&item.props.className==='ne-tree-select')[0];
     const expand=id=>row(id).findAll(item=>item.type==='button'&&item.props.className==='ne-icon ne-expand')[0];
     assert.deepEqual(label('hero').findByProps({className:'ne-tree-label'}).children,['布局容器']);assert.equal(row('hero').findAllByType('small').length,0);
-    assert.equal(row('hero').props.style.paddingLeft,28);assert.equal(expand('hero').props['aria-expanded'],false);
-    await act(async()=>expand('hero').props.onClick());assert.equal(expand('hero').props['aria-expanded'],true);assert.equal(row('copy').props.style.paddingLeft,48);
+    assert.equal(row('hero').props.style.paddingLeft,36);assert.equal(expand('hero').props['aria-expanded'],false);
+    await act(async()=>expand('hero').props.onClick());assert.equal(expand('hero').props['aria-expanded'],true);assert.equal(row('copy').props.style.paddingLeft,52);
     await act(async()=>expand('copy').props.onClick());assert.equal(row('body').props.style.paddingLeft,68);assert.equal(label('body').props['aria-label'],'会员专属权益长文案');assert.equal(expand('body'),undefined);
     assert.equal(label('heading').findByProps({className:'ne-tree-label'}).children.join(''),'实际标题正文');assert.match(label('heading').props.title,/实际标题正文/);assert.equal(label('heading').props['aria-label'],'实际标题正文（隐藏）');
     assert.equal(label('image').props['aria-label'],'图片');assert.equal(label('hero').findAllByType('svg')[0].props.className.includes('lucide-rows2'),true);assert.equal(label('copy').findAllByType('svg')[0].props.className.includes('lucide-columns2'),true);
+    await act(async()=>label('copy').props.onClick());
+    assert.match(row('body').props.className,/in-selected-subtree/);assert.match(row('heading').props.className,/in-selected-subtree/);
+    assert.doesNotMatch(row('hero').props.className,/in-selected-subtree/);
     await act(async()=>label('body').props.onClick());
+    assert.doesNotMatch(row('heading').props.className,/in-selected-subtree/,'leaf selection must not tint its siblings');
     assert.equal(editor.root.findAll(item=>item.type==='select'&&item.props['aria-label']==='所在容器').length,0);
     assert.equal(row('body').props.draggable,true);assert.equal(typeof row('hero').props.onDrop,'function');
     const tree=editor.root.findByProps({'aria-label':'组件图层'});assert.equal(tree.findAllByType('small').length,0);assert.equal(tree.findAll(item=>item.props.className==='ne-grip').length,0);
@@ -720,9 +724,10 @@ test('editor keeps sheets on peer artboards, previews the selected sheet and swi
     const select=async(id)=>act(async()=>editor.root.findAll(item=>item.type==='div'&&item.props['data-layer-id']===id)[0].findAll(item=>item.type==='button'&&item.props.className==='ne-tree-select')[0].props.onClick());
     const componentNode=id=>editor.root.findAll(item=>item.type==='div'&&item.props['data-component-id']===id)[0];
     const clickLabel=async(label)=>act(async()=>editor.root.findAll(item=>item.type==='button'&&(item.props['aria-label']===label||item.children.some(child=>child===label)))[0].props.onClick(event()));
-    const main=editor.root.findByProps({'aria-label':'组件图层'}),surfaces=editor.root.findByProps({'aria-label':'弹窗图层'});
-    assert.equal(main.findAll(item=>item.props['data-layer-id']==='retention').length,0);
-    assert.equal(surfaces.findAll(item=>item.props['data-layer-id']==='retention').length,1);assert.ok(componentNode('retention'));
+    const main=editor.root.findByProps({'aria-label':'组件图层'});
+    assert.equal(editor.root.findAllByProps({'aria-label':'弹窗图层'}).length,0);
+    await select('launch');
+    assert.equal(main.findAll(item=>item.props['data-layer-id']==='retention').length,1);assert.ok(componentNode('retention'));
     assert.equal(editor.root.findAll(item=>item.type==='section'&&item.props.className?.startsWith('ne-artboard')).length,2);
     await select('retention');assert.ok(componentNode('retention'));assert.equal(componentNode('retention').props['data-component-type'],'BottomSheet');
     assert.ok(editor.root.findByProps({'aria-label':'当前弹窗'}).findAllByType('button').some(button=>button.props.title==='定位触发按钮：查看优惠'));
@@ -1214,8 +1219,8 @@ test('all 45 templates preserve original copy, media and product data after fixe
 test('buttons expose one action selector while checkout modes remain conditional', async () => {
   const b=await mount(component('sample','Button','按钮',{action:{action:'None'}}),{editing:false});
   const select=b.renderer.root.findAll((item)=>item.type==='select'&&item.props['aria-label']==='点击动作')[0];
-  assert.deepEqual(select.findAllByType('option').map((option)=>option.props.value),['None','NavigateTo','NextScreen','NavigateBack','RestorePurchases','Dismiss','Purchase']);
-  await b.select('点击动作','NavigateTo');await b.select('导航目标','OpenSheet');
+  assert.deepEqual(select.findAllByType('option').map((option)=>option.props.value),['None','NavigateTo','NextScreen','NavigateBack','OpenSheet','RestorePurchases','Dismiss','Purchase']);
+  await b.select('点击动作','OpenSheet');
   assert.equal(indexDocument(b.document()).nodes.get('sample').props.action.action,'OpenSheet');await b.close();
   const purchase=await mount(createCatalogComponent('PurchaseButton','sample'),{editing:false});
   assert.equal(purchase.renderer.root.findAll((item)=>item.type==='select'&&item.props['aria-label']==='点击动作').length,1);
@@ -1268,7 +1273,7 @@ test('canvas first-click selects a button before its label; drill-in and floatin
 test('layer hover highlights the exact container on its own artboard without changing selection or content',async()=>{
   const inner=component('inner','Stack','内层',{},[component('copy','Text','文字',{text:'正文'})]);
   const modal=component('modal','BottomSheet','挽留弹窗',{presentation:'overlay'},[component('modal-copy','Text','文字',{text:'弹窗正文'})]);
-  const source=fixture(component('outer','Stack','外层',{},[inner,modal])),before=structuredClone(source);
+  const source=fixture(component('outer','Stack','外层',{},[inner,component('opener','Button','查看弹窗',{action:{action:'OpenSheet',actionPage:'modal'}},[modal])])),before=structuredClone(source);
   let renderer,latest;
   const row=id=>renderer.root.findAll(item=>item.type==='div'&&item.props['data-layer-id']===id)[0];
   const highlighted=()=>renderer.root.findAll(item=>typeof item.type==='string'&&item.props.className?.split(' ').includes('nc-hovered'));
@@ -1286,10 +1291,12 @@ test('layer hover highlights the exact container on its own artboard without cha
     assert.deepEqual(highlighted().map(item=>item.props['data-component-id']),['inner']);
     assert.deepEqual(selected().map(item=>item.props['data-component-id']),['outer']);
     await act(async()=>row('inner').props.onBlur({currentTarget:{contains:()=>false},relatedTarget:null}));assert.equal(highlighted().length,0);
+    await act(async()=>row('opener').findAllByType('button').find(item=>item.props.className==='ne-icon ne-expand').props.onClick());
     await act(async()=>row('modal').props.onMouseEnter());
     assert.deepEqual(highlighted().map(item=>item.props['data-component-id']),['modal'],'inactive modal artboard can be highlighted without selecting it');
     assert.deepEqual(selected().map(item=>item.props['data-component-id']),['outer']);
-    assert.deepEqual(latest,before,'inspection state must not dirty the document');
+    assert.deepEqual(latest.root,before.root,'inspection state must not dirty component content');
+    assert.deepEqual(latest.products,before.products);
   }finally{if(renderer)await act(async()=>renderer.unmount());}
 });
 

@@ -4,7 +4,8 @@ import Fade from 'embla-carousel-fade';
 import { Check, LockKeyhole, Star, Bell, Moon, Heart, Users, Clock3, Gift, ChevronRight, Dumbbell, Download, MapPin, Flower2, Activity, Ticket, Ban, Blocks, Archive, Shirt, Armchair, ScanSearch, CircleHelp, LogIn, PersonStanding, X } from 'lucide-react';
 import { componentProps, resolveComponentText, indexDocument } from './componentDocument.js';
 import { isUnconfiguredDetailPage, flowInitialIndex } from './componentTree.js';
-import { stepDestination } from './workflow.js';
+import { stepDestination, owningModal } from './workflow.js';
+import { openSheetNavigation, closeSheetNavigation } from './buttonModals.js';
 import { canvasSelectionTarget } from './canvasSelection.js';
 import { stateStyleProps, countdownSeconds, checkedControl, activeComponents, countdownValues, countdownDeadline, imageMask, paintColor, cornerRadius, selectionOwner, sequencePages, BADGE_DEFAULTS, mainAxisFillStyle, hasBoundedHeight } from './propertyModel.js';
 import { interpolateVariables } from './textVariables.js';
@@ -214,7 +215,8 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
     return <Timeline node={node} props={props} attributes={attributes} style={style} render={(child, childLayout) => <NativeComponent key={child.id} node={child} packageNode={currentPackage} layoutStyle={childLayout} />} />;
   }
   if (['Button','TabButton','PurchaseButton'].includes(node.type)) {
-    if (node.children.length && node.children.every((child) => child.type === 'Icon')) { attributes['aria-label'] = node.name; attributes.title = node.name; }
+    const buttonContent = node.children.filter((child) => child.type !== 'BottomSheet' && !['overlay','sheet'].includes(child.props.presentation));
+    if (buttonContent.length && buttonContent.every((child) => child.type === 'Icon')) { attributes['aria-label'] = node.name; attributes.title = node.name; }
     const blocked = props.action?.action === 'OpenPage' && isUnconfiguredDetailPage(context.nodeIndex.get(props.action.actionPage));
     return <div {...attributes} role="button" tabIndex={0} aria-disabled={!editing && blocked || undefined} style={{ ...style, ...containerStyle(visualNode), ...(!editing&&blocked?{cursor:'default'}:{}) }} onClick={(event) => { select(event); if (node.type === 'TabButton') setRuntime((current) => ({ ...current, [props.target]: props.index })); else if (!editing) { event.stopPropagation(); runAction(node); } }} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); if (editing) onSelect(node.id); else if (node.type === 'TabButton') setRuntime((current) => ({ ...current, [props.target]: props.index })); else runAction(node); } }}>{children()}</div>;
   }
@@ -282,31 +284,32 @@ export default function ComponentPreview({ document, selectedId, highlightedId, 
     const action = node.props.action ?? {};
     if (!action.action || action.action === 'None') return;
     if(['Purchase','WebCheckout','WebPaywall','CustomCheckout'].includes(action.action)) {
-      if(!isExitOfferStep(document,runtime)){onStatus('商品选择和购买只能在最终步骤进行');return;}
+      if(!isExitOfferStep(document,runtime)&&!(document.settings?.buttonModalVersion&&indexDocument(document).nodes.get(runtime.overlay)?.type==='BottomSheet')){onStatus('商品选择和购买只能在最终步骤进行');return;}
       const required=activeComponents(document,runtime).find((item)=>item.type==='Toggle'&&item.props.required&&!checkedControl(item.props,item.id,runtime,indexDocument(document).nodes));
       if(required){onStatus('请先勾选同意协议');return;}
     }
     if (action.action === 'NavigateTo') { onStatus('请先选择跳转目标'); return; }
     if (action.action === 'OpenSheet') {
       const target = indexDocument(document).nodes.get(action.actionPage);
-      if (target?.type === 'BottomSheet' && !target.props.hidden) setRuntime((current)=>({...current,overlay:target.id})); else onStatus('请先选择有效的弹层');
+      if (target?.type === 'BottomSheet' && !target.props.hidden) setRuntime((current)=>openSheetNavigation(current,target.id)); else onStatus('请先选择有效的弹层');
     } else if (action.action === 'CloseSheet') {
       if (document.settings?.presentationSurfaceId && onResume) { onResume(); return; }
       if (document.settings?.presentationSurfaceId && onDismiss) { dismissPaywall(); return; }
-      setRuntime((current)=>({...current,overlay:null}));
+      setRuntime(closeSheetNavigation);
     } else if (action.action === 'NavigateBack') {
-      if (runtime.overlay) {
-        if (document.settings?.presentationSurfaceId && onResume) onResume();
-        else if (document.settings?.presentationSurfaceId && onDismiss) dismissPaywall();
-        else setRuntime((current)=>({...current,overlay:null}));
-        return;
-      }
       const {nodes,parents}=indexDocument(document);let flow=nodes.get(parents.get(node.id));
-      while(flow&&flow.type!=='Flow')flow=nodes.get(parents.get(flow.id));
+      while(flow&&!['Flow','BottomSheet'].includes(flow.type))flow=nodes.get(parents.get(flow.id));
+      if(flow?.type!=='Flow')flow=null;
       const index=flow?(runtime[flow.id]??flowInitialIndex(flow)):0;
       const history=flow?runtime[`history:${flow.id}`]??[]:[];
       const previous=flow?flow.children.findIndex((page)=>page.id===history.at(-1)):-1;
       if(flow&&(previous>=0||!flow.props.initialStepId&&index>0)){const next={[flow.id]:previous>=0?previous:index-1,[`history:${flow.id}`]:history.slice(0,-1)};setRuntime((current)=>({...current,...next}));onNavigate?.(next);if(viewport.current)viewport.current.scrollTop=0;}
+      else if (runtime.overlay) {
+        if (document.settings?.presentationSurfaceId && onResume) onResume();
+        else if (document.settings?.presentationSurfaceId && onDismiss) dismissPaywall();
+        else setRuntime(closeSheetNavigation);
+        return;
+      }
       else dismissPaywall();
     } else if (action.action === 'Dismiss') {
       dismissPaywall();
@@ -319,7 +322,7 @@ export default function ComponentPreview({ document, selectedId, highlightedId, 
     } else if (action.action === 'OpenPage') {
       const { nodes, parents } = indexDocument(document), target = stepDestination(document, node), owner = nodes.get(parents.get(target?.id));
       if (isUnconfiguredDetailPage(target)) { onStatus('该权益详情内容待补充，暂不开放跳转'); return; }
-      if (owner?.type === 'Flow') { const currentId=owner.children[runtime[owner.id]??flowInitialIndex(owner)]?.id; const next = { [owner.id]: owner.children.findIndex((item) => item.id === target.id), overlay: null, [`history:${owner.id}`]: [...runtime[`history:${owner.id}`]??[],currentId] }; setRuntime((current) => ({ ...current, ...next })); onNavigate?.(next); if (viewport.current) viewport.current.scrollTop = 0; }
+      if (owner?.type === 'Flow') { const currentId=owner.children[runtime[owner.id]??flowInitialIndex(owner)]?.id; const next = { [owner.id]: owner.children.findIndex((item) => item.id === target.id), overlay: owningModal(document,target.id)?.id ?? null, [`history:${owner.id}`]: [...runtime[`history:${owner.id}`]??[],currentId] }; setRuntime((current) => ({ ...current, ...next })); onNavigate?.(next); if (viewport.current) viewport.current.scrollTop = 0; }
       else onStatus('尚未配置有效的目标页面');
     } else if (action.action === 'NextScreen') {
       const {nodes,parents}=indexDocument(document);
@@ -329,7 +332,7 @@ export default function ComponentPreview({ document, selectedId, highlightedId, 
       const target=stepDestination(document,node);
       if (!flow || !target || !flow.children.some((page)=>page.id===target.id)) return onStatus('请选择有效的目标步骤');
       const currentId=flow.children[runtime[flow.id]??flowInitialIndex(flow)]?.id;
-      const next = { [flow.id]: flow.children.findIndex((page)=>page.id===target.id), overlay:null, [`history:${flow.id}`]: [...runtime[`history:${flow.id}`]??[],currentId] }; setRuntime((current) => ({ ...current, ...next })); onNavigate?.(next); if(viewport.current)viewport.current.scrollTop=0;
+      const next = { [flow.id]: flow.children.findIndex((page)=>page.id===target.id), overlay:owningModal(document,target.id)?.id??null, [`history:${flow.id}`]: [...runtime[`history:${flow.id}`]??[],currentId] }; setRuntime((current) => ({ ...current, ...next })); onNavigate?.(next); if(viewport.current)viewport.current.scrollTop=0;
     } else if (action.action === 'CustomCheckout') {
       const {nodes,parents}=indexDocument(document);let owner=nodes.get(parents.get(node.id));
       while(owner&&owner.type!=='Package')owner=nodes.get(parents.get(owner.id));

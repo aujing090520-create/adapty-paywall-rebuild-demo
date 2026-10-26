@@ -16,6 +16,12 @@ export function owningScreen(document, id) {
   while (node && node.type !== 'Screen') node = nodes.get(parents.get(node.id));
   return node;
 }
+export function owningModal(document, id) {
+  const { nodes, parents } = indexDocument(document);
+  let node = nodes.get(id);
+  while (node && node.type !== 'BottomSheet') node = nodes.get(parents.get(node.id));
+  return node?.type === 'BottomSheet' ? node : null;
+}
 export function stepDestination(document, node) {
   const action = node.props.action;
   if (!action || !['NextScreen', 'OpenPage'].includes(action.action)) return null;
@@ -48,7 +54,7 @@ export function workflowIssues(document) {
   if (steps.length > MAX_STEPS) issues.push('步骤数量超过10个');
   for (const node of indexDocument(document).nodes.values()) {
     if (node.props.action?.action === 'NextScreen' && !stepDestination(document, node)) issues.push(`${node.name}：请选择有效的目标步骤`);
-    if (['Package', 'PurchaseButton'].includes(node.type) && steps.some((page) => page.id === owningScreen(document, node.id)?.id && page.id !== final?.id)) issues.push(`${owningScreen(document, node.id).name}：商品和购买按钮只能位于最终步骤`);
+    if (['Package', 'PurchaseButton'].includes(node.type) && !(document.settings?.buttonModalVersion && owningModal(document,node.id)) && steps.some((page) => page.id === owningScreen(document, node.id)?.id && page.id !== final?.id)) issues.push(`${owningScreen(document, node.id).name}：商品和购买按钮只能位于最终步骤`);
   }
   if (steps.length > 1) {
     const edges = workflowEdges(document), reached = new Set([initial?.id]);

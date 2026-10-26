@@ -10,11 +10,48 @@ import { readSavedPaywall, savePaywall, savePaywallBatch } from '../src/paywallS
 import { indexDocument, importComponentDocument } from '../src/builder/componentDocument.js';
 import { createCatalogComponent } from '../src/builder/componentCatalog.js';
 import { templates, createBuilderNodes } from '../src/templates/templateDefinitions.js';
+import { modalBindings, buttonModalEdges, upgradeButtonModals } from '../src/builder/buttonModals.js';
+import { documentArtboards } from '../src/builder/artboards.js';
 
 const button = (id, action, destination) => component(id, 'Button', id, { action: { action, actionPage: destination } }, [component(`${id}-text`, 'Text', '', { text: id })]);
 const fixture = (id = 'primary', children = []) => ({ version: 3, templateId: 'blank', products: { sku: { name: id, price: id === 'offer' ? '¥50' : '¥100' } }, root: component(`${id}-root`, 'Screen', id, {}, [component(`${id}-package`, 'Package', id, { dataKey: 'sku', defaultSelected: true }, [component(`${id}-price`, 'Text', '', { binding: { field: 'price' } })]), ...children]) });
 const record = (id, document, state = 'Draft') => ({ version: 1, paywall: { id, name: id, state }, templateId: document.templateId, document });
 const storage = () => { const map = new Map(); return { get length() { return map.size; }, key: (index) => [...map.keys()][index], getItem: (key) => map.get(key) ?? null, setItem: (key, value) => map.set(key, value), removeItem: (key) => map.delete(key) }; };
+
+test('button-modal Back restores the parent popup before returning to the page',async()=>{
+  const inner=component('inner','BottomSheet','内弹窗',{presentation:'overlay'},[button('inner-back','NavigateBack')]);
+  const outer=component('outer','BottomSheet','外弹窗',{presentation:'overlay'},[component('inner-open','Button','内入口',{action:{action:'OpenSheet',actionPage:'inner'}},[inner]),button('outer-back','NavigateBack')]);
+  const source=fixture('primary',[component('outer-open','Button','外入口',{action:{action:'OpenSheet',actionPage:'outer'}},[outer])]);source.settings={buttonModalVersion:1};
+  const h=await mount(source,[]);
+  await h.click('outer-open');assert.ok(h.visible('outer'));
+  await h.click('inner-open');assert.ok(h.visible('inner'));assert.ok(!h.visible('outer'));
+  await h.click('inner-back');assert.ok(h.visible('outer'));assert.ok(!h.visible('inner'));
+  await h.click('outer-back');assert.ok(!h.visible('outer'));assert.ok(h.visible('primary-package'));
+});
+
+test('migrating a saved multi-screen exit preserves destinations and navigation inside its modal',async()=>{
+  const source=fixture('primary');source.settings={exitOfferOfferingId:'saved'};
+  const saved=fixture('saved');saved.root.children=[component('nested-flow','Flow','原流程',{initialStepId:'offer-a'},[
+    component('offer-a','Screen','A',{},[button('offer-next','NextScreen','offer-b')]),
+    component('offer-b','Screen','B',{},[component('offer-copy','Text','原文案',{text:'第二屏原内容'}),button('offer-back','NavigateBack')]),
+  ])];
+  const next=upgradeButtonModals(source,[{id:'saved',name:'原流程',document:saved,packageCount:1}]);
+  const binding=modalBindings(next)[0],{nodes}=indexDocument(next);
+  const forward=[...nodes.values()].find(node=>node.name==='offer-next'),back=[...nodes.values()].find(node=>node.name==='offer-back');
+  assert.ok(nodes.has(forward.props.action.actionPage));
+  const h=await mount(next,[]);await h.click(binding.button.id);assert.ok(h.visible(forward.id));
+  await h.click(forward.id);assert.ok(text(h.renderer.root).includes('第二屏原内容'));assert.ok(h.visible(binding.modal.id));
+  await h.click(back.id);assert.ok(h.visible(forward.id));assert.ok(h.visible(binding.modal.id));
+});
+
+test('popup purchase does not require an unrelated background agreement on a non-final source screen',async()=>{
+  const modal=component('modal','BottomSheet','弹窗',{presentation:'overlay'},[button('popup-purchase','Purchase')]);
+  const source=fixture('primary');source.settings={buttonModalVersion:1};source.root.children=[component('flow','Flow','流程',{},[
+    component('a','Screen','A',{},[component('background-agreement','Toggle','背景协议',{required:true}),component('open','Button','打开',{action:{action:'OpenSheet',actionPage:'modal'}},[modal])]),component('b','Screen','B'),
+  ])];
+  let status;const h=await mount(source,[],{onStatus:value=>{status=value;}});
+  await h.click('open');await h.click('popup-purchase');assert.equal(status,'购买预览：未发起真实交易');
+});
 
 let server, Presentation, Settings, Editor;
 const mounted = new Set();
@@ -114,29 +151,38 @@ test('settings visibly report source, close event, destination and terminal resu
   assert.match(text(renderer.root), /未关联，关闭后直接离开/);
 });
 
-test('exit canvas connection opens the canonical settings and removing the binding removes the connection', async () => {
+test('migrated canvas connection selects its opener and clearing the button binding removes the modal board and edge', async () => {
   const doc = fixture('购买页面'); doc.settings = { exitOfferOfferingId: 'offer' };
   let renderer, latest;
   await act(async () => { renderer = TestRenderer.create(React.createElement(Editor, { template: { id: 'blank' }, initialNodes: [], initialDocument: doc, persistence: 'session', offerings: savedOfferings([record('offer', fixture('offer'))]), currentPaywallId: 'primary', onDocumentChange: (value) => { latest = value; } })); }); mounted.add(renderer);
-  const connection = renderer.root.findAll((item) => item.type === 'button' && item.props['aria-label']?.startsWith('配置退出触发：'));
-  assert.equal(connection.length, 1); assert.match(connection[0].props['aria-label'], /关闭「购买页面」 → offer/);
+  const binding = modalBindings(latest)[0]; assert.ok(binding);
+  const connection = renderer.root.findAll((item) => item.type === 'button' && item.props['aria-label'] === `编辑步骤连接：${binding.button.name}`);
+  assert.equal(connection.length, 1);
   await act(async () => connection[0].props.onClick());
-  assert.ok(text(renderer.root.findByProps({ 'aria-label': '关闭后显示规则' })).includes('购买页面'));
-  const field = renderer.root.findAll((item) => item.type === 'button' && text(item) === '解除关联')[0];
-  await act(async () => field.props.onClick());
+  const field = renderer.root.findByProps({ 'aria-label': '目标弹窗' });
+  assert.equal(field.props.value, binding.modal.id);
+  await act(async () => field.props.onChange({ target: { value: '' } }));
   assert.equal(renderer.root.findAll((item) => item.type === 'button' && item.props['aria-label']?.startsWith('配置退出触发：')).length, 0);
-  assert.deepEqual(latest.root, doc.root); assert.deepEqual(latest.products, doc.products);
+  assert.deepEqual(modalBindings(latest), []); assert.deepEqual(buttonModalEdges(latest), []);
+  assert.equal(documentArtboards(latest).some((board) => board.node.id === binding.modal.id), false);
+  assert.ok(indexDocument(latest).nodes.has(binding.modal.id), 'unbinding retains editable content');
+  assert.deepEqual(latest.products.sku, doc.products.sku); assert.equal(doc.settings.buttonModalVersion, undefined);
 });
-test('preview from a selected independent exit board starts at the main page and requires closing it to enter the offer', async () => {
+test('flow preview from a migrated modal board starts at the main page and enters the modal only through its button', async () => {
   const doc = fixture('primary'); doc.settings = { exitOfferOfferingId: 'offer' };
   let renderer;
   await act(async () => { renderer = TestRenderer.create(React.createElement(Editor, { template: { id: 'blank' }, initialNodes: [], initialDocument: doc, persistence: 'session', offerings: savedOfferings([record('offer', fixture('offer'))]), currentPaywallId: 'primary', onExitOfferChange() {} })); }); mounted.add(renderer);
   const click = async (name) => { const button = renderer.root.findAll((item) => item.type === 'button' && (item.props['aria-label'] === name || text(item).trim() === name))[0]; assert.ok(button, name); await act(async () => button.props.onClick()); };
-  await click('选择画板：offer'); await click('预览流程');
+  const migrated = upgradeButtonModals(doc, savedOfferings([record('offer', fixture('offer'))]), 'primary');
+  const binding = modalBindings(migrated)[0];
+  await click(`选择画板：${binding.modal.name}`); await click('预览流程');
   const preview = renderer.root.findByType(Presentation);
-  assert.equal(preview.props.document, doc); assert.equal(preview.props.currentPaywallId, 'primary');
+  assert.equal(preview.props.document.settings.buttonModalVersion, 1); assert.equal(preview.props.currentPaywallId, 'primary');
   assert.ok(text(preview).includes('页面预览')); assert.ok(text(preview).includes('¥100')); assert.equal(text(preview).includes('¥50'), false);
-  await click('关闭付费墙预览'); assert.ok(text(preview).includes('offer')); assert.ok(text(preview).includes('¥50'));
+  const opener = preview.findAll((item) => typeof item.type === 'string' && item.props['data-component-id'] === modalBindings(preview.props.document)[0].button.id && item.props.onClick)[0];
+  assert.ok(opener); await act(async () => opener.props.onClick({ stopPropagation() {}, preventDefault() {} }));
+  assert.ok(text(preview).includes('¥50'));
+  await click('关闭付费墙预览'); assert.ok(text(preview).includes('付费墙已关闭'));
 });
 
 test('closing the primary displays the saved offer with its own products; closing the offer ends the session without chaining', async () => {
@@ -151,6 +197,21 @@ test('closing the primary displays the saved offer with its own products; closin
   await h.click('重新预览'); assert.ok(h.visible('primary-package'));
   await h.click('关闭付费墙预览'); assert.ok(h.visible('offer-package'));
   await h.click('关闭付费墙预览'); assert.ok(text(h.renderer.root).includes('付费墙已关闭'));
+});
+
+test('version-one Dismiss buttons and preview close ignore retained legacy global and per-screen exit bindings', async () => {
+  const offers = savedOfferings([record('offer', fixture('offer'))]);
+  for (const history of [{ exitOfferOfferingId: 'offer' }, { exitOffersByScreen: { 'primary-root': 'offer' } }]) {
+    const doc = fixture('primary', [button('dismiss-main', 'Dismiss')]);
+    doc.settings = { ...history, buttonModalVersion: 1 };
+    assert.ok(exitOfferTarget(doc, offers, 'primary', doc.root.id), 'fixture still has a valid legacy target');
+    const h = await mount(doc, offers);
+    await h.click('dismiss-main'); assert.match(text(h.renderer.root), /付费墙已关闭/);
+    assert.equal(h.visible('offer-package'), false);
+    await h.click('重新预览'); assert.ok(h.visible('primary-package'));
+    await h.click('关闭付费墙预览'); assert.match(text(h.renderer.root), /付费墙已关闭/);
+    assert.equal(h.visible('offer-package'), false);
+  }
 });
 
 test('Sheet close and Back navigation do not invoke an exit offer; final-screen dismiss does', async () => {
@@ -177,15 +238,20 @@ test('no binding or removed target closes directly, while settings preserve an u
   await act(async () => renderer.root.findAll((item)=>item.type==='button'&&text(item)==='解除关联')[0].props.onClick()); assert.equal(latest, true);
 });
 
-test('actual editor unlinks legacy retention at document level without changing components or products', async () => {
+test('actual editor migrates legacy retention once, nests the copied modal under a close button and preserves its saved source', async () => {
   const doc = fixture(); doc.settings={exitOfferOfferingId:'offer'}; let latest, renderer;
-  await act(async () => { renderer = TestRenderer.create(React.createElement(Editor, { template: { id: 'blank' }, initialNodes: [], initialDocument: doc, persistence: 'session', offerings: savedOfferings([record('offer', fixture('offer'))]), currentPaywallId: 'primary', onDocumentChange: (value) => { latest = value; } })); }); mounted.add(renderer);
-  const settingsButton = renderer.root.findAll((item) => item.type === 'button' && text(item) === '设置关闭后显示')[0];
-  await act(async () => settingsButton.props.onClick());
-  const field = renderer.root.findAll((item) => item.type === 'button' && text(item)==='解除关联')[0];
-  await act(async () => field.props.onClick());
-  assert.equal(exitOfferTarget(latest,[{id:'offer',document:fixture('offer'),packageCount:1}],undefined,doc.root.id),null); assert.deepEqual(latest.root, doc.root); assert.deepEqual(latest.products, doc.products);
-  assert.equal(doc.settings.exitOfferOfferingId, 'offer');
+  const offer = fixture('offer'), before = structuredClone({ doc, offer });
+  const offerings = savedOfferings([record('offer', offer)]);
+  await act(async () => { renderer = TestRenderer.create(React.createElement(Editor, { template: { id: 'blank' }, initialNodes: [], initialDocument: doc, persistence: 'session', offerings, currentPaywallId: 'primary', onDocumentChange: (value) => { latest = value; } })); }); mounted.add(renderer);
+  assert.equal(latest.settings.buttonModalVersion, 1); assert.equal(latest.settings.exitOfferOfferingId, 'offer', 'legacy history remains');
+  const { button: opener, modal } = modalBindings(latest)[0];
+  assert.equal(opener.name, '关闭按钮'); assert.equal(opener.props.action.action, 'OpenSheet');
+  assert.equal(indexDocument(latest).parents.get(modal.id), opener.id);
+  assert.deepEqual(indexDocument(latest).nodes.get('primary-package'), indexDocument(doc).nodes.get('primary-package'));
+  assert.deepEqual(latest.products.sku, doc.products.sku);
+  assert.equal(upgradeButtonModals(latest, offerings, 'primary'), latest, 'version marker makes migration idempotent');
+  assert.deepEqual({ doc, offer }, before);
+  assert.equal(renderer.root.findAll((item) => item.props['aria-label'] === '页面退出触发').length, 0);
 });
 
 const multiScreen = () => ({ ...fixture(), root: component('root', 'Screen', '主流程', {}, [component('flow', 'Flow', '步骤', { initialStepId: 'a' }, [
@@ -194,7 +260,7 @@ const multiScreen = () => ({ ...fixture(), root: component('root', 'Screen', '�
   component('c', 'Screen', '购买 C', {}, [button('c-close', 'Dismiss')]),
 ])]) });
 
-test('page properties own the initial page while close settings contain only the exit rule', async () => {
+test('page properties own the initial page and navigation buttons without page-close settings or a standalone modal section', async () => {
   const doc=multiScreen(); let renderer,latest;
   await act(async()=>{renderer=TestRenderer.create(React.createElement(Editor,{template:{id:'blank'},initialNodes:[],initialDocument:doc,persistence:'session',onDocumentChange:value=>{latest=value;}}));}); mounted.add(renderer);
   assert.equal(renderer.root.findAll(item=>item.type==='button'&&text(item).trim()==='付费墙设置').length,0);
@@ -203,10 +269,12 @@ test('page properties own the initial page while close settings contain only the
   await act(async()=>initial.props.onChange({target:{value:'b'}}));
   assert.equal(latest.root.children[0].props.initialStepId,'b');
   assert.deepEqual(latest.products,doc.products);
-  const configure=renderer.root.findAll(item=>item.type==='button'&&text(item).trim()==='设置关闭后显示')[0];
-  await act(async()=>configure.props.onClick());
-  assert.equal(renderer.root.findAll(item=>item.type==='select'&&item.props['aria-label']==='初始页面').length,0);
-  assert.ok(renderer.root.findByProps({'aria-label':'关闭后显示规则'}));
+  assert.equal(renderer.root.findAll(item=>item.props['aria-label']==='关闭后显示规则'||item.props['aria-label']==='页面退出触发'||item.type==='section'&&item.props['aria-label']==='弹窗').length,0);
+  const addClose=renderer.root.findAll(item=>item.type==='button'&&text(item).trim()==='添加关闭按钮')[0];
+  assert.ok(addClose); await act(async()=>addClose.props.onClick());
+  const added=[...indexDocument(latest).nodes.values()].find(node=>node.name==='关闭按钮'); assert.ok(added);
+  assert.equal(added.props.action.action,'Dismiss'); assert.equal(latest.root.children[0].props.initialStepId,'b');
+  assert.equal(renderer.root.findByProps({'aria-label':'点击动作'}).props.value,'Dismiss');
 });
 
 test('Demo per-screen bindings override but never broaden legacy final-only defaults, including explicit disable', () => {
@@ -252,23 +320,23 @@ test('per-screen creation keeps other bindings and batch saving retains every in
   assert.equal(createExitOffer(doc, 'x', undefined, {}, 'unknown'), null);
 });
 
-test('each actual artboard has its own close port and settings source while multiple exit boards remain selectable', async () => {
+test('each migrated screen has its own button binding and selectable modal board with no page-close ports', async () => {
   let renderer, latest;
   const doc = bindExitOffer(bindExitOffer(multiScreen(),'a','offer-a'),'b','offer-b'), offers = ['offer-a','offer-b'].map((id) => ({ id, name: id, packageCount: 1, document: fixture(id) }));
   await act(async () => { renderer = TestRenderer.create(React.createElement(Editor, { template: { id: 'blank' }, initialNodes: [], initialDocument: doc, persistence: 'session', offerings: offers, onDocumentChange(value) { latest = value; }, onCreateExitOffer() {} })); }); mounted.add(renderer);
-  assert.equal(renderer.root.findAll((item) => item.type === 'button' && item.props['aria-label']?.startsWith('配置关闭「')).length, 1);
-  const selectBoard = async (name) => act(async () => renderer.root.findByProps({ 'aria-label': `选择画板：${name}` }).props.onClick());
-  const configure = async (name, target) => {
-    await selectBoard(name);
-    await act(async () => renderer.root.findByProps({ 'aria-label': '页面退出触发' }).findAllByType('button')[0].props.onClick());
-    const rule = renderer.root.findByProps({ 'aria-label': '关闭后显示规则' }); assert.ok(text(rule).includes(name)); assert.ok(text(rule).includes(target));
-  };
-  await configure('介绍 A','offer-a'); await configure('介绍 B','offer-b');
-  assert.equal(exitOfferId(latest,'a'),'offer-a'); assert.equal(exitOfferId(latest,'b'),'offer-b');
-  assert.equal(renderer.root.findAll((item) => item.type === 'button' && item.props['aria-label']?.startsWith('配置退出触发：')).length, 2);
-  assert.equal(renderer.root.findAll((item) => item.type === 'button' && item.props['aria-label']?.startsWith('配置关闭「')).length, 1);
-  assert.ok(renderer.root.findByProps({ 'aria-label': '画板：offer-a' })); assert.ok(renderer.root.findByProps({ 'aria-label': '画板：offer-b' }));
-  assert.match(text(renderer.root), /Demo 扩展能力/);
+  assert.equal(renderer.root.findAll((item) => item.type === 'button' && /^(配置关闭「|配置退出触发：)/.test(item.props['aria-label']??'')).length, 0);
+  const bindings=modalBindings(latest); assert.equal(bindings.length,2);
+  assert.deepEqual(bindings.map(({screen})=>screen.id),['a','b']);
+  for(const {button:opener,modal,screen} of bindings){
+    assert.equal(opener.props.action.action,'OpenSheet');
+    assert.equal(indexDocument(latest).parents.get(modal.id),opener.id);
+    assert.ok(renderer.root.findByProps({'aria-label':`画板：${modal.name}`}));
+    const edge=renderer.root.findAll(item=>item.type==='button'&&item.props['aria-label']===`编辑步骤连接：${opener.name}`)[0];assert.ok(edge);
+    await act(async()=>edge.props.onClick());
+    assert.equal(renderer.root.findByProps({'aria-label':'目标弹窗'}).props.value,modal.id);
+    assert.ok(buttonModalEdges(latest).some(edge=>edge.source===screen.id&&edge.target===modal.id));
+  }
+  assert.equal(renderer.root.findAll(item=>item.type==='section'&&item.props['aria-label']==='弹窗').length,0);
 });
 
 test('hover uses the same button drill-in target as click, clears on leave/scroll and is inert in unselected boards or preview', async () => {

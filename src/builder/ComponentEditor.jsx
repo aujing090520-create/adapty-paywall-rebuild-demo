@@ -18,9 +18,11 @@ import { migrateTemplateVisuals } from './templateVisuals.js';
 import { defaultPackagePatch, sequencePages } from './propertyModel.js';
 import {fontResources,withFontResources} from './fontStyles.js';
 import { documentArtboards } from './artboards.js';
-import { workflowContext, workflowEdges, workflowIssues, owningScreen, addWorkflowStep, duplicateWorkflowStep, moveWorkflowStep, removeWorkflowStep, setInitialStep } from './workflow.js';
+import { workflowContext, workflowEdges, workflowIssues, owningScreen, owningModal, addWorkflowStep, duplicateWorkflowStep, moveWorkflowStep, removeWorkflowStep, setInitialStep } from './workflow.js';
 import WorkflowConnections, { STEP_BOARD_GAP, STEP_CANVAS_GUTTER } from './WorkflowConnections.jsx';
 import { flowInitialIndex } from './componentTree.js';
+import { GripVertical } from 'lucide-react';
+import { upgradeButtonModals, buttonModalEdges, createButtonModal, attachButtonModal, addNavigationButton, navigationButton } from './buttonModals.js';
 import { exitOfferConnections, exitOfferSource, exitOfferId, workspaceExitOfferIds, exitOfferTarget, bindExitOffer } from './exitOffers.js';
 import { bindCloseTarget, closeTargetId, createRetentionModal, importCloseTarget, removeCanvasModal, modalPresentationDocument } from './closeTargets.js';
 const StepPicker = React.lazy(()=>import('./StepPicker.jsx'));
@@ -40,14 +42,14 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
       if (saved && (!validDocument(saved) || saved.templateId !== (template?.id ?? 'blank'))) throw new Error('已保存的付费墙内容无效，原记录仍然保留');
       const defaults = importComponentDocument(initialNodes, template);
       const document = saved ? persistence === 'session' ? saved : migrateTemplateVisuals(saved, importComponentDocument(initialNodes, template, false), defaults) : defaults;
-      return { document: upgradeCanonicalComponents(document), error: '' };
+      return { document: upgradeButtonModals(upgradeCanonicalComponents(document), offerings, currentPaywallId), error: '' };
     } catch (error) {
-      return { document: upgradeCanonicalComponents(importComponentDocument(initialNodes, template)), error: error.message };
+      return { document: upgradeButtonModals(upgradeCanonicalComponents(importComponentDocument(initialNodes, template)), offerings, currentPaywallId), error: error.message };
     }
   });
   const [mainDocument, setMainDocument] = useState(initial.document);
   const [focusedOfferingId, setFocusedOfferingId] = useState(null);
-  const boundExits = offerings.filter((offering) => workspaceExitOfferIds(mainDocument).includes(offering.id));
+  const boundExits = mainDocument.settings?.buttonModalVersion ? [] : offerings.filter((offering) => workspaceExitOfferIds(mainDocument).includes(offering.id));
   const activeExit = boundExits.find((offering) => offering.id === focusedOfferingId) ?? null;
   const document = activeExit?.document ?? mainDocument;
   const owner = activeExit?.id ?? null;
@@ -93,7 +95,8 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
   const [exitSourceId, setExitSourceId] = useState(null);
   const workflow = workflowContext(mainDocument);
   const exitSource = workflow.steps.find((page) => page.id === exitSourceId && !page.props.hidden) ?? workflow.initial ?? exitOfferSource(mainDocument);
-  const exitConnections = exitOfferConnections(mainDocument, offerings, currentPaywallId);
+  const exitConnections = mainDocument.settings?.buttonModalVersion ? [] : exitOfferConnections(mainDocument, offerings, currentPaywallId);
+  const modalEdges = buttonModalEdges(mainDocument, contexts.main?.navigation ?? {});
   const closeTarget = exitOfferTarget(mainDocument, offerings, currentPaywallId, exitSource?.id);
   const boundExit = boundExits.find((offering) => offering.id === exitOfferId(mainDocument, exitSource?.id));
   const openExitSettings = (sourceId) => { if (typeof sourceId === 'string') setExitSourceId(sourceId); setFocusedOfferingId(null); setSettingsOpen(true); setAddTarget(null); setStepPicker(false); };
@@ -110,6 +113,7 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
   const parent = nodes.get(parents.get(selected.id));
   const insertionParent = CONTAINER_TYPES.has(selected.type) ? selected : parent ?? document.root;
   const pickerParent = nodes.get(addTarget);
+  const commerceAllowed = Boolean(pickerParent && owningModal(document,pickerParent.id)) || !workflowContext(document).steps.some((page)=>page.id===owningScreen(document,pickerParent?.id)?.id&&page.id!==workflowContext(document).final?.id);
   const menuNode = nodes.get(layerMenu?.id);
   latest.current = document;
   const saveFonts=(fonts)=>{
@@ -158,10 +162,17 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
   useEffect(()=>{const element=boardElements.current.get(activeBoard?.key),scroll=boardScroll.current;if(!element||!scroll)return;const rect=element.getBoundingClientRect(),outer=scroll.getBoundingClientRect();const initial=activeBoard?.owner===null&&activeBoard.node.id===workflow.initial?.id;if(initial||rect.left<outer.left||rect.right>outer.right)scroll.scrollTo({left:Math.max(0,scroll.scrollLeft+rect.left-outer.left-20-(initial?STEP_CANVAS_GUTTER:0))});},[activeBoard?.key,workflow.initial?.id,zoom]);
   const focusBoard = (board) => select(board.node.id, board.document, board.owner);
   const focusExit = () => { const board = closeTarget?.local ? boards.find((item) => !item.owner && item.node.id === closeTargetId(mainDocument, exitSource?.id)) : boards.find((item) => item.owner === boundExit?.id); if (board) focusBoard(board); };
-  const patch = (props) => setDocument((current) => patchComponentProperties(current, selected.id, props));
+  const patch = (props) => setDocument((current) => {
+    const changed = patchComponentProperties(current, selected.id, props);
+    return props.action?.action === 'OpenSheet' && props.action.actionPage ? attachButtonModal(changed, selected.id, props.action.actionPage) : changed;
+  });
+  const addModal = (blank) => { const result = createButtonModal(document, selected.id, blank); if (!result.id) return; setDocument(result.document); select(result.id, result.document, owner); };
+  const addNav = (kind) => { const result = addNavigationButton(document, selected.id, kind); if (!result.id) return; setDocument(result.document); select(result.id, result.document, owner); };
   const add = (type) => {
     const owner = nodes.get(addTarget); if(!owner)return;
-    const next = createCatalogComponent(type);
+    const nav = ['CloseButton','BackButton'].includes(type);
+    if (nav && owner.type === 'Screen') { const result = addNavigationButton(document, owner.id, type === 'BackButton' ? 'back' : 'close'); setDocument(result.document); setAddTarget(null); select(result.id, result.document); return; }
+    const next = nav ? navigationButton(type === 'BackButton' ? 'back' : 'close') : createCatalogComponent(type);
     if(type==='Tab'){let number=owner.children.length+1;while(owner.children.some((child)=>child.name===`标签 ${number}`))number++;next.name=`标签 ${number}`;}
     if(type==='TabButton'){ const tabs=findAncestor(owner.id,nodes,parents,'Tabs'); next.props={...next.props,target:tabs?.id ?? '',index:owner.children.length};next.children=[createCatalogComponent('Text')];next.children[0].props.text='标签'; }
     if(type==='TabControl'){const tabs=findAncestor(owner.id,nodes,parents,'Tabs');if(tabs)next.children=createTabSelector(next.id,tabs.id,tabs.children.length).children;}
@@ -217,19 +228,21 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
     const boardId = surfaceContext(source, {}, id).surface?.id ?? owningScreen(source, id)?.id;
     setHoveredLayer({ id, owner: targetOwner, boardId });
   };
-  const renderTree = (node, depth = 0, source = document, targetOwner = owner) => {
+  const renderTree = (node, depth = 0, source = document, targetOwner = owner, inSelectedSubtree = false) => {
     const targetScope=targetOwner??'main',state=contexts[targetScope]??{},closed=targetScope===scope?collapsed:state.collapsed??initialEditorCollapsed(source);
     const Icon = iconFor(node.type,componentProps(node).axis), isCollapsed = closed.has(node.id);
-    const visibleChildren = treeChildren(node, state.navigation??{}).filter((child) => !isOverlaySurface(child));
+    const visibleChildren = treeChildren(node, state.navigation??{}).filter((child) => !isOverlaySurface(child) || node.props.action?.action === 'OpenSheet' && node.props.action.actionPage === child.id);
+    const isSelected = targetOwner === owner && selected.id === node.id;
     const sourceIndex=source===document?{nodes,parents}:indexDocument(source);
     const content = node.type === 'Text' ? resolveComponentText(node, source, findPackage(node.id, sourceIndex.nodes, sourceIndex.parents)) : '';
     const displayLabel=componentLayerLabel(node,content);
-    return <React.Fragment key={node.id}><div data-layer-id={node.id} data-layer-type={node.type} className={`ne-tree-row ${targetOwner === owner && selected.id === node.id ? 'selected' : ''}${node.props.hidden?' is-hidden':''}`} style={{ paddingLeft: 8 + depth * 20 }} onMouseEnter={() => highlightLayer(node.id, source, targetOwner)} onMouseLeave={() => setHoveredLayer(null)} onFocus={() => highlightLayer(node.id, source, targetOwner)} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setHoveredLayer(null); }} draggable={node.type!=='Screen'&&node.id!==source.root.id&&node.id!==source.settings?.presentationSurfaceId&&!renaming} onDragStart={(event) => { event.stopPropagation(); select(node.id,source,targetOwner); setDragId(node.id); event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('text/plain', node.id); }} onDragEnd={() => setDragId(null)} onDragOver={(event) => { event.preventDefault(); event.stopPropagation(); }} onDrop={(event) => targetOwner===owner&&drop(event, node, false)}>
+    return <React.Fragment key={node.id}><div data-layer-id={node.id} data-layer-type={node.type} className={`ne-tree-row ${isSelected ? 'selected' : inSelectedSubtree ? 'in-selected-subtree' : ''}${node.props.hidden?' is-hidden':''}`} style={{ paddingLeft: 20 + depth * 16 }} onMouseEnter={() => highlightLayer(node.id, source, targetOwner)} onMouseLeave={() => setHoveredLayer(null)} onFocus={() => highlightLayer(node.id, source, targetOwner)} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setHoveredLayer(null); }} draggable={node.type!=='Screen'&&node.id!==source.root.id&&node.id!==source.settings?.presentationSurfaceId&&!renaming} onDragStart={(event) => { event.stopPropagation(); select(node.id,source,targetOwner); setDragId(node.id); event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('text/plain', node.id); }} onDragEnd={() => setDragId(null)} onDragOver={(event) => { event.preventDefault(); event.stopPropagation(); }} onDrop={(event) => targetOwner===owner&&drop(event, node, false)}>
+      {node.type !== 'Screen' && <GripVertical size={12} className="ne-tree-grip" aria-hidden="true"/>}
       {visibleChildren.length?<button type="button" className="ne-icon ne-expand" title={isCollapsed ? '展开' : '收起'} aria-label={`${isCollapsed?'展开':'收起'}${displayLabel}`} aria-expanded={!isCollapsed} onClick={() => setContexts((all)=>{const current=all[targetScope]??{};const next=new Set(current.collapsed??initialEditorCollapsed(source));if(next.has(node.id))next.delete(node.id);else next.add(node.id);return {...all,[targetScope]:{...current,collapsed:next}};})}>{isCollapsed ? <ChevronRight size={15} /> : <ChevronDown size={15} />}</button>:<span className="ne-leaf-spacer" aria-hidden="true"/>}
       {targetOwner === owner && renaming?.id===node.id?<input className="ne-tree-rename" aria-label="重命名图层" autoFocus value={node.name} onChange={(event)=>setDocument((current)=>updateComponent(current,node.id,{name:event.target.value}))} onBlur={()=>setRenaming(null)} onKeyDown={(event)=>{if(event.key==='Enter')setRenaming(null);if(event.key==='Escape'){setDocument((current)=>updateComponent(current,node.id,{name:renaming.before}));setRenaming(null);}}}/>:<button className="ne-tree-select" onClick={() => select(node.id,source,targetOwner)} title={`${COMPONENT_NAMES[node.type]}：${displayLabel}${content&&content!==displayLabel?`\n${content}`:''}`} aria-label={`${displayLabel}${node.props.hidden?'（隐藏）':''}`}><Icon size={16} /><span className="ne-tree-label">{displayLabel}</span>{node.props.hidden&&<EyeOff size={13} className="ne-layer-hidden" aria-hidden="true"/>}</button>}
       <div className="ne-row-actions">{CONTAINER_TYPES.has(node.type)&&catalogFor(node).length>0&&<button type="button" className="ne-icon" title="添加子组件" aria-label={`向${node.name}添加组件`} onClick={()=>openAdd(node.id,source,targetOwner)}><Plus size={14}/></button>}<button type="button" className="ne-icon" data-layer-menu-trigger title="更多操作" aria-label={`${displayLabel}的更多操作`} onClick={(event)=>openMenu(event,node.id,source,targetOwner)}><MoreHorizontal size={16}/></button></div>
-      {CONTAINER_TYPES.has(node.type) && dragId && <span className="ne-drop-inside" onDragOver={(event) => { event.preventDefault(); event.stopPropagation(); }} onDrop={(event) => targetOwner===owner&&drop(event, node, true)}>放入</span>}
-    </div>{!isCollapsed && <>{node.type === 'Flow' && <div className="ne-page-picker" style={{paddingLeft: 24 + depth * 12}}><Select label="当前页面" value={treeChildren(node,navigation)[0]?.id ?? ''} options={node.children.map((child)=>[child.id,child.name])} onChange={select}/></div>}{visibleChildren.map((child) => renderTree(child, depth + 1, source, targetOwner))}</>}</React.Fragment>;
+      {CONTAINER_TYPES.has(node.type) && dragId && <span className="ne-drop-inside" aria-label="放入此容器" title="放入此容器" onDragOver={(event) => { event.preventDefault(); event.stopPropagation(); }} onDrop={(event) => targetOwner===owner&&drop(event, node, true)}><Plus size={14}/></span>}
+    </div>{!isCollapsed && <>{node.type === 'Flow' && <div className="ne-page-picker" style={{paddingLeft: 24 + depth * 12}}><Select label="当前页面" value={treeChildren(node,navigation)[0]?.id ?? ''} options={node.children.map((child)=>[child.id,child.name])} onChange={select}/></div>}{visibleChildren.map((child) => renderTree(child, depth + 1, source, targetOwner, inSelectedSubtree || isSelected))}</>}</React.Fragment>;
   };
   const saveLibrary = () => {
     const name = libraryName.trim(); if (!name) return setStatus('请输入组件名称');
@@ -252,26 +265,25 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
   return <div className="native-editor" data-no-translate="true">
     {saveError && <p className="ne-error" role="alert">{saveError}{blockedSave ? '。为保护原记录，本次未覆盖保存。' : ''}</p>}
     <div className="builder ne-builder" ref={workbench}>
-      <aside className="ne-layers">{stepPicker?<React.Suspense fallback={<p>加载内容来源…</p>}>{stepPicker==='exit'?<CloseTargetPicker key={exitSource.id} document={mainDocument} source={exitSource} offerings={offerings} boundOfferings={boundExits} initialId={creationSurfaceId} onBack={()=>setStepPicker(false)} onCreate={createModal} onBind={bindModal} onBindSaved={bindSaved} onImport={importModal} onSourceChange={setExitSourceId}/>:<StepPicker offerings={offerings} nextStep={workflow.initial} onBack={()=>setStepPicker(false)} onAdd={addStep}/>}</React.Suspense>:pickerParent?<ComponentPicker commerceAllowed={!workflowContext(document).steps.some((page)=>page.id===owningScreen(document,pickerParent.id)?.id&&page.id!==workflowContext(document).final?.id)} parent={pickerParent} onBack={()=>setAddTarget(null)} onAdd={add}/>:<>
+      <aside className="ne-layers">{stepPicker?<React.Suspense fallback={<p>加载内容来源…</p>}>{stepPicker==='exit'?<CloseTargetPicker key={exitSource.id} document={mainDocument} source={exitSource} offerings={offerings} boundOfferings={boundExits} initialId={creationSurfaceId} onBack={()=>setStepPicker(false)} onCreate={createModal} onBind={bindModal} onBindSaved={bindSaved} onImport={importModal} onSourceChange={setExitSourceId}/>:<StepPicker offerings={offerings} nextStep={workflow.initial} onBack={()=>setStepPicker(false)} onAdd={addStep}/>}</React.Suspense>:pickerParent?<ComponentPicker commerceAllowed={commerceAllowed} parent={pickerParent} onBack={()=>setAddTarget(null)} onAdd={add}/>:<>
         <header><strong>图层</strong><button className="ne-icon" title="添加组件" aria-label="添加组件" onClick={()=>openAdd(insertionParent.id===document.root.id?pages.active.id:insertionParent.id)}><Plus size={17}/></button></header>
         <div className="ne-tree">
           <div role="tree" aria-label="组件图层">{workflow.steps.map((page)=>renderTree(mainDocument.settings?.presentationSurfaceId?indexDocument(mainDocument).nodes.get(mainDocument.settings.presentationSurfaceId):page,0,mainDocument,null))}
             {mainPages.shared.filter((node)=>!isOverlaySurface(node)).map((node)=>renderTree(node,0,mainDocument,null))}
           </div>
-          {!mainDocument.settings?.presentationSurfaceId&&<section className="ne-surfaces" aria-label="弹窗"><h3>弹窗<button type="button" className="ne-icon" aria-label="新建挽留弹窗" title="新建挽留弹窗" onClick={()=>closeTarget?openCreation('exit'):createModal(false)}><Plus size={15}/></button></h3><div role="tree" aria-label="弹窗图层">{boards.filter((board)=>board.owner===null&&board.kind==='弹层').map((board)=>renderTree(board.node,0,mainDocument,null))}{boundExits.map((offering)=><React.Fragment key={offering.id}>{renderTree(indexDocument(offering.document).nodes.get(offering.document.settings?.presentationSurfaceId)??offering.document.root,0,offering.document,offering.id)}</React.Fragment>)}</div></section>}
         </div>
       </>}</aside>
       <div className="canvas-area ne-canvas ne-artboard-canvas">{flowWarnings.length>0&&<div className="ne-workflow-issues" role="status">{flowWarnings.map((message)=><div key={message}>{message}</div>)}</div>}
         <div className="device-controls"><span>iPhone · 390 × 844</span>
           <div className="ne-zoom"><button className="ne-icon" aria-label="缩小画布" title="缩小画布" disabled={zoom<=0.3} onClick={()=>setZoom((value)=>Math.max(0.3,Math.round((value-0.1)*100)/100))}><Minus size={15}/></button><select aria-label="画布缩放" value={zoom} onChange={(event)=>setZoom(Number(event.target.value))}>{[0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1].map((value)=><option value={value} key={value}>{Math.round(value*100)}%</option>)}</select><button className="ne-icon" aria-label="放大画布" title="放大画布" disabled={zoom>=1} onClick={()=>setZoom((value)=>Math.min(1,Math.round((value+0.1)*100)/100))}><Plus size={15}/></button><button className="ne-icon" aria-label="适应画布" title="适应画布" onClick={fitBoards}><Maximize2 size={15}/></button></div>
           <button className="secondary" onClick={()=>editing?startPreview('flow'):setEditing(true)}>{editing?<Eye size={15}/>:<Pencil size={15}/>} {editing?'预览流程':'返回编辑'}</button>
-          {editing&&(surface||activeExit)&&<><button type="button" className="secondary" onClick={()=>startPreview('modal')}><Eye size={15}/>预览弹窗</button>{closeTarget&&<button type="button" className="secondary" onClick={()=>startPreview('close')}>测试关闭触发</button>}</>}
+          {editing&&(surface||activeExit)&&<button type="button" className="secondary" onClick={()=>startPreview('modal')}><Eye size={15}/>预览弹窗</button>}
         </div>
         {!activeExit && !isExitOffer && surface&&<div className="ne-surface-context" aria-label="当前弹窗"><strong>{surface.name}</strong><span>{exitConnections.some((edge)=>!edge.targetOwner&&edge.target===surface.id)?'页面关闭时显示':triggers.length?'按钮点击时显示':'尚未关联'}</span>{triggers.map((node)=><button type="button" className="ne-surface-trigger" key={node.id} onClick={()=>select(node.id)} title={`定位触发按钮：${node.name}`}>{node.name}</button>)}</div>}
         {editing?<div ref={boardScroll} className="ne-artboard-scroll" role="region" aria-label="多画板画布" tabIndex={0}><div className="ne-artboard-track">
-          <WorkflowConnections boards={boards} edges={[...workflowEdges(mainDocument),...exitConnections]} zoom={zoom} initialStepId={workflow.initial?.id} onAddStep={!mainDocument.settings?.presentationSurfaceId&&!isExitOffer&&workflow.steps.length<10?()=>openCreation():undefined} exitSourceIds={workflow.steps.filter((page)=>!page.props.hidden).map((page)=>page.id)} onAddExit={!mainDocument.settings?.presentationSurfaceId&&!isExitOffer?(id)=>openCreation('exit',null,id):undefined} onSelect={(id)=>select(id,mainDocument,null)} onExitSelect={(edge)=>openExitSettings(edge.source)}/>
+          <WorkflowConnections boards={boards} edges={[...workflowEdges(mainDocument),...modalEdges]} zoom={zoom} initialStepId={workflow.initial?.id} onAddStep={!mainDocument.settings?.presentationSurfaceId&&!isExitOffer&&workflow.steps.length<10?()=>openCreation():undefined} onSelect={(id)=>select(id,mainDocument,null)}/>
           {boards.map((board)=><section key={board.key} ref={(element)=>{if(element)boardElements.current.set(board.key,element);else boardElements.current.delete(board.key);}} className={`ne-artboard${activeBoard?.key===board.key?' active':''}`} aria-label={`画板：${board.label}`} data-board-owner={board.owner??'main'} style={{width:390*zoom}}>
-            <header><button type="button" aria-label={`选择画板：${board.label}`} aria-pressed={activeBoard?.key===board.key} onClick={()=>focusBoard(board)}><span>{board.label}</span><small>{exitConnections.filter((edge)=>(edge.targetOwner??null)===board.owner&&edge.target===board.node.id).map((edge)=>`关闭「${workflow.steps.find((page)=>page.id===edge.source)?.name}」后显示`).join(' / ')||(board.owner||board.kind==='弹层'?'尚未关联':board.node.id===workflow.initial?.id?'初始页面':'页面')}</small></button>
+            <header><button type="button" aria-label={`选择画板：${board.label}`} aria-pressed={activeBoard?.key===board.key} onClick={()=>focusBoard(board)}><span>{board.label}</span><small>{modalEdges.filter((edge)=>edge.target===board.node.id).map((edge)=>`点击「${edge.label}」后显示`).join(' / ')||(board.owner||board.kind==='弹层'?'尚未关联':board.node.id===workflow.initial?.id?'初始页面':'页面')}</small></button>
             </header>
             <div className="ne-artboard-frame" style={{height:844*zoom}}><div className="ne-artboard-scale" style={{transform:`scale(${zoom})`}}><PaywallPresentation document={board.document} selectedId={activeBoard?.key===board.key?selected.id:undefined} highlightedId={hoveredLayer?.owner===board.owner&&hoveredLayer?.boardId===board.node.id?hoveredLayer.id:undefined} inspectable={activeBoard?.key===board.key} onSelect={(id)=>select(id,board.document,board.owner)} editing navigation={board.navigation} onStatus={setStatus} currentPaywallId={board.owner??currentPaywallId} backdropDocument={board.owner?mainDocument:backdropDocument} backdropNavigation={board.owner&&workflow.flow?{[workflow.flow.id]:workflow.flow.children.findIndex((page)=>page.id===(exitOfferId(mainDocument,exitSource?.id)===board.owner?exitSource?.id:exitConnections.find((edge)=>edge.targetOwner===board.owner)?.source))}:undefined}/></div></div>
           </section>)}
@@ -284,8 +296,9 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
           <div className="ne-actions"><button className="ne-icon" title="上移" aria-label="上移" disabled={isPageRoot || !parent || parent.children[0]?.id === selected.id} onClick={() => reorder(-1)}><ArrowUp size={16} /></button><button className="ne-icon" title="下移" aria-label="下移" disabled={isPageRoot || !parent || parent.children.at(-1)?.id === selected.id} onClick={() => reorder(1)}><ArrowDown size={16} /></button><button className="ne-icon" title="复制组件" aria-label="复制组件" disabled={isPageRoot || !parent} onClick={() => duplicateAt(selected.id)}><Copy size={16} /></button><button className="ne-icon danger" title={isModalRoot?'删除弹窗':'删除组件'} aria-label={isModalRoot?'删除弹窗':'删除组件'} disabled={!isModalRoot&&(isPageRoot||!parent)} onClick={()=>{if(isModalRoot)deleteScene(selected.id);else{setDocument((current)=>removeComponent(current,selected.id));setSelectedId(parent.id);}}}><Trash2 size={16}/></button></div>
           {!isPageRoot&&<Select label="显示状态" value={p.hidden?'hidden':'visible'} onChange={(value)=>patch({hidden:value==='hidden'})} options={[[ 'visible','显示' ],[ 'hidden','隐藏' ]]}/>}
         </section>
-        {(isPageRoot||isModalRoot)&&!isExitOffer&&<section className="ne-exit-rule" aria-label="页面退出触发"><strong>{isModalRoot?'显示条件':'关闭后显示'}</strong>{isModalRoot?<><dl><dt>关联页面</dt><dd>{exitConnections.filter((edge)=>owner?edge.targetOwner===owner:!edge.targetOwner&&edge.target===selected.id).map((edge)=>workflow.steps.find((page)=>page.id===edge.source)?.name).join('、')||'尚未关联'}</dd></dl><button type="button" className="secondary" onClick={()=>owner?openExitSettings():openCreation('exit',selected.id)}>配置触发页面</button></>:<><dl><dt>关闭页面</dt><dd>{exitSource?.name??'当前页面'}</dd><dt>显示内容</dt><dd>{closeTarget?.name??'尚未关联'}</dd></dl><button type="button" className="secondary" onClick={openExitSettings}><Settings size={14}/>设置关闭后显示</button>{closeTarget&&<button type="button" className="secondary" onClick={unlink}>解除关联</button>}</>}</section>}
-        <RevenueCatProperties key={`${scope}:${selected.id}`} selected={selected} p={p} patch={patch} document={document} nodes={nodes} parents={parents} resolveText={resolveComponentText} findPackage={findPackage} changeProduct={changeProduct} fieldNames={fieldNames} demoSkus={DEMO_SKUS} navigation={navigation} setNavigation={patchNavigation} onStatus={setStatus} onFontsChange={saveFonts} onPageControl={(enabled)=>setDocument((current)=>togglePageControl(current,selected.id,enabled))} onMediaType={(type) => setDocument((current) => updateComponent(current, selected.id, { type }))} setDefaultPackage={(value) => setDocument((current) => defaultPackagePatch(current, selected.id, value))} />
+        {selected.type==='Screen'&&<section aria-label="页面导航按钮"><strong>导航按钮</strong><div className="ne-actions ne-modal-actions"><button type="button" className="secondary" onClick={()=>addNav('close')}><X size={14}/>添加关闭按钮</button><button type="button" className="secondary" onClick={()=>addNav('back')}><ChevronRight size={14} style={{transform:'rotate(180deg)'}}/>添加返回按钮</button></div></section>}
+        {isModalRoot&&<section aria-label="弹窗触发按钮"><strong>触发按钮</strong>{triggers.map((button)=><button type="button" className="ne-surface-trigger" key={button.id} onClick={()=>select(button.id)}>{button.name}</button>)}</section>}
+        <RevenueCatProperties key={`${scope}:${selected.id}`} selected={selected} p={p} patch={patch} document={document} nodes={nodes} parents={parents} resolveText={resolveComponentText} findPackage={findPackage} changeProduct={changeProduct} fieldNames={fieldNames} demoSkus={DEMO_SKUS} navigation={navigation} setNavigation={patchNavigation} onStatus={setStatus} onFontsChange={saveFonts} onModalCreate={addModal} onModalEdit={(id)=>select(id)} onPageControl={(enabled)=>setDocument((current)=>togglePageControl(current,selected.id,enabled))} onMediaType={(type) => setDocument((current) => updateComponent(current, selected.id, { type }))} setDefaultPackage={(value) => setDocument((current) => defaultPackagePatch(current, selected.id, value))} />
         </>}
       </aside>
     </div>

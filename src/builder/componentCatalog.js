@@ -5,10 +5,10 @@ import { component, createNativeComponent, canContain, indexDocument } from './c
 export const COMPONENT_CATALOG = [
   { name: '基础', items: [ ['Text','文字'], ['Image','图片'], ['Video','视频'], ['Icon','图标'], ['Stack','布局容器'], ['Header','页头'], ['Footer','页脚'], ['Custom','自定义组件'] ] },
   { name: '付费墙', items: [ ['Package','商品套餐'], ['BottomSheet','按钮打开的弹窗'], ['PurchaseButton','购买按钮'], ['ExpressCheckout','快捷结账'] ] },
-  { name: '交互', items: [ ['Tabs','标签页'], ['Switch','开关'], ['Button','按钮'], ['Carousel','轮播'] ] },
+  { name: '交互', items: [ ['Tabs','标签页'], ['Switch','开关'], ['Button','按钮'], ['CloseButton','关闭按钮'], ['BackButton','返回按钮'], ['Carousel','轮播'] ] },
   { name: '内容', items: [ ['Countdown','倒计时'], ['Timeline','时间线'], ['SocialProof','口碑展示'], ['FeatureList','权益列表'], ['Award','奖项展示'] ] },
 ];
-export const CATALOG_NODE_TYPE = { SocialProof: 'Stack', FeatureList: 'Stack', Award: 'Stack', BottomSheet: 'Button' };
+export const CATALOG_NODE_TYPE = { SocialProof: 'Stack', FeatureList: 'Stack', Award: 'Stack', BottomSheet: 'Button', CloseButton: 'Button', BackButton: 'Button' };
 export function catalogFor(parent) {
   const structural = { Tabs: [['Tab','标签页面']], TabControl: [], Carousel: [['Slide','轮播页'],['PageControl','分页控件']], PageControl: [['Indicators','分页指示器']], Timeline: [['TimelineItem','时间节点']], Flow: [['Screen','页面']], ExpressCheckout: [['CheckoutState','状态内容']], Countdown: [['CountdownState','状态内容']] }[parent?.type];
   if (structural) return [{ name: '子层', items: structural.filter(([type])=>canContain(parent,{type})) }].filter((group)=>group.items.length);
@@ -31,6 +31,7 @@ export function createPageControl(id) {
   return component(id,'PageControl','分页控件',{gap:8,...pad(8),marginTop:8,appearanceEnabled:false},[createCatalogComponent('Indicators',`${id}/indicators`)]);
 }
 export function createCatalogComponent(type, id = crypto.randomUUID()) {
+  if (['CloseButton','BackButton'].includes(type)) return component(id,'Button',type==='BackButton'?'返回按钮':'关闭按钮',{action:{action:type==='BackButton'?'NavigateBack':'Dismiss'},widthMode:'fixed',width:32,heightMode:'fixed',height:32,axis:'horizontal',align:'center',justify:'center',gap:0,background:'transparent',radius:16},[component(`${id}/icon`,'Icon','图标',{icon:`tabler:outline:${type==='BackButton'?'arrow-left':'x'}`,widthMode:'fixed',width:20,heightMode:'fixed',height:20,color:'#62626e'})]);
   if(type==='Text')return t(id,'文字',{widthMode:'fit',heightMode:'fit',fontSize:14,fontWeight:400,color:'#000000'});
   if(type==='Icon')return component(id,type,'图标',{icon:'tabler:outline:icons',widthMode:'fixed',heightMode:'fixed',width:26,height:26,color:'#000000'});
   if(type==='Indicators')return component(id,type,'分页指示器',{widthMode:'fixed',width:5,heightMode:'fixed',height:5,background:'#000000',backgroundOpacity:30,selectedBackground:'#000000',selectedBackgroundOpacity:53,borderColor:'#000000'});
