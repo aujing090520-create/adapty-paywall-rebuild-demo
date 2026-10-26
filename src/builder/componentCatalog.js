@@ -4,7 +4,7 @@ import { component, createNativeComponent, canContain, indexDocument } from './c
 // Structural children are offered only by their owning container.
 export const COMPONENT_CATALOG = [
   { name: '基础', items: [ ['Text','文字'], ['Image','图片'], ['Video','视频'], ['Icon','图标'], ['Stack','布局容器'], ['Header','页头'], ['Footer','页脚'], ['Custom','自定义组件'] ] },
-  { name: '付费墙', items: [ ['Package','商品'], ['BottomSheet','按钮打开的弹窗'], ['PurchaseButton','购买按钮'], ['ExpressCheckout','快捷结账'] ] },
+  { name: '付费墙', items: [ ['Package','商品套餐'], ['BottomSheet','按钮打开的弹窗'], ['PurchaseButton','购买按钮'], ['ExpressCheckout','快捷结账'] ] },
   { name: '交互', items: [ ['Tabs','标签页'], ['Switch','开关'], ['Button','按钮'], ['Carousel','轮播'] ] },
   { name: '内容', items: [ ['Countdown','倒计时'], ['Timeline','时间线'], ['SocialProof','口碑展示'], ['FeatureList','权益列表'], ['Award','奖项展示'] ] },
 ];
@@ -66,7 +66,7 @@ export function createCatalogComponent(type, id = crypto.randomUUID()) {
   ],{axis:'horizontal',gap:10,align:'start'})),{gap:16});
   if (type === 'SocialProof') return s(id,'口碑展示',[t(`${id}/stars`,'★★★★★',{color:'#ffb400',fontSize:22,textAlign:'center'}),t(`${id}/quote`,'用户评价',{textAlign:'center'}),t(`${id}/author`,'用户名称',{fontSize:12,color:'#777777',textAlign:'center'})]);
   if (type === 'Award') return s(id,'奖项展示',[component(`${id}/icon`,'Icon','奖项图标',{icon:'star',color:'#ffb400',iconSize:28,alignSelf:'center'}),t(`${id}/title`,'奖项名称',{fontSize:20,fontWeight:700,textAlign:'center'}),t(`${id}/source`,'颁发机构',{fontSize:12,color:'#777777',textAlign:'center'})]);
-  if (type === 'Package') return component(id,type,'商品',{dataKey:id,group:id,defaultSelected:true,gap:0,align:'start',radius:8,borderWidth:1,borderColor:'#cccccc',...pad(8),marginTop:8,marginRight:8,marginBottom:8,marginLeft:8},[t(`${id}/name`,'',{binding:{key:id,field:'name'},fontSize:14,widthMode:'fit'}),t(`${id}/price`,'',{binding:{key:id,field:'price'},fontSize:14,widthMode:'fit'})]);
+  if (type === 'Package') return component(id,type,'商品套餐',{dataKey:id,group:id,defaultSelected:true,gap:0,align:'start',radius:8,borderWidth:1,borderColor:'#cccccc',...pad(8),marginTop:8,marginRight:8,marginBottom:8,marginLeft:8},[s(`${id}/content`,'布局容器',[t(`${id}/name`,'',{binding:{key:id,field:'name'},fontSize:14,widthMode:'fit'}),t(`${id}/price`,'',{binding:{key:id,field:'price'},fontSize:14,widthMode:'fit'})],{gap:0,align:'start'})]);
   if (type === 'Timeline') return component(id,type,'时间线',{itemSpacing:24,textSpacing:4,columnGutter:16,iconAlignment:'title'},[0,1,2].map((index)=>({...createCatalogComponent('TimelineItem',`${id}/item-${index}`),name:`节点 ${index+1}`})));
   if (type === 'CheckoutState') return component(id,type,'状态内容',{state:'available'},[]);
   if (type === 'CountdownState') return component(id,type,'状态内容',{state:'active'},[]);

@@ -54,7 +54,7 @@ test('wrapping preserves IDs, copy/paste rekeys subtree and independent product 
   assert.ok(validDocument(result.document));
   const copied=indexDocument(result.document).nodes.get(result.ids[0]);
   assert.notEqual(copied.props.dataKey,'product');
-  assert.equal(copied.children[0].props.binding.key,copied.props.dataKey);
+  assert.equal(copied.children[0].children[0].props.binding.key,copied.props.dataKey);
   result.document.products[copied.props.dataKey].name='月度';
   assert.equal(document.products.product.name,'年度');
   assert.equal(pasteFragment(document,'product',copyFragment(document,'root')).ids.length,0);

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Plus, Trash2, Copy, ChevronRight, ChevronDown, ArrowUp, ArrowDown, Eye, EyeOff, Pencil, Save, FolderOpen, X, Layers, Type, Image as ImageIcon, Package as PackageIcon, MoreHorizontal, MousePointerClick, Smartphone, Workflow, GalleryHorizontal, PanelTop, PanelBottom, Clock3, ToggleLeft, ListOrdered, Video, Star, Code, CreditCard, Columns2, Rows2, Minus, Maximize2 } from 'lucide-react';
+import { Plus, Trash2, Copy, ChevronRight, ChevronDown, ArrowUp, ArrowDown, Eye, EyeOff, Pencil, Save, FolderOpen, X, Layers, Type, Image as ImageIcon, FolderClosed as PackageIcon, MoreHorizontal, MousePointerClick, Smartphone, Workflow, GalleryHorizontal, PanelTop, PanelBottom, Clock3, ToggleLeft, ListOrdered, Video, Star, Code, CreditCard, Columns2, Rows2, Minus, Maximize2 } from 'lucide-react';
 import { COMPONENT_NAMES, CONTAINER_TYPES, componentLayerLabel, uniqueSceneName, componentProps, importComponentDocument, indexDocument, validDocument, updateComponent, insertComponent, canContain, readComponentDocument, saveComponentDocument, cloneComponent, captureNativeComponent, resolveComponentText } from './componentDocument.js';
 import { DEMO_SKUS } from '../productPricing.js';
 import PaywallPresentation from './PaywallPresentation.jsx';
@@ -8,7 +8,7 @@ import { Settings } from 'lucide-react';
 import ComponentPicker from './ComponentPicker.jsx';
 import LayerActionsMenu from './LayerActionsMenu.jsx';
 import { createCatalogComponent, upgradeCanonicalComponents, catalogFor, createTabSelector } from './componentCatalog.js';
-import { editorClipboard, copyFragment, pasteFragment, copyStyles, pasteStyles, wrapInStack, patchComponentProperties, appendTab, togglePageControl, removeEditorComponent as removeComponent, moveEditorComponent as moveComponent, reconcileTabNavigation } from './componentOperations.js';
+import { editorClipboard, copyFragment, pasteFragment, copyStyles, pasteStyles, wrapInStack, patchComponentProperties, appendTab, insertPackageComponent, togglePageControl, removeEditorComponent as removeComponent, moveEditorComponent as moveComponent, reconcileTabNavigation } from './componentOperations.js';
 import { treeChildren, initialCollapsed, pageContext, isOverlaySurface, surfaceContext } from './componentTree.js';
 import './componentEditor.css';
 import useWorkbenchHeight from './useWorkbenchHeight.js';
@@ -168,9 +168,8 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
     if(type==='SwitchCase')next.props.index=[0,1].find((index)=>!owner.children.some((child)=>child.type==='SwitchCase'&&child.props.index===index)) ?? 0;
     if(type==='CheckoutState')next.props.state=['available','unavailable','loading'].find((state)=>!owner.children.some((child)=>child.props.state===state)) ?? 'available';
     if(type==='CountdownState')next.props.state=['active','ended','fallback'].find((state)=>!owner.children.some((child)=>child.props.state===state)) ?? 'active';
-    let updated=type==='Tab' && owner.type==='Tabs' ? appendTab(document,owner.id,next) : insertComponent(document,owner.id,next);
+    let updated=type==='Tab' && owner.type==='Tabs' ? appendTab(document,owner.id,next) : type==='Package'?insertPackageComponent(document,owner.id,next):insertComponent(document,owner.id,next);
     if(updated===document)return setStatus('该容器无法添加此组件');
-    if(type==='Package')updated={...updated,products:{...updated.products,[next.id]:{name:'商品名称',price:'',skuId:''}}};
     setDocument(updated);setAddTarget(null);setCollapsed((old)=>new Set([...old].filter((id)=>id!==owner.id)));setSelectedId(next.id);
     if(type==='Tab'&&owner.type==='Tabs')setNavigation((current)=>({...current,[owner.id]:owner.children.length}));
   };

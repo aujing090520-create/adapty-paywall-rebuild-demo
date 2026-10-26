@@ -204,7 +204,7 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
   }
   if (node.type === 'ExpressCheckout') return <div {...attributes} style={{...style,...containerStyle(visualNode)}}>{children(node.children.filter((child)=>child.props.state === (runtime[node.id] ?? props.previewState ?? 'available')))}</div>;
   if (node.type === 'Package') {
-    return <div {...attributes} role="button" tabIndex={0} aria-pressed={packageSelected} style={{ ...style, ...containerStyle(visualNode) }} onClick={(event) => { select(event); setRuntime((current) => ({ ...current, [`package:${group}`]: node.id, selectedPackage: node.id })); }} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setRuntime((current) => ({ ...current, [`package:${group}`]: node.id, selectedPackage: node.id })); } }}>{children()}</div>;
+    return <div {...attributes} role="button" tabIndex={0} aria-pressed={packageSelected} style={{ ...style, ...containerStyle(visualNode) }} onClick={(event) => { event.stopPropagation(); if(editing)select(event);else setRuntime((current) => ({ ...current, [`package:${group}`]: node.id, selectedPackage: node.id })); }} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault();event.stopPropagation();if(editing)onSelect(node.id);else setRuntime((current) => ({ ...current, [`package:${group}`]: node.id, selectedPackage: node.id })); } }}>{children()}</div>;
   }
   if (['Tabs', 'Carousel', 'Flow'].includes(node.type)) {
     return <PageSequence node={visualNode} context={context} props={props} attributes={attributes} style={style} children={children} />;

@@ -885,6 +885,7 @@ test('editing descendant state properties cannot reset the current editor page',
     const page=()=>editor.root.findAll((item)=>item.type==='section'&&item.props.className==='ne-artboard active')[0];
     await act(async()=>editor.root.findAll((item)=>item.type==='button'&&item.props['aria-label']==='选择画板：第二页')[0].props.onClick());assert.equal(page().props['aria-label'],'画板：第二页');
     await act(async()=>editor.root.findAll((item)=>item.type==='div'&&item.props['data-component-id']==='sample')[0].props.onClick(event()));
+    await act(async()=>editor.root.findAll((item)=>item.type==='div'&&item.props['data-component-id']==='sample')[0].props.onClick(event()));
     assert.equal(page().props['aria-label'],'画板：第二页');
     await act(async()=>editor.root.findAll((item)=>item.type==='button'&&item.props['aria-label']==='选中')[0].props.onClick());
     assert.equal(page().props['aria-label'],'画板：第二页');
@@ -1302,6 +1303,25 @@ test('external layer highlight stays edit-only and clears independently from per
     assert.deepEqual(hovered().map(item=>item.props['data-component-id']),['inner']);
     await act(async()=>renderer.update(render({editing:true,highlightedId:undefined})));assert.equal(hovered().length,0);
     await act(async()=>renderer.update(render({editing:false,highlightedId:'inner'})));assert.equal(hovered().length,0);
+  }finally{if(renderer)await act(async()=>renderer.unmount());}
+});
+
+test('package inspection selects its business boundary before content and never changes runtime selection while editing',async()=>{
+  const first=component('a','Package','月度',{group:'plans',dataKey:'sample',defaultSelected:true},[component('a-copy','Text','价格',{text:'月度'})]);
+  const second=component('b','Package','年度',{group:'plans',dataKey:'sample'},[component('b-content','Stack','布局容器',{},[component('b-copy','Text','价格',{text:'年度'})])]);
+  const source=fixture(component('plans','Stack','布局容器',{},[first,second]));
+  let renderer,selected;
+  function Harness(){const [id,setId]=React.useState('page');selected=id;return React.createElement(Preview,{document:source,selectedId:id,onSelect:setId,editing:true,navigation:{},onStatus(){}});}
+  const node=id=>renderer.root.findAll(item=>item.type==='div'&&item.props['data-component-id']===id)[0];
+  try{
+    await act(async()=>{renderer=TestRenderer.create(React.createElement(Harness));});
+    await act(async()=>node('b-copy').props.onClick(event()));assert.equal(selected,'b');
+    assert.equal(node('a').props['aria-pressed'],true);assert.equal(node('b').props['aria-pressed'],false);
+    await act(async()=>node('b-copy').props.onClick(event()));assert.equal(selected,'b-copy');
+    await act(async()=>node('b').props.onKeyDown({...event(),key:'Enter'}));assert.equal(selected,'b');
+    assert.equal(node('a').props['aria-pressed'],true);assert.equal(node('b').props['aria-pressed'],false);
+    await act(async()=>renderer.update(React.createElement(Preview,{document:source,editing:false,navigation:{},onSelect(){},onStatus(){}})));
+    await act(async()=>node('b').props.onClick(event()));assert.equal(node('a').props['aria-pressed'],false);assert.equal(node('b').props['aria-pressed'],true);
   }finally{if(renderer)await act(async()=>renderer.unmount());}
 });
 

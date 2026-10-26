@@ -126,11 +126,11 @@ test('actual App links, edits and saves an existing canvas popup without copying
     await click('保存');assert.equal(listSavedPaywalls(store).length,1);
     assert.equal(closeTargetId(readSavedPaywall(store,'test-2').document,workflowContext(main).initial.id),offerId);
     assert.equal(indexDocument(readSavedPaywall(store,'test-2').document).nodes.get(offerId).props.width,280);
-    await click('付费墙设置');await click('编辑关联内容');await act(async()=>widthField().props.onChange({target:{value:'320'}}));
-    await click('放弃修改');await click('付费墙设置');await click('编辑关联内容');assert.equal(widthField().props.value,'280');
+    await click('设置关闭后显示');await click('编辑关联内容');await act(async()=>widthField().props.onChange({target:{value:'320'}}));
+    await click('放弃修改');await click('选择画板：特权首页');await click('设置关闭后显示');await click('编辑关联内容');assert.equal(widthField().props.value,'280');
     await click('选择画板：特权首页');await click('Paywalls');await open();
     assert.equal(closeTargetId(editor().props.initialDocument,workflowContext(main).initial.id),offerId);
-    await click('付费墙设置');await click('编辑关联内容');assert.equal(widthField().props.value,'280');
+    await click('选择画板：特权首页');await click('设置关闭后显示');await click('编辑关联内容');assert.equal(widthField().props.value,'280');
     let expanded=addWorkflowStep(addWorkflowStep(editor().props.initialDocument).document).document;
     const sources=workflowContext(expanded).steps.slice(0,2);
     for(const source of sources){

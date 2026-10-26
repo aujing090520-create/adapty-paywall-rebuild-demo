@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Search, Type, Image, Video, Star, Layers, PanelTop, PanelBottom, Code2, Package, ShoppingBag, CreditCard, ToggleLeft, MousePointerClick, GalleryHorizontal, Timer, List, Award, MessageSquare, RectangleHorizontal } from 'lucide-react';
+import { ArrowLeft, Search, Type, Image, Video, Star, Layers, PanelTop, PanelBottom, Code2, FolderClosed as Package, ShoppingBag, CreditCard, ToggleLeft, MousePointerClick, GalleryHorizontal, Timer, List, Award, MessageSquare, RectangleHorizontal } from 'lucide-react';
 import { catalogFor } from './componentCatalog.js';
 const icons = {Text:Type,Image,Video,Icon:Star,Stack:Layers,Header:PanelTop,Footer:PanelBottom,Custom:Code2,Package,BottomSheet:PanelBottom,PurchaseButton:ShoppingBag,ExpressCheckout:CreditCard,Tabs:RectangleHorizontal,Switch:ToggleLeft,Button:MousePointerClick,Carousel:GalleryHorizontal,Countdown:Timer,Timeline:List,SocialProof:MessageSquare,FeatureList:List,Award};
 export default function ComponentPicker({parent,onBack,onAdd,commerceAllowed=true}) {

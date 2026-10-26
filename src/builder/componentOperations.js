@@ -64,6 +64,35 @@ export function reconcileTabStructure(before, after) {
 export const removeEditorComponent=(document,id)=>reconcileTabStructure(document,removeComponent(document,id));
 export const moveEditorComponent=(document,id,parentId,at=Infinity)=>reconcileTabStructure(document,moveComponent(document,id,parentId,at));
 
+export function insertPackageComponent(document, parentId, node) {
+  if (node.type !== 'Package') return document;
+  const { nodes, parents } = indexDocument(document);
+  const boundary = (entry) => ['Screen','BottomSheet','Tab','SwitchCase','CheckoutState'].includes(entry.type) || ['overlay','sheet'].includes(entry.props.presentation);
+  const packages = (root) => {
+    const result = [];
+    const visit = (entry) => {
+      if (entry !== root && boundary(entry)) return;
+      if (entry.type === 'Package') result.push(entry);
+      else entry.children.forEach(visit);
+    };
+    visit(root);
+    return result;
+  };
+  let scope = nodes.get(parentId), peers = [];
+  if (!scope) return document;
+  // Join the nearest existing package group without coupling separate screens or sheets.
+  while (scope) {
+    peers = packages(scope);
+    if (peers.length || boundary(scope)) break;
+    scope = nodes.get(parents.get(scope.id));
+  }
+  const entry = { ...node, props: { ...node.props, group: peers[0]?.props.group ?? peers[0]?.id ?? scope?.id ?? parentId, defaultSelected: !peers.some((peer) => peer.props.defaultSelected) } };
+  const next = insertComponent(document, parentId, entry);
+  if (next === document) return document;
+  const key = entry.props.dataKey ?? entry.id;
+  return { ...next, products: { ...next.products, [key]: next.products[key] ?? { name: '商品名称', price: '', skuId: '' } } };
+}
+
 export function reconcileTabNavigation(before,after,navigation) {
   const oldNodes=indexDocument(before).nodes;
   const result={...navigation};
