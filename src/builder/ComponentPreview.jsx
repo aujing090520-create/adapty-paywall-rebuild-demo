@@ -32,7 +32,7 @@ export function componentStyle(node) {
   const numeric = (key, fallback = 0) => Number.isFinite(Number(props[key])) ? Number(props[key]) : fallback;
   const horizontalMargin = props.marginMode === 'individual' ? numeric('marginLeft') + numeric('marginRight') : 2 * numeric('marginHorizontal');
   return {
-    width: props.widthMode === 'fill' && horizontalMargin ? `calc(100% - ${horizontalMargin}px)` : dimension(props.widthMode, props.width), height: props.heightMode === 'fixed' ? dimension('fixed', props.height) : props.heightMode === 'fill' ? '100%' : undefined,
+    width: props.widthMode === 'fill' && horizontalMargin ? `calc(100% - ${horizontalMargin}px)` : dimension(props.widthMode, props.width), height: props.heightMode === 'fixed' ? dimension('fixed', props.height) : props.heightMode === 'fill' ? '100%' : props.navigationRow ? 'fit-content' : undefined,
     minWidth: props.minWidth > 0 ? props.minWidth : 0, maxWidth: props.maxWidth > 0 ? props.maxWidth : undefined, flexShrink: 0, boxSizing: 'border-box',
     minHeight: props.minHeight > 0 ? props.minHeight : undefined, maxHeight: props.maxHeight > 0 ? props.maxHeight : undefined, background: props.fillEnabled === false ? 'transparent' : paintColor(props.background, props.backgroundOpacity),
     color: isGradient(props.color)?'inherit':paintColor(props.color, props.colorOpacity), flexGrow: props.flexGrow, fontSize: numeric('fontSize', 14), lineHeight: props.lineHeight, fontWeight: props.bold ? 700 : props.fontWeight, fontStyle: props.italic ? 'italic' : undefined, fontFamily: richTextFontFamily(props.fontFamily),

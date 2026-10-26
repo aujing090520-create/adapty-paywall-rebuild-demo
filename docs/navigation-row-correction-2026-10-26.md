@@ -26,7 +26,14 @@ Verify source hierarchy; old generated-header repair; custom Header preservation
 
 - NAV-01 implemented: ordinary Stack navigation composition; matching previous generated Headers repaired once with stable child/action/modal IDs. Genuine custom Headers remain fixed. Overlay alignment exposes nine positions and maps independently to grid vertical/horizontal alignment; legacy stretch and state/style copying remain supported.
 - NAV-02 implemented: Blue hero contains navigation Stack > Back Button > editable white arrow Icon, inset 16 design pixels at upper left. It does not add a blank header or increase hero height. Existing configured navigation is retained and an intentionally deleted versioned default is not re-created.
-- Automated result: 380 passed, 0 failed, 0 skipped; build 3.26s. JS index-4WLCT3fy.js, CSS index-KpQ6Ek7Z.css.
+- Initial automated result: 380 passed, 0 failed, 0 skipped; build 3.26s. This preceded the visual Fit-height correction below and is not final geometry acceptance.
 - Actual local browser: Blue has zero fixed Header layers and a Stack navigation row; all images loaded; Back bounds inside hero; measured inset equals 16 design pixels after canvas scaling; Left/Right top controls change independent grid alignment; the initial-screen Back closes the preview and returning to edit works.
 - First full test run had one order-dependent assertion; updated it to find the new modal by ID rather than assuming it is last after Back is correctly inserted at the start. Empty modal, ownership and persistence checks retained.
 - Production release/readback is tracked separately; these are not production-runtime claims.
+
+## Geometry Closure
+
+- Screenshot acceptance found that the marked Fit-height navigation row stretched to the full 226px hero grid cell. Its button was positioned correctly, but its selection frame was wrong.
+- Marked navigation rows now render intrinsic Fit height; fixed and fill modes remain independent. Other generic Stack defaults are unchanged.
+- Fresh browser measurements: row 63.985 design px, button 31.992px, inset 15.996px, hero still 226.2px (fractional device/canvas rounding). The selection outline now corresponds to the navigation strip.
+- Final result: 381 passed, 0 failed, 0 skipped; build 3.20s. Final JS index-Cewh8MwR.js, CSS index-KpQ6Ek7Z.css. Local screenshot: /tmp/paywall-navigation-row-blue-local.png.

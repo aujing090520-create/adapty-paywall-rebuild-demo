@@ -333,6 +333,15 @@ test('all container axes and alignment fields map to flex/grid without pretendin
   await h.close();
 });
 
+test('navigation row Fit height is intrinsic inside an overlay instead of stretching to its hero',async()=>{
+  const node=component('sample','Stack','导航栏',{navigationRow:true,axis:'overlay',overlayAlignment:'top-left',heightMode:'fit',paddingVertical:16},[component('back','Button','返回',{widthMode:'fixed',width:32,heightMode:'fixed',height:32})]);
+  const h=await mount(node);
+  assert.equal(h.node().props.style.height,'fit-content');
+  await h.segment('高度','固定');await h.change('固定高度','80');assert.equal(h.node().props.style.height,'80px');
+  await h.segment('高度','适应内容');assert.equal(h.node().props.style.height,'fit-content');
+  await h.close();
+});
+
 test('paint alpha belongs to its color and never fades icon background or children', async () => {
   const h = await mount(component('sample', 'Icon', '图标', {icon:'check',color:'#112233',iconBackground:'#ffffff',opacity:40}));
   assert.equal(h.node().props.style.opacity,1);
