@@ -19,6 +19,7 @@ import {safeTextLink,richTextFontFamily} from './richTextModel.js';
 import {textRuleProps} from './textRules.js';
 import {fontStyles} from './fontStyles.js';
 import { isExitOfferStep } from './exitOffers.js';
+import { screenChromeLayout } from './screenLayout.js';
 
 const PreviewContext = createContext(null);
 const TimerContext = createContext(null);
@@ -222,7 +223,16 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
     const blocked = props.action?.action === 'OpenPage' && isUnconfiguredDetailPage(context.nodeIndex.get(props.action.actionPage));
     return <div {...attributes} role="button" tabIndex={0} aria-disabled={!editing && blocked || undefined} style={{ ...style, ...containerStyle(visualNode), ...(!editing&&blocked?{cursor:'default'}:{}) }} onClick={(event) => { select(event); if (node.type === 'TabButton') setRuntime((current) => ({ ...current, [props.target]: props.index })); else if (!editing) { event.stopPropagation(); runAction(node); } }} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); if (editing) onSelect(node.id); else if (node.type === 'TabButton') setRuntime((current) => ({ ...current, [props.target]: props.index })); else runAction(node); } }}>{children()}</div>;
   }
-  if(node.type==='Screen'&&node.children.some((child)=>['Header','Footer'].includes(child.type)))return <div {...attributes} style={{...style,display:'flex',flexDirection:'column',minHeight:style.minHeight??(props.heightMode==='fixed'?0:844)}}><BackgroundVideo props={props}/>{children(node.children.filter((child)=>child.type==='Header'),false)}<div className="nc-screen-content" style={{...containerStyle(node),flex:'1 0 auto',minWidth:0}}>{children(node.children.filter((child)=>!['Header','Footer'].includes(child.type)),false)}</div>{children(node.children.filter((child)=>child.type==='Footer'),false)}</div>;
+  if (node.type === 'Screen' && node.children.some((child) => ['Header', 'Footer'].includes(child.type))) {
+    const chrome = screenChromeLayout(node, runtime, context.nodeIndex);
+    // One viewport keeps scroll ownership; the first full-width media shares the header's grid row.
+    return <div {...attributes} data-axis="vertical" data-header-overlap={chrome.underHeader || undefined} style={{ ...style, display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gridTemplateRows: `${chrome.header ? 'auto' : '0px'} 1fr ${chrome.footer ? 'auto' : '0px'}`, minHeight: props.heightMode === 'fit' ? Math.max(style.minHeight ?? 0, context.viewportHeight) : style.minHeight }}>
+      <BackgroundVideo props={props} />
+      {chrome.header && <NativeComponent node={chrome.header} packageNode={currentPackage} layoutStyle={{ gridColumn: 1, gridRow: 1, alignSelf: 'start' }} />}
+      <div className="nc-screen-content" data-axis={props.axis} style={{ ...containerStyle(visualNode), gridColumn: 1, gridRow: chrome.underHeader ? '1 / 3' : 2, minWidth: 0 }}>{children(chrome.content, false)}</div>
+      {chrome.footer && <NativeComponent node={chrome.footer} packageNode={currentPackage} layoutStyle={{ gridColumn: 1, gridRow: 3, alignSelf: 'end' }} />}
+    </div>;
+  }
   return <div {...attributes} style={{ ...style, ...containerStyle(visualNode), ...(['Header','Footer'].includes(node.type)?{position:'sticky',[node.type==='Header'?'top':'bottom']:0,zIndex:4}:{} ), ...layoutStyle }}>{children()}</div>;
 }
 function CountdownContent({node,context,packageNode}) {
@@ -248,7 +258,7 @@ export default function ComponentPreview({ document, selectedId, highlightedId, 
   const [runtime, setRuntime] = useState({});
   const [hoveredId, setHoveredId] = useState(null);
   const previousDocument = useRef(document);
-  const viewport = useRef(null), [scale, setScale] = useState(0.82);
+  const viewport = useRef(null), [scale, setScale] = useState(0.82), [viewportHeight, setViewportHeight] = useState(844);
   const navigationKey = JSON.stringify(Object.entries(navigation ?? {}).sort(([a], [b]) => a.localeCompare(b)));
   useEffect(() => setHoveredId(null), [editing, inspectable, selectedId, navigationKey, document]);
   useEffect(() => {
@@ -269,7 +279,7 @@ export default function ComponentPreview({ document, selectedId, highlightedId, 
       return { ...next, ...navigation };
     });
   }, [document, navigationKey]);
-  useLayoutEffect(() => { const resize = () => setScale((viewport.current?.clientWidth ?? 320) / 390); const observer = new ResizeObserver(resize); if (viewport.current) observer.observe(viewport.current); resize(); return () => observer.disconnect(); }, []);
+  useLayoutEffect(() => { const resize = () => { const scale = (viewport.current?.clientWidth ?? 320) / 390; setScale(scale); setViewportHeight(viewport.current?.clientHeight ? viewport.current.clientHeight / scale : 844); }; const observer = new ResizeObserver(resize); if (viewport.current) observer.observe(viewport.current); resize(); return () => observer.disconnect(); }, []);
   useEffect(() => {
     if (!editing) return;
     const root = viewport.current;
@@ -365,5 +375,5 @@ export default function ComponentPreview({ document, selectedId, highlightedId, 
     const element = event.target.closest?.('[data-component-id]');
     setHoveredId(canvasSelectionTarget(nodeIndex.get(element?.dataset.componentId), selectedId, nodeIndex, parentIndex));
   };
-  return <PreviewContext.Provider value={{ document, nodeIndex, parentIndex, selectedId, onSelect, editing, hoveredId: editing ? highlightedId ?? (inspectable ? hoveredId : null) : null, runtime, setRuntime, runAction, onStatus, selectedPackage,packages }}><style>{fontStyles(document.fonts)}</style><div className="phone native-phone" onPointerMove={hover} onPointerLeave={()=>setHoveredId(null)}><div className="nc-viewport" ref={viewport} onScroll={()=>setHoveredId(null)}><div className="nc-design" style={{ zoom: scale }}><NativeComponent node={document.root} /></div></div>{overlay && <div className="nc-floating-overlay"><div className="nc-floating-backdrop" onClick={()=>{ if (!editing && dismissOnBackdrop && overlay.id === document.settings?.presentationSurfaceId) dismissPaywall(); else setRuntime((current)=>({...current,overlay:null})); }}/><div className="nc-floating-design" data-presentation={overlay.props.presentation} style={{zoom:scale,height:(viewport.current?.clientHeight??844)/scale,padding:overlay.props.surfaceInset ?? (overlay.props.presentation === 'sheet' ? 0 : 20)}}><NativeComponent node={overlay} floating/></div></div>}{runtime.webLink && <div className="nc-web-preview" role="dialog" aria-label="网页预览"><header><span>{runtime.webLink.title}</span><button type="button" aria-label="关闭网页预览" title="关闭网页预览" onClick={()=>setRuntime((current)=>({...current,webLink:null}))}><X size={18}/></button></header><iframe title="网页预览内容" src={runtime.webLink.url} sandbox="allow-scripts allow-forms allow-popups" referrerPolicy="no-referrer"/></div>}</div></PreviewContext.Provider>;
+  return <PreviewContext.Provider value={{ document, nodeIndex, parentIndex, viewportHeight, selectedId, onSelect, editing, hoveredId: editing ? highlightedId ?? (inspectable ? hoveredId : null) : null, runtime, setRuntime, runAction, onStatus, selectedPackage,packages }}><style>{fontStyles(document.fonts)}</style><div className="phone native-phone" onPointerMove={hover} onPointerLeave={()=>setHoveredId(null)}><div className="nc-viewport" ref={viewport} onScroll={()=>setHoveredId(null)}><div className="nc-design" style={{ zoom: scale }}><NativeComponent node={document.root} /></div></div>{overlay && <div className="nc-floating-overlay"><div className="nc-floating-backdrop" onClick={()=>{ if (!editing && dismissOnBackdrop && overlay.id === document.settings?.presentationSurfaceId) dismissPaywall(); else setRuntime((current)=>({...current,overlay:null})); }}/><div className="nc-floating-design" data-presentation={overlay.props.presentation} style={{zoom:scale,height:(viewport.current?.clientHeight??844)/scale,padding:overlay.props.surfaceInset ?? (overlay.props.presentation === 'sheet' ? 0 : 20)}}><NativeComponent node={overlay} floating/></div></div>}{runtime.webLink && <div className="nc-web-preview" role="dialog" aria-label="网页预览"><header><span>{runtime.webLink.title}</span><button type="button" aria-label="关闭网页预览" title="关闭网页预览" onClick={()=>setRuntime((current)=>({...current,webLink:null}))}><X size={18}/></button></header><iframe title="网页预览内容" src={runtime.webLink.url} sandbox="allow-scripts allow-forms allow-popups" referrerPolicy="no-referrer"/></div>}</div></PreviewContext.Provider>;
 }

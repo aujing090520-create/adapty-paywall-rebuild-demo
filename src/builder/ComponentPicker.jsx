@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Search, Type, Image, Video, Star, Layers, PanelTop, PanelBottom, Code2, FolderClosed as Package, ShoppingBag, CreditCard, ToggleLeft, MousePointerClick, GalleryHorizontal, Timer, List, Award, MessageSquare, RectangleHorizontal } from 'lucide-react';
 import { catalogFor } from './componentCatalog.js';
-const icons = {Text:Type,Image,Video,Icon:Star,Stack:Layers,Header:PanelTop,Footer:PanelBottom,Custom:Code2,Package,BottomSheet:PanelBottom,PurchaseButton:ShoppingBag,ExpressCheckout:CreditCard,Tabs:RectangleHorizontal,Switch:ToggleLeft,Button:MousePointerClick,Carousel:GalleryHorizontal,Countdown:Timer,Timeline:List,SocialProof:MessageSquare,FeatureList:List,Award};
+const icons = {Text:Type,Image,Video,Icon:Star,Stack:Layers,Header:PanelTop,Footer:PanelBottom,Custom:Code2,Package,BottomSheet:PanelBottom,PurchaseButton:ShoppingBag,ExpressCheckout:CreditCard,Wallet:CreditCard,Tabs:RectangleHorizontal,Switch:ToggleLeft,Toggle:ToggleLeft,Button:MousePointerClick,Carousel:GalleryHorizontal,Countdown:Timer,Timeline:List,SocialProof:MessageSquare,FeatureList:List,Award};
 export default function ComponentPicker({parent,onBack,onAdd,commerceAllowed=true}) {
   const [query,setQuery] = useState('');
   const groups = catalogFor(parent).map((group)=>({...group,items:group.items.filter(([key,label])=>`${key} ${label}`.toLowerCase().includes(query.toLowerCase()))})).filter((group)=>group.items.length);

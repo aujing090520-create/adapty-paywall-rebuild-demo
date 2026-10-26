@@ -48,6 +48,23 @@ for (const zoom of [0.3, 0.5, 0.75, 1, 1.5]) {
   });
 }
 
+for (const flow of [false, true]) {
+  test(`fixed chrome uses the actual design-space viewport height on ${flow ? 'a flow step' : 'the root screen'}`, async () => {
+    const page = component('page', 'Screen', '', {}, [component('header', 'Header'), component('copy', 'Text', '', { text: '内容' }), component('footer', 'Footer')]);
+    const document = { version: 3, products: {}, root: flow ? component('root', 'Screen', '', {}, [component('flow', 'Flow', '', {}, [page])]) : page };
+    const viewport = { clientWidth: 376, clientHeight: 830 };
+    let renderer;
+    try {
+      await act(async () => { renderer = TestRenderer.create(React.createElement(Preview, { document, editing: false, onSelect() {}, onStatus() {} }), { createNodeMock: (element) => element.props.className === 'nc-viewport' ? viewport : null }); });
+      const screen = renderer.root.findAll((item) => item.type === 'div' && item.props['data-component-id'] === 'page')[0];
+      assert.equal(screen.props.style.minHeight, 830 / (376 / 390));
+      assert.equal(screen.props.style.display, 'grid');
+      assert.equal(renderer.root.findAll((item) => item.props.className === 'nc-viewport').length, 1);
+      assert.equal(screen.findAll((item) => item.props.className === 'nc-screen-content')[0].props.style.overflow, undefined);
+    } finally { if (renderer) await act(async () => renderer.unmount()); }
+  });
+}
+
 test('editing scroll can chain vertically while modal and interactive preview keep their own boundaries', () => {
   const css = postcss.parse(readFileSync(new URL('../src/builder/componentEditor.css', import.meta.url), 'utf8'));
   const declarations = (selector) => {

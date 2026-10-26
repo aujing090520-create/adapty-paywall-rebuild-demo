@@ -77,3 +77,37 @@ test('duplicating a tab creates one matching selector on every page without chan
   assert.deepEqual(node(result.document,'other'),node(document,'other'));
   assert.equal(indexDocument(result.document).nodes.size,new Set(indexDocument(result.document).nodes.keys()).size);
 });
+
+for (const operation of ['move', 'paste']) {
+  test(`cross-group ${operation} rebinds every selector to the destination while preserving nested groups and content`, () => {
+    let source = fixture();
+    const page = node(source, 'tabs/tab-0');
+    source = updateComponent(source, page.id, { children: [...page.children, createCatalogComponent('Tabs', 'nested')] });
+    source = updateComponent(source, 'tabs/tab-content-0', { props: { text: '保留正文' } });
+    const next = operation === 'move' ? moveEditorComponent(source, page.id, 'other') : pasteFragment(source, 'other', copyFragment(source, page.id)).document;
+    const destination = node(next, 'other');
+    assert.equal(destination.children.length, 3);
+    for (const tab of destination.children) {
+      const buttons = tab.children.find((child) => child.type === 'TabControl').children;
+      assert.deepEqual(buttons.map((button) => button.props.index), [0, 1, 2]);
+      assert.ok(buttons.every((button) => button.props.target === 'other'));
+    }
+    const moved = destination.children.at(-1);
+    assert.equal(moved.children.find((child) => child.type === 'Text').props.text, '保留正文');
+    const nested = moved.children.find((child) => child.type === 'Tabs');
+    for (const tab of nested.children) assert.ok(tab.children[0].children.every((button) => button.props.target === nested.id));
+    assert.deepEqual(next.products, source.products);
+    assert.equal(node(source, 'tabs').children.length, 2, 'source document is immutable');
+    assert.equal(node(next, 'tabs').children.length, operation === 'move' ? 1 : 2);
+  });
+}
+
+test('moving and pasting a selector alone rebinds it even when tab membership did not change', () => {
+  const source = fixture();
+  for (const next of [moveEditorComponent(source, 'tabs/controls-0', 'other/tab-0'), pasteFragment(source, 'other/tab-0', copyFragment(source, 'tabs/controls-0')).document]) {
+    for (const control of node(next, 'other/tab-0').children.filter((child) => child.type === 'TabControl')) {
+      assert.equal(control.children.length, 2);
+      assert.ok(control.children.every((button) => button.props.target === 'other'));
+    }
+  }
+});

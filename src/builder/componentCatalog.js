@@ -10,9 +10,14 @@ export const COMPONENT_CATALOG = [
 ];
 export const CATALOG_NODE_TYPE = { SocialProof: 'Stack', FeatureList: 'Stack', Award: 'Stack', BottomSheet: 'Button', CloseButton: 'Button', BackButton: 'Button' };
 export function catalogFor(parent) {
+  if (parent?.type === 'Switch' && (!parent.children.length || parent.children.some((child) => child.type === 'SwitchCase'))) {
+    return canContain(parent, { type: 'SwitchCase' }) ? [{ name: '开关内容', items: [['SwitchCase', '状态内容']] }] : [];
+  }
   const structural = { Tabs: [['Tab','标签页面']], TabControl: [], Carousel: [['Slide','轮播页'],['PageControl','分页控件']], PageControl: [['Indicators','分页指示器']], Timeline: [['TimelineItem','时间节点']], Flow: [['Screen','页面']], ExpressCheckout: [['CheckoutState','状态内容']], Countdown: [['CountdownState','状态内容']] }[parent?.type];
   if (structural) return [{ name: '子层', items: structural.filter(([type])=>canContain(parent,{type})) }].filter((group)=>group.items.length);
   const groups = COMPONENT_CATALOG.map((group) => ({ ...group, items: group.items.filter(([type]) => canContain(parent, { type: CATALOG_NODE_TYPE[type] ?? type })) })).filter((group) => group.items.length);
+  if (parent?.type === 'CheckoutState' && parent.props.state === 'available' && !parent.children.some((child) => child.type === 'Wallet')) groups.unshift({ name: '结账控件', items: [['Wallet', '钱包按钮']] });
+  if (parent?.type === 'SwitchCase' && ![...indexDocument({ root: parent }).nodes.values()].some((child) => child.type === 'Toggle' && child.props.switchControl)) groups.unshift({ name: '开关控件', items: [['Toggle', '开关控件']] });
   if(parent?.type==='Tab')groups.unshift({name:'标签控件',items:[['TabControl','标签按钮组']]});
   if(parent?.type==='Switch'&&parent.children.filter((child)=>child.type==='SwitchCase').length<2)groups.unshift({name:'开关内容',items:[['SwitchCase','状态内容']]});
   return groups;
@@ -30,7 +35,8 @@ export function createTabSelector(id,target,count=2) {
 export function createPageControl(id) {
   return component(id,'PageControl','分页控件',{gap:8,...pad(8),marginTop:8,appearanceEnabled:false},[createCatalogComponent('Indicators',`${id}/indicators`)]);
 }
-export function createCatalogComponent(type, id = crypto.randomUUID()) {
+export function createCatalogComponent(type, id = crypto.randomUUID(), context = {}) {
+  if (type === 'Toggle' && context.switchTarget) return component(id, type, '开关控件', { switchTarget: context.switchTarget, switchControl: true, thumbColor: '#ffffff', trackColor: context.index ? '#34c759' : '#e5e5ea' });
   if (['CloseButton','BackButton'].includes(type)) return component(id,'Button',type==='BackButton'?'返回按钮':'关闭按钮',{action:{action:type==='BackButton'?'NavigateBack':'Dismiss'},widthMode:'fixed',width:32,heightMode:'fixed',height:32,axis:'horizontal',align:'center',justify:'center',gap:0,background:'transparent',radius:16},[component(`${id}/icon`,'Icon','图标',{icon:`tabler:outline:${type==='BackButton'?'arrow-left':'x'}`,widthMode:'fixed',width:20,heightMode:'fixed',height:20,color:'#62626e'})]);
   if(type==='Text')return t(id,'文字',{widthMode:'fit',heightMode:'fit',fontSize:14,fontWeight:400,color:'#000000'});
   if(type==='Icon')return component(id,type,'图标',{icon:'tabler:outline:icons',widthMode:'fixed',heightMode:'fixed',width:26,height:26,color:'#000000'});
@@ -81,6 +87,10 @@ export function upgradeCanonicalComponents(document) {
   let changed=false;
   const ids = new Set(indexDocument(document).nodes.keys());
   const visit=(node)=>{
+    if (document.templateId?.startsWith('rc-source-') && node.type === 'Button' && node.props.action?.action === 'Purchase') {
+      changed = true;
+      return { ...node, type: 'PurchaseButton', children: node.children.map(visit) };
+    }
     if (node.type === 'BottomSheet' && node.children.some((child) => child.id === `${node.id}/gift`) && node.children.some((child) => child.id === `${node.id}/timer`) && node.children.some((child) => child.id === `${node.id}/cancel` && child.type === 'Text')) {
       changed = true;
       return { ...node, children: node.children.map((child) => child.id === `${node.id}/cancel` && child.type === 'Text' ? component(child.id, 'Button', child.name, { action: { action: 'Dismiss' }, background: 'transparent', ...pad(0) }, [{ ...child, id: `${child.id}/label` }]) : visit(child)) };

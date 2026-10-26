@@ -25,6 +25,46 @@ test('structural children are contextual; header/footer are unique direct screen
   assert.ok(!canContain(component('stack','Stack','容器'),footer));
   assert.ok(!canContain(createCatalogComponent('Header','head'),createCatalogComponent('Package','product')));
 });
+
+test('canonical Switch exposes only missing state slots, not generic children outside both states', () => {
+  const toggle = createCatalogComponent('Switch', 'switch');
+  assert.deepEqual(catalogFor(toggle), []);
+  assert.ok(!canContain(toggle, createCatalogComponent('Text', 'wrong')));
+  assert.ok(!canContain(toggle, createCatalogComponent('SwitchCase', 'third')));
+  const single = { ...toggle, children: [toggle.children[0]] };
+  assert.deepEqual(catalogFor(single)[0].items, [['SwitchCase', '状态内容']]);
+  assert.ok(!canContain(single, { ...toggle.children[0], id: 'copy' }));
+  assert.ok(canContain(single, toggle.children[1]));
+  const legacy = component('agreement', 'Switch', '', {}, [component('copy', 'Text')]);
+  assert.ok(canContain(legacy, component('control', 'Toggle')), 'legacy HT agreement controls remain compatible');
+});
+
+test('deleted wallet and switch controls can be recreated only from their contextual picker', () => {
+  const checkout = createCatalogComponent('ExpressCheckout', 'checkout');
+  const available = { ...checkout.children[0], children: [] };
+  const items = (node) => catalogFor(node).flatMap((group) => group.items.map(([type]) => type));
+  assert.ok(items(available).includes('Wallet'));
+  assert.ok(!items(checkout.children[0]).includes('Wallet'));
+  assert.ok(!items(checkout.children[1]).includes('Wallet'));
+  const toggle = createCatalogComponent('Switch', 'switch'), state = { ...toggle.children[0], children: [] };
+  assert.ok(items(state).includes('Toggle'));
+  assert.ok(!items(toggle.children[0]).includes('Toggle'));
+  const control = createCatalogComponent('Toggle', 'restored', { switchTarget: toggle.id, index: state.props.index });
+  assert.equal(control.props.switchTarget, 'switch');
+  assert.equal(control.props.switchControl, true);
+  assert.ok(!items(component('plain', 'Stack')).includes('Toggle'));
+  assert.ok(!items(component('plain', 'Stack')).includes('Wallet'));
+});
+
+test('source draft purchase migration changes only the native type, preserving action, content, IDs and manual styles', () => {
+  const source = { ...doc([component('purchase', 'Button', '自定义', { action: { action: 'Purchase', open: 'native' }, radius: 31 }, [component('copy', 'Text', '', { text: '原有文案' })])]), templateId: 'rc-source-40' };
+  const before = structuredClone(source), next = upgradeCanonicalComponents(source);
+  assert.equal(next.root.children[0].type, 'PurchaseButton');
+  assert.deepEqual({ ...next.root.children[0], type: 'Button' }, source.root.children[0]);
+  assert.deepEqual(source, before);
+  assert.equal(upgradeCanonicalComponents(next), next);
+  assert.equal(upgradeCanonicalComponents({ ...source, templateId: 'custom' }).root.children[0].type, 'Button');
+});
 test('business components retain editable states and native commerce stays outside custom web content',()=>{
   const checkout=createCatalogComponent('ExpressCheckout','checkout');
   assert.deepEqual(checkout.children.map((node)=>node.props.state),['available','unavailable','loading']);

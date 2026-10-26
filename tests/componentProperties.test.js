@@ -521,6 +521,28 @@ test('new headers and footers are empty, with source defaults rather than invent
   }
 });
 
+for (const [type, stateIndex, restoredType, label] of [['Switch', 0, 'Toggle', '开关控件'], ['ExpressCheckout', 0, 'Wallet', '钱包按钮']]) {
+  test(`${type}: actual editor picker restores its deleted specialized control with correct ownership`, async () => {
+    const owner = createCatalogComponent(type, 'owner');
+    const state = owner.children[stateIndex];
+    state.children = state.children.filter((child) => child.type !== restoredType);
+    let renderer, latest;
+    const row = (id) => renderer.root.findAll((item) => item.type === 'div' && item.props['data-layer-id'] === id)[0];
+    try {
+      await act(async () => { renderer = TestRenderer.create(React.createElement(Editor, { template: { id: 'audit' }, initialNodes: [], initialDocument: fixture(owner), persistence: 'session', onDocumentChange: (value) => { latest = value; } })); });
+      const expansion = row(owner.id).findAllByType('button').find((button) => button.props.className === 'ne-icon ne-expand');
+      if (expansion?.props['aria-expanded'] === false) await act(async () => expansion.props.onClick());
+      await act(async () => row(state.id).findAllByType('button').find((button) => button.props.title === '添加子组件').props.onClick());
+      const entry = renderer.root.findAll((item) => item.type === 'button' && item.props.className === 'ne-catalog-entry' && item.findAllByType('span').some((span) => span.children.join('') === label))[0];
+      assert.ok(entry, `${label} must be available from the owning state`);
+      await act(async () => entry.props.onClick());
+      const restored = indexDocument(latest).nodes.get(state.id).children.find((child) => child.type === restoredType);
+      assert.ok(restored);
+      if (type === 'Switch') { assert.equal(restored.props.switchTarget, owner.id); assert.equal(restored.props.switchControl, true); }
+    } finally { if (renderer) await act(async () => renderer.unmount()); }
+  });
+}
+
 test('copied switch targets and selected styles remain independent and complete', () => {
   const original = createCatalogComponent('Switch', 'switch'), copy = cloneComponent(original);
   assert.equal([...indexDocument({ root: copy }).nodes.values()].find((node) => node.type === 'Toggle').props.switchTarget, copy.id);

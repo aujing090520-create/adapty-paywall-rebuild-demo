@@ -33,20 +33,29 @@ function tabControls(tab) {
 // Reindex selectors by the page identity they pointed to before a structural edit.
 export function reconcileTabStructure(before, after) {
   if(before===after)return after;
-  const oldNodes=indexDocument(before).nodes;
+  const {nodes:oldNodes,parents:oldParents}=indexDocument(before);
+  const oldOwner = (id) => {
+    let node = oldNodes.get(id);
+    while (node && node.type !== 'Tabs') node = oldNodes.get(oldParents.get(node.id));
+    return node;
+  };
   let next=after;
   for(const owner of indexDocument(after).nodes.values()) {
     if(owner.type!=='Tabs')continue;
     const previous=oldNodes.get(owner.id);
-    if(!previous||previous.children.length===owner.children.length&&previous.children.every((tab,index)=>tab.id===owner.children[index].id))continue;
-    const oldIds=previous.children.map((tab)=>tab.id),newIds=owner.children.map((tab)=>tab.id);
-    const defaultId=oldIds[previous.props.defaultIndex??0];
-    next=updateComponent(next,owner.id,{props:{defaultIndex:Math.max(0,newIds.includes(defaultId)?newIds.indexOf(defaultId):Math.min(previous.props.defaultIndex??0,newIds.length-1))}});
+    const changed = previous && (previous.children.length !== owner.children.length || previous.children.some((tab,index)=>tab.id!==owner.children[index].id));
+    const oldIds=previous?.children.map((tab)=>tab.id) ?? [],newIds=owner.children.map((tab)=>tab.id);
+    if (changed) {
+      const defaultId=oldIds[previous.props.defaultIndex??0];
+      next=updateComponent(next,owner.id,{props:{defaultIndex:Math.max(0,newIds.includes(defaultId)?newIds.indexOf(defaultId):Math.min(previous.props.defaultIndex??0,newIds.length-1))}});
+    }
     for(const page of owner.children)for(const control of tabControls(page)) {
-      const owned=control.children.filter((child)=>child.type==='TabButton'&&(!child.props.target||child.props.target===owner.id));
-      if(!owned.length)continue;
+      const owned=control.children.filter((child)=>child.type==='TabButton');
+      const transferred = oldOwner(control.id)?.id !== owner.id && owned.some((child)=>child.props.target && child.props.target!==owner.id);
+      const unbound = owned.some((child)=>!child.props.target);
+      if(!changed && !transferred && !unbound)continue;
       const buttons=owner.children.map((tab,index)=>{
-        const oldIndex=oldIds.indexOf(tab.id),existing=owned.find((button)=>button.props.index===oldIndex);
+        const oldIndex=transferred || !previous ? index : oldIds.indexOf(tab.id),existing=owned.find((button)=>button.props.index===oldIndex);
         return existing?{...existing,props:{...existing.props,target:owner.id,index}}:createTabSelectorButton(crypto.randomUUID(),owner.id,index);
       });
       let inserted=false;
@@ -55,6 +64,7 @@ export function reconcileTabStructure(before, after) {
         if(inserted)return [];
         inserted=true;return buttons;
       });
+      if (!owned.length) children.push(...buttons);
       next=updateComponent(next,control.id,{children});
     }
   }

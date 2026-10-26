@@ -9,7 +9,8 @@
     "build": "vite build",
     "test": "node --test src/*.test.js src/builder/*.test.js tests/*.test.js",
     "test:builder": "node --test src/builder/*.test.js src/templateStorage.test.js",
-    "test:products": "node --test tests/product*.test.js"
+    "test:products": "node --test tests/product*.test.js",
+    "audit:structure": "node scripts/audit-component-structure.mjs"
   },
   "dependencies": {
     "@tiptap/core": "^3.32.0",

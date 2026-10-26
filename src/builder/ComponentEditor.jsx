@@ -173,7 +173,8 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
     const owner = nodes.get(addTarget); if(!owner)return;
     const nav = ['CloseButton','BackButton'].includes(type);
     if (nav && owner.type === 'Screen') { const result = addNavigationButton(document, owner.id, type === 'BackButton' ? 'back' : 'close'); setDocument(result.document); setAddTarget(null); select(result.id, result.document); return; }
-    const next = nav ? navigationButton(type === 'BackButton' ? 'back' : 'close') : createCatalogComponent(type);
+    const switchOwner = type === 'Toggle' && owner.type === 'SwitchCase' ? findAncestor(owner.id,nodes,parents,'Switch') : null;
+    const next = nav ? navigationButton(type === 'BackButton' ? 'back' : 'close') : createCatalogComponent(type, undefined, { switchTarget: switchOwner?.id, index: owner.props.index });
     if(type==='Tab'){let number=owner.children.length+1;while(owner.children.some((child)=>child.name===`标签 ${number}`))number++;next.name=`标签 ${number}`;}
     if(type==='TabButton'){ const tabs=findAncestor(owner.id,nodes,parents,'Tabs'); next.props={...next.props,target:tabs?.id ?? '',index:owner.children.length};next.children=[createCatalogComponent('Text')];next.children[0].props.text='标签'; }
     if(type==='TabControl'){const tabs=findAncestor(owner.id,nodes,parents,'Tabs');if(tabs)next.children=createTabSelector(next.id,tabs.id,tabs.children.length).children;}
