@@ -1264,6 +1264,47 @@ test('canvas first-click selects a button before its label; drill-in and floatin
   }finally{if(renderer)await act(async()=>renderer.unmount());}
 });
 
+test('layer hover highlights the exact container on its own artboard without changing selection or content',async()=>{
+  const inner=component('inner','Stack','内层',{},[component('copy','Text','文字',{text:'正文'})]);
+  const modal=component('modal','BottomSheet','挽留弹窗',{presentation:'overlay'},[component('modal-copy','Text','文字',{text:'弹窗正文'})]);
+  const source=fixture(component('outer','Stack','外层',{},[inner,modal])),before=structuredClone(source);
+  let renderer,latest;
+  const row=id=>renderer.root.findAll(item=>item.type==='div'&&item.props['data-layer-id']===id)[0];
+  const highlighted=()=>renderer.root.findAll(item=>typeof item.type==='string'&&item.props.className?.split(' ').includes('nc-hovered'));
+  const selected=()=>renderer.root.findAll(item=>typeof item.type==='string'&&item.props.className?.split(' ').includes('nc-inspected'));
+  try{
+    await act(async()=>{renderer=TestRenderer.create(React.createElement(Editor,{template:{id:'audit'},initialNodes:[],initialDocument:source,persistence:'session',onDocumentChange:value=>{latest=value;}}));});
+    const initialSelected=selected().map(item=>item.props['data-component-id']);
+    await act(async()=>row('outer').props.onMouseEnter());
+    assert.deepEqual(highlighted().map(item=>item.props['data-component-id']),['outer']);
+    assert.deepEqual(selected().map(item=>item.props['data-component-id']),initialSelected);
+    await act(async()=>row('outer').props.onMouseLeave());assert.equal(highlighted().length,0);
+    await act(async()=>row('outer').findAllByType('button').find(item=>item.props.className==='ne-tree-select').props.onClick());
+    assert.deepEqual(selected().map(item=>item.props['data-component-id']),['outer']);
+    await act(async()=>row('inner').props.onFocus());
+    assert.deepEqual(highlighted().map(item=>item.props['data-component-id']),['inner']);
+    assert.deepEqual(selected().map(item=>item.props['data-component-id']),['outer']);
+    await act(async()=>row('inner').props.onBlur({currentTarget:{contains:()=>false},relatedTarget:null}));assert.equal(highlighted().length,0);
+    await act(async()=>row('modal').props.onMouseEnter());
+    assert.deepEqual(highlighted().map(item=>item.props['data-component-id']),['modal'],'inactive modal artboard can be highlighted without selecting it');
+    assert.deepEqual(selected().map(item=>item.props['data-component-id']),['outer']);
+    assert.deepEqual(latest,before,'inspection state must not dirty the document');
+  }finally{if(renderer)await act(async()=>renderer.unmount());}
+});
+
+test('external layer highlight stays edit-only and clears independently from persistent selection',async()=>{
+  const source=fixture(component('inner','Stack','容器',{},[component('copy','Text','文字',{text:'正文'})]));
+  let renderer;
+  const render=(props)=>React.createElement(Preview,{document:source,selectedId:'page',onSelect(){},navigation:{},onStatus(){},...props});
+  const hovered=()=>renderer.root.findAll(item=>typeof item.type==='string'&&item.props.className?.split(' ').includes('nc-hovered'));
+  try{
+    await act(async()=>{renderer=TestRenderer.create(render({editing:true,inspectable:false,highlightedId:'inner'}));});
+    assert.deepEqual(hovered().map(item=>item.props['data-component-id']),['inner']);
+    await act(async()=>renderer.update(render({editing:true,highlightedId:undefined})));assert.equal(hovered().length,0);
+    await act(async()=>renderer.update(render({editing:false,highlightedId:'inner'})));assert.equal(hovered().length,0);
+  }finally{if(renderer)await act(async()=>renderer.unmount());}
+});
+
 test('ordinary navigation can explicitly become checkout without changing its content or visual properties',async()=>{
   const original=component('sample','Button','Custom label',{action:{action:'None'},paddingHorizontal:31,radius:17},[component('label','Text','标题',{text:'Keep this label'})]);
   const h=await mount(original),styles=copyStyles(original);
