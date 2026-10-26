@@ -146,7 +146,7 @@ test('legacy independent popup unlink remains in the canvas after reopen; delete
   let latest;
   const props = { template: { id: 'blank' }, initialNodes: [], initialDocument: original, persistence: 'session', offerings, onDocumentChange(value) { latest = value; } };
   const first = await render(Editor, props);
-  await click(first, '付费墙设置'); await click(first, '解除关联');
+  await click(first, '设置关闭后显示'); await click(first, '解除关联');
   assert.deepEqual(workspaceExitOfferIds(latest), ['old']); assert.equal(exitOfferTarget(latest, offerings, undefined, 'a'), null);
   const reopened = await render(Editor, { ...props, initialDocument: structuredClone(latest) });
   await click(reopened, '选择画板：挽留弹窗'); await click(reopened, '删除弹窗');

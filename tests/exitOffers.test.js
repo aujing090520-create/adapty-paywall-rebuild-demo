@@ -180,7 +180,7 @@ test('no binding or removed target closes directly, while settings preserve an u
 test('actual editor unlinks legacy retention at document level without changing components or products', async () => {
   const doc = fixture(); doc.settings={exitOfferOfferingId:'offer'}; let latest, renderer;
   await act(async () => { renderer = TestRenderer.create(React.createElement(Editor, { template: { id: 'blank' }, initialNodes: [], initialDocument: doc, persistence: 'session', offerings: savedOfferings([record('offer', fixture('offer'))]), currentPaywallId: 'primary', onDocumentChange: (value) => { latest = value; } })); }); mounted.add(renderer);
-  const settingsButton = renderer.root.findAll((item) => item.type === 'button' && text(item) === '付费墙设置')[0];
+  const settingsButton = renderer.root.findAll((item) => item.type === 'button' && text(item) === '设置关闭后显示')[0];
   await act(async () => settingsButton.props.onClick());
   const field = renderer.root.findAll((item) => item.type === 'button' && text(item)==='解除关联')[0];
   await act(async () => field.props.onClick());
@@ -193,6 +193,21 @@ const multiScreen = () => ({ ...fixture(), root: component('root', 'Screen', '�
   component('b', 'Screen', '介绍 B', {}, [button('b-back', 'NavigateBack'), button('b-close', 'Dismiss')]),
   component('c', 'Screen', '购买 C', {}, [button('c-close', 'Dismiss')]),
 ])]) });
+
+test('page properties own the initial page while close settings contain only the exit rule', async () => {
+  const doc=multiScreen(); let renderer,latest;
+  await act(async()=>{renderer=TestRenderer.create(React.createElement(Editor,{template:{id:'blank'},initialNodes:[],initialDocument:doc,persistence:'session',onDocumentChange:value=>{latest=value;}}));}); mounted.add(renderer);
+  assert.equal(renderer.root.findAll(item=>item.type==='button'&&text(item).trim()==='付费墙设置').length,0);
+  const initial=renderer.root.findByProps({'aria-label':'初始页面'});
+  assert.equal(initial.props.value,'a');
+  await act(async()=>initial.props.onChange({target:{value:'b'}}));
+  assert.equal(latest.root.children[0].props.initialStepId,'b');
+  assert.deepEqual(latest.products,doc.products);
+  const configure=renderer.root.findAll(item=>item.type==='button'&&text(item).trim()==='设置关闭后显示')[0];
+  await act(async()=>configure.props.onClick());
+  assert.equal(renderer.root.findAll(item=>item.type==='select'&&item.props['aria-label']==='初始页面').length,0);
+  assert.ok(renderer.root.findByProps({'aria-label':'关闭后显示规则'}));
+});
 
 test('Demo per-screen bindings override but never broaden legacy final-only defaults, including explicit disable', () => {
   let doc = multiScreen(); doc.settings = { exitOfferOfferingId: 'legacy' };
