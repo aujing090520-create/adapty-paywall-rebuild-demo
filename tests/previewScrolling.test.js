@@ -70,3 +70,18 @@ test('desktop panels and canvas have independent bounded scroll areas', () => {
   const bound=[];css.walkRules('.ne-layers,.ne-properties',rule=>rule.walkDecls('overflow',decl=>bound.push(decl.value)));
   assert.ok(bound.includes('auto'));
 });
+
+test('interactive preview scrolls the whole phone when the workbench is shorter than the device', () => {
+  const css=postcss.parse(readFileSync(new URL('../src/builder/componentEditor.css',import.meta.url),'utf8'));
+  const declarations=(selector)=>{const values={};css.walkRules(selector,rule=>rule.walkDecls(decl=>{values[decl.prop]=decl.value;}));return values;};
+  const preview=declarations('.ne-interactive-board');
+  assert.equal(preview.flex,'1 1 auto');
+  assert.equal(preview['min-height'],'0');
+  assert.equal(preview.overflow,'auto');
+  assert.equal(preview['overscroll-behavior-x'],'contain');
+  assert.equal(preview['overscroll-behavior-y'],'auto','a workbench below the page header must remain reachable on short windows');
+  assert.equal(declarations('.ne-interactive-board .nc-viewport')['overscroll-behavior-y'],'auto');
+  assert.equal(declarations('.nc-floating-design>.nc-modal-surface')['overscroll-behavior'],'contain','scrolling a popup must not move its backdrop');
+  assert.equal(declarations('.native-editor .ne-builder:has(>.ne-artboard-canvas>.ne-interactive-board),.ne-artboard-canvas:has(>.ne-interactive-board)').overflow,'clip','clipping ancestors must not become hidden scroll containers that interrupt wheel chaining');
+  assert.equal(declarations('.native-editor .ne-builder:has(>.ne-artboard-canvas>.ne-interactive-board),.ne-artboard-canvas:has(>.ne-interactive-board)')['min-height'],'0','clip must not restore the grid item content minimum and stretch past the workbench');
+});
