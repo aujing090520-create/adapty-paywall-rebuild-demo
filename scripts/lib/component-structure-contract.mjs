@@ -22,6 +22,19 @@ export const STRUCTURAL_OWNERS = {
 export const PRESETS = ['BottomSheet', 'CloseButton', 'BackButton'];
 const OBSERVED_NATIVE_TYPES = { header: 'Header', footer: 'Footer', icon: 'Icon', image: 'Image', package: 'Package', purchase_button: 'PurchaseButton', button: 'Button', carousel: 'Carousel', timeline: 'Timeline', timeline_item: 'TimelineItem', tabs: 'Tabs', tab: 'Tab', tab_control: 'TabControl', tab_control_button: 'TabButton', stack: 'Stack', text: 'Text' };
 
+export function observedNativeType(row, rows) {
+  const byKey = new Map(rows.map((entry) => [entry.key, entry]));
+  let ancestor = byKey.get(row.parent);
+  const ancestors = [];
+  while (ancestor) { ancestors.push(ancestor.type); ancestor = byKey.get(ancestor.parent); }
+  if (row.type === 'screen') return 'Screen';
+  if (row.type === 'toggle') return 'Switch';
+  if (row.type === 'tab' && ancestors.includes('toggle')) return 'SwitchCase';
+  if (row.type === 'tab_control' && ancestors.includes('toggle')) return 'Toggle';
+  if (row.type === 'stack' && ancestors[0] === 'carousel') return 'Slide';
+  return OBSERVED_NATIVE_TYPES[row.type];
+}
+
 export function structureIssues(document) {
   const issues = [];
   if (!validDocument(document)) return ['invalid-document'];
@@ -67,14 +80,18 @@ export function structureCoverage() {
       return { id: template.id, family: template.id.startsWith('rc-source-') ? 'reference-gallery' : template.id.startsWith('ht-') ? 'HT' : 'compatibility', nodes: nodes.length, types: [...new Set(nodes.map((node) => node.type))].sort(), issues: structureIssues(document) };
     }),
   };
-  const observed = JSON.parse(readFileSync(new URL('../../src/revenueCatEditorObserved.json', import.meta.url), 'utf8'));
+  const observed = JSON.parse(readFileSync(new URL('../../docs/reference-structure/revenuecat-hierarchy-2026-10-26.json', import.meta.url), 'utf8')).samples;
   coverage.observedSourceComparison = observed.map((source) => {
     const local = coverage.templates.find((template) => template.id === `rc-source-${source.order}`);
-    const sourceTypes = [...new Set(source.layers.map((layer) => layer.type))];
-    const requiredTypes = sourceTypes.map((type) => OBSERVED_NATIVE_TYPES[type]).filter(Boolean);
-    return { id: local.id, evidence: 'historical flat layer inventory; no complete parent-child or pixel proof', requiredTypes, missingTypes: requiredTypes.filter((type) => !local.types.includes(type)), unmappedSourceTypes: sourceTypes.filter((type) => !OBSERVED_NATIVE_TYPES[type]) };
+    const rows = [...source.rows, ...(source.states ?? []).flatMap((state) => state.rows)];
+    const requiredTypes = [...new Set(rows.map((row) => observedNativeType(row, rows)).filter(Boolean))];
+    const document = templateDocument(templates.find((template) => template.id === local.id));
+    const localNodes = [...indexDocument(document).nodes.values()];
+    const sourceFooters = source.rows.filter((row) => row.type === 'footer').length;
+    const actualFooters = localNodes.filter((entry) => entry.type === 'Footer').length;
+    return { id: local.id, evidence: 'current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof', requiredTypes, missingTypes: requiredTypes.filter((type) => !local.types.includes(type)), unmappedSourceTypes: [...new Set(rows.filter((row) => !observedNativeType(row, rows)).map((row) => row.type))], fixedRegions: { sourceFooters, actualFooters, matches: sourceFooters === actualFooters }, sourceRowCount: source.rows.length };
   });
   const gaps = coverage.observedSourceComparison.filter((source) => source.missingTypes.length || source.unmappedSourceTypes.length);
-  coverage.referenceAlignment = { status: gaps.length ? 'partial' : 'type-presence-only', observedSamples: observed.length, samplesWithTypeGaps: coverage.observedSourceComparison.filter((source) => source.missingTypes.length).length, samplesNeedingTypeMapping: coverage.observedSourceComparison.filter((source) => source.unmappedSourceTypes.length).length, limitation: 'Internal validity is not source hierarchy equivalence. Template 38 has no observed source layer sample.' };
+  coverage.referenceAlignment = { status: gaps.length ? 'partial' : 'type-presence-only', observedSamples: observed.length, samplesWithTypeGaps: coverage.observedSourceComparison.filter((source) => source.missingTypes.length).length, samplesNeedingTypeMapping: coverage.observedSourceComparison.filter((source) => source.unmappedSourceTypes.length).length, fixedRegionMismatches: coverage.observedSourceComparison.filter((source) => !source.fixedRegions.matches).length, limitation: 'Verified fixed-region boundaries and switch ownership do not imply full recursive hierarchy, visual or SDK equivalence. Template 38 has no observed source layer sample.' };
   return coverage;
 }

@@ -49,6 +49,7 @@ export const component = (id, type, name, props = {}, children = []) => ({ id, t
 export function componentLayerLabel(node, content = '') {
   if (node.type === 'Screen') return node.name || COMPONENT_NAMES.Screen;
   if (node.type === 'Text') return content.trim() || COMPONENT_NAMES.Text;
+  if (node.type === 'SwitchCase' && [0, 1].includes(node.props.index)) return `${COMPONENT_NAMES.SwitchCase} · ${node.props.index === 1 ? '开启' : '关闭'}`;
   return COMPONENT_NAMES[node.type] || node.type;
 }
 export function uniqueSceneName(document, preferred, exceptId) {

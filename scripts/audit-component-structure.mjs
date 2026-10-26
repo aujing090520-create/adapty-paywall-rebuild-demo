@@ -7,6 +7,7 @@ coverage.sourceHashes = Object.fromEntries([
   'src/builder/componentCatalog.js', 'src/builder/componentDocument.js', 'src/builder/componentOperations.js',
   'src/builder/ComponentPreview.jsx', 'src/builder/screenLayout.js', 'src/builder/navigationRows.js', 'src/builder/buttonModals.js',
   'src/builder/ComponentEditor.jsx', 'src/builder/componentEditor.css',
+  'src/builder/referenceTemplateStructure.js', 'docs/reference-structure/revenuecat-hierarchy-2026-10-26.json',
 ].map((path) => [path, createHash('sha256').update(readFileSync(new URL(`../${path}`, import.meta.url))).digest('hex')]));
 writeFileSync(new URL('../docs/component-structure-coverage.json', import.meta.url), `${JSON.stringify(coverage, null, 2)}\n`);
 const failures = coverage.templates.filter((template) => template.issues.length);

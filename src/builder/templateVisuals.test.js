@@ -78,7 +78,12 @@ test('previously split countdown digits receive the calibrated size without over
 });
 
 test('RevenueCat gallery trees do not receive HT-only defaults', () => {
-  assert.deepEqual(load('rc-source-1'), load('rc-source-1', false));
+  const current = load('rc-source-1'), previous = load('rc-source-1', false);
+  assert.equal(current.visualDefaultsVersion, undefined);
+  assert.equal(current.htSceneVersion, undefined);
+  assert.deepEqual(current.products, previous.products);
+  assert.deepEqual(current.root.props, previous.root.props);
+  assert.strictEqual(migrateTemplateVisuals(previous, previous, current), previous);
 });
 
 test('rebuilt defaults expose a separate dimmed recovery backdrop without migrating old user drafts', () => {

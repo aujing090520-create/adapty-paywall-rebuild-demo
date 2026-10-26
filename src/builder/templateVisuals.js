@@ -1,6 +1,7 @@
 import { HT_PRODUCT_DESIGN_DEFAULTS } from '../products/productStyleModel.js';
 import { rebuildHtTemplateScene } from './htTemplateScenes.js';
 import { upgradeNavigationRows } from './navigationRows.js';
+import { rebuildReferenceTemplateStructure } from './referenceTemplateStructure.js';
 
 export const TEMPLATE_VISUAL_VERSION = 1;
 const edges = (prefix, vertical, horizontal = vertical) => ({ [`${prefix}Mode`]: 'individual', [`${prefix}Top`]: vertical, [`${prefix}Bottom`]: vertical, [`${prefix}Left`]: horizontal, [`${prefix}Right`]: horizontal });
@@ -9,7 +10,7 @@ const equal = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 // Values are design pixels on the existing 390px canvas, from the prior HT renderer.
 export function calibrateTemplateVisuals(document, template, sources) {
   const variant = template.documentTemplate;
-  if (!HT_PRODUCT_DESIGN_DEFAULTS[variant]) return document;
+  if (!HT_PRODUCT_DESIGN_DEFAULTS[variant]) return rebuildReferenceTemplateStructure(document, template, sources);
   const configs = new Map(sources.map((source) => [source.id, source.config ?? {}]));
   const productConfig = configs.get('products') ?? {};
   const horizontal = ['horizontal', 'standard'].includes(productConfig.packageLayout ?? 'standard');
@@ -97,6 +98,7 @@ export function calibrateTemplateVisuals(document, template, sources) {
 export function migrateTemplateVisuals(document, previous, current) {
   // A structural default rebuild must not rewrite an existing user draft.
   if (current.htSceneVersion) return document;
+  if (current.referenceStructureVersion) return document;
   if (document.visualDefaultsVersion === TEMPLATE_VISUAL_VERSION || !current.visualDefaultsVersion) return document;
   const index = (root, map = new Map()) => { map.set(root.id, root); root.children.forEach((child) => index(child, map)); return map; };
   const oldNodes = index(previous.root), newNodes = index(current.root);

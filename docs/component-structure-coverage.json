@@ -779,10 +779,11 @@
     {
       "id": "rc-source-1",
       "family": "reference-gallery",
-      "nodes": 88,
+      "nodes": 95,
       "types": [
         "Button",
         "Flow",
+        "Footer",
         "Icon",
         "Image",
         "Package",
@@ -798,9 +799,11 @@
     {
       "id": "rc-source-2",
       "family": "reference-gallery",
-      "nodes": 21,
+      "nodes": 19,
       "types": [
         "Button",
+        "Footer",
+        "Icon",
         "Image",
         "Package",
         "PurchaseButton",
@@ -813,9 +816,11 @@
     {
       "id": "rc-source-3",
       "family": "reference-gallery",
-      "nodes": 22,
+      "nodes": 20,
       "types": [
         "Button",
+        "Footer",
+        "Icon",
         "Image",
         "Package",
         "PurchaseButton",
@@ -828,10 +833,12 @@
     {
       "id": "rc-source-4",
       "family": "reference-gallery",
-      "nodes": 41,
+      "nodes": 45,
       "types": [
         "Button",
         "Carousel",
+        "Header",
+        "Icon",
         "Image",
         "Indicators",
         "Package",
@@ -850,6 +857,7 @@
       "nodes": 25,
       "types": [
         "Button",
+        "Footer",
         "Icon",
         "Image",
         "Package",
@@ -862,9 +870,11 @@
     {
       "id": "rc-source-6",
       "family": "reference-gallery",
-      "nodes": 22,
+      "nodes": 21,
       "types": [
         "Button",
+        "Footer",
+        "Icon",
         "Image",
         "Package",
         "Screen",
@@ -876,10 +886,12 @@
     {
       "id": "rc-source-7",
       "family": "reference-gallery",
-      "nodes": 55,
+      "nodes": 70,
       "types": [
         "Button",
         "Carousel",
+        "Footer",
+        "Icon",
         "Image",
         "Indicators",
         "Package",
@@ -888,6 +900,8 @@
         "Screen",
         "Slide",
         "Stack",
+        "Switch",
+        "SwitchCase",
         "Text",
         "Toggle"
       ],
@@ -896,15 +910,18 @@
     {
       "id": "rc-source-8",
       "family": "reference-gallery",
-      "nodes": 56,
+      "nodes": 71,
       "types": [
         "Button",
+        "Footer",
         "Icon",
         "Image",
         "Package",
         "PurchaseButton",
         "Screen",
         "Stack",
+        "Switch",
+        "SwitchCase",
         "Text",
         "Toggle"
       ],
@@ -913,14 +930,18 @@
     {
       "id": "rc-source-9",
       "family": "reference-gallery",
-      "nodes": 26,
+      "nodes": 38,
       "types": [
         "Button",
+        "Footer",
+        "Icon",
         "Image",
         "Package",
         "PurchaseButton",
         "Screen",
         "Stack",
+        "Switch",
+        "SwitchCase",
         "Text",
         "Toggle"
       ],
@@ -929,9 +950,10 @@
     {
       "id": "rc-source-10",
       "family": "reference-gallery",
-      "nodes": 56,
+      "nodes": 59,
       "types": [
         "Button",
+        "Icon",
         "Image",
         "Package",
         "PurchaseButton",
@@ -944,9 +966,10 @@
     {
       "id": "rc-source-11",
       "family": "reference-gallery",
-      "nodes": 54,
+      "nodes": 58,
       "types": [
         "Button",
+        "Footer",
         "Icon",
         "Image",
         "Package",
@@ -960,9 +983,10 @@
     {
       "id": "rc-source-12",
       "family": "reference-gallery",
-      "nodes": 105,
+      "nodes": 106,
       "types": [
         "Button",
+        "Footer",
         "Icon",
         "Image",
         "Package",
@@ -980,9 +1004,10 @@
     {
       "id": "rc-source-13",
       "family": "reference-gallery",
-      "nodes": 48,
+      "nodes": 53,
       "types": [
         "Button",
+        "Footer",
         "Icon",
         "Image",
         "Package",
@@ -996,10 +1021,12 @@
     {
       "id": "rc-source-14",
       "family": "reference-gallery",
-      "nodes": 49,
+      "nodes": 53,
       "types": [
         "Button",
         "Carousel",
+        "Footer",
+        "Icon",
         "Image",
         "Indicators",
         "Package",
@@ -1015,9 +1042,10 @@
     {
       "id": "rc-source-15",
       "family": "reference-gallery",
-      "nodes": 40,
+      "nodes": 39,
       "types": [
         "Button",
+        "Footer",
         "Icon",
         "Image",
         "Package",
@@ -1031,9 +1059,10 @@
     {
       "id": "rc-source-16",
       "family": "reference-gallery",
-      "nodes": 48,
+      "nodes": 47,
       "types": [
         "Button",
+        "Footer",
         "Icon",
         "Image",
         "Package",
@@ -1047,7 +1076,7 @@
     {
       "id": "rc-source-17",
       "family": "reference-gallery",
-      "nodes": 38,
+      "nodes": 41,
       "types": [
         "Button",
         "Icon",
@@ -1063,9 +1092,11 @@
     {
       "id": "rc-source-18",
       "family": "reference-gallery",
-      "nodes": 37,
+      "nodes": 41,
       "types": [
         "Button",
+        "Footer",
+        "Icon",
         "Image",
         "Package",
         "PurchaseButton",
@@ -1078,10 +1109,12 @@
     {
       "id": "rc-source-19",
       "family": "reference-gallery",
-      "nodes": 54,
+      "nodes": 58,
       "types": [
         "Button",
         "Carousel",
+        "Footer",
+        "Icon",
         "Image",
         "Indicators",
         "Package",
@@ -1097,10 +1130,12 @@
     {
       "id": "rc-source-20",
       "family": "reference-gallery",
-      "nodes": 42,
+      "nodes": 46,
       "types": [
         "Button",
         "Carousel",
+        "Footer",
+        "Icon",
         "Image",
         "Indicators",
         "Package",
@@ -1116,9 +1151,10 @@
     {
       "id": "rc-source-21",
       "family": "reference-gallery",
-      "nodes": 45,
+      "nodes": 49,
       "types": [
         "Button",
+        "Footer",
         "Icon",
         "Image",
         "Package",
@@ -1134,9 +1170,11 @@
     {
       "id": "rc-source-22",
       "family": "reference-gallery",
-      "nodes": 58,
+      "nodes": 62,
       "types": [
         "Button",
+        "Footer",
+        "Icon",
         "Image",
         "Package",
         "PurchaseButton",
@@ -1149,9 +1187,10 @@
     {
       "id": "rc-source-23",
       "family": "reference-gallery",
-      "nodes": 50,
+      "nodes": 54,
       "types": [
         "Button",
+        "Footer",
         "Icon",
         "Package",
         "PurchaseButton",
@@ -1164,9 +1203,11 @@
     {
       "id": "rc-source-24",
       "family": "reference-gallery",
-      "nodes": 33,
+      "nodes": 37,
       "types": [
         "Button",
+        "Footer",
+        "Icon",
         "Image",
         "Package",
         "PurchaseButton",
@@ -1179,9 +1220,10 @@
     {
       "id": "rc-source-25",
       "family": "reference-gallery",
-      "nodes": 59,
+      "nodes": 63,
       "types": [
         "Button",
+        "Footer",
         "Icon",
         "Image",
         "Package",
@@ -1195,9 +1237,10 @@
     {
       "id": "rc-source-26",
       "family": "reference-gallery",
-      "nodes": 36,
+      "nodes": 31,
       "types": [
         "Button",
+        "Footer",
         "Icon",
         "Image",
         "Package",
@@ -1213,9 +1256,11 @@
     {
       "id": "rc-source-27",
       "family": "reference-gallery",
-      "nodes": 46,
+      "nodes": 56,
       "types": [
         "Button",
+        "Footer",
+        "Icon",
         "Image",
         "Package",
         "PurchaseButton",
@@ -1228,9 +1273,11 @@
     {
       "id": "rc-source-28",
       "family": "reference-gallery",
-      "nodes": 30,
+      "nodes": 35,
       "types": [
         "Button",
+        "Footer",
+        "Icon",
         "Image",
         "Package",
         "PurchaseButton",
@@ -1243,9 +1290,11 @@
     {
       "id": "rc-source-29",
       "family": "reference-gallery",
-      "nodes": 44,
+      "nodes": 47,
       "types": [
         "Button",
+        "Footer",
+        "Icon",
         "Image",
         "Package",
         "PurchaseButton",
@@ -1261,8 +1310,8 @@
       "nodes": 52,
       "types": [
         "Button",
+        "Footer",
         "Icon",
-        "Image",
         "Package",
         "PurchaseButton",
         "Screen",
@@ -1274,9 +1323,10 @@
     {
       "id": "rc-source-31",
       "family": "reference-gallery",
-      "nodes": 46,
+      "nodes": 51,
       "types": [
         "Button",
+        "Footer",
         "Icon",
         "Image",
         "Package",
@@ -1290,9 +1340,10 @@
     {
       "id": "rc-source-32",
       "family": "reference-gallery",
-      "nodes": 29,
+      "nodes": 33,
       "types": [
         "Button",
+        "Icon",
         "Image",
         "Package",
         "PurchaseButton",
@@ -1305,9 +1356,10 @@
     {
       "id": "rc-source-33",
       "family": "reference-gallery",
-      "nodes": 46,
+      "nodes": 51,
       "types": [
         "Button",
+        "Footer",
         "Icon",
         "Image",
         "Package",
@@ -1321,9 +1373,10 @@
     {
       "id": "rc-source-34",
       "family": "reference-gallery",
-      "nodes": 44,
+      "nodes": 49,
       "types": [
         "Button",
+        "Footer",
         "Icon",
         "Image",
         "Package",
@@ -1337,7 +1390,7 @@
     {
       "id": "rc-source-35",
       "family": "reference-gallery",
-      "nodes": 40,
+      "nodes": 43,
       "types": [
         "Button",
         "Icon",
@@ -1353,7 +1406,7 @@
     {
       "id": "rc-source-36",
       "family": "reference-gallery",
-      "nodes": 41,
+      "nodes": 44,
       "types": [
         "Button",
         "Icon",
@@ -1401,9 +1454,10 @@
     {
       "id": "rc-source-39",
       "family": "reference-gallery",
-      "nodes": 43,
+      "nodes": 41,
       "types": [
         "Button",
+        "Footer",
         "Icon",
         "Image",
         "Package",
@@ -1527,8 +1581,9 @@
   "observedSourceComparison": [
     {
       "id": "rc-source-1",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Image",
         "Text",
@@ -1540,15 +1595,20 @@
         "Package",
         "PurchaseButton"
       ],
-      "missingTypes": [
-        "Footer"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 3,
+        "actualFooters": 3,
+        "matches": true
+      },
+      "sourceRowCount": 107
     },
     {
       "id": "rc-source-2",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Button",
         "Icon",
@@ -1558,16 +1618,20 @@
         "Package",
         "PurchaseButton"
       ],
-      "missingTypes": [
-        "Icon",
-        "Footer"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 23
     },
     {
       "id": "rc-source-3",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Button",
         "Icon",
@@ -1577,16 +1641,20 @@
         "Package",
         "PurchaseButton"
       ],
-      "missingTypes": [
-        "Icon",
-        "Footer"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 22
     },
     {
       "id": "rc-source-4",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Header",
         "Stack",
         "Button",
@@ -1594,19 +1662,24 @@
         "Image",
         "Text",
         "Carousel",
+        "Slide",
         "Package",
         "PurchaseButton"
       ],
-      "missingTypes": [
-        "Header",
-        "Icon"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 0,
+        "actualFooters": 0,
+        "matches": true
+      },
+      "sourceRowCount": 76
     },
     {
       "id": "rc-source-5",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Text",
         "Icon",
@@ -1614,15 +1687,20 @@
         "Footer",
         "Package"
       ],
-      "missingTypes": [
-        "Footer"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 27
     },
     {
       "id": "rc-source-6",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Button",
         "Icon",
@@ -1631,91 +1709,100 @@
         "Footer",
         "Package"
       ],
-      "missingTypes": [
-        "Icon",
-        "Footer"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 24
     },
     {
       "id": "rc-source-7",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Image",
         "Button",
         "Icon",
         "Text",
         "Carousel",
+        "Slide",
         "Footer",
-        "Tab",
-        "TabControl",
+        "Switch",
+        "SwitchCase",
+        "Toggle",
         "Package",
         "PurchaseButton"
       ],
-      "missingTypes": [
-        "Icon",
-        "Footer",
-        "Tab",
-        "TabControl"
-      ],
-      "unmappedSourceTypes": [
-        "toggle"
-      ]
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 66
     },
     {
       "id": "rc-source-8",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Image",
         "Button",
         "Icon",
         "Text",
         "Footer",
-        "Tab",
-        "TabControl",
+        "Switch",
+        "SwitchCase",
+        "Toggle",
         "Package",
         "PurchaseButton"
       ],
-      "missingTypes": [
-        "Footer",
-        "Tab",
-        "TabControl"
-      ],
-      "unmappedSourceTypes": [
-        "toggle"
-      ]
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 48
     },
     {
       "id": "rc-source-9",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Image",
         "Text",
         "Button",
         "Icon",
         "Footer",
-        "Tab",
+        "Switch",
+        "SwitchCase",
         "Package",
-        "TabControl",
+        "Toggle",
         "PurchaseButton"
       ],
-      "missingTypes": [
-        "Icon",
-        "Footer",
-        "Tab",
-        "TabControl"
-      ],
-      "unmappedSourceTypes": [
-        "toggle"
-      ]
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 29
     },
     {
       "id": "rc-source-10",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Button",
         "Icon",
@@ -1724,15 +1811,20 @@
         "Package",
         "PurchaseButton"
       ],
-      "missingTypes": [
-        "Icon"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 0,
+        "actualFooters": 0,
+        "matches": true
+      },
+      "sourceRowCount": 54
     },
     {
       "id": "rc-source-11",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Button",
         "Icon",
@@ -1742,15 +1834,20 @@
         "Package",
         "PurchaseButton"
       ],
-      "missingTypes": [
-        "Footer"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 58
     },
     {
       "id": "rc-source-12",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Image",
         "Tabs",
         "Tab",
@@ -1764,15 +1861,20 @@
         "PurchaseButton",
         "Button"
       ],
-      "missingTypes": [
-        "Footer"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 56
     },
     {
       "id": "rc-source-13",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Image",
         "Button",
@@ -1782,35 +1884,45 @@
         "Package",
         "PurchaseButton"
       ],
-      "missingTypes": [
-        "Footer"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 43
     },
     {
       "id": "rc-source-14",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Button",
         "Icon",
         "Image",
         "Text",
         "Carousel",
+        "Slide",
         "Footer",
         "Package",
         "PurchaseButton"
       ],
-      "missingTypes": [
-        "Icon",
-        "Footer"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 77
     },
     {
       "id": "rc-source-15",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Image",
         "Button",
@@ -1820,15 +1932,20 @@
         "PurchaseButton",
         "Package"
       ],
-      "missingTypes": [
-        "Footer"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 42
     },
     {
       "id": "rc-source-16",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Image",
         "Button",
@@ -1838,15 +1955,20 @@
         "PurchaseButton",
         "Package"
       ],
-      "missingTypes": [
-        "Footer"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 50
     },
     {
       "id": "rc-source-17",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Image",
         "Button",
@@ -1856,12 +1978,19 @@
         "PurchaseButton"
       ],
       "missingTypes": [],
-      "unmappedSourceTypes": []
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 0,
+        "actualFooters": 0,
+        "matches": true
+      },
+      "sourceRowCount": 39
     },
     {
       "id": "rc-source-18",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Button",
         "Icon",
@@ -1871,56 +2000,70 @@
         "Footer",
         "PurchaseButton"
       ],
-      "missingTypes": [
-        "Icon",
-        "Footer"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 58
     },
     {
       "id": "rc-source-19",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Button",
         "Icon",
         "Image",
         "Text",
         "Carousel",
+        "Slide",
         "Footer",
         "Package",
         "PurchaseButton"
       ],
-      "missingTypes": [
-        "Icon",
-        "Footer"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 82
     },
     {
       "id": "rc-source-20",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Image",
         "Button",
         "Icon",
         "Carousel",
+        "Slide",
         "Text",
         "Footer",
         "Package",
         "PurchaseButton"
       ],
-      "missingTypes": [
-        "Icon",
-        "Footer"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 46
     },
     {
       "id": "rc-source-21",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Button",
         "Icon",
@@ -1932,15 +2075,20 @@
         "Package",
         "PurchaseButton"
       ],
-      "missingTypes": [
-        "Footer"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 47
     },
     {
       "id": "rc-source-22",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Button",
         "Icon",
@@ -1950,16 +2098,20 @@
         "Package",
         "PurchaseButton"
       ],
-      "missingTypes": [
-        "Icon",
-        "Footer"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 81
     },
     {
       "id": "rc-source-23",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Button",
         "Icon",
@@ -1968,15 +2120,20 @@
         "Footer",
         "PurchaseButton"
       ],
-      "missingTypes": [
-        "Footer"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 46
     },
     {
       "id": "rc-source-24",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Button",
         "Icon",
@@ -1986,16 +2143,20 @@
         "Footer",
         "PurchaseButton"
       ],
-      "missingTypes": [
-        "Icon",
-        "Footer"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 79
     },
     {
       "id": "rc-source-25",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Button",
         "Icon",
@@ -2005,15 +2166,20 @@
         "Package",
         "PurchaseButton"
       ],
-      "missingTypes": [
-        "Footer"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 61
     },
     {
       "id": "rc-source-26",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Image",
         "Text",
         "Timeline",
@@ -2025,15 +2191,20 @@
         "Stack",
         "Button"
       ],
-      "missingTypes": [
-        "Footer"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 28
     },
     {
       "id": "rc-source-27",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Image",
         "Text",
         "Stack",
@@ -2043,16 +2214,20 @@
         "PurchaseButton",
         "Button"
       ],
-      "missingTypes": [
-        "Icon",
-        "Footer"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 74
     },
     {
       "id": "rc-source-28",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Image",
         "Button",
@@ -2062,16 +2237,20 @@
         "Package",
         "PurchaseButton"
       ],
-      "missingTypes": [
-        "Icon",
-        "Footer"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 38
     },
     {
       "id": "rc-source-29",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Image",
         "Stack",
         "Text",
@@ -2081,16 +2260,20 @@
         "PurchaseButton",
         "Button"
       ],
-      "missingTypes": [
-        "Icon",
-        "Footer"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 52
     },
     {
       "id": "rc-source-30",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Footer",
         "Stack",
         "Text",
@@ -2099,15 +2282,20 @@
         "PurchaseButton",
         "Button"
       ],
-      "missingTypes": [
-        "Footer"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 43
     },
     {
       "id": "rc-source-31",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Image",
         "Button",
@@ -2117,15 +2305,20 @@
         "Package",
         "PurchaseButton"
       ],
-      "missingTypes": [
-        "Footer"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 40
     },
     {
       "id": "rc-source-32",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Image",
         "Button",
@@ -2134,15 +2327,20 @@
         "Package",
         "PurchaseButton"
       ],
-      "missingTypes": [
-        "Icon"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 0,
+        "actualFooters": 0,
+        "matches": true
+      },
+      "sourceRowCount": 30
     },
     {
       "id": "rc-source-33",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Image",
         "Button",
@@ -2152,15 +2350,20 @@
         "Package",
         "PurchaseButton"
       ],
-      "missingTypes": [
-        "Footer"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 41
     },
     {
       "id": "rc-source-34",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Image",
         "Button",
@@ -2170,15 +2373,20 @@
         "Footer",
         "PurchaseButton"
       ],
-      "missingTypes": [
-        "Footer"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 45
     },
     {
       "id": "rc-source-35",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Button",
         "Icon",
@@ -2187,12 +2395,19 @@
         "PurchaseButton"
       ],
       "missingTypes": [],
-      "unmappedSourceTypes": []
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 0,
+        "actualFooters": 0,
+        "matches": true
+      },
+      "sourceRowCount": 42
     },
     {
       "id": "rc-source-36",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Button",
         "Icon",
@@ -2202,12 +2417,19 @@
         "PurchaseButton"
       ],
       "missingTypes": [],
-      "unmappedSourceTypes": []
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 0,
+        "actualFooters": 0,
+        "matches": true
+      },
+      "sourceRowCount": 44
     },
     {
       "id": "rc-source-37",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Button",
         "Text",
@@ -2217,12 +2439,19 @@
         "PurchaseButton"
       ],
       "missingTypes": [],
-      "unmappedSourceTypes": []
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 0,
+        "actualFooters": 0,
+        "matches": true
+      },
+      "sourceRowCount": 47
     },
     {
       "id": "rc-source-39",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Button",
         "Icon",
@@ -2232,15 +2461,20 @@
         "Package",
         "PurchaseButton"
       ],
-      "missingTypes": [
-        "Footer"
-      ],
-      "unmappedSourceTypes": []
+      "missingTypes": [],
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 1,
+        "actualFooters": 1,
+        "matches": true
+      },
+      "sourceRowCount": 39
     },
     {
       "id": "rc-source-40",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Button",
         "Icon",
@@ -2249,12 +2483,19 @@
         "PurchaseButton"
       ],
       "missingTypes": [],
-      "unmappedSourceTypes": []
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 0,
+        "actualFooters": 0,
+        "matches": true
+      },
+      "sourceRowCount": 53
     },
     {
       "id": "rc-source-41",
-      "evidence": "historical flat layer inventory; no complete parent-child or pixel proof",
+      "evidence": "current read-only complete layer hierarchy, with explicitly inspected switch/tier alternatives; not full pixel/property proof",
       "requiredTypes": [
+        "Screen",
         "Stack",
         "Image",
         "Text",
@@ -2264,25 +2505,34 @@
         "Button"
       ],
       "missingTypes": [],
-      "unmappedSourceTypes": []
+      "unmappedSourceTypes": [],
+      "fixedRegions": {
+        "sourceFooters": 0,
+        "actualFooters": 0,
+        "matches": true
+      },
+      "sourceRowCount": 37
     }
   ],
   "referenceAlignment": {
-    "status": "partial",
+    "status": "type-presence-only",
     "observedSamples": 40,
-    "samplesWithTypeGaps": 34,
-    "samplesNeedingTypeMapping": 3,
-    "limitation": "Internal validity is not source hierarchy equivalence. Template 38 has no observed source layer sample."
+    "samplesWithTypeGaps": 0,
+    "samplesNeedingTypeMapping": 0,
+    "fixedRegionMismatches": 0,
+    "limitation": "Verified fixed-region boundaries and switch ownership do not imply full recursive hierarchy, visual or SDK equivalence. Template 38 has no observed source layer sample."
   },
   "sourceHashes": {
     "src/builder/componentCatalog.js": "94af6a424d98f3d59d1bc3c8bde530b14cdf33247372af0472504b1a0a25e63a",
-    "src/builder/componentDocument.js": "98899756b10498f0057552b1b974250b4484883e6cec4b921a2b91328a6e9b23",
+    "src/builder/componentDocument.js": "a02fce733c20e3ff4e8ab25a064a8f9901dbafae32b36eb55d92fdaa8a4e30cb",
     "src/builder/componentOperations.js": "f1b5585d9f44dd1ac753b2cfe5a036864f4e49d16800b064fad8c587438dccb9",
     "src/builder/ComponentPreview.jsx": "b2edbdb42b4d01428c9a45d8c228909f36fb891cec408904e9bc9c8f7217e9cb",
     "src/builder/screenLayout.js": "3bab6b36c926bdaa63a22da6dd608cd5a3543b537db8c2e7926c3821486406db",
     "src/builder/navigationRows.js": "131ae049f145da06260e37edc855c7e05c135317d2ef3366d8e78cff64fcd321",
     "src/builder/buttonModals.js": "859c187f1743ecec941d60b4ca596297200e6060fb90adb3bc79b81dd6e707b7",
     "src/builder/ComponentEditor.jsx": "5747e4f1539abd2ef0c0310f8d911aaded886e131d33507bf503ad25663cf84a",
-    "src/builder/componentEditor.css": "20356e36870b6dc545af2cfd19b916fbea4dba1413eba5a3866d4454592bab94"
+    "src/builder/componentEditor.css": "20356e36870b6dc545af2cfd19b916fbea4dba1413eba5a3866d4454592bab94",
+    "src/builder/referenceTemplateStructure.js": "54fd4f981788251c30c51abae023d6764f918252bd351d56bd42220a4baaaa75",
+    "docs/reference-structure/revenuecat-hierarchy-2026-10-26.json": "3d598f78c41db1d5e0d4b7a8dd2fef217f2e9d23cc82d2886a65c8ce51614312"
   }
 }

@@ -69,8 +69,9 @@ test('tab panes have independent actual heading, feature and package children', 
   document = updateComponent(document, first.id, { props: { text: '独立标题' } });
   assert.equal(indexDocument(document).nodes.get(second.id).props.text, second.props.text);
 });
-test('family plans bind visibility to the real toggle; per-card purchasing remains an actual button', () => {
-  const document = load('rc-source-7'), nodes = [...indexDocument(document).nodes.values()];
+test('legacy family-plan import keeps its control references; per-card purchasing remains an actual button', () => {
+  const template = templates.find((entry) => entry.id === 'rc-source-7');
+  const document = importComponentDocument(createBuilderNodes(template.id), template, false), nodes = [...indexDocument(document).nodes.values()];
   const control = nodes.find((node) => node.type === 'Toggle');
   const packages = nodes.filter((node) => node.type === 'Package');
   assert.equal(packages.length,4);
