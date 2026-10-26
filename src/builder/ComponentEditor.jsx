@@ -11,6 +11,7 @@ import { createCatalogComponent, upgradeCanonicalComponents, catalogFor, createT
 import { editorClipboard, copyFragment, pasteFragment, copyStyles, pasteStyles, wrapInStack, patchComponentProperties, appendTab, togglePageControl, removeEditorComponent as removeComponent, moveEditorComponent as moveComponent, reconcileTabNavigation } from './componentOperations.js';
 import { treeChildren, initialCollapsed, pageContext, isOverlaySurface, surfaceContext } from './componentTree.js';
 import './componentEditor.css';
+import useWorkbenchHeight from './useWorkbenchHeight.js';
 import RevenueCatProperties from './RevenueCatProperties.jsx';
 import { migrateTemplateVisuals } from './templateVisuals.js';
 import { defaultPackagePatch, sequencePages } from './propertyModel.js';
@@ -73,6 +74,7 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
   const [zoom, setZoom] = useState(0.55);
   const boardElements = useRef(new Map());
   const boardScroll = useRef(null);
+  const workbench = useWorkbenchHeight();
   const patchNavigation = React.useCallback((values)=>setContexts((current)=>({ ...current, [scope]: { ...current[scope], navigation: { ...current[scope]?.navigation, ...values } } })),[scope]);
   const previousDocuments=useRef(new Map());
   useEffect(()=>{const before=previousDocuments.current.get(scope);previousDocuments.current.set(scope,document);if(before&&before!==document)setNavigation((current)=>reconcileTabNavigation(before,document,current));},[document,scope]);
@@ -239,11 +241,11 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
   const bindSaved = (id) => { const next = bindExitOffer(mainDocument, exitSource.id, id); setMainDocument(next); setStepPicker(false); setSettingsOpen(true); };
   const importModal = (source, id) => { const result = importCloseTarget(mainDocument, exitSource.id, source, id); if (result.error) return setStatus(result.error); setMainDocument(result.document); setStepPicker(false); select(result.id, result.document, null); };
   const previewDocument = previewMode === 'modal' ? activeExit?.document ?? modalPresentationDocument(mainDocument, surface?.id) ?? mainDocument : mainDocument;
-  const startPreview = (mode = 'flow') => { const flow=workflow.flow; setPreviewMode(mode); setPreviewNavigation(flow?{[flow.id]:mode==='close'?flow.children.findIndex((page)=>page.id===exitSource.id):flowInitialIndex(flow),[`history:${flow.id}`]:[],overlay:null}:{overlay:null}); setEditing(false); };
+  const startPreview = (mode = 'flow') => { const flow=workflow.flow; setPreviewMode(mode); setPreviewNavigation(flow?{[flow.id]:mode==='close'?flow.children.findIndex((page)=>page.id===exitSource.id):flowInitialIndex(flow),[`history:${flow.id}`]:[],overlay:null}:{overlay:null}); setEditing(false); workbench.current?.scrollIntoView?.({block:'start'}); };
   return <div className="native-editor" data-no-translate="true">
     {saveError && <p className="ne-error" role="alert">{saveError}{blockedSave ? '。为保护原记录，本次未覆盖保存。' : ''}</p>}
     <div className="ne-workspace-tools"><button type="button" className={`secondary${settingsOpen ? ' active' : ''}`} aria-pressed={settingsOpen} onClick={() => { setFocusedOfferingId(null); setSettingsOpen((value) => !value); setAddTarget(null); setStepPicker(false); }}><Settings size={16}/>付费墙设置</button></div>
-    <div className="builder ne-builder">
+    <div className="builder ne-builder" ref={workbench}>
       <aside className="ne-layers">{stepPicker?<React.Suspense fallback={<p>加载内容来源…</p>}>{stepPicker==='exit'?<CloseTargetPicker key={exitSource.id} document={mainDocument} source={exitSource} offerings={offerings} boundOfferings={boundExits} initialId={creationSurfaceId} onBack={()=>setStepPicker(false)} onCreate={createModal} onBind={bindModal} onBindSaved={bindSaved} onImport={importModal} onSourceChange={setExitSourceId}/>:<StepPicker offerings={offerings} nextStep={workflow.initial} onBack={()=>setStepPicker(false)} onAdd={addStep}/>}</React.Suspense>:pickerParent?<ComponentPicker commerceAllowed={!workflowContext(document).steps.some((page)=>page.id===owningScreen(document,pickerParent.id)?.id&&page.id!==workflowContext(document).final?.id)} parent={pickerParent} onBack={()=>setAddTarget(null)} onAdd={add}/>:<>
         <header><strong>图层</strong><button className="ne-icon" title="添加组件" aria-label="添加组件" onClick={()=>openAdd(insertionParent.id===document.root.id?pages.active.id:insertionParent.id)}><Plus size={17}/></button></header>
         <div className="ne-tree">

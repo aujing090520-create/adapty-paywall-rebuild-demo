@@ -56,7 +56,7 @@ test('editing scroll can chain vertically while modal and interactive preview ke
     return values;
   };
   assert.equal(declarations('.ne-artboard-scale .nc-viewport')['overscroll-behavior'], 'auto');
-  assert.equal(declarations('.native-editor .ne-artboard-scroll')['overscroll-behavior-y'], 'auto');
+  assert.equal(declarations('.native-editor .ne-artboard-scroll')['overscroll-behavior'], 'contain');
   assert.equal(declarations('.native-editor .ne-artboard-scroll')['overscroll-behavior-x'], 'contain');
   assert.equal(declarations('.nc-floating-design>.nc-node')['overscroll-behavior'], 'contain');
   assert.equal(declarations('.ne-artboard-scale .nc-modal-surface')['overscroll-behavior'], 'auto');
@@ -66,22 +66,36 @@ test('editing scroll can chain vertically while modal and interactive preview ke
 test('desktop panels and canvas have independent bounded scroll areas', () => {
   const css=postcss.parse(readFileSync(new URL('../src/builder/componentEditor.css',import.meta.url),'utf8'));
   const rules=[];css.walkRules(rule=>{if(rule.selector==='.native-editor .ne-builder'&&rule.parent.type==='atrule')rules.push(rule);});
-  assert.ok(rules.some(rule=>rule.nodes.some(decl=>decl.prop==='height'&&decl.value==='calc(100dvh - 100px)')));
-  const bound=[];css.walkRules('.ne-layers,.ne-properties',rule=>rule.walkDecls('overflow',decl=>bound.push(decl.value)));
+  assert.ok(rules.some(rule=>rule.nodes.some(decl=>decl.prop==='height'&&decl.value==='var(--ne-workbench-height,calc(100dvh - 100px))')));
+  assert.ok(rules.filter(rule=>rule.nodes.some(decl=>decl.prop==='height'&&decl.value.includes('--ne-workbench-height'))).every(rule=>rule.parent.params==='paywall-workbench (min-width:761px)'),'the nested preview size container must not intercept desktop workbench queries');
+  const anchoring=[];css.walkRules('.native-editor',rule=>rule.walkDecls('overflow-anchor',decl=>anchoring.push(decl.value)));
+  assert.ok(anchoring.includes('none'),'switching screens and modal wrappers must not anchor-scroll the document');
+  const bound=[];css.walkRules('.ne-properties',rule=>rule.walkDecls('overflow',decl=>bound.push(decl.value)));
   assert.ok(bound.includes('auto'));
 });
 
-test('interactive preview scrolls the whole phone when the workbench is shorter than the device', () => {
+test('interactive preview fits the full phone and only its content scrolls, without moving the workbench', () => {
   const css=postcss.parse(readFileSync(new URL('../src/builder/componentEditor.css',import.meta.url),'utf8'));
   const declarations=(selector)=>{const values={};css.walkRules(selector,rule=>rule.walkDecls(decl=>{values[decl.prop]=decl.value;}));return values;};
   const preview=declarations('.ne-interactive-board');
   assert.equal(preview.flex,'1 1 auto');
   assert.equal(preview['min-height'],'0');
-  assert.equal(preview.overflow,'auto');
-  assert.equal(preview['overscroll-behavior-x'],'contain');
-  assert.equal(preview['overscroll-behavior-y'],'auto','a workbench below the page header must remain reachable on short windows');
-  assert.equal(declarations('.ne-interactive-board .nc-viewport')['overscroll-behavior-y'],'auto');
+  assert.equal(preview.overflow,'hidden');
+  assert.equal(preview['container-type'],'size');
+  assert.equal(preview['overscroll-behavior'],'contain');
+  assert.equal(declarations('.ne-interactive-board>.ne-presentation').width,'min(100%,calc((100cqh - 36px)*390/844))');
+  assert.equal(declarations('.ne-interactive-board .phone.native-phone')['min-height'],'0');
+  assert.equal(declarations('.ne-interactive-board .nc-viewport')['overscroll-behavior'],'contain');
   assert.equal(declarations('.nc-floating-design>.nc-modal-surface')['overscroll-behavior'],'contain','scrolling a popup must not move its backdrop');
-  assert.equal(declarations('.native-editor .ne-builder:has(>.ne-artboard-canvas>.ne-interactive-board),.ne-artboard-canvas:has(>.ne-interactive-board)').overflow,'clip','clipping ancestors must not become hidden scroll containers that interrupt wheel chaining');
-  assert.equal(declarations('.native-editor .ne-builder:has(>.ne-artboard-canvas>.ne-interactive-board),.ne-artboard-canvas:has(>.ne-interactive-board)')['min-height'],'0','clip must not restore the grid item content minimum and stretch past the workbench');
+});
+
+test('left chooser keeps actions outside a single bounded scroll list',()=>{
+  const css=postcss.parse(readFileSync(new URL('../src/builder/componentEditor.css',import.meta.url),'utf8'));
+  const declarations=selector=>{const values={};css.walkRules(selector,rule=>rule.walkDecls(decl=>{values[decl.prop]=decl.value;}));return values;};
+  assert.equal(declarations('.ne-step-picker').overflow,'hidden');
+  assert.equal(declarations('.ne-step-picker>:not(.ne-step-screens):not(.ne-step-sources)')['flex-shrink'],'0');
+  const list=declarations('.ne-step-screens,.ne-step-sources');
+  assert.equal(list.flex,'1');assert.equal(list['min-height'],'0');assert.equal(list.overflow,'auto');assert.equal(list['overscroll-behavior'],'contain');
+  assert.equal(declarations('.ne-creation-footer').position,'static');
+  assert.equal(declarations('.ne-tree,.ne-catalog').overflow,'auto');
 });
