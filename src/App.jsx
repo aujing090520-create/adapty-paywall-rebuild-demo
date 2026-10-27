@@ -11,7 +11,7 @@ import { linkActionFor, visibleLinkLabels } from "./linkActions.js";
 import { DEMO_SKUS, PRICE_DISPLAY_MODES, billingMonths, productPriceFields, resolveProductPrice, skuById, skuCopy, templateSkuId } from "./productPricing.js";
 import { clearLocalDemoSettings, beginLocalDemoReset, cancelLocalDemoReset } from "./templateStorage.js";
 import { listSavedPaywalls, readSavedPaywall, savePaywallBatch, removeSavedPaywall } from './paywallStorage.js';
-import { DEFAULT_VERTICAL_PAYWALL, readConfiguredPaywall } from './defaultPaywalls.js';
+import { DEFAULT_VERTICAL_PAYWALL, DEFAULT_ROW_PAYWALL, readConfiguredPaywall } from './defaultPaywalls.js';
 import { savedOfferings, createExitOffer, workspaceExitOfferIds, exitOfferId, bindExitOffer } from './builder/exitOffers.js';
 import { workflowContext } from './builder/workflow.js';
 import { indexDocument, importComponentDocument } from './builder/componentDocument.js';
@@ -106,6 +106,7 @@ const originalPaywalls = [
   { id: "test", name: "test", state: "Live", products: 3, startedAt: "3 Apr 2026", icon: false },
   { id: "test-2", name: "test 2", state: "Draft", products: 2, startedAt: "25 Mar 2026", icon: true },
   DEFAULT_VERTICAL_PAYWALL,
+  DEFAULT_ROW_PAYWALL,
 ];
 
 const nav = [

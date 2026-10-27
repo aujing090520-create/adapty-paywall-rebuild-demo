@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createDefaultPaywallRecord, readConfiguredPaywall } from '../src/defaultPaywalls.js';
 import { templates, createBuilderNodes } from '../src/templates/templateDefinitions.js';
-import { importComponentDocument, indexDocument, validDocument } from '../src/builder/componentDocument.js';
+import { importComponentDocument, indexDocument, validDocument, resolveComponentText } from '../src/builder/componentDocument.js';
+import { stateStyleProps } from '../src/builder/propertyModel.js';
 import { savePaywall } from '../src/paywallStorage.js';
 
 test('test3 bundles an independent vertical three-package document without changing Blue template defaults', () => {
@@ -40,4 +41,37 @@ test('bundled default is read-only on open, personal saved record wins, and othe
   assert.ok(savePaywall(storage, personal.paywall, personal.document));
   assert.deepEqual(readConfiguredPaywall(storage, 'test3'), personal);
   assert.equal(createDefaultPaywallRecord('test3').paywall.name, 'test3');
+});
+
+test('test4 composes reference two-row cards from editable Packages, layout and bound text only', () => {
+  const before = createDefaultPaywallRecord('test3');
+  const record = createDefaultPaywallRecord('test4'), document = record.document;
+  const { nodes, parents } = indexDocument(document);
+  assert.ok(validDocument(document));
+  assert.equal(record.paywall.products, 2);
+  assert.equal(nodes.get('products').props.gap, 16);
+  const packages = nodes.get('products').children;
+  assert.deepEqual(packages.map((node) => node.type), ['Package', 'Package']);
+  assert.deepEqual(packages.map((node) => node.props.defaultSelected), [true, false]);
+  assert.ok(packages.every((node) => node.props.height === 72 && node.props.group === 'products'));
+  assert.equal(parents.get('products/package-0/content'), packages[0].id);
+  assert.equal(resolveComponentText(nodes.get('products/package-0/reference'), document, packages[0]), '¥488');
+  assert.equal(resolveComponentText(nodes.get('products/package-0/monthly'), document, packages[0]), '¥28.17/月');
+  assert.equal(resolveComponentText(nodes.get('products/package-1/monthly'), document, packages[1]), '¥78/月');
+  assert.equal(stateStyleProps(packages[0].props, true).background, '#ffede9');
+  assert.equal(stateStyleProps(packages[0].props, true).borderColor, '#ff8a00');
+  assert.equal(stateStyleProps(packages[0].props, false).background, '#f0f0f0');
+  assert.ok(nodes.get('products/package-0/reference').props.strike);
+  const after = createDefaultPaywallRecord('test3');
+  assert.deepEqual(indexDocument(after.document).nodes.get('products'), indexDocument(before.document).nodes.get('products'));
+  assert.deepEqual(after.document.products, before.document.products);
+  assert.equal(document.products['products/data-2'], undefined);
+  record.document.root.name = '个人修改';
+  assert.notEqual(createDefaultPaywallRecord('test4').document.root.name, '个人修改');
+  const values = new Map();
+  const storage = { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) };
+  assert.equal(readConfiguredPaywall(storage, 'test4').paywall.products, 2);
+  assert.equal(values.size, 0);
+  assert.ok(savePaywall(storage, record.paywall, record.document));
+  assert.deepEqual(readConfiguredPaywall(storage, 'test4'), record);
 });
