@@ -1,0 +1,1066 @@
+[
+  {
+    "type": "Screen",
+    "dimensionControls": [
+      {
+        "fixed": 1,
+        "label": "宽度"
+      },
+      {
+        "fixed": 1,
+        "label": "高度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 8,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "80px",
+        "rect": {
+          "bottom": 117.46154022216795,
+          "height": 50.46154022216797,
+          "left": 325,
+          "right": 400.69232177734375,
+          "top": 67,
+          "width": 75.69232177734375,
+          "x": 325,
+          "y": 67
+        },
+        "type": "Screen",
+        "width": "120px"
+      }
+    ]
+  },
+  {
+    "type": "Stack",
+    "dimensionControls": [
+      {
+        "fixed": 1,
+        "label": "宽度"
+      },
+      {
+        "fixed": 1,
+        "label": "高度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 13,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "80px",
+        "rect": {
+          "bottom": 117.46154022216795,
+          "height": 50.46154022216797,
+          "left": 325,
+          "right": 400.69232177734375,
+          "top": 67,
+          "width": 75.69232177734375,
+          "x": 325,
+          "y": 67
+        },
+        "type": "Stack",
+        "width": "120px"
+      }
+    ]
+  },
+  {
+    "type": "Text",
+    "dimensionControls": [
+      {
+        "fixed": 1,
+        "label": "宽度"
+      },
+      {
+        "fixed": 1,
+        "label": "高度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 15,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "80px",
+        "rect": {
+          "bottom": 36.68461799621582,
+          "height": 50.46154022216797,
+          "left": 335.72308349609375,
+          "right": 411.4154052734375,
+          "top": -13.776922225952148,
+          "width": 75.69232177734375,
+          "x": 335.72308349609375,
+          "y": -13.776922225952148
+        },
+        "type": "Text",
+        "width": "120px"
+      }
+    ]
+  },
+  {
+    "type": "Image",
+    "dimensionControls": [
+      {
+        "fixed": 1,
+        "label": "宽度"
+      },
+      {
+        "fixed": 1,
+        "label": "高度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 12,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "80px",
+        "rect": {
+          "bottom": 117.46154022216795,
+          "height": 50.46154022216797,
+          "left": 325,
+          "right": 400.69232177734375,
+          "top": 67,
+          "width": 75.69232177734375,
+          "x": 325,
+          "y": 67
+        },
+        "type": "Image",
+        "width": "120px"
+      }
+    ]
+  },
+  {
+    "type": "Video",
+    "dimensionControls": [
+      {
+        "fixed": 1,
+        "label": "宽度"
+      },
+      {
+        "fixed": 1,
+        "label": "高度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 15,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "80px",
+        "rect": {
+          "bottom": 117.46154022216795,
+          "height": 50.46154022216797,
+          "left": 325,
+          "right": 400.69232177734375,
+          "top": 67,
+          "width": 75.69232177734375,
+          "x": 325,
+          "y": 67
+        },
+        "type": "Video",
+        "width": "120px"
+      }
+    ]
+  },
+  {
+    "type": "Icon",
+    "dimensionControls": [
+      {
+        "fixed": 0,
+        "label": "宽度"
+      },
+      {
+        "fixed": 0,
+        "label": "高度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 9,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "32px",
+        "rect": {
+          "bottom": 46.68461608886719,
+          "height": 20.184616088867188,
+          "left": 325,
+          "right": 347.70770263671875,
+          "top": 26.5,
+          "width": 22.70770263671875,
+          "x": 325,
+          "y": 26.5
+        },
+        "type": "Icon",
+        "width": "36px"
+      }
+    ]
+  },
+  {
+    "type": "Custom",
+    "dimensionControls": [
+      {
+        "fixed": 1,
+        "label": "宽度"
+      },
+      {
+        "fixed": 1,
+        "label": "高度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 4,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "80px",
+        "rect": {
+          "bottom": 27.46154022216797,
+          "height": 50.46154022216797,
+          "left": 325,
+          "right": 400.69232177734375,
+          "top": -23,
+          "width": 75.69232177734375,
+          "x": 325,
+          "y": -23
+        },
+        "type": "Custom",
+        "width": "120px"
+      }
+    ]
+  },
+  {
+    "type": "Header",
+    "dimensionControls": [
+      {
+        "fixed": 1,
+        "label": "宽度"
+      },
+      {
+        "fixed": 1,
+        "label": "高度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 17,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "80px",
+        "rect": {
+          "bottom": 117.46154022216795,
+          "height": 50.46154022216797,
+          "left": 325,
+          "right": 400.69232177734375,
+          "top": 67,
+          "width": 75.69232177734375,
+          "x": 325,
+          "y": 67
+        },
+        "type": "Header",
+        "width": "120px"
+      }
+    ]
+  },
+  {
+    "type": "Footer",
+    "dimensionControls": [
+      {
+        "fixed": 1,
+        "label": "宽度"
+      },
+      {
+        "fixed": 1,
+        "label": "高度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 17,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "80px",
+        "rect": {
+          "bottom": 782.9970092773438,
+          "height": 50.4615478515625,
+          "left": 325,
+          "right": 400.69232177734375,
+          "top": 732.5354614257812,
+          "width": 75.69232177734375,
+          "x": 325,
+          "y": 732.5354614257812
+        },
+        "type": "Footer",
+        "width": "120px"
+      }
+    ]
+  },
+  {
+    "type": "Package",
+    "dimensionControls": [
+      {
+        "fixed": 1,
+        "label": "宽度"
+      },
+      {
+        "fixed": 1,
+        "label": "高度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 24,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "80px",
+        "rect": {
+          "bottom": 122.5076904296875,
+          "height": 50.46153259277344,
+          "left": 330.046142578125,
+          "right": 405.7384643554687,
+          "top": 72.04615783691406,
+          "width": 75.69232177734375,
+          "x": 330.046142578125,
+          "y": 72.04615783691406
+        },
+        "type": "Package",
+        "width": "120px"
+      }
+    ]
+  },
+  {
+    "type": "PurchaseButton",
+    "dimensionControls": [
+      {
+        "fixed": 1,
+        "label": "宽度"
+      },
+      {
+        "fixed": 1,
+        "label": "高度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 13,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "80px",
+        "rect": {
+          "bottom": 117.46154022216795,
+          "height": 50.46154022216797,
+          "left": 332.5692443847656,
+          "right": 408.2615356445313,
+          "top": 67,
+          "width": 75.69229125976562,
+          "x": 332.5692443847656,
+          "y": 67
+        },
+        "type": "PurchaseButton",
+        "width": "120px"
+      }
+    ]
+  },
+  {
+    "type": "BottomSheet",
+    "dimensionControls": [
+      {
+        "fixed": 1,
+        "label": "宽度"
+      },
+      {
+        "fixed": 1,
+        "label": "高度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 14,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "80px",
+        "rect": {
+          "bottom": 782.9970092773438,
+          "height": 50.4615478515625,
+          "left": 410.1538391113281,
+          "right": 485.8461608886719,
+          "top": 732.5354614257812,
+          "width": 75.69232177734375,
+          "x": 410.1538391113281,
+          "y": 732.5354614257812
+        },
+        "type": "BottomSheet",
+        "width": "120px"
+      }
+    ]
+  },
+  {
+    "type": "ExpressCheckout",
+    "dimensionControls": [
+      {
+        "fixed": 1,
+        "label": "宽度"
+      },
+      {
+        "fixed": 1,
+        "label": "高度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 8,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "80px",
+        "rect": {
+          "bottom": 117.46154022216795,
+          "height": 50.46154022216797,
+          "left": 325,
+          "right": 400.69232177734375,
+          "top": 67,
+          "width": 75.69232177734375,
+          "x": 325,
+          "y": 67
+        },
+        "type": "ExpressCheckout",
+        "width": "120px"
+      }
+    ]
+  },
+  {
+    "type": "CheckoutState",
+    "dimensionControls": [
+      {
+        "fixed": 1,
+        "label": "宽度"
+      },
+      {
+        "fixed": 1,
+        "label": "高度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 10,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "80px",
+        "rect": {
+          "bottom": 117.46154022216795,
+          "height": 50.46154022216797,
+          "left": 325,
+          "right": 400.69232177734375,
+          "top": 67,
+          "width": 75.69232177734375,
+          "x": 325,
+          "y": 67
+        },
+        "type": "CheckoutState",
+        "width": "120px"
+      }
+    ]
+  },
+  {
+    "type": "Wallet",
+    "dimensionControls": [
+      {
+        "fixed": 1,
+        "label": "宽度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 2,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "44px",
+        "rect": {
+          "bottom": 99.75384521484376,
+          "height": 27.75384521484375,
+          "left": 325,
+          "right": 400.69232177734375,
+          "top": 72,
+          "width": 75.69232177734375,
+          "x": 325,
+          "y": 72
+        },
+        "type": "Wallet",
+        "width": "120px"
+      }
+    ]
+  },
+  {
+    "type": "Button",
+    "dimensionControls": [
+      {
+        "fixed": 1,
+        "label": "宽度"
+      },
+      {
+        "fixed": 1,
+        "label": "高度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 12,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "80px",
+        "rect": {
+          "bottom": 117.46154022216795,
+          "height": 50.46154022216797,
+          "left": 325,
+          "right": 400.69232177734375,
+          "top": 67,
+          "width": 75.69232177734375,
+          "x": 325,
+          "y": 67
+        },
+        "type": "Button",
+        "width": "120px"
+      }
+    ]
+  },
+  {
+    "type": "Tabs",
+    "dimensionControls": [
+      {
+        "fixed": 1,
+        "label": "宽度"
+      },
+      {
+        "fixed": 1,
+        "label": "高度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 9,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "80px",
+        "rect": {
+          "bottom": 117.46154022216795,
+          "height": 50.46154022216797,
+          "left": 325,
+          "right": 400.69232177734375,
+          "top": 67,
+          "width": 75.69232177734375,
+          "x": 325,
+          "y": 67
+        },
+        "type": "Tabs",
+        "width": "120px"
+      }
+    ]
+  },
+  {
+    "type": "Tab",
+    "dimensionControls": [
+      {
+        "fixed": 1,
+        "label": "宽度"
+      },
+      {
+        "fixed": 1,
+        "label": "高度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 10,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "80px",
+        "rect": {
+          "bottom": 117.46154022216795,
+          "height": 50.46154022216797,
+          "left": 325,
+          "right": 400.69232177734375,
+          "top": 67,
+          "width": 75.69232177734375,
+          "x": 325,
+          "y": 67
+        },
+        "type": "Tab",
+        "width": "120px"
+      }
+    ]
+  },
+  {
+    "type": "TabControl",
+    "dimensionControls": [
+      {
+        "fixed": 1,
+        "label": "宽度"
+      },
+      {
+        "fixed": 1,
+        "label": "高度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 14,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "80px",
+        "rect": {
+          "bottom": 117.46154022216795,
+          "height": 50.46154022216797,
+          "left": 410.1538391113281,
+          "right": 485.8461608886719,
+          "top": 67,
+          "width": 75.69232177734375,
+          "x": 410.1538391113281,
+          "y": 67
+        },
+        "type": "TabControl",
+        "width": "120px"
+      }
+    ]
+  },
+  {
+    "type": "TabButton",
+    "dimensionControls": [
+      {
+        "fixed": 1,
+        "label": "宽度"
+      },
+      {
+        "fixed": 1,
+        "label": "高度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 10,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "80px",
+        "rect": {
+          "bottom": 118.72308349609376,
+          "height": 50.4615478515625,
+          "left": 391.2307739257813,
+          "right": 466.923095703125,
+          "top": 68.26153564453125,
+          "width": 75.69232177734375,
+          "x": 391.2307739257813,
+          "y": 68.26153564453125
+        },
+        "type": "TabButton",
+        "width": "120px"
+      }
+    ]
+  },
+  {
+    "type": "Carousel",
+    "dimensionControls": [
+      {
+        "fixed": 1,
+        "label": "宽度"
+      },
+      {
+        "fixed": 1,
+        "label": "高度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 14,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "80px",
+        "rect": {
+          "bottom": 122.5076904296875,
+          "height": 50.46153259277344,
+          "left": 325,
+          "right": 400.69232177734375,
+          "top": 72.04615783691406,
+          "width": 75.69232177734375,
+          "x": 325,
+          "y": 72.04615783691406
+        },
+        "type": "Carousel",
+        "width": "120px"
+      }
+    ]
+  },
+  {
+    "type": "Slide",
+    "dimensionControls": [
+      {
+        "fixed": 1,
+        "label": "宽度"
+      },
+      {
+        "fixed": 1,
+        "label": "高度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 15,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "80px",
+        "rect": {
+          "bottom": 122.5076904296875,
+          "height": 50.46153259277344,
+          "left": 325,
+          "right": 400.69232177734375,
+          "top": 72.04615783691406,
+          "width": 75.69232177734375,
+          "x": 325,
+          "y": 72.04615783691406
+        },
+        "type": "Slide",
+        "width": "120px"
+      }
+    ]
+  },
+  {
+    "type": "PageControl",
+    "dimensionControls": [
+      {
+        "fixed": 1,
+        "label": "宽度"
+      },
+      {
+        "fixed": 1,
+        "label": "高度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 9,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "80px",
+        "rect": {
+          "bottom": 228.4769287109375,
+          "height": 50.4615478515625,
+          "left": 325,
+          "right": 400.69232177734375,
+          "top": 178.015380859375,
+          "width": 75.69232177734375,
+          "x": 325,
+          "y": 178.015380859375
+        },
+        "type": "PageControl",
+        "width": "120px"
+      }
+    ]
+  },
+  {
+    "type": "Indicators",
+    "dimensionControls": [],
+    "brokenImages": 0,
+    "fields": 4,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "5px",
+        "rect": {
+          "bottom": 264.21539306640625,
+          "height": 3.15386962890625,
+          "left": 438.22308349609375,
+          "right": 441.3769226074219,
+          "top": 261.0615234375,
+          "width": 3.153839111328125,
+          "x": 438.22308349609375,
+          "y": 261.0615234375
+        },
+        "type": "Indicators",
+        "width": "5px"
+      },
+      {
+        "height": "5px",
+        "rect": {
+          "bottom": 264.21539306640625,
+          "height": 3.15386962890625,
+          "left": 446.423095703125,
+          "right": 449.5769348144531,
+          "top": 261.0615234375,
+          "width": 3.153839111328125,
+          "x": 446.423095703125,
+          "y": 261.0615234375
+        },
+        "type": "Indicators",
+        "width": "5px"
+      },
+      {
+        "height": "5px",
+        "rect": {
+          "bottom": 264.21539306640625,
+          "height": 3.15386962890625,
+          "left": 454.6230773925781,
+          "right": 457.77691650390625,
+          "top": 261.0615234375,
+          "width": 3.153839111328125,
+          "x": 454.6230773925781,
+          "y": 261.0615234375
+        },
+        "type": "Indicators",
+        "width": "5px"
+      }
+    ]
+  },
+  {
+    "type": "Timeline",
+    "dimensionControls": [
+      {
+        "fixed": 1,
+        "label": "宽度"
+      },
+      {
+        "fixed": 1,
+        "label": "高度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 10,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "80px",
+        "rect": {
+          "bottom": 25.96154022216797,
+          "height": 50.46154022216797,
+          "left": 325,
+          "right": 400.69232177734375,
+          "top": -24.5,
+          "width": 75.69232177734375,
+          "x": 325,
+          "y": -24.5
+        },
+        "type": "Timeline",
+        "width": "120px"
+      }
+    ]
+  },
+  {
+    "type": "TimelineItem",
+    "dimensionControls": [],
+    "brokenImages": 0,
+    "fields": 4,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "46.1953px",
+        "rect": {
+          "bottom": 82.63858032226562,
+          "height": 29.138580322265625,
+          "left": 325,
+          "right": 571,
+          "top": 53.5,
+          "width": 246,
+          "x": 325,
+          "y": 53.5
+        },
+        "type": "TimelineItem",
+        "width": "390px"
+      }
+    ]
+  },
+  {
+    "type": "Switch",
+    "dimensionControls": [
+      {
+        "fixed": 1,
+        "label": "宽度"
+      },
+      {
+        "fixed": 1,
+        "label": "高度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 9,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "80px",
+        "rect": {
+          "bottom": 117.46154022216795,
+          "height": 50.46154022216797,
+          "left": 325,
+          "right": 400.69232177734375,
+          "top": 67,
+          "width": 75.69232177734375,
+          "x": 325,
+          "y": 67
+        },
+        "type": "Switch",
+        "width": "120px"
+      }
+    ]
+  },
+  {
+    "type": "SwitchCase",
+    "dimensionControls": [
+      {
+        "fixed": 1,
+        "label": "宽度"
+      },
+      {
+        "fixed": 1,
+        "label": "高度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 10,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "80px",
+        "rect": {
+          "bottom": 117.46154022216795,
+          "height": 50.46154022216797,
+          "left": 325,
+          "right": 400.69232177734375,
+          "top": 67,
+          "width": 75.69232177734375,
+          "x": 325,
+          "y": 67
+        },
+        "type": "SwitchCase",
+        "width": "120px"
+      }
+    ]
+  },
+  {
+    "type": "Toggle",
+    "dimensionControls": [
+      {
+        "fixed": 1,
+        "label": "宽度"
+      },
+      {
+        "fixed": 1,
+        "label": "高度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 9,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "80px",
+        "rect": {
+          "bottom": 117.46154022216795,
+          "height": 50.46154022216797,
+          "left": 325,
+          "right": 400.69232177734375,
+          "top": 67,
+          "width": 75.69232177734375,
+          "x": 325,
+          "y": 67
+        },
+        "type": "Toggle",
+        "width": "120px"
+      }
+    ]
+  },
+  {
+    "type": "Countdown",
+    "dimensionControls": [
+      {
+        "fixed": 1,
+        "label": "宽度"
+      },
+      {
+        "fixed": 1,
+        "label": "高度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 9,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "80px",
+        "rect": {
+          "bottom": 27.46154022216797,
+          "height": 50.46154022216797,
+          "left": 325,
+          "right": 400.69232177734375,
+          "top": -23,
+          "width": 75.69232177734375,
+          "x": 325,
+          "y": -23
+        },
+        "type": "Countdown",
+        "width": "120px"
+      }
+    ]
+  },
+  {
+    "type": "CountdownState",
+    "dimensionControls": [
+      {
+        "fixed": 1,
+        "label": "宽度"
+      },
+      {
+        "fixed": 1,
+        "label": "高度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 10,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "80px",
+        "rect": {
+          "bottom": 117.46154022216795,
+          "height": 50.46154022216797,
+          "left": 325,
+          "right": 400.69232177734375,
+          "top": 67,
+          "width": 75.69232177734375,
+          "x": 325,
+          "y": 67
+        },
+        "type": "CountdownState",
+        "width": "120px"
+      }
+    ]
+  },
+  {
+    "type": "Flow",
+    "dimensionControls": [
+      {
+        "fixed": 1,
+        "label": "宽度"
+      },
+      {
+        "fixed": 1,
+        "label": "高度"
+      }
+    ],
+    "brokenImages": 0,
+    "fields": 11,
+    "overflow": false,
+    "selected": [
+      {
+        "height": "80px",
+        "rect": {
+          "bottom": 117.46154022216795,
+          "height": 50.46154022216797,
+          "left": 325,
+          "right": 400.69232177734375,
+          "top": 67,
+          "width": 75.69232177734375,
+          "x": 325,
+          "y": 67
+        },
+        "type": "Flow",
+        "width": "120px"
+      }
+    ]
+  }
+]

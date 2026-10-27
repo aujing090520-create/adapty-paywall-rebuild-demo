@@ -2,6 +2,7 @@ import { component, componentProps, cloneComponent, indexDocument, insertCompone
 import { STATE_STYLE_KEYS, selectedStyleKey, textPropertyPatch } from './propertyModel.js';
 import { createTabSelectorButton, createTabSelector, createPageControl } from './componentCatalog.js';
 import {fontResources,withFontResources} from './fontStyles.js';
+import {captureFragmentConfiguration,restoreFragmentConfiguration} from './fragmentConfiguration.js';
 
 const STYLE_KEYS = new Set(['axis','gap','align','justify','wrap','widthMode','width','minWidth','maxWidth','heightMode','height','minHeight','maxHeight','paddingMode','paddingTop','paddingRight','paddingBottom','paddingLeft','paddingVertical','paddingHorizontal','marginMode','marginTop','marginRight','marginBottom','marginLeft','marginVertical','marginHorizontal','background','backgroundImage','backgroundFit','backgroundVideo','fillType','color','radius','shape','borderWidth','borderColor','fontSize','fontWeight','fontFamily','fontStyle','textAlign','objectFit','opacity','alignSelf','strike','bold','italic','underline','textBackground','iconSize','iconBackground','iconRadius','selectedBorder','selectedBackground','selectedColor','shadowX','shadowY','shadowBlur','shadowColor']);
 for (const key of [...STATE_STYLE_KEYS, ...STATE_STYLE_KEYS.map(selectedStyleKey), 'lineHeight', 'flexGrow', 'mask', 'overlayColor', 'overlayEnabled', 'pageSpacing', 'pagePeek', 'pageControlPosition', 'dotColor', 'activeDotColor', 'itemSpacing', 'textSpacing', 'columnGutter', 'iconAlignment', 'connectorEnabled', 'connectorWidth', 'connectorColor', 'connectorOpacity', 'connectorMarginMode', 'connectorMarginVertical', 'connectorMarginTop', 'connectorMarginBottom']) STYLE_KEYS.add(key);
@@ -188,16 +189,18 @@ export function copyFragment(document, id, contentsOnly = false) {
   if (!node) return null;
   const roots = contentsOnly ? node.children : [node];
   const keys = new Set();
-  const visit = (entry) => { if (entry.props.dataKey) keys.add(entry.props.dataKey); if (entry.props.binding?.key) keys.add(entry.props.binding.key); entry.children.forEach(visit); };
+  const visit = (entry) => { if (entry.props.dataKey) keys.add(entry.props.dataKey);if(entry.type==='Package'&&document.products[entry.id])keys.add(entry.id); if (entry.props.binding?.key) keys.add(entry.props.binding.key); entry.children.forEach(visit); };
   roots.forEach(visit);
-  return { roots:structuredClone(roots), products:Object.fromEntries([...keys].filter((key)=>document.products[key]).map((key)=>[key,structuredClone(document.products[key])])), fonts:fontResources(roots,document.fonts) };
+  return { roots:structuredClone(roots), products:Object.fromEntries([...keys].filter((key)=>document.products[key]).map((key)=>[key,structuredClone(document.products[key])])), fonts:fontResources(roots,document.fonts),configuration:captureFragmentConfiguration(document,roots) };
 }
 export function pasteFragment(document, parentId, fragment, at = Infinity) {
   const parent = indexDocument(document).nodes.get(parentId);
   if (!fragment?.roots?.length || !fragment.roots.every((root)=>canContain(parent,root))) return { document, ids:[] };
-  const forest = cloneComponent(component(crypto.randomUUID(),'Stack','复制内容',{},fragment.roots));
+  const nodeIds=new Map();
+  const forest = cloneComponent(component(crypto.randomUUID(),'Stack','复制内容',{},fragment.roots),nodeIds);
   const keys = new Map(Object.keys(fragment.products ?? {}).map((key)=>[key,crypto.randomUUID()]));
-  const rebind = (entry) => ({...entry,props:{...entry.props,...(keys.has(entry.props.dataKey)?{dataKey:keys.get(entry.props.dataKey)}:{}),...(keys.has(entry.props.binding?.key)?{binding:{...entry.props.binding,key:keys.get(entry.props.binding.key)}}:{})},children:entry.children.map(rebind)});
+  const sourceIds=new Map([...nodeIds].map(([source,target])=>[target,source]));
+  const rebind = entry => {const dataKey=entry.props.dataKey??(entry.type==='Package'?sourceIds.get(entry.id):undefined);return {...entry,props:{...entry.props,...(keys.has(dataKey)?{dataKey:keys.get(dataKey)}:{}),...(keys.has(entry.props.binding?.key)?{binding:{...entry.props.binding,key:keys.get(entry.props.binding.key)}}:{})},children:entry.children.map(rebind)};};
   const roots = forest.children.map(rebind);
   let next = {...document,products:{...document.products,...Object.fromEntries([...keys].map(([oldKey,newKey])=>[newKey,structuredClone(fragment.products[oldKey])]))}};
   const ids = [];
@@ -206,7 +209,7 @@ export function pasteFragment(document, parentId, fragment, at = Infinity) {
     if (updated === next) return {document,ids:[]};
     next = updated; ids.push(node.id);
   }
-  return {document:withFontResources(reconcileTabStructure(document,next),fragment.fonts),ids};
+  return {document:restoreFragmentConfiguration(withFontResources(reconcileTabStructure(document,next),fragment.fonts),fragment.configuration,nodeIds),ids};
 }
 export function wrapInStack(document, id) {
   const {nodes,parents} = indexDocument(document), node = nodes.get(id), parent = nodes.get(parents.get(id));

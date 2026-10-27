@@ -60,6 +60,20 @@ async function mount(node, { editing = true, source, initialNavigation = {} } = 
   };
 }
 
+test('GA01: selected typography edits stay independent from default rich text and preserve content',async()=>{
+  const label=component('sample','Text','文字',{text:'套餐价格',fontSize:16,fontWeight:400,color:'#112233',runs:[{text:'套餐',fontSize:16,color:'#112233'},{text:'价格',fontSize:18,fontWeight:700}]});
+  const source=fixture(component('plan','Package','套餐',{dataKey:'sample',defaultSelected:false},[label]));
+  const h=await mount(label,{source});
+  try{await h.click('选中');await h.change('字号','28');await h.change('文字颜色值','#ff0000');
+    const selected=indexDocument(h.document()).nodes.get('sample');
+    assert.equal(selected.props.fontSize,16);assert.equal(selected.props.selectedFontSize,28);
+    assert.equal(h.node().props.style.fontSize,28);
+    assert.ok(h.node().findAllByType('span').every(run=>run.props.style.fontSize===28&&run.props.style.color==='#ff0000'));
+    await h.click('默认');assert.equal(h.node().props.style.fontSize,16);assert.equal(h.node().findAllByType('span')[0].props.style.color,'#112233');
+    assert.equal(resolveComponentText(selected,h.document()),'套餐价格');
+  }finally{await h.close();}
+});
+
 test('Package text exposes an explicit source switch; ordinary page text remains independent', async () => {
   const source=createDefaultPaywallRecord('test4').document, node=indexDocument(source).nodes.get('products/package-0/term');
   const originalProducts=structuredClone(source.products), h=await mount(node,{source});
@@ -514,18 +528,18 @@ test('legacy timeline spacing fields display the same effective values as its re
   await h.close();
 });
 
-test('package descendants have independent standard state properties but shared text and typography',async()=>{
+test('package descendants have independent state styles and typography but shared text content',async()=>{
   const text=component('sample','Text','子文字',{text:'原文字',fontSize:14});
   const h=await mount(text,{source:fixture(component('product','Package','商品',{group:'plans',defaultSelected:false},[text]))});
   await h.click('选中');await h.change('内边距纵向','12');await h.change('字号','18');await h.change('文字内容','共用文字','textarea');
   assert.equal(h.node().props.style.padding,'12px 0px');assert.equal(h.node().props.style.fontSize,18);
-  await h.click('默认');assert.equal(h.node().props.style.padding,'0px 0px');assert.equal(h.node().props.style.fontSize,18);assert.equal(h.node().children.join(''),'共用文字');
+  await h.click('默认');assert.equal(h.node().props.style.padding,'0px 0px');assert.equal(h.node().props.style.fontSize,14);assert.equal(h.node().children.join(''),'共用文字');
   const changed=indexDocument(h.document()).nodes.get('sample').props;
-  assert.equal(changed.selectedPaddingVertical,12);assert.equal(changed.paddingVertical,undefined);assert.equal(changed.selectedFontSize,undefined);
+  assert.equal(changed.selectedPaddingVertical,12);assert.equal(changed.paddingVertical,undefined);assert.equal(changed.selectedFontSize,18);
   const source=h.document();await h.close();
   const interaction=await mount(text,{source,editing:false});
   assert.equal(interaction.node().props.style.padding,'0px 0px');
-  await act(async()=>interaction.node('product').props.onClick(event()));assert.equal(interaction.node().props.style.padding,'12px 0px');
+  await act(async()=>interaction.node('product').props.onClick(event()));assert.equal(interaction.node().props.style.padding,'12px 0px');assert.equal(interaction.node().props.style.fontSize,18);
   await interaction.close();
 });
 

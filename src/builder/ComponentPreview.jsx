@@ -89,6 +89,7 @@ function PageSequence({ node, context, props, attributes, style, children }) {
   const plugins=useMemo(()=>fade?[Fade()]:[],[fade]);
   const [carouselRef, carousel] = useEmblaCarousel({ active: node.type === 'Carousel', align: 'center', containScroll:false, loop: Boolean(props.loop), startIndex: props.defaultIndex ?? 0, watchDrag: !context.editing },plugins);
   const pointerActive=useRef(false),animations=useRef([]);
+  const pointerDown=()=>{pointerActive.current=true;},pointerUp=()=>{pointerActive.current=false;};
   useEffect(() => {
     if (!carousel) return;
     const select = () => { const index = carousel.selectedScrollSnap(); context.setRuntime((current) => current[node.id] === index ? current : { ...current, [node.id]: index }); };
@@ -117,6 +118,7 @@ function PageSequence({ node, context, props, attributes, style, children }) {
   useEffect(() => {
     if (node.type !== 'Carousel' || !props.autoPlay || count < 2 || context.editing) return;
     const timer = setInterval(() => context.setRuntime((current) => {
+      if(pointerActive.current)return current;
       const index = current[node.id] ?? props.defaultIndex ?? 0;
       return { ...current, [node.id]: index + 1 < count ? index + 1 : props.loop ? 0 : index };
     }), Math.max(250, Number(props.autoPlayInterval) || 2500));
@@ -127,6 +129,7 @@ function PageSequence({ node, context, props, attributes, style, children }) {
   const control=node.children.find((child)=>child.type==='PageControl');
   const pagination=control?children([control],false):!props.pageControlVersion && count>1?<div className="nc-pagination">{pages.map((child,index)=><button type="button" key={child.id} aria-label={`第 ${index+1} 页`} aria-current={chosen===index?'true':undefined} style={{color:chosen===index?props.activeDotColor??props.dotColor:props.dotColor}} onClick={(event)=>{event.stopPropagation();context.setRuntime((current)=>({...current,[node.id]:index}));}}>●</button>)}</div>:null;
   const bounded = props.heightMode !== 'fit';
+  attributes.onPointerDown=pointerDown;attributes.onPointerUp=pointerUp;attributes.onPointerCancel=pointerUp;
   return <CarouselContext.Provider value={{id:node.id,pages,chosen}}><div {...attributes} style={{...style,display:'flex',flexDirection:'column',gap:0}}><BackgroundVideo props={props}/>{props.pageControlPosition === 'top' && pagination}<div ref={carouselRef} className="nc-carousel-viewport" style={{overflow:'hidden',minWidth:0,width:'100%',...(bounded?{flex:'1 1 0%',minHeight:0}:{})}}><div className="nc-carousel-track" style={{display:'flex',...(bounded?{height:'100%'}:{}),gap:spacing,alignItems:({top:'flex-start',center:'center',bottom:'flex-end'}[props.pageAlignment??'top']),touchAction:'pan-y pinch-zoom',...(!carousel ? {transform:`translateX(calc(${peek}px - ${chosen} * (100% - ${peek*2}px + ${spacing}px)))`} : {})}}>{pages.map((child,index)=><div key={child.id} data-carousel-page={index} aria-hidden={index!==chosen} style={{flex:`0 0 calc(100% - ${peek*2}px)`,minWidth:0,...(bounded?{height:'100%'}:{})}}>{children([child],false)}</div>)}</div></div>{props.pageControlPosition !== 'top' && pagination}</div></CarouselContext.Provider>;
 }
 function Disclosure({label,delay,scope,editing,children}) {
@@ -207,8 +210,8 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
     const src = safeMediaSource(props.src);
     const circle = imageMask(props) === 'circle';
     return <div {...attributes} style={{ ...style, ...(circle ? { borderRadius: '50%' } : {}), ...(circle || props.mask === 'rounded' || props.shape !== 'rectangle' || props.radius > 0 || props.radiusMode === 'individual' ? { overflow: 'hidden' } : {}) }}>
-      {props.mediaType==='pag'?<React.Suspense fallback={safeMediaSource(props.fallbackSrc)?<img alt={props.altText??'图片'} src={safeMediaSource(props.fallbackSrc)} style={{width:'100%',height:'100%',objectFit:props.objectFit}}/>:null}><PagMedia src={props.pagSrc} fallback={safeMediaSource(props.fallbackSrc)} loop={props.pagLoop!==false} autoPlay={props.pagAutoPlay!==false} objectFit={props.objectFit} alt={props.altText??'PAG动画'}/></React.Suspense>:src ? node.type === 'Video' ? <video src={src} autoPlay={props.autoPlay ?? false} loop={props.loop ?? false} muted={props.muted ?? true} playsInline controls={props.controls ?? true} style={{ width: '100%', height: '100%', objectFit: props.objectFit, borderRadius: 'inherit', display:'block' }} /> : <img src={src} alt={props.decorative ? '' : props.altText ?? node.name ?? '图片'} draggable={false} style={{ width: '100%', height: '100%', objectFit: props.objectFit, display: 'block', borderRadius: 'inherit' }} /> : <div className="nc-empty-media" />}
-      {src && props.overlayEnabled !== false && props.overlayColor && props.overlayColor !== 'transparent' && <span aria-hidden="true" style={{ position: 'absolute', inset: 0, background: paintColor(props.overlayColor, props.overlayOpacity), borderRadius: 'inherit', pointerEvents: 'none' }} />}
+      {node.type==='Image'&&props.mediaType==='pag'?<React.Suspense fallback={safeMediaSource(props.fallbackSrc)?<img alt={props.altText??'图片'} src={safeMediaSource(props.fallbackSrc)} style={{width:'100%',height:'100%',objectFit:props.objectFit}}/>:null}><PagMedia src={props.pagSrc} fallback={safeMediaSource(props.fallbackSrc)} loop={props.pagLoop!==false} autoPlay={props.pagAutoPlay!==false} objectFit={props.objectFit} alt={props.altText??'PAG动画'}/></React.Suspense>:src ? node.type === 'Video' ? <video src={src} autoPlay={props.autoPlay ?? false} loop={props.loop ?? false} muted={props.muted ?? true} playsInline controls={props.controls ?? true} style={{ width: '100%', height: '100%', objectFit: props.objectFit, borderRadius: 'inherit', display:'block' }} /> : <img src={src} alt={props.decorative ? '' : props.altText ?? node.name ?? '图片'} draggable={false} style={{ width: '100%', height: '100%', objectFit: props.objectFit, display: 'block', borderRadius: 'inherit' }} /> : <div className="nc-empty-media" />}
+      {(src || node.type==='Image'&&props.mediaType==='pag'&&(props.pagSrc||props.fallbackSrc)) && props.overlayEnabled !== false && props.overlayColor && props.overlayColor !== 'transparent' && <span aria-hidden="true" style={{ position: 'absolute', inset: 0, background: paintColor(props.overlayColor, props.overlayOpacity), borderRadius: 'inherit', pointerEvents: 'none' }} />}
     </div>;
   }
   if (node.type === 'Custom') return <div {...attributes}>{props.html!==undefined&&!props.customBundle?<iframe title={node.name} sandbox="allow-scripts" referrerPolicy="no-referrer" srcDoc={`<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src https: data:; font-src data:; connect-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'"><style>html,body{margin:0;box-sizing:border-box;font-family:Arial,sans-serif}</style></head><body>${props.html}</body></html>`} style={{width:'100%',height:'100%',border:0,pointerEvents:editing?'none':'auto'}}/>:<CustomComponentPreview node={node} props={props} document={document} packages={context.packages} packageNode={currentPackage} selectedPackage={context.selectedPackage} editing={editing}/>}</div>;
@@ -226,7 +229,10 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
     return <div {...attributes}><input type="checkbox" role={props.control === 'checkbox' ? 'checkbox' : 'switch'} aria-label={node.name} checked={checked} onChange={(event) => change(event.target.checked)} onClick={(event) => { event.stopPropagation(); if (editing) onSelect(node.id); }} /></div>;
   }
   if (node.type === 'Countdown') return <div {...attributes} style={{...style,...containerStyle(visualNode)}}><BackgroundVideo props={props}/>{node.children.length ? <CountdownContent key={`${node.id}-${props.start}-${props.deadline}`} node={node} context={context} packageNode={currentPackage}/> : <Countdown key={`${node.id}-${props.start}`} props={props} />}</div>;
-  if (node.type === 'Wallet') return <div {...attributes} role="button" tabIndex={0} style={{...style,...(props.walletStyle?{background:props.walletStyle==='black'?'#000000':'#ffffff',color:props.walletStyle==='black'?'#ffffff':'#000000',border:props.walletStyle==='white-outline'?'1px solid #000000':'none'}:{}),display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}} onClick={(event)=>{select(event); if(!editing) {event.stopPropagation(); context.onStatus('钱包结账预览：未发起真实交易');}}} onKeyDown={(event)=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();if(editing)onSelect(node.id);else context.onStatus('钱包结账预览：未发起真实交易');}}}>{props.method === 'google' ? 'Google Pay' : 'Apple Pay'}</div>;
+  if (node.type === 'Wallet') {
+    const checkout=()=>runAction({...node,props:{...props,action:{action:'Purchase'}}});
+    return <div {...attributes} role="button" tabIndex={0} style={{...style,...(props.walletStyle?{background:props.walletStyle==='black'?'#000000':'#ffffff',color:props.walletStyle==='black'?'#ffffff':'#000000',border:props.walletStyle==='white-outline'?'1px solid #000000':'none'}:{}),display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}} onClick={event=>{select(event);if(!editing){event.stopPropagation();checkout();}}} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();if(editing)onSelect(node.id);else checkout();}}}>{props.method === 'google' ? 'Google Pay' : 'Apple Pay'}</div>;
+  }
   if (node.type === 'Switch') {
     const chosen = runtime[node.id] ?? props.defaultIndex ?? 0;
     return <div {...attributes} style={{...style,display:'block'}}>{children(node.children.filter((child)=>child.type !== 'SwitchCase' || child.props.index === chosen))}</div>;
@@ -388,7 +394,7 @@ export default function ComponentPreview({ document: sourceDocument, selectedId,
       else if(link.method==='deep_link')window.location.assign(link.url);
       else window.open(link.url,'_blank','noopener,noreferrer');
     } else if (action.action === 'Purchase') {
-      onStatus('购买预览：未发起真实交易');
+      onStatus(node.type==='Wallet'?'钱包结账预览：未发起真实交易':'购买预览：未发起真实交易');
     } else if(action.action==='WebPaywall') {
       onStatus('网页付费墙预览：未发起真实交易');
     } else onStatus(({ RestorePurchases: '恢复购买预览', Dismiss: '关闭预览', WebCheckout: '网页结账预览', OfferCodeRedemption: '优惠码兑换预览', OpenPage: '页面跳转预览' }[action.action]) ?? '未配置点击动作');

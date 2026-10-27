@@ -6,6 +6,7 @@ import { calibrateTemplateVisuals } from './templateVisuals.js';
 import { effectiveFillType } from './propertyModel.js';
 import { localSettingsResetting } from '../templateStorage.js';
 import { packageDisplayFields } from '../products/packageFields.js';
+import {validWorkbenchConfiguration} from './workbenchModel.js';
 
 export const DOCUMENT_VERSION = 3;
 export const COMPONENT_TYPES = ['Screen', 'Stack', 'Text', 'Image', 'Video', 'Icon', 'Custom', 'Header', 'Footer', 'Package', 'PurchaseButton', 'BottomSheet', 'ExpressCheckout', 'CheckoutState', 'Wallet', 'Button', 'Tabs', 'Tab', 'TabControl', 'TabButton', 'Carousel', 'Slide', 'PageControl', 'Indicators', 'Timeline', 'TimelineItem', 'Switch', 'SwitchCase', 'Toggle', 'Countdown', 'CountdownState', 'Flow'];
@@ -74,6 +75,7 @@ export function indexDocument(document) {
 }
 export function validDocument(document) {
   if (document?.version !== DOCUMENT_VERSION || document.root?.type !== 'Screen' || !document.products || typeof document.products !== 'object') return false;
+  if(!validWorkbenchConfiguration(document))return false;
   if (document.settings !== undefined && (!document.settings || typeof document.settings !== 'object' || Array.isArray(document.settings) || document.settings.exitOfferOfferingId !== undefined && typeof document.settings.exitOfferOfferingId !== 'string')) return false;
   if (document.settings?.presentationSurfaceId !== undefined && typeof document.settings.presentationSurfaceId !== 'string') return false;
   const exitBindings = document.settings?.exitOffersByScreen;
@@ -299,10 +301,10 @@ export function saveComponentDocument(storage, document) {
   try { storage.setItem(DOCUMENT_PREFIX + document.templateId, JSON.stringify(document)); return true; } catch { return false; }
 }
 
-export function cloneComponent(node) {
-  const ids = new Map();
+export function cloneComponent(node, idMap) {
+  const ids=idMap instanceof Map?idMap:new Map();
   const collect = (entry) => { ids.set(entry.id, crypto.randomUUID()); entry.children.forEach(collect); }; collect(node);
-  const visit = (entry) => ({ ...entry, id: ids.get(entry.id), props: { ...entry.props, ...(ids.has(entry.props.target) ? { target: ids.get(entry.props.target) } : {}), ...(ids.has(entry.props.switchTarget) ? { switchTarget: ids.get(entry.props.switchTarget) } : {}), ...(ids.has(entry.props.action?.actionPage) ? { action: { ...entry.props.action, actionPage: ids.get(entry.props.action.actionPage) } } : {}), ...(ids.has(entry.props.group) ? { group: ids.get(entry.props.group) } : {}), ...(entry.type === 'Package' && !ids.has(entry.props.group) ? { defaultSelected: false } : {}), ...(entry.props.visibleWhen && ids.has(entry.props.visibleWhen.id) ? { visibleWhen: { ...entry.props.visibleWhen, id: ids.get(entry.props.visibleWhen.id) } } : {}) }, children: entry.children.map(visit) });
+  const visit = (entry) => ({ ...entry, id: ids.get(entry.id), props: { ...entry.props, ...(ids.has(entry.props.target) ? { target: ids.get(entry.props.target) } : {}), ...(ids.has(entry.props.initialStepId)?{initialStepId:ids.get(entry.props.initialStepId)}:{}), ...(ids.has(entry.props.switchTarget) ? { switchTarget: ids.get(entry.props.switchTarget) } : {}), ...(ids.has(entry.props.action?.actionPage) ? { action: { ...entry.props.action, actionPage: ids.get(entry.props.action.actionPage) } } : {}), ...(ids.has(entry.props.group) ? { group: ids.get(entry.props.group) } : {}), ...(entry.type === 'Package' && !ids.has(entry.props.group) ? { defaultSelected: false } : {}), ...(entry.props.visibleWhen && ids.has(entry.props.visibleWhen.id) ? { visibleWhen: { ...entry.props.visibleWhen, id: ids.get(entry.props.visibleWhen.id) } } : {}) }, children: entry.children.map(visit) });
   return visit(node);
 }
 

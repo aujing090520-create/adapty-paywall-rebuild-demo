@@ -2540,9 +2540,9 @@
   },
   "sourceHashes": {
     "src/builder/componentCatalog.js": "98a0fe641e22386eed9997f4feb3156bbbea149037a0fc43fb768c7de3eed633",
-    "src/builder/componentDocument.js": "598dfb8958b3c7705f50476af35d9a18214f9c30ebb9f0c90f82d597d3119be1",
-    "src/builder/componentOperations.js": "f1b5585d9f44dd1ac753b2cfe5a036864f4e49d16800b064fad8c587438dccb9",
-    "src/builder/ComponentPreview.jsx": "9cdbb7f461b547ee0db7f95160a8da73273e2c42209f49d6628a571aea0ccdd1",
+    "src/builder/componentDocument.js": "7d30ce7fcddba3bd47283a9e1f0410bc37e0540eb839b4d22b9ecb47f33546dc",
+    "src/builder/componentOperations.js": "5364435376206f3c9338785d62cec8cfb3653eb3f86e7e9fac58f3e7cefa29fe",
+    "src/builder/ComponentPreview.jsx": "793992b0b2a5c79a83dd7fe1bab7e75dc847c1bb45bc2b9105de1e0094779309",
     "src/builder/screenLayout.js": "3bab6b36c926bdaa63a22da6dd608cd5a3543b537db8c2e7926c3821486406db",
     "src/builder/navigationRows.js": "131ae049f145da06260e37edc855c7e05c135317d2ef3366d8e78cff64fcd321",
     "src/builder/buttonModals.js": "859c187f1743ecec941d60b4ca596297200e6060fb90adb3bc79b81dd6e707b7",

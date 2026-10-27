@@ -13,6 +13,8 @@ export function overlayAlignmentStyle(props) {
   return OVERLAY_ALIGNMENTS[props.overlayAlignment] ?? {alignItems:props.align,justifyItems:props.align};
 }
 STATE_STYLE_KEYS.push('appearanceEnabled', 'maskEnabled');
+const TEXT_STATE_KEYS=['fontSize','fontWeight','fontFamily','bold','italic','underline','strike','textAlign','lineHeight','textBackground','textBackgroundOpacity'];
+STATE_STYLE_KEYS.push(...TEXT_STATE_KEYS);
 export const sequencePages = (node) => node.type === 'Carousel' ? node.children.filter((child)=>child.type==='Slide') : node.children;
 export function utcDateTimeInput(value) {
   if(!value)return '';
@@ -67,6 +69,7 @@ export function stateStyleProps(props, selected) {
     if (value !== undefined) result[key] = value;
   }
   if (props.selectedBorderColor === undefined && props.selectedBorder !== undefined) result.borderColor = props.selectedBorder;
+  if(props.runs?.length){const overrides=Object.fromEntries([...TEXT_STATE_KEYS,'color','colorOpacity'].filter(key=>props[selectedStyleKey(key)]!==undefined).map(key=>[key,result[key]]));if(overrides.strike!==undefined){overrides.strikethrough=overrides.strike;delete overrides.strike;}if(Object.keys(overrides).length)result.runs=props.runs.map(run=>({...run,...overrides}));}
   return result;
 }
 
@@ -92,6 +95,7 @@ export function textPropertyPatch(node, patch) {
   }
   if (['Image','Video'].includes(node.type) && patch.mask !== undefined) next.shape = 'rectangle';
   if (node.type === 'Text' && patch.fontWeight !== undefined) next.bold = false;
+  if (node.type === 'Text' && patch.selectedFontWeight !== undefined) next.selectedBold = false;
   for (const prefix of ['', 'selected']) {
     for (const axis of ['Width', 'Height']) {
       const minKey = prefix ? `${prefix}Min${axis}` : `min${axis}`;
