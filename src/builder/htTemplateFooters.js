@@ -3,7 +3,7 @@ import { component } from './componentDocument.js';
 // Only new template documents pass here; saved personal trees are not reparented.
 export function buildHtTemplateFooter(document, variant) {
   if (!['blue-privilege', 'membership-plans', 'payment-recovery'].includes(variant)) return document;
-  const ids = ['agreement', 'purchase', 'legal', 'links', '$home'];
+  const ids = ['timer', 'agreement', 'purchase', 'legal', 'links', '$home'];
   const hasPurchase = (node) => node.id === 'purchase' || node.children.some((child) => child.type !== 'Screen' && hasPurchase(child));
   const visit = (node) => {
     if (node.type !== 'Screen' || !hasPurchase(node)) return { ...node, children: node.children.map(visit) };

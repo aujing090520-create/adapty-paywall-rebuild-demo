@@ -24,7 +24,8 @@ for (const id of ['ht-blue-privilege', 'ht-membership-plans', 'ht-payment-recove
     if (nodes.has('$home')) assert.equal(parents.get('$home'), footer.id);
     assert.equal(nodes.get('purchase').props.action.action, 'Purchase');
     assert.notEqual(parents.get('products'), footer.id);
-    assert.notEqual(parents.get('timer'), footer.id);
+    assert.equal(parents.get('timer'), footer.id);
+    assert.equal(footer.children[0].id, 'timer');
     assert.ok([...nodes.values()].filter((entry) => entry.type === 'Package').every((entry) => document.products[entry.props.dataKey].skuId));
     const chrome = screenChromeLayout(screen);
     assert.equal(chrome.footer, footer);
