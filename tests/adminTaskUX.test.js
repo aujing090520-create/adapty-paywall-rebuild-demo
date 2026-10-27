@@ -28,15 +28,21 @@ test('actual administration saves names, protects navigation, copies real canvas
   const open=async(name)=>{const row=app.root.findAll(item=>item.type==='tr'&&item.findAllByType('strong').some(node=>text(node)===name))[0];assert.ok(row,name);await act(async()=>row.props.onClick());};
   const nameInput=()=>app.root.findByProps({'aria-label':'付费墙名称'});
   const pageInput=()=>app.root.findAll(item=>item.type==='label'&&item.props.className==='ne-field'&&item.children.some(node=>typeof node==='object'&&text(node)==='页面名称'))[0].findByType('input');
+  const editor=()=>app.root.findAll(item=>typeof item.type==='function'&&item.type.name==='ComponentEditor')[0];
   try{
-    await act(async()=>{app=TestRenderer.create(React.createElement(App));});await open('源付费墙');
+    await act(async()=>{app=TestRenderer.create(React.createElement(App));});
+    await open('test3');await click('Open Builder');
+    assert.equal(indexDocument(editor().props.initialDocument).nodes.get('products').props.axis,'vertical');
+    assert.equal(listSavedPaywalls(storage).length,1,'opening the bundled example does not seed browser records or overwrite other drafts');
+    await click('Paywalls');
+    assert.equal(app.root.findAllByProps({'aria-label':'有尚未保存的修改'}).length,0,'unchanged bundled defaults reopen cleanly');
+    await open('源付费墙');
     await act(async()=>nameInput().props.onChange({target:{value:'改名成功'}}));await click('Paywalls');
     assert.ok(app.root.findByProps({'aria-label':'有尚未保存的修改'}));assert.equal(readSavedPaywall(storage,'test-2').paywall.name,'源付费墙');
     await click('继续编辑');assert.equal(nameInput().props.value,'改名成功');
     const unload={preventDefault(){this.prevented=true;}};listeners.get('beforeunload')(unload);assert.equal(unload.prevented,true);
     await click('保存');assert.equal(readSavedPaywall(storage,'test-2').paywall.name,'改名成功');assert.deepEqual(readSavedPaywall(storage,'test-2').document,source);
     await click('Open Builder');
-    const editor=()=>app.root.findAll(item=>typeof item.type==='function'&&item.type.name==='ComponentEditor')[0];
     const migrated=structuredClone(editor().props.initialDocument);
     assert.equal(migrated.settings.buttonModalVersion,1);assert.equal(modalBindings(migrated).length,1);
     assert.deepEqual(readSavedPaywall(storage,'test-2').document,source,'opening the editor does not autosave migration');

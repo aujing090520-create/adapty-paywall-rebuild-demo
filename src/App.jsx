@@ -11,6 +11,7 @@ import { linkActionFor, visibleLinkLabels } from "./linkActions.js";
 import { DEMO_SKUS, PRICE_DISPLAY_MODES, billingMonths, productPriceFields, resolveProductPrice, skuById, skuCopy, templateSkuId } from "./productPricing.js";
 import { clearLocalDemoSettings, beginLocalDemoReset, cancelLocalDemoReset } from "./templateStorage.js";
 import { listSavedPaywalls, readSavedPaywall, savePaywallBatch, removeSavedPaywall } from './paywallStorage.js';
+import { DEFAULT_VERTICAL_PAYWALL, readConfiguredPaywall } from './defaultPaywalls.js';
 import { savedOfferings, createExitOffer, workspaceExitOfferIds, exitOfferId, bindExitOffer } from './builder/exitOffers.js';
 import { workflowContext } from './builder/workflow.js';
 import { indexDocument, importComponentDocument } from './builder/componentDocument.js';
@@ -104,6 +105,7 @@ import {
 const originalPaywalls = [
   { id: "test", name: "test", state: "Live", products: 3, startedAt: "3 Apr 2026", icon: false },
   { id: "test-2", name: "test 2", state: "Draft", products: 2, startedAt: "25 Mar 2026", icon: true },
+  DEFAULT_VERTICAL_PAYWALL,
 ];
 
 const nav = [
@@ -435,7 +437,7 @@ export default function App() {
   });
 
   const openPaywall = (item) => requestWorkspaceAction(() => {
-    restoreBuilder(readSavedPaywall(window.localStorage, item.id));
+    restoreBuilder(readConfiguredPaywall(window.localStorage, item.id));
     setSelectedId(item.id);
     setBuilderOrigin("existing");
     setViewNow("general");
@@ -449,7 +451,7 @@ export default function App() {
     if (!source?.id) source = selected;
     const original = source;
     requestWorkspaceAction(() => {
-      const record = readSavedPaywall(window.localStorage, original.id);
+      const record = readConfiguredPaywall(window.localStorage, original.id);
       let content = structuredClone(record?.document ?? importComponentDocument([], { id: 'blank' }));
       const copies = {};
       for (const id of workspaceExitOfferIds(content)) {
@@ -540,7 +542,7 @@ export default function App() {
     const name = (generalName ?? selected.name).trim();
     if (!name) { notify('请填写付费墙名称'); return false; }
     if (builderDocument) return saveBuilder();
-    const record = readSavedPaywall(window.localStorage, selected.id);
+    const record = readConfiguredPaywall(window.localStorage, selected.id);
     const content = builderDocument ?? record?.document ?? importComponentDocument([], { id: 'blank' });
     const paywall = { ...selected, name };
     if (!savePaywallBatch(window.localStorage, [{ version: 1, paywall, templateId: content.templateId, document: content }])) { notify('保存失败，修改仍保留。'); return false; }
@@ -549,7 +551,7 @@ export default function App() {
   };
 
   const discardBuilder = () => {
-    const record = builderOrigin === 'existing' ? readSavedPaywall(window.localStorage, selected.id) : null;
+    const record = builderOrigin === 'existing' ? readConfiguredPaywall(window.localStorage, selected.id) : null;
     if (record) restoreBuilder(record);
     else { setGeneralName(null); setExitOfferDrafts({}); setBuilderDocument(null); setBuilderNodes(appliedTemplate === null ? [] : createBuilderNodes(templates[appliedTemplate].id)); setBuilderRevision((value) => value + 1); }
     notify(record ? '已恢复上次保存的付费墙。' : '已恢复模板默认内容。');
