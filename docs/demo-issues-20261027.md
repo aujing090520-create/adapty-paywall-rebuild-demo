@@ -32,4 +32,5 @@
 - 本批额外修复真实浏览器缺陷：CSS zoom在滚动后固定Footer上的绘制/命中不一致。缩放改为滚动视口transform，蓝色和会员页均用鼠标打开第二条礼包；固定区域尺寸和选择滚动测试保留，并增加禁止CSS zoom断言。
 - 浏览器证据来自本地真实ComponentEditor和原生组件预览，验收夹具不进入生产构建、不写入个人记录。测试URL：tests/demo-issues-scenes.html?template=ht-blue-privilege，会员页使用ht-membership-plans；PAG静态回退增加pag=fallback。
 - 截图：见[evidence/demo-issues-20261027](./evidence/demo-issues-20261027/)，包括月价弹窗、可编辑SKU礼包、阿拉伯语、两模板礼包详情。截图是代码新渲染，不改写源图，不用参考截图充当输出。
-- 发布状态：待GitHub推送与生产回读；以最终交付回执的提交号和线上资源核对为准。
+- 发布已验证：代码提交83254dcdfb4e17594efe1aa326d9be07e5f38003已推送GitHub，Vercel部署AXDHv4cL4AVoQBb6ozQ2GgMfFNgA成功。正式域名实际加载index-BmEsf7ow.js / index-vD6ylXUz.css，与本地构建一致。
+- 生产实操：从新建蓝色模板→工作区数据选择DEMO-BLUE-YEAR→填入示例→Footer添加礼包组合→预览展开→鼠标点击第二条说明，实际显示“示例福利券 / 会员专享福利 / 返回”，购买目标DEMO-BLUE-YEAR，控制台error0。草稿未保存，未改已有记录。截图[evidence/demo-issues-20261027/paywall-issues-production.png](./evidence/demo-issues-20261027/paywall-issues-production.png)。
