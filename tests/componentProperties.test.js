@@ -11,6 +11,7 @@ import { countdownSeconds, defaultPackagePatch } from '../src/builder/propertyMo
 import { templates, createBuilderNodes } from '../src/templates/templateDefinitions.js';
 import { importComponentDocument, validDocument } from '../src/builder/componentDocument.js';
 import {workflowEdges} from '../src/builder/workflow.js';
+import { createDefaultPaywallRecord } from '../src/defaultPaywalls.js';
 
 let server, Properties, Preview, Editor;
 const mounted = new Set();
@@ -20,6 +21,7 @@ before(async () => {
   Properties = (await server.ssrLoadModule('/src/builder/RevenueCatProperties.jsx')).default;
   Preview = (await server.ssrLoadModule('/src/builder/ComponentPreview.jsx')).default;
   Editor = (await server.ssrLoadModule('/src/builder/ComponentEditor.jsx')).default;
+  await server.ssrLoadModule('/src/builder/RichTextEditor.jsx');
 });
 after(async () => { for (const renderer of mounted) await act(async () => renderer.unmount()); await server?.close(); });
 const event = (value) => ({ target: { value }, stopPropagation() {}, preventDefault() {} });
@@ -35,7 +37,7 @@ async function mount(node, { editing = true, source, initialNavigation = {} } = 
     latest = document;
     const patch = (props) => setDocument((current) => patchComponentProperties(current, node.id, props));
     return React.createElement(React.Fragment, null,
-      React.createElement(Properties, { selected, p: componentProps(selected), patch, document, nodes, parents, navigation, setNavigation, onStatus: (value) => { status = value; }, demoSkus: DEMO_SKUS, fieldNames: { name: '商品名称', price: '主价格' }, findPackage: () => null, resolveText: resolveComponentText, changeProduct: (key, value) => setDocument((current) => ({ ...current, products: { ...current.products, [selected.props.dataKey ?? selected.id]: { ...current.products[selected.props.dataKey ?? selected.id], [key]: value } } })), onMediaType: (type) => setDocument((current) => updateComponent(current, node.id, { type })), setDefaultPackage: (defaultSelected) => patch({ defaultSelected }) }),
+      React.createElement(Properties, { selected, p: componentProps(selected), patch, document, nodes, parents, navigation, setNavigation, onStatus: (value) => { status = value; }, demoSkus: DEMO_SKUS, fieldNames: { name: '商品名称', price: '主价格', productInfo: '商品信息', badgeText: '商品标签' }, findPackage: (id) => { let current=nodes.get(id); while(current){if(current.type==='Package')return current;current=nodes.get(parents.get(current.id));}return null; }, resolveText: resolveComponentText, changeProduct: (key, value) => setDocument((current) => ({ ...current, products: { ...current.products, [selected.props.dataKey ?? selected.id]: { ...current.products[selected.props.dataKey ?? selected.id], [key]: value } } })), onMediaType: (type) => setDocument((current) => updateComponent(current, node.id, { type })), setDefaultPackage: (defaultSelected) => patch({ defaultSelected }) }),
       React.createElement(Preview, { document, selectedId: node.id, onSelect() {}, editing, navigation, onStatus: (value) => { status = value; } }),
     );
   }
@@ -57,6 +59,30 @@ async function mount(node, { editing = true, source, initialNavigation = {} } = 
     async close() { await act(async () => renderer.unmount()); mounted.delete(renderer); },
   };
 }
+
+test('Package text exposes an explicit source switch; ordinary page text remains independent', async () => {
+  const source=createDefaultPaywallRecord('test4').document, node=indexDocument(source).nodes.get('products/package-0/term');
+  const originalProducts=structuredClone(source.products), h=await mount(node,{source});
+  try {
+    const input=()=>h.renderer.root.findAll(item=>item.type==='textarea'&&item.props['aria-label']==='文字内容')[0];
+    assert.equal(input().props.readOnly,true);
+    await h.select('内容来源','custom');
+    assert.equal(indexDocument(h.document()).nodes.get(node.id).props.binding,null);
+    assert.deepEqual(h.node().children,['12个月']);
+    await h.change('文字内容','我的说明'); assert.deepEqual(h.node().children,['我的说明']);
+    await h.select('内容来源','product');
+    assert.deepEqual(indexDocument(h.document()).nodes.get(node.id).props.binding,{key:'products/data-0',field:'name'});
+    await h.select('商品字段','productInfo'); assert.deepEqual(h.node().children,['节省63%']);
+    await h.select('商品字段','badgeText'); assert.deepEqual(h.node().children,['🔥30% OFF']);
+    assert.deepEqual(h.document().products,originalProducts);
+    assert.equal(indexDocument(h.document()).nodes.get(node.id).props.fontSize,node.props.fontSize);
+    const values=new Map(), storage={getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,value)};
+    assert.ok(saveComponentDocument(storage,h.document()));
+    assert.equal(indexDocument(readComponentDocument(storage,h.document().templateId)).nodes.get(node.id).props.binding.field,'badgeText');
+  } finally { await h.close(); }
+  const plain=await mount(component('ordinary-title','Text','文字',{text:'页面标题'}));
+  try { assert.equal(plain.renderer.root.findAll(item=>item.type==='select'&&item.props['aria-label']==='内容来源').length,0); } finally { await plain.close(); }
+});
 
 test('bound Package field summary and live preview follow source copy, floor savings, SKU changes and selected labels', async () => {
   const template = templates.find(entry=>entry.id==='ht-blue-privilege');

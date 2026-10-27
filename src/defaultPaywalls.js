@@ -13,14 +13,14 @@ function configureTwoPackageRows(document) {
     const id = `products/package-${index}`, key = `products/data-${index}`;
     const text = (suffix, value, props = {}) => component(`${id}/${suffix}`, 'Text', '文字', { text: value, widthMode: 'fit', fontSize: 16, fontWeight: 600, lineHeight: 1.25, ...props });
     const stack = (suffix, children, props = {}) => component(`${id}/${suffix}`, 'Stack', '布局容器', { gap: 4, widthMode: 'fit', ...props }, children);
-    const title = stack('title', [text('term', annual ? '1年' : '1个月'), ...(annual ? [text('reference', '', { binding: { key, field: 'referencePrice' }, strike: true, color: '#aaaaaa' })] : [])], { axis: 'horizontal', align: 'center', gap: 6 });
-    const left = stack('left', [title, ...(annual ? [text('saving', '新用户立省64%', { fontSize: 13 })] : [])], { justify: 'center' });
-    const right = stack('right', [...(annual ? [text('badge', '🔥30% OFF', { fontSize: 12, fontWeight: 500, color: '#ffffff', background: '#ff8a00', radius: 20, paddingMode: 'axis', paddingVertical: 1, paddingHorizontal: 10, textAlign: 'center', lineHeight: 1.3 })] : []), text('monthly', '', { binding: { key, field: 'monthlyPrice' }, fontSize: 17, textAlign: 'right' })], { align: 'end', justify: 'center', gap: 2 });
+    const title = stack('title', [text('term', '', { binding: { key, field: 'name' } }), ...(annual ? [text('reference', '', { binding: { key, field: 'referencePrice' }, strike: true, color: '#aaaaaa' })] : [])], { axis: 'horizontal', align: 'center', gap: 6 });
+    const left = stack('left', [title, ...(annual ? [text('saving', '', { binding: { key, field: 'productInfo' }, fontSize: 13 })] : [])], { justify: 'center' });
+    const right = stack('right', [...(annual ? [text('badge', '', { binding: { key, field: 'badgeText' }, productField: 'badgeText', fontSize: 12, fontWeight: 500, color: '#ffffff', background: '#ff8a00', radius: 20, paddingMode: 'axis', paddingVertical: 1, paddingHorizontal: 10, textAlign: 'center', lineHeight: 1.3 })] : []), text('monthly', '', { binding: { key, field: 'monthlyPrice' }, fontSize: 17, textAlign: 'right' })], { align: 'end', justify: 'center', gap: 2 });
     return component(id, 'Package', '商品套餐', { dataKey: key, group: 'products', defaultSelected: annual, priceMode: '0', widthMode: 'fill', heightMode: 'fixed', height: 72, radius: 16, background: '#f0f0f0', selectedBackground: '#ffede9', borderWidth: 1, borderColor: 'transparent', selectedBorderColor: '#ff8a00', color: '#202020', selectedColor: '#202020', paddingMode: 'axis', paddingVertical: 8, paddingHorizontal: 10, gap: 0 }, [stack('content', [left, right], { widthMode: 'fill', heightMode: 'fill', axis: 'horizontal', align: 'center', justify: 'between', gap: 8 })]);
   };
   const visit = (node) => node.id === 'products' ? { ...node, props: { ...node.props, axis: 'vertical', gap: 16, background: 'transparent' }, children: [row(0, true), row(1, false)] } : { ...node, children: node.children.map(visit) };
   return { ...document, root: visit(document.root), products: {
-    'products/data-0': { skuId: 'DEMO-SKU-YEAR', name: '1年', showReferencePrice: true },
+    'products/data-0': { skuId: 'DEMO-SKU-YEAR', name: '1年', showReferencePrice: true, badgeText: '🔥30% OFF' },
     'products/data-1': { skuId: 'DEMO-BLUE-MONTH', name: '1个月' },
   } };
 }

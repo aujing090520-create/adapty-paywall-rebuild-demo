@@ -58,6 +58,17 @@ test('test4 composes reference two-row cards from editable Packages, layout and 
   assert.equal(resolveComponentText(nodes.get('products/package-0/reference'), document, packages[0]), '¥488');
   assert.equal(resolveComponentText(nodes.get('products/package-0/monthly'), document, packages[0]), '¥28.17/月');
   assert.equal(resolveComponentText(nodes.get('products/package-1/monthly'), document, packages[1]), '¥78/月');
+  assert.equal(resolveComponentText(nodes.get('products/package-0/term'), document, packages[0]), '12个月');
+  assert.equal(resolveComponentText(nodes.get('products/package-0/saving'), document, packages[0]), '节省63%');
+  assert.equal(resolveComponentText(nodes.get('products/package-0/badge'), document, packages[0]), '🔥30% OFF');
+  for (const pack of packages) {
+    const visit = node => { if (node.type === 'Text') assert.equal(node.props.binding?.key, pack.props.dataKey, `${node.id} must bind to its own Package`); node.children.forEach(visit); };
+    visit(pack);
+  }
+  const changed = { ...document, products: { ...document.products, 'products/data-0': { ...document.products['products/data-0'], skuId: 'DEMO-MEMBER-LIFETIME' } } };
+  assert.equal(resolveComponentText(nodes.get('products/package-0/term'), changed, packages[0]), '终身');
+  assert.equal(resolveComponentText(nodes.get('products/package-0/saving'), changed, packages[0]), '永久会员权益');
+  assert.equal(resolveComponentText(nodes.get('products/package-0/badge'), changed, packages[0]), '🔥30% OFF');
   assert.equal(stateStyleProps(packages[0].props, true).background, '#ffede9');
   assert.equal(stateStyleProps(packages[0].props, true).borderColor, '#ff8a00');
   assert.equal(stateStyleProps(packages[0].props, false).background, '#f0f0f0');

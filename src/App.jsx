@@ -829,7 +829,6 @@ function PaywallList({
 
 
 function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setView, duplicate, setModal, markUnknown, builderNodes, setBuilderNodes, updateBuilderNode, removeBuilderNode, activeNode, setActiveNode, appliedTemplate, builderDocument, setBuilderDocument, builderRevision, builderDirty, saveBuilder, discardBuilder, offerings, prepareExitOffer, changeExitOffer, templateLinks, setTemplateLinks, notify, generalName, onGeneralNameChange, saveGeneral, discardGeneral }) {
-  const configuredProducts = builderDocument ? Object.values(builderDocument.products) : [];
   if (view === "builder") {
     const template = appliedTemplate !== null ? templates[appliedTemplate] : { id: "blank", title: "空白页面" };
     const initialNodes = appliedTemplate !== null ? builderNodes : [];
@@ -847,8 +846,8 @@ function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setV
       <WorkspaceHeader selected={selected} setView={setView} duplicate={duplicate} setModal={setModal} markUnknown={markUnknown} />
       <div className="detail-tabs"><button className="active">General</button><button onClick={() => setView("builder")}>Builder & Generator</button></div>
       <div className="detail-layout">
-        <div className="form-card detail-form"><h2>General</h2><Field label="Paywall name"><input aria-label="付费墙名称" value={generalName ?? selected.name} onChange={(event)=>onGeneralNameChange?.(event.target.value)}/></Field><Field label="Products">{configuredProducts.map((row,index)=><div className="product-sku-summary" key={row.key??row.id??index}><span>{row.name||row.label||'未命名商品'}</span><span>SKU：{row.skuId??row.id??'未绑定'}</span></div>)}{!configuredProducts.length&&<span className="empty-copy">尚未配置画布商品</span>}<button type="button" className="secondary" onClick={()=>setView('builder')}><Package size={16}/>编辑画布商品</button></Field></div>
-        <aside className="detail-aside"><div><span className="eyebrow">State</span><StateBadge state={selected.state} /></div><div><span className="eyebrow">Products</span><strong>{configuredProducts.length}</strong></div><div><span className="eyebrow">Started at</span><strong>{selected.startedAt}</strong></div><button className="secondary full" onClick={() => setView("builder")}><Blocks size={16} /> Open Builder</button></aside>
+        <div className="form-card detail-form"><h2>General</h2><Field label="Paywall name"><input aria-label="付费墙名称" value={generalName ?? selected.name} onChange={(event)=>onGeneralNameChange?.(event.target.value)}/></Field></div>
+        <aside className="detail-aside"><div><span className="eyebrow">State</span><StateBadge state={selected.state} /></div><div><span className="eyebrow">Started at</span><strong>{selected.startedAt}</strong></div><button className="secondary full" onClick={() => setView("builder")}><Blocks size={16} /> Open Builder</button></aside>
       </div>
       <div className="builder-footer"><span role="status">{builderDirty?'未保存':'已保存'}</span><button type="button" className="secondary" onClick={discardGeneral}>放弃修改</button><button type="button" className="primary" onClick={saveGeneral}>保存</button></div>
     </section>
