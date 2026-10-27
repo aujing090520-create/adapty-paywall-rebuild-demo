@@ -1,4 +1,6 @@
 import ComponentEditor from './builder/ComponentEditor.jsx';
+import CreatePaywall from './CreatePaywall.jsx';
+import { freshPaywallDraft, paywallMetadata, paywallMetadataError } from './paywallMetadata.js';
 import { Field } from './builder/BuilderProperties.jsx';
 import { isTextNodeType, productPackageRows, listRowsFor, privilegeRowsFor, agreementSegmentsFor, textRunsFor, validTextLink, helloTalkTemplateDefaults, heroTitleParts, privilegeColumnsFor, safeButtonUrl } from './builder/fieldModels.js';
 import { PRODUCT_LAYOUTS, productLayout, PRODUCT_PART_DEFAULT_SIZES, HT_PRODUCT_DESIGN_DEFAULTS, PRODUCT_PARTS, productFontSize, validHexColor, productGradient, productPartStyle } from './products/productStyleModel.js';
@@ -286,28 +288,6 @@ const productOptions = [
   "Japanese Ai - 1 Year / Annual",
 ];
 
-const paywallBusinessTypes = ["6 - 会员", "83 - 特权类VIP"];
-const paywallScenesByBusinessType = {
-  "83 - 特权类VIP": ["48 - 直播语聊无限时长特权"],
-  "6 - 会员": ["3 - 新会员特权页-蓝色", "40 - SKU半窗", "16 - 访客", "17 - 附近", "18 - 城市特权"],
-};
-const paywallPublicAccounts = ["11000 - ht_vip", "11001 - hello_hellotalky", "15304 - ht_vip_plus", "11006 - hey_livea"];
-const paywallProductCatalog = DEMO_SKUS.map((sku) => ({ id: sku.id, name: sku.label }));
-
-function linkedPackageNode(productNode, offerRows, defaultProductId, variant) {
-  if (!productNode || !Array.isArray(offerRows)) return productNode;
-  const originalRows = productPackageRows(productNode, variant);
-  const slotCount = { "blue-privilege": 3, "membership-plans": 3, "payment-recovery": 2, "sku-sheet": 2, "rc-family-plans": 4, "rc-credits-onetime": 5 }[variant] ?? originalRows.length;
-  const packageRows = Array.from({ length: slotCount }, (_, index) => {
-    const row = offerRows[index];
-    const existing = originalRows.find((item) => item.skuId && item.skuId === row?.id) ?? {};
-    return row?.id ? { ...existing, skuId: row.id, name: skuById(row.id)?.displayName ?? row.name, emptySlot: false } : { ...existing, skuId: "", name: "", emptySlot: true };
-  });
-  return { ...productNode, config: { ...productNode.config, linkedProducts: true, packageRows, defaultSelected: packageRows.findIndex((row) => row.skuId === defaultProductId) } };
-}
-const emptyPaywallOfferRow = () => ({ key: crypto.randomUUID(), id: "", name: "", offer: "0", offerLabel: "不展示", unselectedTopLabel: "", selectedTopLabel: "", selectedButtonCopy: "", selectedButtonTagCopy: "不展示", giftPack: "0" });
-const defaultPaywallOfferRows = () => ["DEMO-BLUE-MONTH", "DEMO-BLUE-YEAR", "DEMO-BLUE-LIFETIME"].map((id) => ({ ...emptyPaywallOfferRow(), id, name: paywallProductCatalog.find((product) => product.id === id)?.name ?? "" }));
-
 const observedProductRows = [
   { product: "Japanese Ai - 1 Year", period: "Annual", offer: "Black Friday" },
   { product: "Japanese ai", period: "3 months", offer: "No offers for this product" },
@@ -321,10 +301,6 @@ const localeLabels = {
 };
 
 
-
-const freshPaywallDraft = () => ({
-  name: 'RESEARCH - Rebuild Draft', businessType: paywallBusinessTypes[0], businessScene: paywallScenesByBusinessType[paywallBusinessTypes[0]][0], publicAccount: paywallPublicAccounts[0], note: '', offerRows: defaultPaywallOfferRows(), defaultProductId: 'DEMO-BLUE-YEAR', products: [],
-});
 
 export default function App() {
   const [view, setViewNow] = useState("list");
@@ -437,6 +413,12 @@ export default function App() {
     setViewNow('create');
   });
 
+  const startBlankBuilder = () => {
+    const run = () => { restoreBuilder(); setBuilderOrigin('create'); setViewNow('builder'); };
+    if (builderDocument?.root.children.length) setPendingAction({ run, title: '从空白画布重新开始？', replace: true });
+    else run();
+  };
+
   const openPaywall = (item) => requestWorkspaceAction(() => {
     restoreBuilder(readConfiguredPaywall(window.localStorage, item.id));
     setSelectedId(item.id);
@@ -465,7 +447,7 @@ export default function App() {
       }
       const index = templates.findIndex((template) => template.id === content.templateId);
       restoreBuilder(); setBuilderOrigin('create');
-      setDraft({ ...freshPaywallDraft(), ...structuredClone(record?.paywall.config ?? {}), name: `${record?.paywall.name ?? original.name} (Copy)` });
+      setDraft({ ...paywallMetadata(record?.paywall.config), name: `${record?.paywall.name ?? original.name} (Copy)` });
       setAppliedTemplate(index < 0 ? null : index); setTemplateSelected(index < 0 ? null : index);
       setBuilderNodes(index < 0 ? [] : createBuilderNodes(content.templateId));
       setBuilderDocument(content); setSavedDocument(null); setViewNow('builder');
@@ -512,20 +494,15 @@ export default function App() {
     setTemplateSelected(templateIndex);
     setAppliedTemplate(templateIndex);
     setBuilderNodes(nextNodes);
-    if (template.id === "rc-credits-onetime") setDraft((current) => {
-      const unchangedDemoProducts = current.offerRows?.map((row) => row.id).join("|") === "DEMO-BLUE-MONTH|DEMO-BLUE-YEAR|DEMO-BLUE-LIFETIME";
-      if (!unchangedDemoProducts) return current;
-      const ids = [25, 50, 100, 250, 500].map((amount) => `DEMO-CREDIT-${amount}`);
-      return { ...current, offerRows: ids.map((id) => ({ ...emptyPaywallOfferRow(), id, name: skuById(id)?.label ?? "" })), defaultProductId: ids[0] };
-    });
     // Templates do not share a universal node id; select the first real layer.
     setActiveNode(nextNodes[0]?.id ?? "links");
   };
 
   const saveBuilder = () => {
     if (!builderDocument) { notify('请先打开构建器，确认页面内容后保存。'); return false; }
+    if (builderOrigin === 'create' && paywallMetadataError(draft)) { notify(paywallMetadataError(draft)); return false; }
     if (generalName !== null && !generalName.trim()) { notify('请填写付费墙名称'); return false; }
-    const paywall = builderOrigin === 'create' ? { id: `local-${crypto.randomUUID()}`, name: draft.name.trim() || '未命名付费墙', state: 'Draft', products: Object.keys(builderDocument.products).length, startedAt: new Date().toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' }), config: structuredClone(draft) } : { ...selected, name: generalName?.trim() || selected.name, products: Object.keys(builderDocument.products).length };
+    const paywall = builderOrigin === 'create' ? { id: `local-${crypto.randomUUID()}`, name: draft.name.trim(), state: draft.enabled ? 'Draft' : 'Inactive', products: Object.keys(builderDocument.products).length, startedAt: new Date().toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' }), config: paywallMetadata(draft) } : { ...selected, name: generalName?.trim() || selected.name, products: Object.keys(builderDocument.products).length };
     const exitDrafts = workspaceExitOfferIds(builderDocument).map((id) => exitOfferDrafts[id]).filter(Boolean);
     const records = [...exitDrafts, { version: 1, paywall, templateId: builderDocument.templateId, document: builderDocument }];
     if (!savePaywallBatch(window.localStorage, records)) { notify('本地保存失败，修改仍保留。'); return false; }
@@ -624,6 +601,7 @@ export default function App() {
               setDraft={setDraft}
               setView={setView}
               setModal={setModal}
+              onStartBlank={startBlankBuilder}
               markUnknown={markUnknown}
             />
           )}
@@ -849,69 +827,9 @@ function PaywallList({
   );
 }
 
-function CreatePaywall({ draft, setDraft, setView, setModal }) {
-  const rows = draft.offerRows ?? [];
-  const [labelPicker, setLabelPicker] = useState(null);
-  const [labelQuery, setLabelQuery] = useState("");
-  const [giftEditor, setGiftEditor] = useState(null);
-  const [giftQuery, setGiftQuery] = useState("");
-  const [offerEditor, setOfferEditor] = useState(null);
-  const [offerQuery, setOfferQuery] = useState("");
-  const patch = (next) => setDraft((current) => ({ ...current, ...next }));
-  const patchRow = (index, next) => setDraft((current) => ({ ...current, offerRows: (current.offerRows ?? []).map((row, position) => position === index ? { ...row, ...next } : row) }));
-  const labelInput = (row, index, key, label) => <div className="create-label-picker"><input aria-label={`商品 ${index + 1} ${label}`} placeholder="多语言 key" value={row[key] ?? ""} onChange={(event) => patchRow(index, { [key]: event.target.value })} /><button type="button" onClick={() => { setLabelPicker({ index, key, label }); setLabelQuery(row[key] ?? ""); }}>选择</button></div>;
-  const addProduct = () => patch({ offerRows: [...rows, emptyPaywallOfferRow()] });
-  const removeProduct = (index) => patch({ offerRows: rows.filter((_, position) => position !== index), defaultProductId: draft.defaultProductId === rows[index].id ? "" : draft.defaultProductId });
-  return (
-    <section className="create">
-      <button className="back" onClick={() => setView("list")}><ArrowLeft size={18} /> Paywalls</button>
-      <div className="create-header"><div><h1>Create paywall</h1><p>配置业务信息与商品，选择模板后进入构建器。</p></div></div>
-      <div className="start-card">
-        <span className="eyebrow">Builder & Generator</span><h2>Choose how to start</h2>
-        <button onClick={() => setView("builder")}><Blocks size={22} /><span><strong>Build no-code paywall</strong><small>Start with the visual Builder.</small></span><ChevronRight size={18} /></button>
-        <button onClick={() => setModal({ kind: "templates" })}><LayoutTemplate size={22} /><span><strong>Choose a template</strong><small>Observed template library and filters.</small></span><ChevronRight size={18} /></button>
-      </div>
-      <div className="create-grid">
-        <div className="form-card">
-          <h2>General</h2>
-          <div className="create-fields">
-            <Field label="业务类型 *"><select value={draft.businessType ?? ""} onChange={(event) => patch({ businessType: event.target.value, businessScene: paywallScenesByBusinessType[event.target.value][0] })}>{paywallBusinessTypes.map((value) => <option key={value}>{value}</option>)}</select></Field>
-            <Field label="公众号 *"><select value={draft.publicAccount ?? ""} onChange={(event) => patch({ publicAccount: event.target.value })}>{paywallPublicAccounts.map((value) => <option key={value}>{value}</option>)}</select></Field>
-            <Field label="业务场景 *"><select value={draft.businessScene ?? ""} onChange={(event) => patch({ businessScene: event.target.value })}>{(paywallScenesByBusinessType[draft.businessType] ?? []).map((value) => <option key={value}>{value}</option>)}</select></Field>
-            <Field label="Paywall 名称 *"><input value={draft.name} onChange={(event) => patch({ name: event.target.value })} /></Field>
-            <Field label="描述" optional><textarea value={draft.note ?? ""} onChange={(event) => patch({ note: event.target.value })} /></Field>
-          </div>
-          <div className="create-offers">
-            <div className="create-offers-heading"><h3>商品信息：</h3><button type="button" onClick={addProduct}>+ 添加商品</button></div>
-            <div className="create-offers-scroll">
-              <table>
-                <thead><tr><th>商品</th><th>优惠</th><th>优惠标签</th><th>默认<br />选中</th><th>推荐标签(未选中)</th><th>推荐标签(选中态)</th><th>选中按钮文案</th><th>按钮标签类型</th><th>赠送</th><th>操作</th></tr></thead>
-                <tbody>{rows.map((row, index) => <tr key={row.key}>
-                  <td><select aria-label={`商品 ${index + 1}`} value={row.id} onChange={(event) => { const product = paywallProductCatalog.find((item) => item.id === event.target.value); setDraft((current) => ({ ...current, defaultProductId: current.defaultProductId === row.id ? "" : current.defaultProductId, offerRows: current.offerRows.map((item, position) => position === index ? { ...item, id: product?.id ?? "", name: product?.name ?? "" } : item) })); }}><option value="">请选择商品</option>{paywallProductCatalog.map((product) => <option key={product.id} value={product.id} disabled={rows.some((item, position) => position !== index && item.id === product.id)}>{product.id} - {product.name}</option>)}</select></td>
-                  <td><div className="create-gift-controls"><input aria-label={`商品 ${index + 1} 优惠`} value={row.offer ?? "0"} readOnly /><button type="button" title="编辑优惠" aria-label={`编辑商品 ${index + 1} 优惠`} onClick={() => { setOfferEditor(index); setOfferQuery(row.offer ?? "0"); }}><Pencil size={15} /></button></div></td>
-                  <td><select aria-label={`商品 ${index + 1} 优惠标签`} value={row.offerLabel} onChange={(event) => patchRow(index, { offerLabel: event.target.value })}><option>不展示</option><option>展示推荐标签</option></select></td>
-                  <td><input type="checkbox" aria-label={`默认选中商品 ${index + 1}`} checked={Boolean(row.id) && draft.defaultProductId === row.id} disabled={!row.id} onChange={() => patch({ defaultProductId: draft.defaultProductId === row.id ? "" : row.id })} /></td>
-                  <td>{labelInput(row, index, "unselectedTopLabel", "推荐标签(未选中)")}</td>
-                  <td>{labelInput(row, index, "selectedTopLabel", "推荐标签(选中态)")}</td>
-                  <td>{labelInput(row, index, "selectedButtonCopy", "选中按钮文案")}</td>
-                  <td><select aria-label={`商品 ${index + 1} 按钮标签类型`} value={row.selectedButtonTagCopy} onChange={(event) => patchRow(index, { selectedButtonTagCopy: event.target.value })}><option>不展示</option><option>展示</option></select></td>
-                  <td><div className="create-gift-controls"><input aria-label={`商品 ${index + 1} 赠送`} value={row.giftPack ?? "0"} readOnly /><button type="button" title="编辑赠送" aria-label={`编辑商品 ${index + 1} 赠送`} onClick={() => { setGiftEditor(index); setGiftQuery(row.giftPack ?? "0"); }}>+</button></div></td>
-                  <td><div className="create-offer-actions"><button type="button" onClick={() => patchRow(index, { ...rows[index - 1], key: row.key, id: row.id, name: row.name })} disabled={index === 0}>复制上条配置</button><button type="button" onClick={() => removeProduct(index)}>删除</button></div></td>
-                </tr>)}</tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-      {labelPicker && <div className="modal-backdrop"><section className="modal create-label-modal" role="dialog" aria-label={`选择${labelPicker.label}`}><header><h2>选择{labelPicker.label}</h2><button type="button" className="icon" aria-label="关闭" onClick={() => setLabelPicker(null)}><X size={19} /></button></header><div className="create-label-modal-body"><Field label="多语言 key"><input autoFocus value={labelQuery} placeholder="输入或粘贴多语言 key" onChange={(event) => setLabelQuery(event.target.value)} /></Field><p>当前为本地 Demo，未接入线上多语言词条目录。</p></div><div className="modal-actions"><button type="button" className="secondary" onClick={() => setLabelPicker(null)}>取消</button><button type="button" className="primary" onClick={() => { patchRow(labelPicker.index, { [labelPicker.key]: labelQuery.trim() }); setLabelPicker(null); }}>确认</button></div></section></div>}
-      {giftEditor !== null && <div className="modal-backdrop"><section className="modal create-label-modal" role="dialog" aria-label="编辑赠送礼包"><header><h2>编辑赠送礼包</h2><button type="button" className="icon" aria-label="关闭" onClick={() => setGiftEditor(null)}><X size={19} /></button></header><div className="create-label-modal-body"><Field label="礼包名称"><input autoFocus value={giftQuery} onChange={(event) => setGiftQuery(event.target.value)} /></Field></div><div className="modal-actions"><button type="button" className="secondary" onClick={() => setGiftEditor(null)}>取消</button><button type="button" className="primary" onClick={() => { patchRow(giftEditor, { giftPack: giftQuery.trim() }); setGiftEditor(null); }}>确认</button></div></section></div>}
-      {offerEditor !== null && <div className="modal-backdrop"><section className="modal create-label-modal" role="dialog" aria-label="编辑优惠"><header><h2>编辑优惠</h2><button type="button" className="icon" aria-label="关闭" onClick={() => setOfferEditor(null)}><X size={19} /></button></header><div className="create-label-modal-body"><Field label="优惠"><input autoFocus value={offerQuery} onChange={(event) => setOfferQuery(event.target.value)} /></Field></div><div className="modal-actions"><button type="button" className="secondary" onClick={() => setOfferEditor(null)}>取消</button><button type="button" className="primary" onClick={() => { patchRow(offerEditor, { offer: offerQuery.trim() || "0" }); setOfferEditor(null); }}>确认</button></div></section></div>}
-    </section>
-  );
-}
 
 function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setView, duplicate, setModal, markUnknown, builderNodes, setBuilderNodes, updateBuilderNode, removeBuilderNode, activeNode, setActiveNode, appliedTemplate, builderDocument, setBuilderDocument, builderRevision, builderDirty, saveBuilder, discardBuilder, offerings, prepareExitOffer, changeExitOffer, templateLinks, setTemplateLinks, notify, generalName, onGeneralNameChange, saveGeneral, discardGeneral }) {
-  const configuredProducts = builderDocument ? Object.values(builderDocument.products) : selected.config?.offerRows ?? [];
+  const configuredProducts = builderDocument ? Object.values(builderDocument.products) : [];
   if (view === "builder") {
     const template = appliedTemplate !== null ? templates[appliedTemplate] : { id: "blank", title: "空白页面" };
     const initialNodes = appliedTemplate !== null ? builderNodes : [];

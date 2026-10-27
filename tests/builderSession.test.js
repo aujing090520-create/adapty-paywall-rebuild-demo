@@ -70,11 +70,19 @@ test('actual App reapplies pristine templates, saves by paywall, discards edits 
     await rename('第二次未保存');await click('放弃修改');assert.equal(rootName().props.value,'已保存内容');
     await rename('离开前未保存');await click('Paywalls');assert.ok(app.root.findByProps({'aria-label':'有尚未保存的修改'}));await click('放弃并继续');await open('test 2');assert.equal(rootName().props.value,'已保存内容');
     await click('Paywalls');await open('test');assert.equal(rootName().props.value,'付费墙页面');
-    await click('Paywalls');if(app.root.findAll(item=>item.props['aria-label']==='有尚未保存的修改').length)await click('放弃并继续');await click('Create paywall');await click('Build no-code paywall');await applyBlue();assert.equal(rootName().props.value,'特权首页');
+    await click('Paywalls');if(app.root.findAll(item=>item.props['aria-label']==='有尚未保存的修改').length)await click('放弃并继续');await click('Create paywall');
+    await click('从空白开始');assert.ok(app.root.findByProps({role:'alert'}),'empty names cannot enter the builder');
+    await act(async()=>app.root.findByProps({'aria-label':'paywall 样式名称'}).props.onChange({target:{value:'简化创建测试'}}));
+    await click('禁用');
+    await click('从空白开始');await applyBlue();assert.equal(rootName().props.value,'特权首页');
     await rename('新建也不能污染模板');
     assert.equal(JSON.parse(store.getItem(DOCUMENT_PREFIX+'ht-blue-privilege')).root.name,'旧缓存污染');
     assert.equal(listSavedPaywalls(store).length,1);assert.equal(reloads,0);
     await click('保存');assert.equal(listSavedPaywalls(store).length,2);assert.ok(listSavedPaywalls(store).some(record=>record.paywall.id.startsWith('local-')&&record.document.root.children.find(node=>node.type==='Flow').children[0].name==='新建也不能污染模板'));
+    const created=listSavedPaywalls(store).find(record=>record.paywall.id.startsWith('local-'));
+    assert.deepEqual(created.paywall.config,{styleType:'会员套餐页',name:'简化创建测试',enabled:true});
+    assert.equal(created.paywall.state,'Draft');
+    assert.deepEqual(Object.values(created.document.products).map(row=>row.skuId),['DEMO-BLUE-MONTH','DEMO-BLUE-YEAR','DEMO-BLUE-LIFETIME']);
     await click('重置');await click('确认重置');assert.equal(reloads,1);
     await act(async()=>app.unmount());app=null;assert.equal(store.getItem(DOCUMENT_PREFIX+'ht-blue-privilege'),null);assert.equal(listSavedPaywalls(store).length,0);
   } finally {
