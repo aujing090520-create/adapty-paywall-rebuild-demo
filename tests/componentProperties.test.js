@@ -58,6 +58,28 @@ async function mount(node, { editing = true, source, initialNavigation = {} } = 
   };
 }
 
+test('bound Package field summary and live preview follow source copy, floor savings, SKU changes and selected labels', async () => {
+  const template = templates.find(entry=>entry.id==='ht-blue-privilege');
+  const source = upgradeCanonicalComponents(importComponentDocument(createBuilderNodes(template.id),template));
+  const annual = indexDocument(source).nodes.get('products/package-1');
+  source.products[annual.props.dataKey].selectedBadgeText='运营选中标签';
+  const h = await mount(annual,{source,editing:false});
+  try {
+    const field=label=>h.renderer.root.findAll(item=>item.type==='input'&&item.props['aria-label']===label)[0];
+    assert.equal(field('商品信息').props.value,'节省47%');
+    assert.equal(field('商品周期名称').props.value,'12个月');
+    assert.equal(field('商品标签（选中）').props.value,'运营选中标签');
+    assert.equal(field('商品周期名称').props.readOnly,true);
+    const tag=h.node('products/package-1-badgeText');
+    assert.equal(tag.children.join(''),'运营选中标签');
+    await h.select('商品 SKU','DEMO-MEMBER-LIFETIME');
+    assert.equal(field('商品信息').props.value,'永久会员权益');
+    assert.equal(field('商品周期名称').props.value,'终身');
+    await h.check('显示商品标签',false);
+    assert.equal(h.node('products/badge-1'),undefined);
+  } finally { await h.close(); }
+});
+
 for (const type of COMPONENT_TYPES.filter((type) => !['Timeline', 'TimelineItem', 'Carousel', 'PageControl', 'Indicators','Wallet','Countdown','Custom'].includes(type))) {
   test(`${type}: configuration size, spacing, border and persistence map to the live component`, async () => {
     const node = type === 'BottomSheet' ? component('sample', 'BottomSheet', '底部弹层') : createCatalogComponent(type, 'sample');

@@ -141,6 +141,7 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
   if (props.hidden || (['overlay','sheet'].includes(props.presentation) && !floating)) return null;
   if (props.visibleWhen && Boolean(runtime[props.visibleWhen.id] ?? context.nodeIndex.get(props.visibleWhen.id)?.props.initial) !== props.visibleWhen.value) return null;
   const currentPackage = node.type === 'Package' ? node : packageNode;
+  if (props.productField && !resolveComponentText({ props: { binding: { key: currentPackage?.props.dataKey, field: props.productField } } }, document, currentPackage, stateSelected)) return null;
   const variablePackage = currentPackage ?? context.selectedPackage;
   const select = (event) => {
     if (!editing) return;
@@ -172,7 +173,7 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
     return <button {...attributes} key={page.id} type="button" data-indicator-index={index} title={`第 ${index+1} 页`} aria-label={`第 ${index+1} 页`} aria-current={index===sequence.chosen?'true':undefined} style={{...dotStyle,display:'block',padding:0,margin:0,borderRadius:'50%',cursor:'pointer'}} onClick={(event)=>{event.stopPropagation();if(editing)onSelect(node.id);else setRuntime((current)=>({...current,[sequence.id]:index}));}}/>;
   })}</>;
   if (node.type === 'Text') {
-    const value = props.timerField && timer ? timer[props.timerField] ?? '' : interpolateVariables(resolveComponentText(visualNode, document, currentPackage), document, variablePackage, timer);
+    const value = props.timerField && timer ? timer[props.timerField] ?? '' : interpolateVariables(resolveComponentText(visualNode, document, currentPackage, stateSelected), document, variablePackage, timer);
     if (node.props.binding && !value) return null;
     const rich = Boolean(props.runs?.length && !props.binding);
     const content=richTextContent({p:props,value,document,packageNode:variablePackage,timer,editing});

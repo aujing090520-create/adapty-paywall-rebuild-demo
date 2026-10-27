@@ -40,7 +40,9 @@ export const skuCopy = (id) => ({ supportingCopy: "", savingCopy: "", saveCopy: 
 const monthlyText = (value = "") => /\/\s*月|每月|per\s*month/i.test(value);
 
 export function billingMonths(row) {
-  if (row.skuId) return skuById(row.skuId)?.months ?? null;
+  const source = row.skuId ? skuById(row.skuId) : row;
+  if (source?.period?.count > 0) return source.period.count * ({ year: 12, month: 1, week: 12 / 52 }[source.period.unit] ?? 0) || null;
+  if (row.skuId) return source?.months ?? null;
   if (row.billingMonths === 0 || /终身|永久|lifetime/i.test(row.name ?? "")) return 0;
   if (Number(row.billingMonths) > 0) return Number(row.billingMonths);
   const years = (row.name ?? "").match(/(\d+)\s*年/);
@@ -62,14 +64,22 @@ function monthlyFromTotal(total, months) {
 export function productPriceFields(row) {
   if (row.skuId) {
     const sku = skuById(row.skuId);
-    return { total: sku?.total ?? "", monthly: sku?.monthly ?? "", referenceTotal: row.showReferencePrice === false ? "" : sku?.referenceTotal ?? "", referenceMonthly: "", months: sku?.months ?? null };
+    const reference = validReferencePrice(sku?.total, sku?.referenceTotal);
+    const months = billingMonths(row);
+    return { total: sku?.total ?? "", monthly: sku?.monthly ?? monthlyFromTotal(sku?.total, months), referenceTotal: row.showReferencePrice === false ? "" : reference, referenceMonthly: row.showReferencePrice === false ? "" : monthlyFromTotal(reference, months), months };
   }
   const months = billingMonths(row);
   const total = row.totalPrice ?? (monthlyText(row.price) ? (months === 1 ? row.price.replace(/\/\s*月.*/, "") : "") : row.price ?? "");
   const monthly = months === 0 ? "" : row.monthlyPrice ?? (monthlyText(row.price) ? row.price : monthlyText(row.supportingCopy) ? row.supportingCopy : monthlyFromTotal(total, months));
-  const referenceTotal = row.showReferencePrice === false ? "" : row.referenceTotalPrice ?? (monthlyText(row.referencePrice) ? "" : row.referencePrice ?? "");
+  const referenceTotal = row.showReferencePrice === false ? "" : validReferencePrice(total, row.referenceTotalPrice ?? (monthlyText(row.referencePrice) ? "" : row.referencePrice ?? ""));
   const referenceMonthly = months === 0 || row.showReferencePrice === false ? "" : row.referenceMonthlyPrice ?? (monthlyText(row.referencePrice) ? row.referencePrice : monthlyFromTotal(referenceTotal, months));
   return { total, monthly, referenceTotal, referenceMonthly, months };
+}
+
+export function validReferencePrice(sale, reference) {
+  const parse = (value) => String(value ?? '').match(/^([^\d]*)([\d,]+(?:\.\d+)?)(.*)$/);
+  const a = parse(sale), b = parse(reference);
+  return a && b && a[1].replace('￥', '¥') === b[1].replace('￥', '¥') && a[3] === b[3] && Number(b[2].replaceAll(',', '')) > Number(a[2].replaceAll(',', '')) ? reference : '';
 }
 
 export function verticalProductPriceFields(row) {
@@ -79,9 +89,9 @@ export function verticalProductPriceFields(row) {
 
 export function resolveProductPrice(row, modeId) {
   const fields = productPriceFields(row);
-  if (fields.months === 0) return { main: fields.total || "未关联 SKU", strike: modeId === "0" || modeId === "1" ? "" : fields.referenceTotal, missing: !fields.total, prominent: modeId === "7" };
+  if (fields.months === 0) return { main: fields.total || "未关联 SKU", strike: fields.referenceTotal, missing: !fields.total, prominent: modeId === "7" };
   const monthlyMain = modeId === "0" || modeId === "4";
   const main = monthlyMain ? fields.monthly : fields.total;
-  const strike = modeId === "4" ? fields.total : ["3", "6", "7"].includes(modeId) ? fields.monthly : "";
+  const strike = modeId === "4" ? fields.referenceTotal : ["3", "6", "7"].includes(modeId) ? fields.referenceMonthly : monthlyMain ? fields.referenceMonthly : fields.referenceTotal;
   return { main: main || (row.skuId ? "未关联 SKU" : `待配置${monthlyMain ? "月价" : "总价"}`), strike: strike && strike !== main ? strike : "", missing: !main, prominent: modeId === "7" };
 }

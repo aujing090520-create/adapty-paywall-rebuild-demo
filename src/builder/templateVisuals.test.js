@@ -25,12 +25,16 @@ test('HT defaults preserve business data and retained content while three scenes
     const oldNodes = indexDocument(before).nodes, nextNodes = indexDocument(after).nodes;
     if (id === 'ht-blue-privilege') {
       for(const key of oldNodes.keys())assert.ok(nextNodes.has(key));
-      assert.deepEqual([...nextNodes.keys()].filter(key=>!oldNodes.has(key)),['hero-image/navigation','hero-image/back','hero-image/back/icon','$main/footer']);
+      assert.deepEqual([...nextNodes.keys()].filter(key=>!oldNodes.has(key)),['hero-image/navigation','hero-image/back','hero-image/back/icon','products/package-0/product-label','products/package-0/product-label/text','products/package-0/product-info','products/package-2/product-label','products/package-2/product-label/text','$main/footer']);
     }
     else assert.equal(after.htSceneVersion, 1);
     for (const [key, node] of oldNodes) {
       if (!nextNodes.has(key)) continue;
-      for (const prop of ['text', 'runs', 'src', 'binding', 'action', 'dataKey']) assert.deepEqual(nextNodes.get(key).props[prop], node.props[prop], `${id}:${key}:${prop}`);
+      for (const prop of ['text', 'runs', 'src', 'binding', 'action', 'dataKey']) {
+        const value = nextNodes.get(key).props[prop];
+        if (prop === 'binding' && value?.field === 'productInfo' && ['savingCopy', 'saveCopy', 'supportingCopy'].includes(node.props.binding?.field)) assert.equal(value.key, node.props.binding.key);
+        else assert.deepEqual(value, node.props[prop], `${id}:${key}:${prop}`);
+      }
     }
     for (const key of ['purchase','legal','links']) if (oldNodes.has(key)) assert.ok(nextNodes.has(key), `${id}:${key}`);
   }

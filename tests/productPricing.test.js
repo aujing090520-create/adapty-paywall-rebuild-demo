@@ -10,8 +10,8 @@ test("subscription price modes use the same product data", () => {
   const row = { name: "12个月", price: "¥488", supportingCopy: "¥40.67/月", referencePrice: "¥698" };
   assert.equal(resolveProductPrice(row, "0").main, "¥40.67/月");
   assert.equal(resolveProductPrice(row, "1").main, "¥488");
-  assert.deepEqual(["3", "6", "7"].map((mode) => resolveProductPrice(row, mode).strike), ["¥40.67/月", "¥40.67/月", "¥40.67/月"]);
-  assert.equal(resolveProductPrice(row, "4").strike, "¥488");
+  assert.deepEqual(["3", "6", "7"].map((mode) => resolveProductPrice(row, mode).strike), ["¥58.17/月", "¥58.17/月", "¥58.17/月"]);
+  assert.equal(resolveProductPrice(row, "4").strike, "¥698");
   assert.equal(resolveProductPrice(row, "7").prominent, true);
 });
 

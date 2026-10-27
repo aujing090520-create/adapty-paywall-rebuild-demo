@@ -5,6 +5,7 @@ import { HT_PRODUCT_DESIGN_DEFAULTS } from '../products/productStyleModel.js';
 import { calibrateTemplateVisuals } from './templateVisuals.js';
 import { effectiveFillType } from './propertyModel.js';
 import { localSettingsResetting } from '../templateStorage.js';
+import { packageDisplayFields } from '../products/packageFields.js';
 
 export const DOCUMENT_VERSION = 3;
 export const COMPONENT_TYPES = ['Screen', 'Stack', 'Text', 'Image', 'Video', 'Icon', 'Custom', 'Header', 'Footer', 'Package', 'PurchaseButton', 'BottomSheet', 'ExpressCheckout', 'CheckoutState', 'Wallet', 'Button', 'Tabs', 'Tab', 'TabControl', 'TabButton', 'Carousel', 'Slide', 'PageControl', 'Indicators', 'Timeline', 'TimelineItem', 'Switch', 'SwitchCase', 'Toggle', 'Countdown', 'CountdownState', 'Flow'];
@@ -133,15 +134,10 @@ export function moveComponent(document, id, parentId, at = Infinity) {
   if (descendants.has(parentId)) return document;
   return insertComponent(removeComponent(document, id), parentId, node, at);
 }
-export function resolveComponentText(node, document, packageNode) {
+export function resolveComponentText(node, document, packageNode, selected = false) {
   const binding = node.props.binding;
   if (!binding) return node.props.runs?.length ? node.props.runs.map((run) => `${run.breakBefore ? '\n' : ''}${run.text ?? ''}`).join('') : node.props.text ?? '';
-  const row = document.products[packageNode?.props.dataKey ?? binding.key] ?? {};
-  const sku = skuById(row.skuId);
-  const value = sku ? { ...row, ...skuCopy(sku.id), name: sku.displayName } : row;
-  const price = resolveProductPrice(value, packageNode?.props.priceMode ?? '1');
-  const fields = productPriceFields(value);
-  return String(({ price: price.main, reference: price.strike, name: value.name, monthlyPrice: fields.monthly, referencePrice: fields.referenceTotal }[binding.field]) ?? value[binding.field] ?? '');
+  return String(packageDisplayFields(document, packageNode, selected, binding.key)[binding.field] ?? '');
 }
 
 // Legacy configuration is consumed once. Runtime edits never compile back to it.
