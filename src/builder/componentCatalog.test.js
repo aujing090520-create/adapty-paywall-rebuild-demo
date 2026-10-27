@@ -6,7 +6,7 @@ import { copyFragment, pasteFragment, copyStyles, pasteStyles, wrapInStack } fro
 const doc = (children=[]) => ({version:3,templateId:'test',products:{},root:component('root','Screen','页面',{},children)});
 
 test('source catalog categories create real valid trees, not opaque template modules',()=>{
-  assert.deepEqual(COMPONENT_CATALOG.map((group)=>group.name),['基础','付费墙','交互','内容']);
+  assert.deepEqual(COMPONENT_CATALOG.map((group)=>group.name),['基础','付费墙','交互','内容','业务组合']);
   for(const [type] of COMPONENT_CATALOG.flatMap((group)=>group.items)) {
     const node=createCatalogComponent(type,`test-${type}`);
     assert.ok(validDocument(doc([node])),type);

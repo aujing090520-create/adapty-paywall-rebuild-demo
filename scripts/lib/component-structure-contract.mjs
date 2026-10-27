@@ -19,7 +19,7 @@ export const STRUCTURAL_OWNERS = {
   TimelineItem: 'Timeline', SwitchCase: 'Switch', CheckoutState: 'ExpressCheckout', CountdownState: 'Countdown',
   Header: 'Screen', Footer: 'Screen',
 };
-export const PRESETS = ['BottomSheet', 'CloseButton', 'BackButton'];
+export const PRESETS = ['BottomSheet', 'CloseButton', 'BackButton','GiftList','BenefitsStrip','GiftEntry'];
 const OBSERVED_NATIVE_TYPES = { header: 'Header', footer: 'Footer', icon: 'Icon', image: 'Image', package: 'Package', purchase_button: 'PurchaseButton', button: 'Button', carousel: 'Carousel', timeline: 'Timeline', timeline_item: 'TimelineItem', tabs: 'Tabs', tab: 'Tab', tab_control: 'TabControl', tab_control_button: 'TabButton', stack: 'Stack', text: 'Text' };
 
 export function observedNativeType(row, rows) {

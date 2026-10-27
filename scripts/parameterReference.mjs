@@ -117,11 +117,22 @@ add(['Text'],'商品绑定','内容来源','binding','选择自定义文字或�
 add(['Text'],'商品绑定','商品字段','binding.field','选择此文字读取哪个商品字段；名称、价格等仍归商品记录所有','默认规则且内容来源为商品字段时显示',Object.entries({name:'商品周期名称',price:'售卖价',reference:'划线价',monthlyPrice:'月均售卖价',referencePrice:'SKU 原价',productInfo:'商品信息',supportingCopy:'辅助文案',savingCopy:'节省比例（兼容字段）',saveCopy:'商品信息（兼容字段）',badgeText:'商品标签'}).map(([key,label])=>[key,label,`读取所属商品的${label}`]));
 add(['Text'],'商品绑定','转为独立文字','binding','以当前实际文案解除绑定，后续不再随SKU更新','已有绑定且默认规则；不是复制第二份同时生效的字段');
 for(const [key,label] of PRODUCT_TEXT_VARIABLES)add(['Text'],'文字变量',label,`{{ ${key} }}`,'插入变量占位符；商品内部读取所属商品，商品外部读取当前选中商品','有对应商品数据才可显示；终身商品不生成订阅月数');
+add(['Text'],'文字变量','业务变量','{{ business.<变量键> }}','读取工作区业务变量默认值或预览运行值','在条件与联动中创建变量后，文字变量菜单可插入；未知键以空值回退');
 for(const [key,label] of TIMER_TEXT_VARIABLES)add(['Text'],'倒计时变量',label,`{{ ${key} }}`,'插入当前倒计时值；补零如02，不补零如2','处于倒计时内容中；计时单位决定小时/分钟是否累计');
 add(['Text'],'兼容','倒计时字段（旧模板）','timerField','选择天/时/分/秒及补零方式，或转为普通文字','仅已有倒计时字段的Text；与SKU绑定和runs互斥');
 add(['Text'],'字体资源','配置字体族','document.fonts','上传TTF/OTF并解析真实字体名/字重，文档共享使用；组件复制携带必要资源','字体文件选择/上传是资源操作；文件不合法或保存失败不覆盖原记录');
 
 add(['Image','Video'],'素材','素材地址','src','设置当前素材；上传可在图片和视频类型间切换','本Demo上传PNG/JPG/WebP/GIF/MP4，上限10MB；安全URL或本地Data URL');
+add(['Image'],'素材','媒体类型','mediaType','同一媒体组件选择图片或PAG动画，保持尺寸和视觉样式','PAG使用官方libpag播放；尚无用户业务PAG验收文件',[['image','图片','使用src'],['pag','PAG 动画','使用pagSrc和静态回退图']]);
+add(['Image'],'PAG','PAG 地址','pagSrc','PAG文件HTTP或上传Data URL','媒体类型为PAG；最大10MB，加载和播放失败转静态回退');
+add(['Image'],'PAG','PAG 静态回退图','fallbackSrc','PAG加载中、失败或运行环境不支持时展示的图片','媒体类型为PAG');
+add(['Image'],'PAG','PAG 循环播放','pagLoop','持续循环或播放一次','媒体类型为PAG',bool);
+add(['Image'],'PAG','PAG 自动播放','pagAutoPlay','初始化后播放或只渲染首帧','媒体类型为PAG',bool);
+add(['Stack'],'数据与展开','数据列表来源','dataSource','普通子组件或按当前SKU礼包/全局福利重复内部基础组件','列表没有可用数据时整块隐藏并收高；内部节点仍可编辑',[['','普通子组件','不重复'],['gifts','当前 SKU 礼包','读取业务数据中对应SKU'],['benefits','会员福利','读取全局福利列表']]);
+add(['Stack'],'数据与展开','允许展开收起','collapsible','容器支持用户展开或收起内部内容','编辑态展开以便编辑，交互预览按延时/点击控制',bool);
+add(['Stack'],'数据与展开','展开按钮文案','collapseLabel','容器展开收起按钮的可见文案','开启允许展开收起');
+add(['Stack'],'数据与展开','自动展开延时','autoExpandDelay','进入页面或切换套餐后等待指定毫秒再展开；-1只手动展开','开启允许展开收起；默认1500ms',[],'-1–60000 ms');
+add(['Stack'],'数据与展开','允许横向浏览','horizontalScroll','容器沿横向连续滚动，不劫持纵向滚动','建议搭配横向排列和固定宽条目；使用原生滚动',bool);
 add(['Image','Video'],'素材','素材适配','objectFit','控制内容素材在自己的框体内如何缩放','正常新配置只提供填满/完整显示；已存拉伸/原始尺寸保留兼容',fit);
 for(const [key,label,meaning] of [['loop','循环播放','播完后重新开始'],['muted','静音','关闭音轨声音'],['autoPlay','自动播放','加载后尝试播放，受浏览器策略限制'],['controls','播放控件','显示播放器原生控制栏']])add(['Video'],'播放设置',label,key,meaning,'关闭播放控件时强制自动播放；取消自动播放会保留可操作控件',bool);
 add(['Image','Video'],'遮罩','遮罩启用','maskEnabled','启用或移除素材裁切形状','只影响素材框体，不添加背景',bool);

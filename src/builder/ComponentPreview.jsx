@@ -8,8 +8,9 @@ import { stepDestination, owningModal } from './workflow.js';
 import { openSheetNavigation, closeSheetNavigation } from './buttonModals.js';
 import { overlayAlignmentStyle } from './propertyModel.js';
 import { canvasSelectionTarget } from './canvasSelection.js';
-import { stateStyleProps, countdownSeconds, checkedControl, activeComponents, countdownValues, countdownDeadline, imageMask, paintColor, cornerRadius, selectionOwner, sequencePages, BADGE_DEFAULTS, mainAxisFillStyle, hasBoundedHeight } from './propertyModel.js';
-import { interpolateVariables } from './textVariables.js';
+import { stateStyleProps, countdownSeconds, checkedControl, activeComponents, previewCommerceContexts, countdownValues, countdownDeadline, imageMask, paintColor, cornerRadius, selectionOwner, sequencePages, BADGE_DEFAULTS, mainAxisFillStyle, hasBoundedHeight } from './propertyModel.js';
+import {productPriceFields} from '../productPricing.js';
+import { interpolateVariables, variableIssues } from './textVariables.js';
 import { TimelinePreview, TimelineItemPreview } from './TimelinePreview.jsx';
 import { actionLink,customCheckoutLink } from './actionLinks.js';
 import {isGradient,gradientWithOpacity} from './colorModel.js';
@@ -17,6 +18,9 @@ import TablerGlyph,{parseTablerIcon} from './TablerGlyph.jsx';
 import CustomComponentPreview from './CustomComponentPreview.jsx';
 import {safeTextLink,richTextFontFamily} from './richTextModel.js';
 import {textRuleProps} from './textRules.js';
+import {logicNode} from './paywallLogic.js';
+import {localizedDocument} from './contentLocalization.js';
+import {businessList,interpolateItem} from './businessData.js';
 import {fontStyles} from './fontStyles.js';
 import { isExitOfferStep } from './exitOffers.js';
 import { screenChromeLayout } from './screenLayout.js';
@@ -24,6 +28,8 @@ import { screenChromeLayout } from './screenLayout.js';
 const PreviewContext = createContext(null);
 const TimerContext = createContext(null);
 const CarouselContext = createContext(null);
+const ItemContext=createContext(null);
+const PagMedia=React.lazy(()=>import('./PagMedia.jsx'));
 const icons = { check: Check, lock: LockKeyhole, star: Star, bell: Bell, moon: Moon, heart: Heart, group: Users, clock: Clock3, gift: Gift, arrow: ChevronRight, dumbbell: Dumbbell, weight: Dumbbell, running: PersonStanding, download: Download, map: MapPin, flower: Flower2, activity: Activity, ticket: Ticket, noads: Ban, blocks: Blocks, archive: Archive, shirt: Shirt, seat: Armchair, scan: ScanSearch, help: CircleHelp, access: LogIn };
 export const safeMediaSource = (url) => /^(https?:\/\/|\/(?!\/)|data:(image|video)\/)/i.test(url ?? '') ? url : '';
 const dimension = (mode, value) => mode === 'fixed' ? `${Math.max(0, Number(value) || 0)}px` : mode === 'fit' ? 'fit-content' : '100%';
@@ -59,19 +65,21 @@ function BackgroundVideo({ props }) {
   return src ? <video aria-hidden="true" data-background-video src={src} autoPlay loop muted playsInline style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: props.backgroundFit ?? 'cover', borderRadius: 'inherit', zIndex: -1, pointerEvents: 'none' }} /> : null;
 }
 function ComponentBadge({node,document,packageNode,timer}){
+  const {runtime}=useContext(PreviewContext);
   const p=node.props;
   if(!(p.badgeEnabled??Boolean(p.badge)))return null;
   const badge={...BADGE_DEFAULTS,...p.badge},bottom=badge.position.startsWith('bottom'),side=badge.position.split('-')[1];
-  const content=interpolateVariables(badge.text,document,packageNode,timer);
-  const rich=richTextContent({p:badge,value:content,document,packageNode,timer,editing:true});
+  const content=interpolateVariables(badge.text,document,packageNode,timer,runtime);
+  const rich=richTextContent({p:badge,value:content,document,packageNode,timer,runtime,editing:true});
   return <span className="nc-badge" data-badge-owner={node.id} style={{...componentStyle({type:'Text',props:{...badge,textBackground:'transparent'},children:[]}),position:'absolute',zIndex:3,...(bottom?{bottom:0}:{top:0}),...(side==='center'?{left:'50%'}:side==='right'?{right:0}:{left:0}),transform:`translate(${side==='center'?'-50%':'0'},${badge.positionStyle==='overlay'?(bottom?'50%':'-50%'):'0'})`,maxWidth:'100%',whiteSpace:'pre-wrap',overflowWrap:'anywhere',pointerEvents:'none'}}><span style={{background:paintColor(badge.textBackground,badge.textBackgroundOpacity),textDecoration:badge.runs?.length?undefined:textDecoration(badge.strike,badge.underline)}}>{isGradient(badge.color)?<span style={textPaintStyle(badge.color,badge.colorOpacity)}>{rich}</span>:rich}</span></span>;
 }
 const textDecoration=(strike,underline)=>[strike&&'line-through',underline&&'underline'].filter(Boolean).join(' ')||undefined;
-function richTextContent({p,value,document,packageNode,timer,editing}) {
+function richTextContent({p,value,document,packageNode,timer,editing,runtime}) {
   if(!p.runs?.length||p.binding)return value;
   return p.runs.map((run,index)=>{
     const href=safeTextLink(run.link),Tag=href?'a':'span';
-    return <React.Fragment key={index}>{run.breakBefore&&<br/>}<Tag {...(href?{href,target:'_blank',rel:'noopener noreferrer',tabIndex:editing?-1:undefined,onClick:(event)=>{if(editing)event.preventDefault();else event.stopPropagation();}}:{})} style={{...textPaintStyle(run.color??(href?'inherit':undefined),run.colorOpacity??p.colorOpacity),fontSize:run.fontSize?Number.parseFloat(run.fontSize):undefined,fontWeight:run.fontWeight??(run.bold===false?400:run.bold?700:undefined),fontStyle:(run.italic??p.italic)?'italic':'normal',fontFamily:run.code?'ui-monospace, monospace':richTextFontFamily(run.fontFamily),backgroundColor:run.backgroundColor,textDecoration:textDecoration(run.strikethrough??p.strike,(run.underline??p.underline)||Boolean(href))}}>{interpolateVariables(run.text,document,packageNode,timer)}</Tag></React.Fragment>;
+    const content=interpolateVariables(run.text,document,packageNode,timer,runtime);
+    return <React.Fragment key={index}>{run.breakBefore&&<br/>}<Tag {...(href?{href,target:'_blank',rel:'noopener noreferrer',tabIndex:editing?-1:undefined,onClick:(event)=>{if(editing)event.preventDefault();else event.stopPropagation();}}:{})} style={{...textPaintStyle(run.color??(href?'inherit':undefined),run.colorOpacity??p.colorOpacity),fontSize:run.fontSize?Number.parseFloat(run.fontSize):undefined,fontWeight:run.fontWeight??(run.bold===false?400:run.bold?700:undefined),fontStyle:(run.italic??p.italic)?'italic':'normal',fontFamily:run.code?'ui-monospace, monospace':richTextFontFamily(run.fontFamily),backgroundColor:run.backgroundColor,textDecoration:textDecoration(run.strikethrough??p.strike,(run.underline??p.underline)||Boolean(href))}}>{content}</Tag></React.Fragment>;
   });
 }
 function PageSequence({ node, context, props, attributes, style, children }) {
@@ -121,12 +129,22 @@ function PageSequence({ node, context, props, attributes, style, children }) {
   const bounded = props.heightMode !== 'fit';
   return <CarouselContext.Provider value={{id:node.id,pages,chosen}}><div {...attributes} style={{...style,display:'flex',flexDirection:'column',gap:0}}><BackgroundVideo props={props}/>{props.pageControlPosition === 'top' && pagination}<div ref={carouselRef} className="nc-carousel-viewport" style={{overflow:'hidden',minWidth:0,width:'100%',...(bounded?{flex:'1 1 0%',minHeight:0}:{})}}><div className="nc-carousel-track" style={{display:'flex',...(bounded?{height:'100%'}:{}),gap:spacing,alignItems:({top:'flex-start',center:'center',bottom:'flex-end'}[props.pageAlignment??'top']),touchAction:'pan-y pinch-zoom',...(!carousel ? {transform:`translateX(calc(${peek}px - ${chosen} * (100% - ${peek*2}px + ${spacing}px)))`} : {})}}>{pages.map((child,index)=><div key={child.id} data-carousel-page={index} aria-hidden={index!==chosen} style={{flex:`0 0 calc(100% - ${peek*2}px)`,minWidth:0,...(bounded?{height:'100%'}:{})}}>{children([child],false)}</div>)}</div></div>{props.pageControlPosition !== 'top' && pagination}</div></CarouselContext.Provider>;
 }
+function Disclosure({label,delay,scope,editing,children}) {
+  const [open,setOpen]=useState(editing);
+  const timer=useRef(null);
+  useEffect(()=>{setOpen(editing);if(editing||delay<0)return;timer.current=setTimeout(()=>setOpen(true),delay??1500);return()=>clearTimeout(timer.current);},[scope,delay,editing]);
+  return <><button type="button" aria-expanded={open} onClick={event=>{event.stopPropagation();clearTimeout(timer.current);setOpen(value=>!value);}} style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,border:0,background:'transparent',padding:8,font:'inherit',color:'inherit',width:'100%',cursor:'pointer'}}>{label}<ChevronRight size={16} style={{transform:open?'rotate(90deg)':'none'}}/></button>{open&&children}</>;
+}
+
 export function NativeComponent({ node, packageNode = null, floating = false, layoutStyle }) {
   const context = useContext(PreviewContext);
   const timer = useContext(TimerContext);
   const sequence=useContext(CarouselContext);
+  const repeated=useContext(ItemContext),item=repeated?.item;
   const { document, selectedId, onSelect, editing, runtime, setRuntime, runAction } = context;
-  const baseProps = node.type==='Text'?textRuleProps(componentProps(node),runtime.textRule):componentProps(node);
+  const conditionalNode=logicNode(node,document,runtime,context.selectedPackage);
+  let baseProps = node.type==='Text'?textRuleProps(componentProps(conditionalNode),runtime.textRule):componentProps(conditionalNode);
+  if(item)baseProps={...baseProps,text:interpolateItem(baseProps.text,item),runs:baseProps.runs?.map(run=>({...run,text:interpolateItem(run.text,item)})),src:interpolateItem(baseProps.src,item),action:baseProps.action?{...baseProps.action,actionUrl:interpolateItem(baseProps.action.actionUrl,item)}:undefined};
   const group = baseProps.group ?? node.id;
   const packageSelected = runtime[`package:${group}`] !== undefined ? runtime[`package:${group}`] === node.id : Boolean(baseProps.defaultSelected);
   const owner = selectionOwner(node, context.nodeIndex, context.parentIndex);
@@ -143,6 +161,8 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
   const currentPackage = node.type === 'Package' ? node : packageNode;
   if (props.productField && !resolveComponentText({ props: { binding: { key: currentPackage?.props.dataKey, field: props.productField } } }, document, currentPackage, stateSelected)) return null;
   const variablePackage = currentPackage ?? context.selectedPackage;
+  const entries=props.dataSource?businessList(document,props.dataSource,variablePackage):null;
+  if(entries&&!entries.length)return null;
   const select = (event) => {
     if (!editing) return;
     event.stopPropagation();
@@ -165,7 +185,9 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
     }
   }
   const attributes = { 'data-component-id': node.id, 'data-component-type': node.type, 'data-axis': props.axis, 'data-width': props.widthMode, 'data-height': props.heightMode, className: `nc-node nc-${node.type.toLowerCase()} ${floating ? 'nc-modal-surface' : ''} ${editing && selectedId === node.id ? 'nc-inspected' : ''} ${editing && context.hoveredId === node.id ? 'nc-hovered' : ''}`, style, onClick: select };
-  const children = (items = node.children, background = true) => <>{background && <BackgroundVideo props={props} />}{items.map((child) => <NativeComponent key={child.id} node={child} packageNode={currentPackage} />)}{background&&<ComponentBadge node={visualNode} document={document} packageNode={variablePackage} timer={timer}/>}</>;
+  if(repeated&&repeated.index>0){attributes['data-component-id']=`${node.id}::${repeated.item.id}`;attributes['data-template-id']=node.id;}
+  const children = (items = node.children, background = true) => <>{background && <BackgroundVideo props={props} />}{entries?entries.map((item,index)=><ItemContext.Provider key={item.id} value={{item,index}}>{items.filter(child=>child.type!=='BottomSheet').map(child=><NativeComponent key={child.id} node={child} packageNode={currentPackage}/>)}</ItemContext.Provider>):items.map((child) => <NativeComponent key={child.id} node={child} packageNode={currentPackage} />)}{background&&<ComponentBadge node={visualNode} document={document} packageNode={variablePackage} timer={timer}/>}</>;
+  if(props.dataSource||props.collapsible)return <div {...attributes} style={{...style,...containerStyle(visualNode),...(props.horizontalScroll?{overflowX:'auto',overscrollBehaviorX:'contain'}:{}),...(props.collapsible?{display:'flex',flexDirection:'column'}:{})}}>{props.collapsible?<Disclosure label={props.collapseLabel??'展开内容'} delay={props.autoExpandDelay??1500} scope={`${variablePackage?.id??''}:${entries?.map(item=>item.id).join(',')??node.id}`} editing={editing}>{children()}</Disclosure>:children()}</div>;
   if(node.type==='PageControl')return <div {...attributes} style={{...style,display:'flex',justifyContent:'center',alignItems:'center',gap:props.gap}}>{children()}</div>;
   if(node.type==='Indicators')return <>{sequence?.pages.map((page,index)=>{
     const active=index===sequence.chosen && (!editing || selectedId!==node.id || runtime[`package-style:${node.id}`]==='selected');
@@ -173,17 +195,19 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
     return <button {...attributes} key={page.id} type="button" data-indicator-index={index} title={`第 ${index+1} 页`} aria-label={`第 ${index+1} 页`} aria-current={index===sequence.chosen?'true':undefined} style={{...dotStyle,display:'block',padding:0,margin:0,borderRadius:'50%',cursor:'pointer'}} onClick={(event)=>{event.stopPropagation();if(editing)onSelect(node.id);else setRuntime((current)=>({...current,[sequence.id]:index}));}}/>;
   })}</>;
   if (node.type === 'Text') {
-    const value = props.timerField && timer ? timer[props.timerField] ?? '' : interpolateVariables(resolveComponentText(visualNode, document, currentPackage, stateSelected), document, variablePackage, timer);
+    const issues=variableIssues(resolveComponentText(visualNode,document,currentPackage,stateSelected),document,variablePackage,timer,runtime);
+    if(editing&&issues.length)attributes.title=issues.map(item=>`${item.key}：${item.reason}，预览以空值回退`).join('；');
+    const value = props.timerField && timer ? timer[props.timerField] ?? '' : interpolateVariables(resolveComponentText(visualNode, document, currentPackage, stateSelected), document, variablePackage, timer,runtime);
     if (node.props.binding && !value) return null;
     const rich = Boolean(props.runs?.length && !props.binding);
-    const content=richTextContent({p:props,value,document,packageNode:variablePackage,timer,editing});
+    const content=richTextContent({p:props,value,document,packageNode:variablePackage,timer,editing,runtime});
     return <div {...attributes} style={{ ...style, textDecoration: rich ? undefined : textDecoration(props.strike, props.underline), whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', lineHeight: props.lineHeight ?? 1.35 }}>{isGradient(props.color)?<span style={textPaintStyle(props.color,props.colorOpacity)}>{content}</span>:content}</div>;
   }
   if (node.type === 'Image' || node.type === 'Video') {
     const src = safeMediaSource(props.src);
     const circle = imageMask(props) === 'circle';
     return <div {...attributes} style={{ ...style, ...(circle ? { borderRadius: '50%' } : {}), ...(circle || props.mask === 'rounded' || props.shape !== 'rectangle' || props.radius > 0 || props.radiusMode === 'individual' ? { overflow: 'hidden' } : {}) }}>
-      {src ? node.type === 'Video' ? <video src={src} autoPlay={props.autoPlay ?? false} loop={props.loop ?? false} muted={props.muted ?? true} playsInline controls={props.controls ?? true} style={{ width: '100%', height: '100%', objectFit: props.objectFit, borderRadius: 'inherit', display:'block' }} /> : <img src={src} alt={props.decorative ? '' : props.altText ?? node.name ?? '图片'} draggable={false} style={{ width: '100%', height: '100%', objectFit: props.objectFit, display: 'block', borderRadius: 'inherit' }} /> : <div className="nc-empty-media" />}
+      {props.mediaType==='pag'?<React.Suspense fallback={safeMediaSource(props.fallbackSrc)?<img alt={props.altText??'图片'} src={safeMediaSource(props.fallbackSrc)} style={{width:'100%',height:'100%',objectFit:props.objectFit}}/>:null}><PagMedia src={props.pagSrc} fallback={safeMediaSource(props.fallbackSrc)} loop={props.pagLoop!==false} autoPlay={props.pagAutoPlay!==false} objectFit={props.objectFit} alt={props.altText??'PAG动画'}/></React.Suspense>:src ? node.type === 'Video' ? <video src={src} autoPlay={props.autoPlay ?? false} loop={props.loop ?? false} muted={props.muted ?? true} playsInline controls={props.controls ?? true} style={{ width: '100%', height: '100%', objectFit: props.objectFit, borderRadius: 'inherit', display:'block' }} /> : <img src={src} alt={props.decorative ? '' : props.altText ?? node.name ?? '图片'} draggable={false} style={{ width: '100%', height: '100%', objectFit: props.objectFit, display: 'block', borderRadius: 'inherit' }} /> : <div className="nc-empty-media" />}
       {src && props.overlayEnabled !== false && props.overlayColor && props.overlayColor !== 'transparent' && <span aria-hidden="true" style={{ position: 'absolute', inset: 0, background: paintColor(props.overlayColor, props.overlayOpacity), borderRadius: 'inherit', pointerEvents: 'none' }} />}
     </div>;
   }
@@ -219,10 +243,11 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
     return <Timeline node={node} props={props} attributes={attributes} style={style} render={(child, childLayout) => <NativeComponent key={child.id} node={child} packageNode={currentPackage} layoutStyle={childLayout} />} />;
   }
   if (['Button','TabButton','PurchaseButton'].includes(node.type)) {
+    if(['Purchase','WebCheckout','WebPaywall','CustomCheckout'].includes(props.action?.action)) attributes['data-purchase-sku']=document.products[(currentPackage??context.selectedPackage)?.props.dataKey]?.skuId??'';
     const buttonContent = node.children.filter((child) => child.type !== 'BottomSheet' && !['overlay','sheet'].includes(child.props.presentation));
     if (buttonContent.length && buttonContent.every((child) => child.type === 'Icon')) { attributes['aria-label'] = node.name; attributes.title = node.name; }
     const blocked = props.action?.action === 'OpenPage' && isUnconfiguredDetailPage(context.nodeIndex.get(props.action.actionPage));
-    return <div {...attributes} role="button" tabIndex={0} aria-disabled={!editing && blocked || undefined} style={{ ...style, ...containerStyle(visualNode), ...(!editing&&blocked?{cursor:'default'}:{}) }} onClick={(event) => { select(event); if (node.type === 'TabButton') setRuntime((current) => ({ ...current, [props.target]: props.index })); else if (!editing) { event.stopPropagation(); runAction(node); } }} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); if (editing) onSelect(node.id); else if (node.type === 'TabButton') setRuntime((current) => ({ ...current, [props.target]: props.index })); else runAction(node); } }}>{children()}</div>;
+    return <div {...attributes} role="button" tabIndex={0} aria-disabled={!editing && blocked || undefined} style={{ ...style, ...containerStyle(visualNode), ...(!editing&&blocked?{cursor:'default'}:{}) }} onClick={(event) => { select(event); if (node.type === 'TabButton') setRuntime((current) => ({ ...current, [props.target]: props.index })); else if (!editing) { event.stopPropagation(); runAction({...node,props},item); } }} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); if (editing) onSelect(node.id); else if (node.type === 'TabButton') setRuntime((current) => ({ ...current, [props.target]: props.index })); else runAction({...node,props},item); } }}>{children()}</div>;
   }
   if (node.type === 'Screen' && node.children.some((child) => ['Header', 'Footer'].includes(child.type))) {
     const chrome = screenChromeLayout(node, runtime, context.nodeIndex);
@@ -255,11 +280,12 @@ function Countdown({ props }) {
   const parts = [Math.floor(remaining / 3600), Math.floor(remaining / 60) % 60, remaining % 60];
   return <span className="nc-countdown"><span style={{ color: props.prefixColor }}>{props.prefix}</span>{parts.map((part, index) => <React.Fragment key={index}>{index > 0 && <span>:</span>}<strong style={{ background: props.digitBackground, borderRadius: 4, padding: '0 3px' }}>{String(part).padStart(2, '0')}</strong></React.Fragment>)}<span>{props.suffix}</span></span>;
 }
-export default function ComponentPreview({ document, selectedId, highlightedId, onSelect, editing, inspectable = true, navigation, onNavigate, onStatus, onDismiss, onResume, dismissRequest = 0, dismissOnBackdrop = false }) {
+export default function ComponentPreview({ document: sourceDocument, selectedId, highlightedId, onSelect, editing, inspectable = true, navigation, onNavigate, onStatus, onDismiss, onResume, dismissRequest = 0, dismissOnBackdrop = false }) {
+  const document=useMemo(()=>localizedDocument(sourceDocument,navigation),[sourceDocument,navigation?.contentLocale,navigation?.contentTheme,navigation?.contentPlatform]);
   const [runtime, setRuntime] = useState({});
   const [hoveredId, setHoveredId] = useState(null);
   const previousDocument = useRef(document);
-  const viewport = useRef(null), [scale, setScale] = useState(0.82), [viewportHeight, setViewportHeight] = useState(844);
+  const viewport = useRef(null), phone=useRef(null), [scale, setScale] = useState(0.82), [viewportHeight, setViewportHeight] = useState(844);
   const navigationKey = JSON.stringify(Object.entries(navigation ?? {}).sort(([a], [b]) => a.localeCompare(b)));
   useEffect(() => setHoveredId(null), [editing, inspectable, selectedId, navigationKey, document]);
   useEffect(() => {
@@ -280,7 +306,7 @@ export default function ComponentPreview({ document, selectedId, highlightedId, 
       return { ...next, ...navigation };
     });
   }, [document, navigationKey]);
-  useLayoutEffect(() => { const resize = () => { const scale = (viewport.current?.clientWidth ?? 320) / 390; setScale(scale); setViewportHeight(viewport.current?.clientHeight ? viewport.current.clientHeight / scale : 844); }; const observer = new ResizeObserver(resize); if (viewport.current) observer.observe(viewport.current); resize(); return () => observer.disconnect(); }, []);
+  useLayoutEffect(() => { const resize = () => { const scale = (phone.current?.clientWidth ?? 320) / 390; setScale(scale); setViewportHeight(phone.current?.clientHeight ? phone.current.clientHeight / scale : 844); }; const observer = new ResizeObserver(resize); if (phone.current) observer.observe(phone.current); resize(); return () => observer.disconnect(); }, []);
   useEffect(() => {
     if (!editing) return;
     const root = viewport.current;
@@ -293,18 +319,24 @@ export default function ComponentPreview({ document, selectedId, highlightedId, 
     if (inner.top < outer.top) root.scrollTop += (inner.top - outer.top) / zoom;
     else if (inner.bottom > outer.bottom) root.scrollTop += Math.min(inner.top - outer.top, inner.bottom - outer.bottom) / zoom;
   }, [selectedId, navigationKey, editing]);
-  const runAction = (node) => {
+  const runAction = (node,item) => {
     const action = node.props.action ?? {};
     if (!action.action || action.action === 'None') return;
     if(['Purchase','WebCheckout','WebPaywall','CustomCheckout'].includes(action.action)) {
       if(!isExitOfferStep(document,runtime)&&!(document.settings?.buttonModalVersion&&indexDocument(document).nodes.get(runtime.overlay)?.type==='BottomSheet')){onStatus('商品选择和购买只能在最终步骤进行');return;}
       const required=activeComponents(document,runtime).find((item)=>item.type==='Toggle'&&item.props.required&&!checkedControl(item.props,item.id,runtime,indexDocument(document).nodes));
       if(required){onStatus('请先勾选同意协议');return;}
+      let owner=nodeIndex.get(parentIndex.get(node.id));
+      while(owner&&!['Package','BottomSheet','Screen'].includes(owner.type))owner=nodeIndex.get(parentIndex.get(owner.id));
+      const scope=owningModal(document,node.id)?commerce.floating:commerce.background;
+      const target=owner?.type==='Package'?owner:scope.selectedPackage;
+      const row=document.products[target?.props.dataKey??target?.id];
+      if(!row||!productPriceFields(row).total){onStatus('请先选择有效的商品套餐');return;}
     }
     if (action.action === 'NavigateTo') { onStatus('请先选择跳转目标'); return; }
     if (action.action === 'OpenSheet') {
       const target = indexDocument(document).nodes.get(action.actionPage);
-      if (target?.type === 'BottomSheet' && !target.props.hidden) setRuntime((current)=>openSheetNavigation(current,target.id)); else onStatus('请先选择有效的弹层');
+      if (target?.type === 'BottomSheet' && !target.props.hidden) setRuntime((current)=>({...openSheetNavigation(current,target.id),[`modal-item:${target.id}`]:item??null})); else onStatus('请先选择有效的弹层');
     } else if (action.action === 'CloseSheet') {
       if (document.settings?.presentationSurfaceId && onResume) { onResume(); return; }
       if (document.settings?.presentationSurfaceId && onDismiss) { dismissPaywall(); return; }
@@ -349,7 +381,7 @@ export default function ComponentPreview({ document, selectedId, highlightedId, 
     } else if (action.action === 'CustomCheckout') {
       const {nodes,parents}=indexDocument(document);let owner=nodes.get(parents.get(node.id));
       while(owner&&owner.type!=='Package')owner=nodes.get(parents.get(owner.id));
-      const packageNode=owner??selectedPackage;
+      const packageNode=owner??(owningModal(document,node.id)?commerce.floating:commerce.background).selectedPackage;
       if(action.attachPackageId!==false&&!packageNode){onStatus('请先选择商品套餐');return;}
       const link=customCheckoutLink(action,{packageId:packageNode?.props.dataKey??packageNode?.id,appUserId:'demo-preview',environment:'sandbox'});
       if(!link)onStatus('请填写有效结账链接；仅深链方式支持应用协议');
@@ -369,12 +401,24 @@ export default function ComponentPreview({ document, selectedId, highlightedId, 
     if (!editing) dismissPaywall();
   }, [dismissRequest, editing]);
   const {nodes:nodeIndex,parents:parentIndex} = indexDocument(document), overlay = nodeIndex.get(runtime.overlay);
-  const packages = activeComponents(document,runtime).filter((item)=>item.type==='Package');
-  const selectedPackage = packages.find((item)=>item.id===runtime.selectedPackage) ?? packages.find((item)=>runtime[`package:${item.props.group??item.id}`]===item.id) ?? packages.find((item)=>item.props.defaultSelected && runtime[`package:${item.props.group??item.id}`]===undefined);
+  const commerce = previewCommerceContexts(document,runtime);
   const hover = (event) => {
     if (!editing || !inspectable) return;
     const element = event.target.closest?.('[data-component-id]');
-    setHoveredId(canvasSelectionTarget(nodeIndex.get(element?.dataset.componentId), selectedId, nodeIndex, parentIndex));
+    setHoveredId(canvasSelectionTarget(nodeIndex.get(element?.dataset.templateId??element?.dataset.componentId), selectedId, nodeIndex, parentIndex));
   };
-  return <PreviewContext.Provider value={{ document, nodeIndex, parentIndex, viewportHeight, selectedId, onSelect, editing, hoveredId: editing ? highlightedId ?? (inspectable ? hoveredId : null) : null, runtime, setRuntime, runAction, onStatus, selectedPackage,packages }}><style>{fontStyles(document.fonts)}</style><div className="phone native-phone" onPointerMove={hover} onPointerLeave={()=>setHoveredId(null)}><div className="nc-viewport" ref={viewport} onScroll={()=>setHoveredId(null)}><div className="nc-design" style={{ zoom: scale }}><NativeComponent node={document.root} /></div></div>{overlay && <div className="nc-floating-overlay"><div className="nc-floating-backdrop" onClick={()=>{ if (!editing && dismissOnBackdrop && overlay.id === document.settings?.presentationSurfaceId) dismissPaywall(); else setRuntime((current)=>({...current,overlay:null})); }}/><div className="nc-floating-design" data-presentation={overlay.props.presentation} style={{zoom:scale,height:(viewport.current?.clientHeight??844)/scale,padding:overlay.props.surfaceInset ?? (overlay.props.presentation === 'sheet' ? 0 : 20)}}><NativeComponent node={overlay} floating/></div></div>}{runtime.webLink && <div className="nc-web-preview" role="dialog" aria-label="网页预览"><header><span>{runtime.webLink.title}</span><button type="button" aria-label="关闭网页预览" title="关闭网页预览" onClick={()=>setRuntime((current)=>({...current,webLink:null}))}><X size={18}/></button></header><iframe title="网页预览内容" src={runtime.webLink.url} sandbox="allow-scripts allow-forms allow-popups" referrerPolicy="no-referrer"/></div>}</div></PreviewContext.Provider>;
+  const common={document,nodeIndex,parentIndex,viewportHeight,selectedId,onSelect,editing,hoveredId:editing?highlightedId??(inspectable?hoveredId:null):null,runtime,setRuntime,runAction,onStatus};
+  const direction=document.previewContentLocale==='ar'?'rtl':'ltr';
+  return <PreviewContext.Provider value={{...common,...commerce.background}}>
+    <style>{fontStyles(document.fonts)}</style>
+    <div className="phone native-phone" ref={phone} onPointerMove={hover} onPointerLeave={()=>setHoveredId(null)}>
+      <div className="nc-viewport" ref={viewport} style={{transform:`scale(${scale})`,transformOrigin:'top left',width:390,height:viewportHeight,inset:'0 auto auto 0'}} onScroll={()=>setHoveredId(null)}><div className="nc-design" dir={direction}><NativeComponent node={document.root}/></div></div>
+      {overlay&&<PreviewContext.Provider value={{...common,...commerce.floating}}><ItemContext.Provider value={runtime[`modal-item:${overlay.id}`]?{item:runtime[`modal-item:${overlay.id}`],index:0}:null}>
+        <div className="nc-floating-overlay"><div className="nc-floating-backdrop" onClick={()=>{if(!editing&&dismissOnBackdrop&&overlay.id===document.settings?.presentationSurfaceId)dismissPaywall();else setRuntime(current=>({...current,overlay:null}));}}/>
+          <div className="nc-floating-design" dir={direction} data-presentation={overlay.props.presentation} style={{transform:`scale(${scale})`,transformOrigin:'top left',height:viewportHeight,padding:overlay.props.surfaceInset??(overlay.props.presentation==='sheet'?0:20)}}><NativeComponent node={overlay} floating/></div>
+        </div>
+      </ItemContext.Provider></PreviewContext.Provider>}
+      {runtime.webLink&&<div className="nc-web-preview" role="dialog" aria-label="网页预览"><header><span>{runtime.webLink.title}</span><button type="button" aria-label="关闭网页预览" title="关闭网页预览" onClick={()=>setRuntime(current=>({...current,webLink:null}))}><X size={18}/></button></header><iframe title="网页预览内容" src={runtime.webLink.url} sandbox="allow-scripts allow-forms allow-popups" referrerPolicy="no-referrer"/></div>}
+    </div>
+  </PreviewContext.Provider>;
 }

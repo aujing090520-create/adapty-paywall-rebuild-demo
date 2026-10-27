@@ -120,6 +120,18 @@
     {
       "entry": "BackButton",
       "rootType": "Button"
+    },
+    {
+      "entry": "GiftList",
+      "rootType": "Stack"
+    },
+    {
+      "entry": "BenefitsStrip",
+      "rootType": "Stack"
+    },
+    {
+      "entry": "GiftEntry",
+      "rootType": "Button"
     }
   ],
   "nativeTypes": [
@@ -1502,16 +1514,18 @@
     {
       "id": "ht-blue-privilege",
       "family": "HT",
-      "nodes": 226,
+      "nodes": 236,
       "types": [
         "BottomSheet",
         "Button",
         "Countdown",
         "CountdownState",
         "Flow",
+        "Footer",
         "Icon",
         "Image",
         "Package",
+        "PurchaseButton",
         "Screen",
         "Stack",
         "Text",
@@ -1522,12 +1536,13 @@
     {
       "id": "ht-membership-plans",
       "family": "HT",
-      "nodes": 70,
+      "nodes": 76,
       "types": [
         "Button",
         "Carousel",
         "Countdown",
         "CountdownState",
+        "Footer",
         "Icon",
         "Image",
         "Indicators",
@@ -1544,11 +1559,12 @@
     {
       "id": "ht-payment-recovery",
       "family": "HT",
-      "nodes": 50,
+      "nodes": 54,
       "types": [
         "Button",
         "Countdown",
         "CountdownState",
+        "Footer",
         "Icon",
         "Image",
         "Package",
@@ -1562,7 +1578,7 @@
     {
       "id": "ht-sku-sheet",
       "family": "HT",
-      "nodes": 52,
+      "nodes": 56,
       "types": [
         "Button",
         "Countdown",
@@ -2523,15 +2539,15 @@
     "limitation": "Verified fixed-region boundaries and switch ownership do not imply full recursive hierarchy, visual or SDK equivalence. Template 38 has no observed source layer sample."
   },
   "sourceHashes": {
-    "src/builder/componentCatalog.js": "94af6a424d98f3d59d1bc3c8bde530b14cdf33247372af0472504b1a0a25e63a",
-    "src/builder/componentDocument.js": "f3f4963b28f8b2ee62c6ffd5e24f5f8161189bbc11ae26b08d8755c883bd2c3c",
+    "src/builder/componentCatalog.js": "98a0fe641e22386eed9997f4feb3156bbbea149037a0fc43fb768c7de3eed633",
+    "src/builder/componentDocument.js": "598dfb8958b3c7705f50476af35d9a18214f9c30ebb9f0c90f82d597d3119be1",
     "src/builder/componentOperations.js": "f1b5585d9f44dd1ac753b2cfe5a036864f4e49d16800b064fad8c587438dccb9",
-    "src/builder/ComponentPreview.jsx": "b2edbdb42b4d01428c9a45d8c228909f36fb891cec408904e9bc9c8f7217e9cb",
+    "src/builder/ComponentPreview.jsx": "9cdbb7f461b547ee0db7f95160a8da73273e2c42209f49d6628a571aea0ccdd1",
     "src/builder/screenLayout.js": "3bab6b36c926bdaa63a22da6dd608cd5a3543b537db8c2e7926c3821486406db",
     "src/builder/navigationRows.js": "131ae049f145da06260e37edc855c7e05c135317d2ef3366d8e78cff64fcd321",
     "src/builder/buttonModals.js": "859c187f1743ecec941d60b4ca596297200e6060fb90adb3bc79b81dd6e707b7",
-    "src/builder/ComponentEditor.jsx": "5747e4f1539abd2ef0c0310f8d911aaded886e131d33507bf503ad25663cf84a",
-    "src/builder/componentEditor.css": "20356e36870b6dc545af2cfd19b916fbea4dba1413eba5a3866d4454592bab94",
+    "src/builder/ComponentEditor.jsx": "caee9eb432f5445422fa058836ecf93347f024839699fa74e3dbd92679cfdbbc",
+    "src/builder/componentEditor.css": "43093c1dcd228821dba532aa771e2e84b7e00dbc0f2b3d47c1cebcbd1178650e",
     "src/builder/referenceTemplateStructure.js": "54fd4f981788251c30c51abae023d6764f918252bd351d56bd42220a4baaaa75",
     "docs/reference-structure/revenuecat-hierarchy-2026-10-26.json": "3d598f78c41db1d5e0d4b7a8dd2fef217f2e9d23cc82d2886a65c8ce51614312"
   }

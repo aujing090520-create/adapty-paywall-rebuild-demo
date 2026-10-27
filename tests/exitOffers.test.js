@@ -45,10 +45,11 @@ test('migrating a saved multi-screen exit preserves destinations and navigation 
 });
 
 test('popup purchase does not require an unrelated background agreement on a non-final source screen',async()=>{
-  const modal=component('modal','BottomSheet','弹窗',{presentation:'overlay'},[button('popup-purchase','Purchase')]);
+  const modal=component('modal','BottomSheet','弹窗',{presentation:'overlay'},[component('offer-plan','Package','套餐',{dataKey:'offer',defaultSelected:true}),button('popup-purchase','Purchase')]);
   const source=fixture('primary');source.settings={buttonModalVersion:1};source.root.children=[component('flow','Flow','流程',{},[
     component('a','Screen','A',{},[component('background-agreement','Toggle','背景协议',{required:true}),component('open','Button','打开',{action:{action:'OpenSheet',actionPage:'modal'}},[modal])]),component('b','Screen','B'),
   ])];
+  source.products.offer={skuId:'DEMO-SKU-YEAR'};
   let status;const h=await mount(source,[],{onStatus:value=>{status=value;}});
   await h.click('open');await h.click('popup-purchase');assert.equal(status,'购买预览：未发起真实交易');
 });

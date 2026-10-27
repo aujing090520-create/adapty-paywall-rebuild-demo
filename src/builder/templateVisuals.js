@@ -4,6 +4,7 @@ import { upgradeNavigationRows } from './navigationRows.js';
 import { rebuildReferenceTemplateStructure } from './referenceTemplateStructure.js';
 import { buildHtTemplateFooter } from './htTemplateFooters.js';
 import { buildHtPackageFields } from './htPackageFields.js';
+import { buildBlueVipColumn } from './htVipColumn.js';
 
 export const TEMPLATE_VISUAL_VERSION = 1;
 const edges = (prefix, vertical, horizontal = vertical) => ({ [`${prefix}Mode`]: 'individual', [`${prefix}Top`]: vertical, [`${prefix}Bottom`]: vertical, [`${prefix}Left`]: horizontal, [`${prefix}Right`]: horizontal });
@@ -93,7 +94,7 @@ export function calibrateTemplateVisuals(document, template, sources) {
   set('legal', { color: (configs.get('legal') ?? {}).color ?? '#aaaaaa', textAlign: 'left', fontSize: (configs.get('legal') ?? {}).fontSize ?? 11, lineHeight: 1.32, ...edges('margin', 10, blue || member ? 18 : 0) });
   const apply = (node) => ({ ...node, props: { ...node.props, ...patch.get(node.id) }, children: node.children.map(apply) });
   const calibrated = rebuildHtTemplateScene({ ...document, visualDefaultsVersion: TEMPLATE_VISUAL_VERSION, root: apply(document.root) }, template);
-  return buildHtPackageFields(buildHtTemplateFooter(blue ? upgradeNavigationRows(calibrated) : calibrated, variant), variant);
+  return buildHtPackageFields(buildHtTemplateFooter(blue ? buildBlueVipColumn(upgradeNavigationRows(calibrated)) : calibrated, variant), variant);
 }
 
 // Change only values still equal to the old generated defaults, never user content or structure.

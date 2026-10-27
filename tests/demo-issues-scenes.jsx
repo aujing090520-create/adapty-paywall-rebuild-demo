@@ -1,0 +1,10 @@
+import React from 'react';
+import {createRoot} from 'react-dom/client';
+import ComponentEditor from '../src/builder/ComponentEditor.jsx';
+import {demoIssuesFixture} from './demoIssuesFixture.js';
+import {createBuilderNodes} from '../src/templates/templateDefinitions.js';
+import '../src/styles.css';
+const params=new URLSearchParams(location.search);
+const {document,template}=demoIssuesFixture(params.get('template')??'ht-blue-privilege');
+if(params.get('pag')==='fallback')document.root.children.unshift({id:'pag-test',type:'Image',name:'PAG',props:{mediaType:'pag',pagSrc:'',fallbackSrc:'/ht-retention-gift.png',widthMode:'fixed',heightMode:'fixed',width:120,height:120},children:[]});
+createRoot(window.document.getElementById('root')).render(<main style={{padding:16}}><ComponentEditor template={template} initialNodes={createBuilderNodes(template.id)} initialDocument={document} persistence="session"/></main>);

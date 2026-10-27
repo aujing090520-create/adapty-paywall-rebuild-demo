@@ -712,7 +712,7 @@ test('next page action belongs to its nearest flow rather than another flow in t
 test('purchase checks only visible agreements and a linked switch follows its default state', async () => {
   const purchase = component('sample', 'PurchaseButton', '', { action: { action: 'Purchase' } });
   const toggle = component('agreement', 'Toggle', '同意协议', { initial: false, required: true });
-  const source = fixture(component('flow', 'Flow', '', {defaultIndex:1}, [component('p2', 'Screen', '', {}, [component('other-page', 'Toggle', '', { required: true })]),component('p1', 'Screen', '', {}, [purchase, toggle, component('hidden', 'Toggle', '', { required: true, hidden: true })])]));
+  const source = fixture(component('flow', 'Flow', '', {defaultIndex:1}, [component('p2', 'Screen', '', {}, [component('other-page', 'Toggle', '', { required: true })]),component('p1', 'Screen', '', {}, [component('plan','Package','套餐',{dataKey:'sample',defaultSelected:true}),purchase, toggle, component('hidden', 'Toggle', '', { required: true, hidden: true })])]));
   const h = await mount(purchase, { source, editing: false });
   await act(async () => h.node().props.onClick(event())); assert.equal(h.status(), '请先勾选同意协议');
   await act(async () => h.node('agreement').findByType('input').props.onChange({ target: { checked: true } }));
@@ -1304,7 +1304,8 @@ test('buttons expose one action selector while checkout modes remain conditional
   assert.deepEqual(select.findAllByType('option').map((option)=>option.props.value),['None','NavigateTo','NextScreen','NavigateBack','OpenSheet','RestorePurchases','Dismiss','Purchase']);
   await b.select('点击动作','OpenSheet');
   assert.equal(indexDocument(b.document()).nodes.get('sample').props.action.action,'OpenSheet');await b.close();
-  const purchase=await mount(createCatalogComponent('PurchaseButton','sample'),{editing:false});
+  const purchaseNode=createCatalogComponent('PurchaseButton','sample');
+  const purchase=await mount(purchaseNode,{editing:false,source:fixture(component('body','Stack','',{},[component('plan','Package','套餐',{dataKey:'sample',defaultSelected:true}),purchaseNode]))});
   assert.equal(purchase.renderer.root.findAll((item)=>item.type==='select'&&item.props['aria-label']==='点击动作').length,1);
   await purchase.select('打开方式','WebCheckout');await act(async()=>purchase.node().props.onClick(event()));assert.equal(purchase.status(),'网页结账预览');await purchase.close();
 });

@@ -1,4 +1,5 @@
 export const STATE_STYLE_KEYS = ['axis','gap','align','justify','wrap','widthMode','width','minWidth','maxWidth','heightMode','height','minHeight','maxHeight','paddingMode','paddingTop','paddingRight','paddingBottom','paddingLeft','paddingVertical','paddingHorizontal','marginMode','marginTop','marginRight','marginBottom','marginLeft','marginVertical','marginHorizontal','background','backgroundImage','backgroundVideo','backgroundFit','backgroundPosition','backgroundRepeat','fillType','color','opacity','radius','shape','borderWidth','borderColor','shadowX','shadowY','shadowBlur','shadowColor'];
+import {logicNode} from './paywallLogic.js';
 export const selectedStyleKey = (key) => `selected${key[0].toUpperCase()}${key.slice(1)}`;
 STATE_STYLE_KEYS.push('minWidthEnabled', 'maxWidthEnabled', 'minHeightEnabled', 'maxHeightEnabled', 'fillEnabled');
 export const CORNER_KEYS = ['radiusTopLeft', 'radiusTopRight', 'radiusBottomRight', 'radiusBottomLeft'];
@@ -173,12 +174,15 @@ export function sequenceInitialIndex(node) {
   return index >= 0 ? index : node.props.defaultIndex ?? 0;
 }
 
-export function activeComponents(document, runtime) {
+export function activeComponents(document, runtime, applyLogic=true) {
   const nodes = new Map();
   const index = (node) => { nodes.set(node.id, node); node.children.forEach(index); };
   index(document.root);
+  const candidates=applyLogic&&document.logic?.rules?.length?activeComponents(document,runtime,false).filter(node=>node.type==='Package'):[];
+  const selected=candidates.find(node=>node.id===runtime.selectedPackage)??candidates.find(node=>runtime[`package:${node.props.group??node.id}`]===node.id)??candidates.find(node=>node.props.defaultSelected&&runtime[`package:${node.props.group??node.id}`]===undefined);
   const result = [];
   const visit = (node) => {
+    if(applyLogic)node=logicNode(node,document,runtime,selected);
     if (node.props.hidden || (['overlay','sheet'].includes(node.props.presentation) && runtime.overlay !== node.id)) return;
     const condition = node.props.visibleWhen;
     if (condition && Boolean(runtime[condition.id] ?? nodes.get(condition.id)?.props.initial) !== condition.value) return;
@@ -197,4 +201,16 @@ export function activeComponents(document, runtime) {
   const modal = document.settings?.buttonModalVersion && nodes.get(runtime.overlay);
   visit(modal?.type === 'BottomSheet' ? modal : document.root);
   return result;
+}
+
+export function previewCommerceContexts(document, runtime) {
+  const select = (packages) => packages.find(node=>node.id===runtime.selectedPackage) ?? packages.find(node=>runtime[`package:${node.props.group??node.id}`]===node.id) ?? packages.find(node=>node.props.defaultSelected&&runtime[`package:${node.props.group??node.id}`]===undefined);
+  const scope = (state) => { const packages=activeComponents(document,state).filter(node=>node.type==='Package'); return {packages,selectedPackage:select(packages)}; };
+  const background=scope({...runtime,overlay:null});
+  let floating=background;
+  for(const id of [...runtime.overlayHistory??[],runtime.overlay].filter(Boolean)) {
+    const current=scope({...runtime,overlay:id});
+    if(current.packages.length)floating=current;
+  }
+  return {background,floating};
 }

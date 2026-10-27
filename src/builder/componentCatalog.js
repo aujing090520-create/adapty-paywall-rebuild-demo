@@ -1,4 +1,5 @@
 import { component, createNativeComponent, canContain, indexDocument } from './componentDocument.js';
+import { businessPreset } from './businessPresets.js';
 
 // Public picker entries are building blocks or transparent Stack compositions.
 // Structural children are offered only by their owning container.
@@ -7,8 +8,9 @@ export const COMPONENT_CATALOG = [
   { name: '付费墙', items: [ ['Package','商品套餐'], ['BottomSheet','按钮打开的弹窗'], ['PurchaseButton','购买按钮'], ['ExpressCheckout','快捷结账'] ] },
   { name: '交互', items: [ ['Tabs','标签页'], ['Switch','开关'], ['Button','按钮'], ['CloseButton','关闭按钮'], ['BackButton','返回按钮'], ['Carousel','轮播'] ] },
   { name: '内容', items: [ ['Countdown','倒计时'], ['Timeline','时间线'], ['SocialProof','口碑展示'], ['FeatureList','权益列表'], ['Award','奖项展示'] ] },
+  { name: '业务组合', items: [['GiftList','礼包组合'],['BenefitsStrip','福利组合'],['GiftEntry','赠送入口']] },
 ];
-export const CATALOG_NODE_TYPE = { SocialProof: 'Stack', FeatureList: 'Stack', Award: 'Stack', BottomSheet: 'Button', CloseButton: 'Button', BackButton: 'Button' };
+export const CATALOG_NODE_TYPE = { GiftList:'Stack',BenefitsStrip:'Stack',GiftEntry:'Button',SocialProof: 'Stack', FeatureList: 'Stack', Award: 'Stack', BottomSheet: 'Button', CloseButton: 'Button', BackButton: 'Button' };
 export function catalogFor(parent) {
   if (parent?.type === 'Switch' && (!parent.children.length || parent.children.some((child) => child.type === 'SwitchCase'))) {
     return canContain(parent, { type: 'SwitchCase' }) ? [{ name: '开关内容', items: [['SwitchCase', '状态内容']] }] : [];
@@ -36,6 +38,7 @@ export function createPageControl(id) {
   return component(id,'PageControl','分页控件',{gap:8,...pad(8),marginTop:8,appearanceEnabled:false},[createCatalogComponent('Indicators',`${id}/indicators`)]);
 }
 export function createCatalogComponent(type, id = crypto.randomUUID(), context = {}) {
+  if(['GiftList','BenefitsStrip','GiftEntry'].includes(type))return businessPreset(type,id);
   if (type === 'Toggle' && context.switchTarget) return component(id, type, '开关控件', { switchTarget: context.switchTarget, switchControl: true, thumbColor: '#ffffff', trackColor: context.index ? '#34c759' : '#e5e5ea' });
   if (['CloseButton','BackButton'].includes(type)) return component(id,'Button',type==='BackButton'?'返回按钮':'关闭按钮',{action:{action:type==='BackButton'?'NavigateBack':'Dismiss'},widthMode:'fixed',width:32,heightMode:'fixed',height:32,axis:'horizontal',align:'center',justify:'center',gap:0,background:'transparent',radius:16},[component(`${id}/icon`,'Icon','图标',{icon:`tabler:outline:${type==='BackButton'?'arrow-left':'x'}`,widthMode:'fixed',width:20,heightMode:'fixed',height:20,color:'#62626e'})]);
   if(type==='Text')return t(id,'文字',{widthMode:'fit',heightMode:'fit',fontSize:14,fontWeight:400,color:'#000000'});

@@ -218,7 +218,8 @@ test('preview starts from the configured initial screen and Back follows actual 
 });
 test('checkout is blocked before the final step but remains a mock purchase on the final screen',async()=>{
   const purchase=id=>c(id,'PurchaseButton',id,{action:{action:'Purchase'}},[]);
-  const doc=document([screen('a',[purchase('early'),button('next','NextScreen','b')]),screen('b',[purchase('final')])]);
+  const doc=document([screen('a',[purchase('early'),button('next','NextScreen','b')]),screen('b',[c('plan','Package','套餐',{dataKey:'sku',defaultSelected:true}),purchase('final')])]);
+  doc.products.sku={skuId:'DEMO-BLUE-YEAR'};
   let renderer,status='';await act(async()=>{renderer=TestRenderer.create(React.createElement(Preview,{document:doc,editing:false,navigation:{},onSelect(){},onStatus(value){status=value;}}));});
   const node=id=>renderer.root.findAll(item=>item.type==='div'&&item.props['data-component-id']===id)[0];
   try{

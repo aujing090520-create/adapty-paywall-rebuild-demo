@@ -55,11 +55,14 @@ for (const flow of [false, true]) {
     const viewport = { clientWidth: 376, clientHeight: 830 };
     let renderer;
     try {
-      await act(async () => { renderer = TestRenderer.create(React.createElement(Preview, { document, editing: false, onSelect() {}, onStatus() {} }), { createNodeMock: (element) => element.props.className === 'nc-viewport' ? viewport : null }); });
+      await act(async () => { renderer = TestRenderer.create(React.createElement(Preview, { document, editing: false, onSelect() {}, onStatus() {} }), { createNodeMock: (element) => element.props.className === 'phone native-phone' ? viewport : null }); });
       const screen = renderer.root.findAll((item) => item.type === 'div' && item.props['data-component-id'] === 'page')[0];
       assert.equal(screen.props.style.minHeight, 830 / (376 / 390));
       assert.equal(screen.props.style.display, 'grid');
       assert.equal(renderer.root.findAll((item) => item.props.className === 'nc-viewport').length, 1);
+      const scroll=renderer.root.findAll(item=>item.props.className==='nc-viewport')[0];
+      assert.equal(scroll.props.style.zoom,undefined);
+      assert.equal(scroll.props.style.transform,`scale(${376/390})`);
       assert.equal(screen.findAll((item) => item.props.className === 'nc-screen-content')[0].props.style.overflow, undefined);
     } finally { if (renderer) await act(async () => renderer.unmount()); }
   });

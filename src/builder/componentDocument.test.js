@@ -24,7 +24,7 @@ test('four HT templates preserve asset sources, package records, hidden benefit 
     assert.equal(Object.keys(document.products).length, count, id);
   }
   const nodes = indexDocument(load('ht-blue-privilege')).nodes;
-  assert.ok(nodes.get('benefits').children.length > 6);
+  assert.ok(nodes.get('benefits/rows').children.length > 6);
   assert.ok(nodes.get('benefits/row-5').props.hidden);
   assert.equal(nodes.get('retention').props.presentation, 'overlay');
   assert.ok([...nodes.values()].some((node) => node.type === 'Screen' && node.props && node.name === '中秋月夜 | 谁看了我'));
