@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { component, indexDocument, validDocument, componentLayerLabel } from '../src/builder/componentDocument.js';
 import { createCatalogComponent } from '../src/builder/componentCatalog.js';
-import { insertPackageComponent } from '../src/builder/componentOperations.js';
+import { insertPackageComponent, packageSelectionGroups, changePackageSelectionGroup } from '../src/builder/componentOperations.js';
 import { defaultPackagePatch } from '../src/builder/propertyModel.js';
 import { canvasSelectionTarget } from '../src/builder/canvasSelection.js';
 
@@ -56,4 +56,37 @@ test('adding packages respects existing explicit groups and isolates pages, shee
   assert.deepEqual(next.products.old,source.products.old);
   assert.deepEqual(nodes.get('old'),existing);
   assert.equal(insertPackageComponent(next,'missing',pack('invalid')),next);
+});
+
+test('selection group choices show same-surface package membership and preserve legacy ids', () => {
+  const a=pack('a'),b=pack('b'),c=pack('c'),d=pack('d');
+  a.props.group=b.props.group='products';c.props.group=d.props.group='other';
+  const source=doc([a,b,component('sheet','BottomSheet','弹窗',{presentation:'overlay'},[pack('sheet-plan')]),c,d]);
+  assert.deepEqual(packageSelectionGroups(source,'a'),[
+    {key:'products',members:[1,2],first:1},
+    {key:'other',members:[3,4],first:3},
+  ]);
+  assert.deepEqual(packageSelectionGroups(source,'sheet-plan'),[{key:'sheet-plan',members:[1],first:1}]);
+  assert.equal(changePackageSelectionGroup(source,'missing','__new__'),source);
+  assert.equal(changePackageSelectionGroup(source,'a','sheet-plan'),source);
+});
+
+test('moving a package between groups keeps one default per affected group', () => {
+  const a=pack('a'),b=pack('b'),c=pack('c');
+  a.props.group=b.props.group='products';c.props.group='other';
+  a.props.defaultSelected=true;b.props.defaultSelected=false;c.props.defaultSelected=true;
+  const source=doc([a,b,c]);
+  const moved=changePackageSelectionGroup(source,'a','other');
+  const {nodes}=indexDocument(moved);
+  assert.equal(nodes.get('a').props.group,'other');
+  assert.equal(nodes.get('a').props.defaultSelected,false);
+  assert.equal(nodes.get('b').props.defaultSelected,true);
+  assert.equal(nodes.get('c').props.defaultSelected,true);
+  assert.deepEqual(indexDocument(source).nodes.get('a'),a);
+  const isolated=changePackageSelectionGroup(moved,'a','__new__');
+  const isolatedNodes=indexDocument(isolated).nodes;
+  assert.match(isolatedNodes.get('a').props.group,/^package-group:a:/);
+  assert.equal(isolatedNodes.get('a').props.defaultSelected,true);
+  assert.equal(isolatedNodes.get('b').props.defaultSelected,true);
+  assert.equal(isolatedNodes.get('c').props.defaultSelected,true);
 });

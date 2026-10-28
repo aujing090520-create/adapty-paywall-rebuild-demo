@@ -6,6 +6,7 @@ import { selectedStyleKey, stateStyleProps, spacingModePatch, dimensionModePatch
 import { PRODUCT_TEXT_VARIABLES, TIMER_TEXT_VARIABLES, variableIssues } from './textVariables.js';
 import {ITEM_VARIABLES} from './businessData.js';
 import {timeSources,TIME_SCOPES} from './businessTime.js';
+import {packageSelectionGroups} from './componentOperations.js';
 import { Italic, Underline, Strikethrough } from 'lucide-react';
 import { PRODUCT_PARAMETERS, PRODUCT_PARAMETER_OPTIONS, PACKAGE_PRICE_MODES, packagePriceMode, effectiveProductParameter, productParameterPreview } from '../products/productParameters.js';
 import {isGradient,pickerColor,pickerPaint} from './colorModel.js';
@@ -27,7 +28,7 @@ export function PropertySection({ title, children, optional = false, className =
 }
 
 function Field({ label, children, hint }) { return <label className="rc-field"><span>{label}</span>{children}{hint && <small>{hint}</small>}</label>; }
-function Select({ label, value, onChange, options, disabled = false }) { return <Field label={label}><select aria-label={label} value={value ?? ''} disabled={disabled} onChange={(event) => onChange(event.target.value)}>{options.map((option) => { const [key, name] = Array.isArray(option) ? option : [option, option]; return <option key={key} value={key}>{name}</option>; })}</select></Field>; }
+function Select({ label, value, onChange, options, disabled = false, hint }) { return <Field label={label} hint={hint}><select aria-label={label} value={value ?? ''} disabled={disabled} onChange={(event) => onChange(event.target.value)}>{options.map((option) => { const [key, name] = Array.isArray(option) ? option : [option, option]; return <option key={key} value={key}>{name}</option>; })}</select></Field>; }
 function NumberField({ label, value, onChange, min = 0, max = 2000, unit = 'px', icon: Glyph, disabled = false }) {
   const [draft, setDraft] = React.useState(String(value ?? 0));
   React.useEffect(() => setDraft(String(value ?? 0)), [value]);
@@ -143,7 +144,7 @@ function MediaEditor({ value, type, onChange, onError, background = false }) {
   return <div className="rc-media-editor">{value && (type === 'Video' ? <video src={value} controls /> : <img src={value} alt="当前素材" />)}<label className="rc-upload">{value ? '替换素材' : '上传素材'}<input type="file" accept={accept} onChange={(event) => { upload(event.target.files[0]); event.target.value = ''; }} /></label><Field label={type === 'Screen' ? '背景图片地址' : '素材地址'}><input value={value} onChange={(event) => onChange(event.target.value)} /></Field>{value && <button type="button" className="rc-secondary" onClick={() => onChange('')}>删除素材</button>}</div>;
 }
 
-function ContentSection({ selected, p, patch, document, nodes, parents, findPackage, resolveText, changeProduct, fieldNames, demoSkus, setNavigation, onStatus, setDefaultPackage, onMediaType, onPageControl, onModalCreate, onModalEdit, onTimeSources, rule='default' }) {
+function ContentSection({ selected, p, patch, document, nodes, parents, findPackage, resolveText, changeProduct, fieldNames, demoSkus, setNavigation, onStatus, setDefaultPackage, onPackageGroupChange, onMediaType, onPageControl, onModalCreate, onModalEdit, onTimeSources, rule='default' }) {
   const [uploading,setUploading]=React.useState(false);
   const type = selected.type;
   if (type === 'ProductParameter') {
@@ -198,6 +199,8 @@ function ContentSection({ selected, p, patch, document, nodes, parents, findPack
   if (type === 'Icon') return <PropertySection title="图标属性"><IconField value={p.icon??'check'} onChange={(icon)=>patch({icon})} legacyNames={typeNames}/>{p.icon === 'number' && <NumberField label="数字" value={p.number ?? 1} max={99} unit="" onChange={(number) => patch({ number })} />}<PaintField label="颜色" property="color" p={p} patch={patch} /></PropertySection>;
   if (type === 'Package') {
     const row = document.products[p.dataKey] ?? {};
+    const selectionGroups = packageSelectionGroups(document, selected.id);
+    const currentGroup = selectionGroups.find((group) => group.key === (p.group ?? selected.id));
     const display = (field, selectedState = false) => resolveText({ props: { binding: { key: p.dataKey, field } } }, document, selected, selectedState);
     const hasLabel = (node) => node.props.productField === 'badgeText' || node.props.parameter === 'productLabel' || node.children.some(hasLabel);
     const parameters = document.productParameterVersion || p.productType;
@@ -206,7 +209,7 @@ function ContentSection({ selected, p, patch, document, nodes, parents, findPack
       {parameters&&<Select label="商品类型" value={p.productType??'subscription'} options={[[ 'subscription','订阅商品' ],[ 'lifetime','终身商品（非订阅）' ]]} onChange={productType=>patch({productType})}/>}
       <Select label="价格显示" value={parameters?packagePriceMode(selected):p.priceMode??'1'} options={PACKAGE_PRICE_MODES} onChange={priceMode=>patch({priceMode})}/>
       <Select label="默认选中" value={p.defaultSelected ? 'yes' : 'no'} options={[[ 'yes', '是' ], [ 'no', '否' ]]} onChange={(value) => setDefaultPackage(value === 'yes')} />
-      <Field label="选择组"><input value={p.group ?? selected.id} onChange={(event) => patch({ group: event.target.value })} /></Field>
+      <Select label="互斥选择组" value={p.group ?? selected.id} options={[...selectionGroups.map((group,index)=>[group.key,`商品组 ${index+1}（${group.members.length} 个套餐）`]),['__new__','新建独立商品组']]} onChange={onPackageGroupChange} hint={`当前同组：${currentGroup?.members.map((index)=>`套餐 ${index}`).join('、')??'当前套餐'}；同组仅能选中一个套餐`}/>
       {hasLabel(selected)&&<CheckboxField label="显示商品标签" checked={document.productFieldPreview?p.productLabelEnabled!==false:(p.productLabelEnabled??row.showBadge)!==false} onChange={(productLabelEnabled)=>patch({productLabelEnabled})}/>}
       {!parameters&&(document.productFieldPreview||row.skuId ? <>{[['name','商品周期名称'],['price','售卖价'],['reference','划线价'],['badgeText','商品标签（未选中）'],['badgeText','商品标签（选中）'],['productInfo','商品信息']].map(([field,label],index)=><Field key={label} label={label}><input aria-label={label} readOnly value={display(field,index===4)} placeholder="不展示"/></Field>)}</> : Object.entries(fieldNames).map(([key,label])=><Field key={key} label={label}><input value={row[key]??''} onChange={(event)=>changeProduct(key,event.target.value)}/></Field>))}
     </PropertySection>;
@@ -333,7 +336,7 @@ function BadgeSection({selected,p,patch}){
   </div>}</PropertySection>;
 }
 
-export default function RevenueCatProperties({ selected, p, patch, document, nodes, parents, findPackage, resolveText, changeProduct, fieldNames, demoSkus, navigation = {}, setNavigation, onStatus, setDefaultPackage, onMediaType, onPageControl, onFontsChange, onModalCreate, onModalEdit, onTimeSources }) {
+export default function RevenueCatProperties({ selected, p, patch, document, nodes, parents, findPackage, resolveText, changeProduct, fieldNames, demoSkus, navigation = {}, setNavigation, onStatus, setDefaultPackage, onPackageGroupChange, onMediaType, onPageControl, onFontsChange, onModalCreate, onModalEdit, onTimeSources }) {
   const rule=selected.type==='Text'?textRuleName(navigation.textRule):'default';
   const textP=textRuleProps(p,rule), textPatch=(values)=>patch(textRulePatch(p,rule,values));
   const owner = selected.type==='Indicators'?selected:selectionOwner(selected, nodes, parents);
@@ -344,7 +347,7 @@ export default function RevenueCatProperties({ selected, p, patch, document, nod
   const stylePatch = stateful && packageState === 'selected' ? (values) => patch(Object.fromEntries(Object.entries(values).map(([key, value]) => [selectedStyleKey(key), value]))) : patch;
   return <FontContext.Provider value={{fonts:document.fonts??[],onFontsChange}}><div className="rc-properties-body">
     {selected.type==='Text'&&<div className="rc-text-rule"><Select label="文字规则" value={rule} options={TEXT_RULES} onChange={(value)=>{if(value!=='default'&&!p.textRules?.[value])patch(textRulePatch(p,value,{}));setNavigation({textRule:value});}}/></div>}
-    <ContentSection key={rule} rule={rule} selected={selected} p={selected.type==='Text'?textP:p} patch={selected.type==='Text'?textPatch:patch} document={document} nodes={nodes} parents={parents} findPackage={findPackage} resolveText={resolveText} changeProduct={changeProduct} fieldNames={fieldNames} demoSkus={demoSkus} setNavigation={setNavigation} onStatus={onStatus} setDefaultPackage={setDefaultPackage} onMediaType={onMediaType} onPageControl={onPageControl} onModalCreate={onModalCreate} onModalEdit={onModalEdit} onTimeSources={onTimeSources}/>
+    <ContentSection key={rule} rule={rule} selected={selected} p={selected.type==='Text'?textP:p} patch={selected.type==='Text'?textPatch:patch} document={document} nodes={nodes} parents={parents} findPackage={findPackage} resolveText={resolveText} changeProduct={changeProduct} fieldNames={fieldNames} demoSkus={demoSkus} setNavigation={setNavigation} onStatus={onStatus} setDefaultPackage={setDefaultPackage} onPackageGroupChange={onPackageGroupChange} onMediaType={onMediaType} onPageControl={onPageControl} onModalCreate={onModalCreate} onModalEdit={onModalEdit} onTimeSources={onTimeSources}/>
     {stateful && rule==='default' && <PropertySection title="状态样式"><SegmentedField label="状态" value={packageState} options={[[ 'default', '默认' ], [ 'selected', selected.type==='Indicators'?'当前':'选中' ]]} onChange={value=>setNavigation({[stateKey]:value})}/></PropertySection>}
     {['Text','ProductParameter'].includes(selected.type) && <PropertySection title="文字样式">
       <TypographyFields p={rule==='default'?styleP:textP} patch={rule==='default'?stylePatch:textPatch}/>

@@ -106,6 +106,64 @@ export function insertPackageComponent(document, parentId, node) {
   return { ...next, products: { ...next.products, [key]: next.products[key] ?? { name: '商品名称', price: '', skuId: '' } } };
 }
 
+const packageBoundary = (node) => ['Screen','BottomSheet','Tab','SwitchCase','CheckoutState'].includes(node.type) || ['overlay','sheet'].includes(node.props.presentation);
+
+function packageScope(document, id) {
+  const { nodes, parents } = indexDocument(document);
+  const selected = nodes.get(id);
+  if (selected?.type !== 'Package') return [];
+  let scope = nodes.get(parents.get(id));
+  while (scope && !packageBoundary(scope)) scope = nodes.get(parents.get(scope.id));
+  if (!scope) return [];
+  const result = [];
+  const visit = (node) => {
+    if (node !== scope && packageBoundary(node)) return;
+    if (node.type === 'Package') result.push(node);
+    else node.children.forEach(visit);
+  };
+  visit(scope);
+  return result;
+}
+
+export function packageSelectionGroups(document, id) {
+  const packages = packageScope(document, id);
+  const groups = [];
+  for (const [index, node] of packages.entries()) {
+    const key = node.props.group ?? node.id;
+    let group = groups.find((entry) => entry.key === key);
+    if (!group) { group = { key, members: [], first: index + 1 }; groups.push(group); }
+    group.members.push(index + 1);
+  }
+  return groups;
+}
+
+export function changePackageSelectionGroup(document, id, choice) {
+  const packages = packageScope(document, id);
+  const target = packages.find((node) => node.id === id);
+  if (!target) return document;
+  const groups = packageSelectionGroups(document, id);
+  const previous = target.props.group ?? target.id;
+  let next = choice;
+  if (choice === '__new__') {
+    const used = new Set([...indexDocument(document).nodes.keys(), ...groups.map((group) => group.key)]);
+    let index = 1;
+    while (used.has(`package-group:${id}:${index}`)) index++;
+    next = `package-group:${id}:${index}`;
+  } else if (!groups.some((group) => group.key === choice)) return document;
+  if (next === previous) return document;
+  const previousPeers = packages.filter((node) => node.id !== id && (node.props.group ?? node.id) === previous);
+  const nextPeers = packages.filter((node) => node.id !== id && (node.props.group ?? node.id) === next);
+  const nextHasDefault = nextPeers.some((node) => node.props.defaultSelected);
+  const promote = target.props.defaultSelected && !previousPeers.some((node) => node.props.defaultSelected) ? previousPeers[0]?.id : null;
+  const visit = (node) => {
+    let props = node.props;
+    if (node.id === id) props = { ...props, group: next, defaultSelected: !nextHasDefault };
+    else if (node.id === promote) props = { ...props, defaultSelected: true };
+    return { ...node, props, children: node.children.map(visit) };
+  };
+  return { ...document, root: visit(document.root) };
+}
+
 export function reconcileTabNavigation(before,after,navigation) {
   const oldNodes=indexDocument(before).nodes;
   const result={...navigation};

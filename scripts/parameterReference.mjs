@@ -162,7 +162,7 @@ add(['Package'],'商品属性','价格显示','priceMode','一次同步当前套
 add(['Package'],'商品属性','显示商品标签','productLabelEnabled','控制商品标签容器的可见性，不计算折扣','有商品标签子组件时展示；预览使用字段名占位，不因SKU标签为空隐藏',[['true','显示','默认{商品标签}，选中{选中商品标签}'],['false','隐藏','隐藏标签容器，保留字段和样式']]);
 for (const [label,key,meaning] of [['商品周期名称','name','展示{SKU时长}'],['售卖价','price','展示¥{总价}或¥{月价}/月'],['划线价','reference','展示{总价}或{月价}/月，文字采用删除线'],['商品标签（未选中）','badgeText','展示{商品标签}'],['商品标签（选中）','selectedBadgeText','展示{选中商品标签}'],['商品信息','productInfo','展示{商品信息}']]) add(['Package'],'商品属性',label,`products[dataKey].${key}`,meaning,'只读字段定义，不需要SKU或金额；实际视觉样式由绑定Text配置');
 add(['Package'],'商品属性','默认选中','defaultSelected','设置初次预览选中的商品；同一选择组只保留一个默认选中','不同选择组相互独立',[['true','是','同组其他默认选中清除'],['false','否','取消该商品默认选中']]);
-add(['Package'],'商品属性','选择组','group','决定哪些商品互斥选择','组ID相同的商品互斥，不同组独立');
+add(['Package'],'商品属性','互斥选择组','group','按当前页面或弹窗列出商品组，显示各组套餐数量和成员；可加入已有组或新建独立组','同组仅能选中一个套餐；保留旧组标识，切组时协调新旧组的默认选中',[['existing','已有商品组','加入同场景已有组'],['__new__','新建独立商品组','生成唯一组标识']]);
 for(const [key,name] of Object.entries({name:'商品名称',price:'主价格',reference:'参考价',monthlyPrice:'月均价',referencePrice:'原价',supportingCopy:'辅助文案',savingCopy:'优惠说明',saveCopy:'SAVE 文案',badgeText:'标签文字'}))add(['Package'],'兼容存储',name,`products[dataKey].${key}`,'旧记录的示例数据保留；当前样式预览展示对应字段名','仅旧数据兼容，不是当前构建器新增配置入口；自定义文字仍可独立编辑');
 add(all,'状态样式','状态','navigation.package-style','切换正在编辑和预览的状态；不是第二个“默认选中”字段','仅商品、标签按钮、指示器或处于商品/标签按钮内的子组件；文字正文共用，字号、字重、颜色及排版可分别配置；未覆盖值继承默认',[['default','默认','编辑默认标准属性'],['selected','选中 / 当前','编辑选中或激活标准属性；未覆盖值继承默认']]);
 
