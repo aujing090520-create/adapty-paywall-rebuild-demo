@@ -12,6 +12,7 @@ import {businessList} from '../src/builder/businessData.js';
 import {businessPreset} from '../src/builder/businessPresets.js';
 import {demoIssuesFixture} from './demoIssuesFixture.js';
 import {buildBlueVipColumn} from '../src/builder/htVipColumn.js';
+import {patchComponentProperties} from '../src/builder/componentOperations.js';
 
 let server,Preview,Settings;
 before(async()=>{globalThis.ResizeObserver=class{observe(){}disconnect(){}};server=await createServer({configFile:false,logLevel:'silent',server:{middlewareMode:true,hmr:false,watch:null}});Preview=(await server.ssrLoadModule('/src/builder/ComponentPreview.jsx')).default;Settings=(await server.ssrLoadModule('/src/builder/WorkbenchSettings.jsx')).default;});
@@ -54,8 +55,17 @@ test('04: SKU, Tab, gift and custom conditions compose without changing source o
 
 test('06: Blue VIP background is one editable ordinary container, and row actions remain independent',()=>{
   const {document}=demoIssuesFixture(),{nodes,parents}=indexDocument(document);
-  assert.equal(nodes.get('benefits').props.axis,'overlay');assert.equal(nodes.get('benefits/vip-background').type,'Stack');assert.equal(nodes.get('benefits/vip-background').props.background,'#ffffff');assert.equal(parents.get('benefits/row-1'),'benefits/rows');assert.equal(nodes.get('benefits/row-1').props.action.action,'OpenPage');
+  assert.equal(nodes.get('benefits').props.axis,'horizontal');assert.equal(nodes.get('benefits/vip-background').type,'Stack');assert.equal(nodes.get('benefits/vip-background').props.background,'#ffffff');assert.equal(parents.get('benefits/row-1'),'benefits/feature-column');assert.equal(nodes.get('benefits/row-1').props.action.action,'OpenPage');
   assert.deepEqual(buildBlueVipColumn(document),document);
+});
+
+test('06: each comparison cell keeps the row interaction and hidden rows disappear in all three columns',async()=>{
+  let {document}=demoIssuesFixture();
+  const table=indexDocument(document).nodes.get('benefits'),cells=table.children.map(column=>column.children[2]);
+  document=patchComponentProperties(document,cells[1].id,{action:{action:'RestorePurchases'}});
+  for(const cell of cells){const h=await mount(document);try{await h.click(cell.id);assert.equal(h.status(),'恢复购买预览');}finally{await h.close();}}
+  document=patchComponentProperties(document,cells[2].id,{hidden:true});
+  const h=await mount(document);try{for(const cell of cells)assert.equal(h.node(cell.id),undefined);}finally{await h.close();}
 });
 
 test('07: every menu variable parses; period and unknown/missing variables never leak placeholders',()=>{

@@ -20,6 +20,7 @@ import CustomComponentPreview from './CustomComponentPreview.jsx';
 import {safeTextLink,richTextFontFamily} from './richTextModel.js';
 import {textRuleProps} from './textRules.js';
 import {logicNode} from './paywallLogic.js';
+import {comparisonRowProps} from './htVipColumn.js';
 import {localizedDocument} from './contentLocalization.js';
 import {businessList,interpolateItem} from './businessData.js';
 import {fontStyles} from './fontStyles.js';
@@ -146,7 +147,7 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
   const sequence=useContext(CarouselContext);
   const repeated=useContext(ItemContext),item=repeated?.item;
   const { document, selectedId, onSelect, editing, runtime, setRuntime, runAction } = context;
-  const conditionalNode=logicNode(node,document,runtime,context.selectedPackage);
+  const conditionalNode=comparisonRowProps(logicNode(node,document,runtime,context.selectedPackage),context.nodeIndex,source=>logicNode(source,document,runtime,context.selectedPackage));
   let baseProps = node.type==='Text'?textRuleProps(componentProps(conditionalNode),runtime.textRule):componentProps(conditionalNode);
   if(item)baseProps={...baseProps,text:interpolateItem(baseProps.text,item),runs:baseProps.runs?.map(run=>({...run,text:interpolateItem(run.text,item)})),src:interpolateItem(baseProps.src,item),action:baseProps.action?{...baseProps.action,actionUrl:interpolateItem(baseProps.action.actionUrl,item)}:undefined};
   const group = baseProps.group ?? node.id;

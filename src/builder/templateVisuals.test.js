@@ -26,7 +26,8 @@ test('HT defaults preserve business data and retained content while three scenes
     if (id === 'ht-blue-privilege') {
       for(const key of oldNodes.keys())if(!['products/badge-space-0','products/badge-space-2'].includes(key))assert.ok(nextNodes.has(key));
       assert.ok(!nextNodes.has('products/badge-space-0'));assert.ok(!nextNodes.has('products/badge-space-2'));
-      assert.deepEqual([...nextNodes.keys()].filter(key=>!oldNodes.has(key)),['hero-image/navigation','hero-image/back','hero-image/back/icon','benefits/column-background','benefits/non-vip-space','benefits/vip-background','benefits/rows','products/package-0/product-label','products/package-0/product-label/text','products/package-0/product-info','products/package-2/product-label','products/package-2/product-label/text','$main/footer']);
+      assert.deepEqual(nextNodes.get('benefits').children.map(column=>column.id),['benefits/feature-column','benefits/standard-column','benefits/vip-background']);
+      assert.ok(!nextNodes.has('benefits/non-vip-space'));
     }
     else assert.equal(after.htSceneVersion, 1);
     for (const [key, node] of oldNodes) {
@@ -45,7 +46,7 @@ test('blue page restores measured hero height, privilege rows, unequal column pr
   const nodes = indexDocument(load('ht-blue-privilege')).nodes;
   assert.equal(nodes.get('hero-image/image').props.height, 226.2);
   assert.equal(nodes.get('benefits/row-0').props.height, 46.8);
-  assert.equal(nodes.get('benefits/row-0/0').props.flexGrow, 1.85);
+  assert.equal(nodes.get('benefits/feature-column').props.flexGrow, 1.85);
   for (let i = 0; i < 3; i++) {
     assert.equal(nodes.get(`products/package-header-${i}`).props.height, 50);
     assert.equal(nodes.get(`products/package-${i}`).props.borderWidth, 1);

@@ -1574,7 +1574,7 @@
     {
       "id": "ht-blue-privilege",
       "family": "HT",
-      "nodes": 234,
+      "nodes": 262,
       "types": [
         "BottomSheet",
         "Button",
@@ -2603,10 +2603,10 @@
     "limitation": "Verified fixed-region boundaries and switch ownership do not imply full recursive hierarchy, visual or SDK equivalence. Template 38 has no observed source layer sample."
   },
   "sourceHashes": {
-    "src/builder/componentCatalog.js": "9ac4f51c26f3127647a09f9b4e83d75ed57c1b389d3ab6ee916bb5bc8e8cb8b1",
-    "src/builder/componentDocument.js": "316f886f69432df060920c4c4ec0f785797c909d557efbb026bd874e01d56560",
-    "src/builder/componentOperations.js": "9df053ab5009d9d6d2373aa7871743618adf82b83fc4712a6846eefad215435c",
-    "src/builder/ComponentPreview.jsx": "d2039477f5522247336d3db7febe816f268aee00782b12293713f4a0e900f2d5",
+    "src/builder/componentCatalog.js": "f872eaed831757cc1457411deb8adc612a11edf77ffe8093a0436c247376e06a",
+    "src/builder/componentDocument.js": "a6daa190c90fb7b593cbc4b269f3e9e054e06fc26873d0fb426f42174ec81ff4",
+    "src/builder/componentOperations.js": "d700a5eb341b95edb82085f04c1b9245766e5904491c4f515cab8c4490317246",
+    "src/builder/ComponentPreview.jsx": "0c3802e2a781fae72c0df9ab1fb96fd8cde7527b45321a1d49361e11d132f01d",
     "src/builder/screenLayout.js": "3bab6b36c926bdaa63a22da6dd608cd5a3543b537db8c2e7926c3821486406db",
     "src/builder/navigationRows.js": "131ae049f145da06260e37edc855c7e05c135317d2ef3366d8e78cff64fcd321",
     "src/builder/buttonModals.js": "859c187f1743ecec941d60b4ca596297200e6060fb90adb3bc79b81dd6e707b7",
