@@ -3,6 +3,7 @@ import { STATE_STYLE_KEYS, selectedStyleKey, textPropertyPatch } from './propert
 import { createTabSelectorButton, createTabSelector, createPageControl } from './componentCatalog.js';
 import {fontResources,withFontResources} from './fontStyles.js';
 import {captureFragmentConfiguration,restoreFragmentConfiguration} from './fragmentConfiguration.js';
+import {applyPackagePriceMode,packagePriceMode} from '../products/productParameters.js';
 
 const STYLE_KEYS = new Set(['axis','gap','align','justify','wrap','widthMode','width','minWidth','maxWidth','heightMode','height','minHeight','maxHeight','paddingMode','paddingTop','paddingRight','paddingBottom','paddingLeft','paddingVertical','paddingHorizontal','marginMode','marginTop','marginRight','marginBottom','marginLeft','marginVertical','marginHorizontal','background','backgroundImage','backgroundFit','backgroundVideo','fillType','color','radius','shape','borderWidth','borderColor','fontSize','fontWeight','fontFamily','fontStyle','textAlign','objectFit','opacity','alignSelf','strike','bold','italic','underline','textBackground','iconSize','iconBackground','iconRadius','selectedBorder','selectedBackground','selectedColor','shadowX','shadowY','shadowBlur','shadowColor']);
 for (const key of [...STATE_STYLE_KEYS, ...STATE_STYLE_KEYS.map(selectedStyleKey), 'lineHeight', 'flexGrow', 'mask', 'overlayColor', 'overlayEnabled', 'pageSpacing', 'pagePeek', 'pageControlPosition', 'dotColor', 'activeDotColor', 'itemSpacing', 'textSpacing', 'columnGutter', 'iconAlignment', 'connectorEnabled', 'connectorWidth', 'connectorColor', 'connectorOpacity', 'connectorMarginMode', 'connectorMarginVertical', 'connectorMarginTop', 'connectorMarginBottom']) STYLE_KEYS.add(key);
@@ -173,6 +174,16 @@ export function patchComponentProperties(document, id, values) {
   const node = indexDocument(document).nodes.get(id);
   if (!node) return document;
   let next = updateComponent(document, id, { props: textPropertyPatch(node, values) });
+  if (node.type === 'Package' && values.priceMode !== undefined) {
+    const configured = applyPackagePriceMode(indexDocument(next).nodes.get(id),values.priceMode);
+    next = updateComponent(next,id,{props:configured.props,children:configured.children});
+  }
+  if (node.type === 'ProductParameter' && values.parameter !== undefined) {
+    const {nodes,parents} = indexDocument(next);
+    let owner = nodes.get(parents.get(id));
+    while (owner && owner.type !== 'Package') owner = nodes.get(parents.get(owner.id));
+    if (owner) next = updateComponent(next,owner.id,{props:{priceMode:packagePriceMode(owner)}});
+  }
   if (['Button','PurchaseButton'].includes(node.type) && values.action?.action) {
     const type = node.type === 'PurchaseButton' && !['Purchase','WebCheckout','WebPaywall','CustomCheckout'].includes(values.action.action) ? 'Button' : node.type === 'Button' && values.action.action === 'Purchase' ? 'PurchaseButton' : node.type;
     if (type !== node.type) next = updateComponent(next, id, { type, props: { ...componentProps(node), ...values } });

@@ -5,7 +5,7 @@ import Renderer,{act} from 'react-test-renderer';
 import {createServer} from 'vite';
 import {component as c,indexDocument,resolveComponentText,componentLayerLabel,validDocument,cloneComponent} from '../src/builder/componentDocument.js';
 import {upgradeCanonicalComponents,createCatalogComponent} from '../src/builder/componentCatalog.js';
-import {PRODUCT_PARAMETERS,productParameterPreview,upgradeProductParameters} from '../src/products/productParameters.js';
+import {PRODUCT_PARAMETERS,productParameterPreview,upgradeProductParameters,packagePriceMode} from '../src/products/productParameters.js';
 import {fieldPreviewDocument} from '../src/products/fieldPreview.js';
 import {patchComponentProperties,copyFragment,pasteFragment} from '../src/builder/componentOperations.js';
 const parameter=(id,key,props={})=>c(id,'ProductParameter','商品参数',{parameter:key,...props});
@@ -48,6 +48,31 @@ test('lifetime does not duplicate a total price already present beside monthly p
   assert.equal(productParameterPreview('monthlyPrice',plan),'');assert.equal(productParameterPreview('monthlyReferencePrice',plan),'');
   assert.equal(productParameterPreview('totalPrice',plan),'¥{总价}');
   plan.props.productType='subscription';assert.equal(productParameterPreview('monthlyPrice',plan),'¥{月价}/月');
+});
+test('price modes update the same price parameters, retain styles and leave other content and packages unchanged',()=>{
+  const plan=createCatalogComponent('Package','plan'),other=createCatalogComponent('Package','other');
+  plan.children[0].children.push(parameter('detail','monthlyPrice',{priceRole:'detail',fontSize:12}));
+  plan.children[0].children.find(node=>node.id==='plan/price').props.selectedColor='#123456';
+  const original=upgradeProductParameters(documentFor([plan,other]));
+  const before=structuredClone(original);
+  let next=original;
+  for(const [mode,main,reference] of [['0','monthlyPrice','monthlyReferencePrice'],['3','totalPrice','monthlyReferencePrice'],['4','monthlyPrice','totalReferencePrice'],['1','totalPrice','totalReferencePrice']]){
+    next=patchComponentProperties(next,'plan',{priceMode:mode});const nodes=indexDocument(next).nodes;
+    assert.equal(packagePriceMode(nodes.get('plan')),mode);assert.equal(nodes.get('plan/price').props.parameter,main);assert.equal(nodes.get('plan/reference').props.parameter,reference);
+    assert.equal(nodes.get('plan/price').props.selectedColor,'#123456');assert.deepEqual(nodes.get('detail'),indexDocument(original).nodes.get('detail'));
+    assert.deepEqual(nodes.get('other'),other);assert.deepEqual(next.products,original.products);assert.equal(nodes.get('plan/label/text').props.parameter,'productLabel');
+  }
+  assert.deepEqual(original,before);assert.ok(validDocument(JSON.parse(JSON.stringify(next))));
+});
+test('individual price field changes synchronize the package mode and stale stored modes cannot override fields',()=>{
+  let source=upgradeProductParameters(documentFor([createCatalogComponent('Package','plan')]));
+  source=patchComponentProperties(source,'plan',{priceMode:'0'});
+  source=patchComponentProperties(source,'plan/price',{parameter:'totalPrice'});
+  assert.equal(packagePriceMode(indexDocument(source).nodes.get('plan')),'3');assert.equal(indexDocument(source).nodes.get('plan').props.priceMode,'3');
+  source=patchComponentProperties(source,'plan/reference',{parameter:'totalReferencePrice'});
+  assert.equal(packagePriceMode(indexDocument(source).nodes.get('plan')),'1');
+  const stored=JSON.parse(JSON.stringify(source));stored.root.children[0].props.priceMode='0';
+  assert.equal(packagePriceMode(stored.root.children[0]),'1');assert.equal(resolveComponentText(indexDocument(stored).nodes.get('plan/price'),stored,stored.root.children[0]),'¥{总价}');
 });
 test('rendered default, selected and interactive states agree; editing selected preview is exclusive',async()=>{
   const plan=id=>c(id,'Package','商品',{group:'group',productType:'subscription',defaultSelected:id==='b'},[parameter(`${id}/label`,'productLabel')]);

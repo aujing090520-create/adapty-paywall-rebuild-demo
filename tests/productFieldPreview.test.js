@@ -39,10 +39,10 @@ test('captured library content cannot freeze a real amount into its preview text
   const captured=captureNativeComponent(fieldPreviewDocument(source),plan),nodes=indexDocument({root:captured}).nodes;
   assert.equal(nodes.get('plan/price').type,'ProductParameter');assert.equal(nodes.get('plan/price').props.parameter,'totalPrice');assert.equal(nodes.get('plan/name').props.parameter,'skuDuration');assert.equal(captured.props.dataKey,undefined);
 });
-test('actual package properties require no SKU and delegate price presentation to parameters',async()=>{
+test('actual package properties retain price modes without requiring SKU binding',async()=>{
   const plan=createCatalogComponent('Package','plan'),source=fieldPreviewDocument(doc(plan));let renderer;
   await act(async()=>{renderer=Renderer.create(React.createElement(Properties,{selected:plan,p:componentProps(plan),document:source,...indexDocument(source),navigation:{},setNavigation(){},patch(){},findPackage(){},resolveText:resolveComponentText,changeProduct(){},fieldNames:{name:'SKU时长',price:'总价'},onStatus(){},setDefaultPackage(){}}));});
-  try{assert.equal(renderer.root.findAllByProps({'aria-label':'商品 SKU'}).length,0);assert.equal(renderer.root.findAllByProps({'aria-label':'价格显示'}).length,0);assert.equal(renderer.root.findAllByProps({'aria-label':'售卖价'}).length,0);assert.equal(renderer.root.findAll(node=>node.type==='select'&&node.props['aria-label']==='商品类型')[0].props.value,'subscription');}finally{await act(async()=>renderer.unmount());}
+  try{assert.equal(renderer.root.findAllByProps({'aria-label':'商品 SKU'}).length,0);assert.equal(renderer.root.findAll(node=>node.type==='select'&&node.props['aria-label']==='价格显示')[0].props.value,'1');assert.equal(renderer.root.findAllByProps({'aria-label':'售卖价'}).length,0);assert.equal(renderer.root.findAll(node=>node.type==='select'&&node.props['aria-label']==='商品类型')[0].props.value,'subscription');}finally{await act(async()=>renderer.unmount());}
 });
 test('actual field switch restores labels and sets strikethrough for reference fields',async()=>{
   let renderer,latest;const plan=createCatalogComponent('Package','plan'),source=doc(plan),id='plan/label/text';

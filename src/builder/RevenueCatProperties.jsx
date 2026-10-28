@@ -6,7 +6,7 @@ import { selectedStyleKey, stateStyleProps, spacingModePatch, dimensionModePatch
 import { PRODUCT_TEXT_VARIABLES, TIMER_TEXT_VARIABLES, variableIssues } from './textVariables.js';
 import {ITEM_VARIABLES} from './businessData.js';
 import { Italic, Underline, Strikethrough } from 'lucide-react';
-import { PRODUCT_PARAMETERS, PRODUCT_PARAMETER_OPTIONS, effectiveProductParameter, productParameterPreview } from '../products/productParameters.js';
+import { PRODUCT_PARAMETERS, PRODUCT_PARAMETER_OPTIONS, PACKAGE_PRICE_MODES, packagePriceMode, effectiveProductParameter, productParameterPreview } from '../products/productParameters.js';
 import {isGradient,pickerColor,pickerPaint} from './colorModel.js';
 import IconField from './IconField.jsx';
 import { TEXT_RULES, textRuleName, textRuleProps, textRulePatch } from './textRules.js';
@@ -197,7 +197,8 @@ function ContentSection({ selected, p, patch, document, nodes, parents, findPack
     const parameters = document.productParameterVersion || p.productType;
     return <PropertySection title="商品属性">
       {!parameters&&!document.productFieldPreview&&<Select label="商品 SKU" value={row.skuId ?? ''} options={[[ '', '模板示例数据' ], ...demoSkus.map((sku) => [sku.id, `${sku.displayName} · ${sku.id}`])]} onChange={(skuId) => changeProduct('skuId', skuId)} />}
-      {parameters ? <Select label="商品类型" value={p.productType??'subscription'} options={[[ 'subscription','订阅商品' ],[ 'lifetime','终身商品（非订阅）' ]]} onChange={productType=>patch({productType})}/> : <Select label="价格显示" value={p.priceMode ?? '1'} options={[[ '1', '总价' ], [ '0', '月均价' ], [ '3', '总价 / 月均划线价' ], [ '4', '月均价 / 总划线价' ]]} onChange={(priceMode) => patch({ priceMode })} />}
+      {parameters&&<Select label="商品类型" value={p.productType??'subscription'} options={[[ 'subscription','订阅商品' ],[ 'lifetime','终身商品（非订阅）' ]]} onChange={productType=>patch({productType})}/>}
+      <Select label="价格显示" value={parameters?packagePriceMode(selected):p.priceMode??'1'} options={PACKAGE_PRICE_MODES} onChange={priceMode=>patch({priceMode})}/>
       <Select label="默认选中" value={p.defaultSelected ? 'yes' : 'no'} options={[[ 'yes', '是' ], [ 'no', '否' ]]} onChange={(value) => setDefaultPackage(value === 'yes')} />
       <Field label="选择组"><input value={p.group ?? selected.id} onChange={(event) => patch({ group: event.target.value })} /></Field>
       {hasLabel(selected)&&<CheckboxField label="显示商品标签" checked={document.productFieldPreview?p.productLabelEnabled!==false:(p.productLabelEnabled??row.showBadge)!==false} onChange={(productLabelEnabled)=>patch({productLabelEnabled})}/>}

@@ -10,6 +10,44 @@ export const PRODUCT_PARAMETERS = {
   supportingCopy: { label: '辅助文案', preview: '{辅助文案}' },
 };
 export const PRODUCT_PARAMETER_OPTIONS = Object.entries(PRODUCT_PARAMETERS).map(([key, value]) => [key, value.label]);
+export const PACKAGE_PRICE_MODES = [
+  ['1', '总价'], ['0', '月均价'], ['3', '总价 / 月均划线价'], ['4', '月均价 / 总划线价'],
+];
+const PRICE_MODE_PARAMETERS = {
+  '1': ['totalPrice', 'totalReferencePrice'], '0': ['monthlyPrice', 'monthlyReferencePrice'],
+  '3': ['totalPrice', 'monthlyReferencePrice'], '4': ['monthlyPrice', 'totalReferencePrice'],
+};
+function packagePriceParameters(packageNode) {
+  const parameters = [];
+  const visit = node => {
+    if (node.type === 'Package') return;
+    if (node.type === 'ProductParameter') parameters.push(node);
+    node.children.forEach(visit);
+  };
+  packageNode.children.forEach(visit);
+  const primary = parameters.filter(node => ['totalPrice','monthlyPrice'].includes(node.props.parameter) && node.props.priceRole !== 'detail');
+  const reference = parameters.filter(node => ['totalReferencePrice','monthlyReferencePrice'].includes(node.props.parameter));
+  return [primary.find(node => node.props.priceRole === 'primary') ?? primary[0], reference.find(node => node.props.priceRole === 'reference') ?? reference[0]];
+}
+export function packagePriceMode(packageNode) {
+  const [primary, reference] = packagePriceParameters(packageNode);
+  const fallback = PRICE_MODE_PARAMETERS[packageNode.props.priceMode] ?? PRICE_MODE_PARAMETERS['1'];
+  const main = primary?.props.parameter ?? fallback[0], struck = reference?.props.parameter ?? fallback[1];
+  return Object.keys(PRICE_MODE_PARAMETERS).find(key => PRICE_MODE_PARAMETERS[key][0] === main && PRICE_MODE_PARAMETERS[key][1] === struck) ?? '1';
+}
+export function applyPackagePriceMode(packageNode, mode) {
+  const fields = PRICE_MODE_PARAMETERS[mode];
+  if (!fields) return packageNode;
+  const targets = packagePriceParameters(packageNode);
+  const visit = node => {
+    const index = targets.findIndex(target => target?.id === node.id);
+    if (index >= 0) return {...node,props:{...node.props,parameter:fields[index],priceRole:index===0?'primary':'reference'}};
+    if (node.type === 'Package' && node.id !== packageNode.id) return node;
+    return {...node,children:node.children.map(visit)};
+  };
+  const next = visit(packageNode);
+  return {...next,props:{...next.props,priceMode:String(mode)}};
+}
 export function effectiveProductParameter(parameter, packageNode) {
   const definition = PRODUCT_PARAMETERS[parameter];
   if (!definition) return null;
@@ -44,7 +82,8 @@ export function upgradeProductParameters(document, inferProductType = () => 'sub
     const parameter = node.type === 'Text' && node.props.binding && parameterFromBinding(node.props.binding.field, owner);
     if (parameter) {
       const { binding, text, runs, ...styles } = node.props;
-      next = { ...node, type: 'ProductParameter', name: '商品参数', props: { ...styles, parameter, ...(PRODUCT_PARAMETERS[parameter].strike ? { strike: true } : {}) } };
+      const priceRole = ({price:'primary',reference:'reference',referencePrice:'reference',monthlyPrice:'detail'})[binding.field];
+      next = { ...node, type: 'ProductParameter', name: '商品参数', props: { ...styles, parameter, ...(priceRole?{priceRole}:{}), ...(PRODUCT_PARAMETERS[parameter].strike ? { strike: true } : {}) } };
       changed = true;
     }
     const children = next.children.map(child => visit(child, owner));

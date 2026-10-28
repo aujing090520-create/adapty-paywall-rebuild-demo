@@ -363,11 +363,13 @@ test('image and video sources, fit, masks and image overlays reach media output'
   await v.close();
 });
 
-test('package selection owns product type but individual parameters own price display', async () => {
+test('package price mode control synchronizes the actual price parameters and lifetime output', async () => {
   const h = await mount(createCatalogComponent('Package', 'sample'));
-  assert.equal(h.renderer.root.findAll(item=>item.type==='select'&&item.props['aria-label']==='价格显示').length,0);
-  assert.deepEqual(h.node('sample/price').children,['¥{总价}']);
+  for(const [mode,main,ref] of [['1','¥{总价}','{总价}'],['0','¥{月价}/月','{月价}/月'],['3','¥{总价}','{月价}/月'],['4','¥{月价}/月','{总价}']]){
+    await h.select('价格显示',mode);assert.deepEqual(h.node('sample/price').children,[main]);assert.deepEqual(h.node('sample/reference').children,[ref]);assert.equal(h.node('sample/reference').props.style.textDecoration,'line-through');
+  }
   await h.select('商品类型','lifetime');assert.deepEqual(h.node('sample/price').children,['¥{总价}']);
+  await h.select('商品类型','subscription');assert.deepEqual(h.node('sample/price').children,['¥{月价}/月']);
   await h.close();
 });
 
