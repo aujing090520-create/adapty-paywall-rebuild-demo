@@ -1,5 +1,6 @@
 export const STATE_STYLE_KEYS = ['axis','gap','align','justify','wrap','widthMode','width','minWidth','maxWidth','heightMode','height','minHeight','maxHeight','paddingMode','paddingTop','paddingRight','paddingBottom','paddingLeft','paddingVertical','paddingHorizontal','marginMode','marginTop','marginRight','marginBottom','marginLeft','marginVertical','marginHorizontal','background','backgroundImage','backgroundVideo','backgroundFit','backgroundPosition','backgroundRepeat','fillType','color','opacity','radius','shape','borderWidth','borderColor','shadowX','shadowY','shadowBlur','shadowColor'];
 import {logicNode} from './paywallLogic.js';
+import {resolveBusinessTime} from './businessTime.js';
 export const selectedStyleKey = (key) => `selected${key[0].toUpperCase()}${key.slice(1)}`;
 STATE_STYLE_KEYS.push('minWidthEnabled', 'maxWidthEnabled', 'minHeightEnabled', 'maxHeightEnabled', 'fillEnabled');
 export const CORNER_KEYS = ['radiusTopLeft', 'radiusTopRight', 'radiusBottomRight', 'radiusBottomLeft'];
@@ -198,7 +199,7 @@ export function activeComponents(document, runtime, applyLogic=true) {
     }
     if (node.type === 'Switch') children = children.filter((child) => child.type !== 'SwitchCase' || child.props.index === (runtime[node.id] ?? node.props.defaultIndex ?? 0));
     if (node.type === 'ExpressCheckout') children = children.filter((child) => child.props.state === (runtime[node.id] ?? node.props.previewState ?? 'available'));
-    if (node.type === 'Countdown') children = children.filter((child) => child.props.state === (runtime[node.id] ?? runtime[`countdown-state:${node.id}`] ?? (node.props.previewState !== 'auto' ? node.props.previewState : null) ?? (countdownSeconds(node.props.start ?? '00:10:00') === null ? 'fallback' : countdownSeconds(node.props.start ?? '00:10:00') > 0 ? 'active' : 'ended')));
+    if (node.type === 'Countdown') children = children.filter((child) => child.props.state === (runtime[node.id] ?? (node.props.timeSource==='business'?resolveBusinessTime(document,node.props.timeSourceId,runtime).state:runtime[`countdown-state:${node.id}`] ?? (node.props.previewState !== 'auto' ? node.props.previewState : null) ?? (countdownSeconds(node.props.start ?? '00:10:00') === null ? 'fallback' : countdownSeconds(node.props.start ?? '00:10:00') > 0 ? 'active' : 'ended'))));
     if(node.type==='Countdown'&&node.props.fallbackEnabled===false)children=children.filter((child)=>child.props.state!=='fallback');
     children.forEach(visit);
   };

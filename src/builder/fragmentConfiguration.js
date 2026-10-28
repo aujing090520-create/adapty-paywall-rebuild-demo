@@ -11,12 +11,22 @@ export function captureFragmentConfiguration(document,roots){
   const variables=(document.logic?.variables??[]).filter(variable=>mentioned.has(variable.key));
   const skus=new Set(nodes.filter(node=>node.type==='Package').map(node=>document.products[node.props.dataKey??node.id]?.skuId).filter(Boolean));
   const bySku=Object.fromEntries(Object.entries(document.business?.bySku??{}).filter(([key])=>skus.has(key)));
-  return structuredClone({rules,variables,translations,assets,defaultLocale:document.localization?.defaultLocale,bySku,...(nodes.some(node=>node.props.dataSource==='benefits')?{benefits:document.business?.benefits}:{} )});
+  const timeIds=new Set(nodes.map(node=>node.props.timeSourceId).filter(Boolean));
+  for(const rule of rules)for(const condition of rule.conditions)if(condition.type==='timeSource')timeIds.add(condition.source);
+  const timeSources=(document.business?.timeSources??[]).filter(source=>timeIds.has(source.id));
+  return structuredClone({rules,variables,translations,assets,defaultLocale:document.localization?.defaultLocale,bySku,...(timeSources.length?{timeSources}:{}),...(nodes.some(node=>node.props.dataSource==='benefits')?{benefits:document.business?.benefits}:{} )});
 }
 
 export function restoreFragmentConfiguration(document,configuration,ids){
   if(!configuration)return document;
   let next=document;
+  const timeIds=new Map(),sources=[...document.business?.timeSources??[]];
+  for(const source of configuration.timeSources??[]) {
+    const existing=sources.find(item=>item.key===source.key&&item.scope===source.scope);
+    if(existing){timeIds.set(source.id,existing.id);continue;}
+    let key=source.key,index=2;while(sources.some(item=>item.key===key))key=`${source.key}_${index++}`;
+    const id=crypto.randomUUID();timeIds.set(source.id,id);sources.push({...source,id,key});
+  }
   const variables=[...document.logic?.variables??[]],renamed=new Map();
   for(const variable of configuration.variables??[]){
     const existing=variables.find(item=>item.key===variable.key);
@@ -25,7 +35,7 @@ export function restoreFragmentConfiguration(document,configuration,ids){
     if(key!==variable.key)renamed.set(variable.key,key);
     variables.push({...variable,id:crypto.randomUUID(),key});
   }
-  const rules=(configuration.rules??[]).map(rule=>({...rewriteBusinessTokens(rule,renamed),id:crypto.randomUUID(),conditions:rule.conditions.map(condition=>({...condition,...(condition.type==='tab'&&ids.has(condition.source)?{source:ids.get(condition.source)}:{}),...(condition.type==='variable'&&renamed.has(condition.source)?{source:renamed.get(condition.source)}:{})})),effects:rule.effects.map(effect=>({...rewriteBusinessTokens(effect,renamed),target:ids.get(effect.target)}))}));
+  const rules=(configuration.rules??[]).map(rule=>({...rewriteBusinessTokens(rule,renamed),id:crypto.randomUUID(),conditions:rule.conditions.map(condition=>({...condition,...(condition.type==='timeSource'&&timeIds.has(condition.source)?{source:timeIds.get(condition.source)}:{}),...(condition.type==='tab'&&ids.has(condition.source)?{source:ids.get(condition.source)}:{}),...(condition.type==='variable'&&renamed.has(condition.source)?{source:renamed.get(condition.source)}:{})})),effects:rule.effects.map(effect=>({...rewriteBusinessTokens(effect,renamed),target:ids.get(effect.target)}))}));
   if(rules.length||variables.length!==(document.logic?.variables??[]).length)next={...next,logic:{...document.logic,variables,rules:[...document.logic?.rules??[],...rules]}};
   const translations={...document.localization?.translations};
   for(const [locale,entries] of Object.entries(configuration.translations??{}))if(Object.keys(entries).length)translations[locale]={...translations[locale],...Object.fromEntries(Object.entries(entries).map(([id,value])=>[ids.get(id),rewriteBusinessTokens(value,renamed)]))};
@@ -33,5 +43,6 @@ export function restoreFragmentConfiguration(document,configuration,ids){
   if(Object.keys(translations).length||assets.length)next={...next,localization:{...document.localization,defaultLocale:document.localization?.defaultLocale??configuration.defaultLocale??'zh-CN',translations,assets:[...document.localization?.assets??[],...assets]}};
   if(Object.keys(configuration.bySku??{}).length||configuration.benefits!==undefined)next={...next,business:{...document.business,bySku:{...configuration.bySku,...document.business?.bySku},...(document.business?.benefits===undefined&&configuration.benefits!==undefined?{benefits:configuration.benefits}:{})}};
   if(renamed.size){const copiedIds=new Set(ids.values());const visit=node=>({...node,props:copiedIds.has(node.id)?rewriteBusinessTokens(node.props,renamed):node.props,children:node.children.map(visit)});next={...next,root:visit(next.root)};}
+  if(timeIds.size){const copiedIds=new Set(ids.values());const visit=node=>({...node,props:copiedIds.has(node.id)&&timeIds.has(node.props.timeSourceId)?{...node.props,timeSourceId:timeIds.get(node.props.timeSourceId)}:node.props,children:node.children.map(visit)});next={...next,business:{...next.business,timeSources:sources},root:visit(next.root)};}
   return next;
 }

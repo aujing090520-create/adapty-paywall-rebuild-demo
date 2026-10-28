@@ -21,6 +21,7 @@ import {safeTextLink,richTextFontFamily} from './richTextModel.js';
 import {textRuleProps} from './textRules.js';
 import {logicNode} from './paywallLogic.js';
 import {comparisonRowProps} from './htVipColumn.js';
+import {resolveBusinessTime,clockAnchor,clockNow} from './businessTime.js';
 import {localizedDocument} from './contentLocalization.js';
 import {businessList,interpolateItem} from './businessData.js';
 import {fontStyles} from './fontStyles.js';
@@ -256,7 +257,8 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
     const buttonContent = node.children.filter((child) => child.type !== 'BottomSheet' && !['overlay','sheet'].includes(child.props.presentation));
     if (buttonContent.length && buttonContent.every((child) => child.type === 'Icon')) { attributes['aria-label'] = node.name; attributes.title = node.name; }
     const blocked = props.action?.action === 'OpenPage' && isUnconfiguredDetailPage(context.nodeIndex.get(props.action.actionPage));
-    return <div {...attributes} role="button" tabIndex={0} aria-disabled={!editing && blocked || undefined} style={{ ...style, ...containerStyle(visualNode), ...(!editing&&blocked?{cursor:'default'}:{}) }} onClick={(event) => { select(event); if (node.type === 'TabButton') setRuntime((current) => ({ ...current, [props.target]: props.index })); else if (!editing) { event.stopPropagation(); runAction({...node,props},item); } }} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); if (editing) onSelect(node.id); else if (node.type === 'TabButton') setRuntime((current) => ({ ...current, [props.target]: props.index })); else runAction({...node,props},item); } }}>{children()}</div>;
+    const disabled=!editing&&Boolean(props.disabled);
+    return <div {...attributes} role="button" tabIndex={disabled?-1:0} aria-disabled={!editing && (blocked||disabled) || undefined} style={{ ...style, ...containerStyle(visualNode), ...(!editing&&(blocked||disabled)?{cursor:'default'}:{}),...(disabled?{opacity:(style.opacity??1)*.5}:{}) }} onClick={(event) => { select(event); if(disabled){event.stopPropagation();return;}if (node.type === 'TabButton') setRuntime((current) => ({ ...current, [props.target]: props.index })); else if (!editing) { event.stopPropagation(); runAction({...node,props},item); } }} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); if(disabled)return;if (editing) onSelect(node.id); else if (node.type === 'TabButton') setRuntime((current) => ({ ...current, [props.target]: props.index })); else runAction({...node,props},item); } }}>{children()}</div>;
   }
   if (node.type === 'Screen' && node.children.some((child) => ['Header', 'Footer'].includes(child.type))) {
     const chrome = screenChromeLayout(node, runtime, context.nodeIndex);
@@ -271,13 +273,14 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
   return <div {...attributes} style={{ ...style, ...containerStyle(visualNode), ...(['Header','Footer'].includes(node.type)?{position:'sticky',[node.type==='Header'?'top':'bottom']:0,zIndex:4}:{} ), ...layoutStyle }}>{children()}</div>;
 }
 function CountdownContent({node,context,packageNode}) {
-  const [now,setNow] = useState(Date.now);
-  const [opened] = useState(Date.now);
-  useEffect(()=>{const interval=setInterval(()=>setNow(Date.now()),1000);return()=>clearInterval(interval);},[]);
+  const now=Number.isFinite(context.runtime.$time?.now)?context.runtime.$time.now:Date.now();
+  const [opened] = useState(()=>now);
   const duration = countdownSeconds(node.props.start ?? '00:10:00');
   const deadline = node.props.deadline ? countdownDeadline(node.props.deadline) : duration === null ? NaN : opened + duration * 1000;
-  const seconds = Math.max(0,Math.ceil((deadline-now)/1000)||0);
-  const state = context.runtime[node.id] ?? (node.props.previewState && node.props.previewState !== 'auto' ? node.props.previewState : !Number.isFinite(deadline) ? 'fallback' : seconds ? 'active' : 'ended');
+  const business=node.props.timeSource==='business'?resolveBusinessTime(context.document,node.props.timeSourceId,context.runtime):null;
+  const seconds = business?.seconds??Math.max(0,Math.ceil((deadline-now)/1000)||0);
+  const actualState=business?.state??(!Number.isFinite(deadline)?'fallback':seconds?'active':'ended');
+  const state = context.editing ? context.runtime[node.id] ?? (node.props.previewState && node.props.previewState !== 'auto' ? node.props.previewState : actualState) : actualState;
   useEffect(()=>{context.setRuntime((current)=>current[`countdown-state:${node.id}`]===state?current:{...current,[`countdown-state:${node.id}`]:state});},[context.setRuntime,node.id,state]);
   const values = countdownValues(seconds, node.props.countFrom);
   return <TimerContext.Provider value={values}>{node.children.filter((child)=>child.props.state === state && (state!=='fallback'||node.props.fallbackEnabled!==false)).map((child)=><NativeComponent key={child.id} node={child} packageNode={packageNode}/>)}</TimerContext.Provider>;
@@ -289,9 +292,14 @@ function Countdown({ props }) {
   const parts = [Math.floor(remaining / 3600), Math.floor(remaining / 60) % 60, remaining % 60];
   return <span className="nc-countdown"><span style={{ color: props.prefixColor }}>{props.prefix}</span>{parts.map((part, index) => <React.Fragment key={index}>{index > 0 && <span>:</span>}<strong style={{ background: props.digitBackground, borderRadius: 4, padding: '0 3px' }}>{String(part).padStart(2, '0')}</strong></React.Fragment>)}<span>{props.suffix}</span></span>;
 }
-export default function ComponentPreview({ document: sourceDocument, selectedId, highlightedId, onSelect, editing, inspectable = true, navigation, onNavigate, onStatus, onDismiss, onResume, dismissRequest = 0, dismissOnBackdrop = false }) {
+export default function ComponentPreview({ document: sourceDocument, businessTime, selectedId, highlightedId, onSelect, editing, inspectable = true, navigation, onNavigate, onStatus, onDismiss, onResume, dismissRequest = 0, dismissOnBackdrop = false }) {
   const document=useMemo(()=>localizedDocument(sourceDocument,navigation),[sourceDocument,navigation?.contentLocale,navigation?.contentTheme,navigation?.contentPlatform]);
-  const [runtime, setRuntime] = useState({});
+  const [localRuntime, setRuntime] = useState({});
+  const clock=useMemo(()=>clockAnchor(businessTime),[businessTime]);
+  const [tick,setTick]=useState(()=>performance.now());
+  const needsClock=useMemo(()=>[...indexDocument(document).nodes.values()].some(node=>node.type==='Countdown')||(document.logic?.rules??[]).some(rule=>rule.conditions.some(condition=>condition.type==='timeSource')),[document]);
+  useEffect(()=>{if(!needsClock)return;const interval=setInterval(()=>setTick(performance.now()),1000);return()=>clearInterval(interval);},[needsClock]);
+  const runtime={...localRuntime,$time:{now:clockNow(clock,tick),context:businessTime}};
   const [hoveredId, setHoveredId] = useState(null);
   const previousDocument = useRef(document);
   const viewport = useRef(null), phone=useRef(null), [scale, setScale] = useState(0.82), [viewportHeight, setViewportHeight] = useState(844);
@@ -329,6 +337,8 @@ export default function ComponentPreview({ document: sourceDocument, selectedId,
     else if (inner.bottom > outer.bottom) root.scrollTop += Math.min(inner.top - outer.top, inner.bottom - outer.bottom) / zoom;
   }, [selectedId, navigationKey, editing]);
   const runAction = (node,item) => {
+    const current=logicNode(node,document,{...runtime,$time:{...runtime.$time,now:clockNow(clock)}},commerce.background.selectedPackage);
+    if(current.props.disabled||current.props.hidden)return;
     const action = node.props.action ?? {};
     if (!action.action || action.action === 'None') return;
     if(['Purchase','WebCheckout','WebPaywall','CustomCheckout'].includes(action.action)) {

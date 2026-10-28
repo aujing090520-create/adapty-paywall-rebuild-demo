@@ -29,7 +29,7 @@ export default function PaywallPresentation({ offerings = [], currentPaywallId, 
     const { flow, pages } = pageContext(background);
     const source = exitOfferSource(background);
     const backgroundNavigation = offer ? underlayNavigation : backdropNavigation ?? (flow && source ? { [flow.id]: pages.findIndex((page) => page.id === source.id) } : {});
-    return <div className="ne-exit-sheet-presentation"><div className="ne-exit-underlay" inert="" aria-hidden="true"><ComponentPreview document={background} editing={false} navigation={backgroundNavigation} onSelect={() => {}} onStatus={() => {}}/></div><div className="ne-exit-foreground"><ComponentPreview {...previewProps} dismissOnBackdrop/></div></div>;
+    return <div className="ne-exit-sheet-presentation"><div className="ne-exit-underlay" inert="" aria-hidden="true"><ComponentPreview document={background} businessTime={props.businessTime} editing={false} navigation={backgroundNavigation} onSelect={() => {}} onStatus={() => {}}/></div><div className="ne-exit-foreground"><ComponentPreview {...previewProps} dismissOnBackdrop/></div></div>;
   };
   if (props.editing) return render(props);
   return <div className="ne-presentation">

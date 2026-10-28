@@ -5,6 +5,7 @@ import { workflowContext, stepDestination, owningScreen } from './workflow.js';
 import { selectedStyleKey, stateStyleProps, spacingModePatch, dimensionModePatch, imageMask, cornerModePatch, CORNER_KEYS, selectionOwner, sequencePages, BADGE_DEFAULTS, utcDateTimeInput, textPropertyPatch } from './propertyModel.js';
 import { PRODUCT_TEXT_VARIABLES, TIMER_TEXT_VARIABLES, variableIssues } from './textVariables.js';
 import {ITEM_VARIABLES} from './businessData.js';
+import {timeSources,TIME_SCOPES} from './businessTime.js';
 import { Italic, Underline, Strikethrough } from 'lucide-react';
 import { PRODUCT_PARAMETERS, PRODUCT_PARAMETER_OPTIONS, PACKAGE_PRICE_MODES, packagePriceMode, effectiveProductParameter, productParameterPreview } from '../products/productParameters.js';
 import {isGradient,pickerColor,pickerPaint} from './colorModel.js';
@@ -142,7 +143,7 @@ function MediaEditor({ value, type, onChange, onError, background = false }) {
   return <div className="rc-media-editor">{value && (type === 'Video' ? <video src={value} controls /> : <img src={value} alt="当前素材" />)}<label className="rc-upload">{value ? '替换素材' : '上传素材'}<input type="file" accept={accept} onChange={(event) => { upload(event.target.files[0]); event.target.value = ''; }} /></label><Field label={type === 'Screen' ? '背景图片地址' : '素材地址'}><input value={value} onChange={(event) => onChange(event.target.value)} /></Field>{value && <button type="button" className="rc-secondary" onClick={() => onChange('')}>删除素材</button>}</div>;
 }
 
-function ContentSection({ selected, p, patch, document, nodes, parents, findPackage, resolveText, changeProduct, fieldNames, demoSkus, setNavigation, onStatus, setDefaultPackage, onMediaType, onPageControl, onModalCreate, onModalEdit, rule='default' }) {
+function ContentSection({ selected, p, patch, document, nodes, parents, findPackage, resolveText, changeProduct, fieldNames, demoSkus, setNavigation, onStatus, setDefaultPackage, onMediaType, onPageControl, onModalCreate, onModalEdit, onTimeSources, rule='default' }) {
   const [uploading,setUploading]=React.useState(false);
   const type = selected.type;
   if (type === 'ProductParameter') {
@@ -211,7 +212,19 @@ function ContentSection({ selected, p, patch, document, nodes, parents, findPack
     {type==='Carousel'&&<><CheckboxField label="循环播放" checked={Boolean(p.loop)} onChange={(loop)=>patch({loop})}/><CheckboxField label="自动切换" checked={Boolean(p.autoPlay)} onChange={(autoPlay)=>patch({autoPlay})}/>{p.autoPlay&&<><NumberField label="每页停留时间" value={p.autoPlayInterval??2500} min={250} max={60000} unit="ms" onChange={(autoPlayInterval)=>patch({autoPlayInterval})}/><NumberField label="过渡时间" value={p.transitionTime??500} max={10000} unit="ms" onChange={(transitionTime)=>patch({transitionTime})}/><Select label="过渡动画" value={p.transitionAnimation??'slide'} options={[[ 'slide','滑动' ],[ 'fade','淡入淡出' ]]} onChange={(transitionAnimation)=>patch({transitionAnimation})}/></>}</>}
   </PropertySection>{type==='Carousel'&&<PropertySection title="分页控件" optional><OptionalToggle enabled={selected.children.some((child)=>child.type==='PageControl')} onChange={onPageControl}/>{selected.children.some((child)=>child.type==='PageControl')&&<Select label="分页器位置" value={p.pageControlPosition??'bottom'} options={[[ 'top','顶部' ],[ 'bottom','底部' ]]} onChange={(pageControlPosition)=>patch({pageControlPosition})}/>}</PropertySection>}</>;
   if (type === 'Toggle') return <PropertySection title="控件属性"><Select label="控件类型" value={p.control ?? 'switch'} options={[[ 'switch', '开关' ], [ 'checkbox', '勾选框' ]]} onChange={(control) => patch({ control })} />{!p.switchTarget && <SegmentedField label="初始状态" value={p.initial ? 'yes' : 'no'} options={[[ 'no', '关闭' ], [ 'yes', '开启' ]]} onChange={(value) => patch({ initial: value === 'yes' })} />}<SegmentedField label="购买前必须勾选" value={p.required ? 'yes' : 'no'} options={[[ 'no', '否' ], [ 'yes', '是' ]]} onChange={(value) => patch({ required: value === 'yes' })} /></PropertySection>;
-  if (type === 'Countdown') return <PropertySection title="倒计时属性"><Field label="目标时间（UTC）"><input type="datetime-local" step="1" aria-label="目标时间（UTC）" value={utcDateTimeInput(p.deadline)} onChange={(event)=>patch({deadline:event.target.value?`${event.target.value.replace(/Z$/,'')}Z`:''})}/></Field>{!p.deadline && p.start!==undefined && <Field label="起始时长（旧模板）"><input value={p.start} onChange={(event) => patch({ start: event.target.value })} /></Field>}<Select label="计时单位" value={p.countFrom ?? 'hours'} options={[[ 'days', '天' ], [ 'hours', '小时' ], [ 'minutes', '分钟' ]]} onChange={(countFrom) => patch({ countFrom })} /><CheckboxField label="自定义兜底内容" checked={p.fallbackEnabled!==false} onChange={(fallbackEnabled)=>patch({fallbackEnabled})}/></PropertySection>;
+  if (type === 'Countdown') {
+    const sources=timeSources(document),source=sources.find(source=>source.id===p.timeSourceId);
+    return <PropertySection title="倒计时属性">
+      <Select label="时间来源" value={p.timeSource??'manual'} options={[[ 'manual','手动设置' ],['business','业务时间源']]} onChange={timeSource=>patch({timeSource})}/>
+      {p.timeSource==='business'?<>
+        <Select label="绑定时间源" value={p.timeSourceId??''} options={[[ '', '选择时间源' ],...(p.timeSourceId&&!source?[[p.timeSourceId,'时间源已失效']]:[]),...sources.map(source=>[source.id,`${source.name} · ${TIME_SCOPES.find(([key])=>key===source.scope)?.[1]??source.scope}`])]} onChange={timeSourceId=>patch({timeSourceId})}/>
+        {source&&<><Field label="接口数据键"><input aria-label="绑定接口数据键" readOnly value={source.key}/></Field><Field label="时间字段"><input aria-label="时间字段" readOnly value="expiresAt（到期时间）"/></Field></>}
+        {onTimeSources&&<button type="button" className="rc-secondary" onClick={onTimeSources}><Settings2 size={15}/>配置业务时间源</button>}
+      </>:<><Field label="目标时间（UTC）"><input type="datetime-local" step="1" aria-label="目标时间（UTC）" value={utcDateTimeInput(p.deadline)} onChange={(event)=>patch({deadline:event.target.value?`${event.target.value.replace(/Z$/,'')}Z`:''})}/></Field>{!p.deadline && p.start!==undefined && <Field label="起始时长（旧模板）"><input value={p.start} onChange={(event) => patch({ start: event.target.value })} /></Field>}</>}
+      <Select label="计时单位" value={p.countFrom ?? 'hours'} options={[[ 'days', '天' ], [ 'hours', '小时' ], [ 'minutes', '分钟' ]]} onChange={(countFrom) => patch({ countFrom })} />
+      <CheckboxField label="自定义兜底内容" checked={p.fallbackEnabled!==false} onChange={(fallbackEnabled)=>patch({fallbackEnabled})}/>
+    </PropertySection>;
+  }
   if (type === 'Switch') return <PropertySection title="开关属性"><Select label="默认状态" value={p.defaultIndex??0} options={[[0,'关闭'],[1,'开启']]} onChange={(value)=>{patch({defaultIndex:Number(value)});setNavigation({[selected.id]:Number(value)});}}/></PropertySection>;
   if (type === 'ExpressCheckout') return null;
   if (type === 'Custom') return <PropertySection title="自定义组件"><a className="rc-secondary" href="/custom-component/example.zip" download>下载示例</a><label className="rc-upload">{uploading?'正在校验 ZIP':p.customBundle?'替换 ZIP':'上传 ZIP'}<input type="file" accept=".zip,application/zip" disabled={uploading} onChange={async(event)=>{const file=event.target.files?.[0];event.target.value='';if(!file)return;setUploading(true);try{const {installCustomBundle}=await import('./customBundle.js');const customBundle=await installCustomBundle(file);patch({customBundle});}catch(error){onStatus(error.message);}finally{setUploading(false);}}}/></label>{p.customBundle&&<><div className="rc-custom-file">{p.customBundle.name}</div><button type="button" className="rc-secondary" onClick={()=>patch({customBundle:null})}>移除 ZIP</button></>}{p.html!==undefined&&!p.customBundle&&<Field label="HTML（旧配置）"><textarea className="ne-code-input" value={p.html} onChange={(event)=>patch({html:event.target.value})}/></Field>}</PropertySection>;
@@ -315,7 +328,7 @@ function BadgeSection({selected,p,patch}){
   </div>}</PropertySection>;
 }
 
-export default function RevenueCatProperties({ selected, p, patch, document, nodes, parents, findPackage, resolveText, changeProduct, fieldNames, demoSkus, navigation = {}, setNavigation, onStatus, setDefaultPackage, onMediaType, onPageControl, onFontsChange, onModalCreate, onModalEdit }) {
+export default function RevenueCatProperties({ selected, p, patch, document, nodes, parents, findPackage, resolveText, changeProduct, fieldNames, demoSkus, navigation = {}, setNavigation, onStatus, setDefaultPackage, onMediaType, onPageControl, onFontsChange, onModalCreate, onModalEdit, onTimeSources }) {
   const rule=selected.type==='Text'?textRuleName(navigation.textRule):'default';
   const textP=textRuleProps(p,rule), textPatch=(values)=>patch(textRulePatch(p,rule,values));
   const owner = selected.type==='Indicators'?selected:selectionOwner(selected, nodes, parents);
@@ -326,7 +339,7 @@ export default function RevenueCatProperties({ selected, p, patch, document, nod
   const stylePatch = stateful && packageState === 'selected' ? (values) => patch(Object.fromEntries(Object.entries(values).map(([key, value]) => [selectedStyleKey(key), value]))) : patch;
   return <FontContext.Provider value={{fonts:document.fonts??[],onFontsChange}}><div className="rc-properties-body">
     {selected.type==='Text'&&<div className="rc-text-rule"><Select label="文字规则" value={rule} options={TEXT_RULES} onChange={(value)=>{if(value!=='default'&&!p.textRules?.[value])patch(textRulePatch(p,value,{}));setNavigation({textRule:value});}}/></div>}
-    <ContentSection key={rule} rule={rule} selected={selected} p={selected.type==='Text'?textP:p} patch={selected.type==='Text'?textPatch:patch} document={document} nodes={nodes} parents={parents} findPackage={findPackage} resolveText={resolveText} changeProduct={changeProduct} fieldNames={fieldNames} demoSkus={demoSkus} setNavigation={setNavigation} onStatus={onStatus} setDefaultPackage={setDefaultPackage} onMediaType={onMediaType} onPageControl={onPageControl} onModalCreate={onModalCreate} onModalEdit={onModalEdit}/>
+    <ContentSection key={rule} rule={rule} selected={selected} p={selected.type==='Text'?textP:p} patch={selected.type==='Text'?textPatch:patch} document={document} nodes={nodes} parents={parents} findPackage={findPackage} resolveText={resolveText} changeProduct={changeProduct} fieldNames={fieldNames} demoSkus={demoSkus} setNavigation={setNavigation} onStatus={onStatus} setDefaultPackage={setDefaultPackage} onMediaType={onMediaType} onPageControl={onPageControl} onModalCreate={onModalCreate} onModalEdit={onModalEdit} onTimeSources={onTimeSources}/>
     {stateful && rule==='default' && <PropertySection title="状态样式"><SegmentedField label="状态" value={packageState} options={[[ 'default', '默认' ], [ 'selected', selected.type==='Indicators'?'当前':'选中' ]]} onChange={value=>setNavigation({[stateKey]:value})}/></PropertySection>}
     {['Text','ProductParameter'].includes(selected.type) && <PropertySection title="文字样式">
       <TypographyFields p={rule==='default'?styleP:textP} patch={rule==='default'?stylePatch:textPatch}/>
