@@ -3,6 +3,7 @@ import { Plus, Trash2, Copy, ChevronRight, ChevronDown, ArrowUp, ArrowDown, Eye,
 import { COMPONENT_NAMES, CONTAINER_TYPES, componentLayerLabel, uniqueSceneName, componentProps, importComponentDocument, indexDocument, validDocument, updateComponent, insertComponent, canContain, readComponentDocument, saveComponentDocument, cloneComponent, captureNativeComponent, resolveComponentText } from './componentDocument.js';
 import { DEMO_SKUS } from '../productPricing.js';
 import PaywallPresentation from './PaywallPresentation.jsx';
+import {fieldPreviewDocument} from '../products/fieldPreview.js';
 import PaywallSettings from './PaywallSettings.jsx';
 import { Settings } from 'lucide-react';
 import ComponentPicker from './ComponentPicker.jsx';
@@ -240,7 +241,7 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
     const visibleChildren = treeChildren(node, state.navigation??{}).filter((child) => !isOverlaySurface(child) || node.props.action?.action === 'OpenSheet' && node.props.action.actionPage === child.id);
     const isSelected = targetOwner === owner && selected.id === node.id;
     const sourceIndex=source===document?{nodes,parents}:indexDocument(source);
-    const content = node.type === 'Text' ? resolveComponentText(node, source, findPackage(node.id, sourceIndex.nodes, sourceIndex.parents)) : '';
+    const content = node.type === 'Text' ? resolveComponentText(node, fieldPreviewDocument(source), findPackage(node.id, sourceIndex.nodes, sourceIndex.parents)) : '';
     const displayLabel=componentLayerLabel(node,content);
     return <React.Fragment key={node.id}><div data-layer-id={node.id} data-layer-type={node.type} className={`ne-tree-row ${isSelected ? 'selected' : inSelectedSubtree ? 'in-selected-subtree' : ''}${node.props.hidden?' is-hidden':''}`} style={{ paddingLeft: 20 + depth * 16 }} onMouseEnter={() => highlightLayer(node.id, source, targetOwner)} onMouseLeave={() => setHoveredLayer(null)} onFocus={() => highlightLayer(node.id, source, targetOwner)} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setHoveredLayer(null); }} draggable={node.type!=='Screen'&&node.id!==source.root.id&&node.id!==source.settings?.presentationSurfaceId&&!renaming} onDragStart={(event) => { event.stopPropagation(); select(node.id,source,targetOwner); setDragId(node.id); event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('text/plain', node.id); }} onDragEnd={() => setDragId(null)} onDragOver={(event) => { event.preventDefault(); event.stopPropagation(); }} onDrop={(event) => targetOwner===owner&&drop(event, node, false)}>
       {node.type !== 'Screen' && <GripVertical size={12} className="ne-tree-grip" aria-hidden="true"/>}
@@ -252,7 +253,7 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
   };
   const saveLibrary = () => {
     const name = libraryName.trim(); if (!name) return setStatus('请输入组件名称');
-    const node=captureNativeComponent(document,selected);
+    const node=captureNativeComponent(fieldPreviewDocument(document),selected);
     const next = [{ id: crypto.randomUUID(), name, node, fonts:fontResources(node,document.fonts) }, ...library];
     try { localStorage.setItem(libraryKey, JSON.stringify(next)); setLibrary(next); setLibraryName(''); setStatus('已保存当前组件结构与样式'); } catch { setStatus('组件库保存失败：本地空间不足'); }
   };
@@ -307,7 +308,7 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
         </section>
         {selected.type==='Screen'&&<section aria-label="页面导航按钮"><strong>导航按钮</strong><div className="ne-actions ne-modal-actions"><button type="button" className="secondary" onClick={()=>addNav('close')}><X size={14}/>添加关闭按钮</button><button type="button" className="secondary" onClick={()=>addNav('back')}><ChevronRight size={14} style={{transform:'rotate(180deg)'}}/>添加返回按钮</button></div></section>}
         {isModalRoot&&<section aria-label="弹窗触发按钮"><strong>触发按钮</strong>{triggers.map((button)=><button type="button" className="ne-surface-trigger" key={button.id} onClick={()=>select(button.id)}>{button.name}</button>)}</section>}
-        <RevenueCatProperties key={`${scope}:${selected.id}`} selected={selected} p={p} patch={patch} document={document} nodes={nodes} parents={parents} resolveText={resolveComponentText} findPackage={findPackage} changeProduct={changeProduct} fieldNames={fieldNames} demoSkus={DEMO_SKUS} navigation={navigation} setNavigation={patchNavigation} onStatus={setStatus} onFontsChange={saveFonts} onModalCreate={addModal} onModalEdit={(id)=>select(id)} onPageControl={(enabled)=>setDocument((current)=>togglePageControl(current,selected.id,enabled))} onMediaType={(type) => setDocument((current) => updateComponent(current, selected.id, { type }))} setDefaultPackage={(value) => setDocument((current) => defaultPackagePatch(current, selected.id, value))} />
+        <RevenueCatProperties key={`${scope}:${selected.id}`} selected={selected} p={p} patch={patch} document={fieldPreviewDocument(document)} nodes={nodes} parents={parents} resolveText={resolveComponentText} findPackage={findPackage} changeProduct={changeProduct} fieldNames={fieldNames} demoSkus={DEMO_SKUS} navigation={navigation} setNavigation={patchNavigation} onStatus={setStatus} onFontsChange={saveFonts} onModalCreate={addModal} onModalEdit={(id)=>select(id)} onPageControl={(enabled)=>setDocument((current)=>togglePageControl(current,selected.id,enabled))} onMediaType={(type) => setDocument((current) => updateComponent(current, selected.id, { type }))} setDefaultPackage={(value) => setDocument((current) => defaultPackagePatch(current, selected.id, value))} />
         </>}
       </aside>
     </div>

@@ -1,0 +1,26 @@
+[
+  {
+    "main": "¥{总价}",
+    "mode": "1",
+    "reference": "{总价}",
+    "strike": "line-through"
+  },
+  {
+    "main": "¥{月价}/月",
+    "mode": "0",
+    "reference": "{月价}/月",
+    "strike": "line-through"
+  },
+  {
+    "main": "¥{总价}",
+    "mode": "3",
+    "reference": "{月价}/月",
+    "strike": "line-through"
+  },
+  {
+    "main": "¥{月价}/月",
+    "mode": "4",
+    "reference": "{总价}",
+    "strike": "line-through"
+  }
+]

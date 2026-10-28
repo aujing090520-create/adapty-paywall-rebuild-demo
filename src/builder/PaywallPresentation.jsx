@@ -3,8 +3,9 @@ import { RotateCcw, X } from 'lucide-react';
 import ComponentPreview from './ComponentPreview.jsx';
 import { exitOfferSource, exitOfferTarget } from './exitOffers.js';
 import { pageContext } from './componentTree.js';
+import { fieldPreviewDocument } from '../products/fieldPreview.js';
 
-export default function PaywallPresentation({ offerings = [], currentPaywallId, backdropDocument, backdropNavigation, ...props }) {
+export default function PaywallPresentation({ offerings = [], currentPaywallId, backdropDocument, backdropNavigation, productFields = true, ...props }) {
   const [offer, setOffer] = useState(null);
   const [closed, setClosed] = useState(false);
   const [request, setRequest] = useState(0);
@@ -22,7 +23,8 @@ export default function PaywallPresentation({ offerings = [], currentPaywallId, 
   const restart = () => { consumed.current.clear(); setResumeNavigation(null); setOffer(null); setClosed(false); setRequest(0); setRestarted(true); setSession((value) => value + 1); };
   const resume = () => { setResumeNavigation(underlayNavigation); setOffer(null); setRequest(0); };
   const render = (previewProps) => {
-    const background = offer ? props.document : backdropDocument;
+    if(productFields)previewProps={...previewProps,document:fieldPreviewDocument(previewProps.document)};
+    const background = productFields?fieldPreviewDocument(offer ? props.document : backdropDocument):offer ? props.document : backdropDocument;
     if (!background || !previewProps.document.settings?.presentationSurfaceId) return <ComponentPreview {...previewProps}/>;
     const { flow, pages } = pageContext(background);
     const source = exitOfferSource(background);

@@ -2,6 +2,7 @@ import { productPriceFields } from '../productPricing.js';
 import { packageDisplayFields, productPeriod } from '../products/packageFields.js';
 import { ITEM_VARIABLES,businessList } from './businessData.js';
 import {businessValues} from './paywallLogic.js';
+import {PRODUCT_VARIABLE_PLACEHOLDERS} from '../products/fieldPreview.js';
 
 export const PRODUCT_TEXT_VARIABLES = [
   ['product.price', '商品总价'],
@@ -19,11 +20,11 @@ export const PRODUCT_TEXT_VARIABLES = [
 export const TIMER_TEXT_VARIABLES = [['days','天'],['hours','小时'],['minutes','分钟'],['seconds','秒']].flatMap(([unit,label])=>[[`count_${unit}_with_zero`,`${label}（补零）`],[`count_${unit}_without_zero`,`${label}（不补零）`]]);
 
 export function variableValues(document, packageNode, timer, runtime={}) {
-  const row = document.products[packageNode?.props.dataKey ?? packageNode?.id];
+  const row = document.productFieldPreview?undefined:document.products[packageNode?.props.dataKey ?? packageNode?.id];
   const fields = row ? productPriceFields(row) : null;
   const display = row ? packageDisplayFields(document,packageNode) : {};
   const period = row ? productPeriod(row) : null;
-  const values = fields ? {
+  const values = document.productFieldPreview ? {...PRODUCT_VARIABLE_PLACEHOLDERS} : fields ? {
     'product.price': fields.total,
     'product.price_per_month': fields.months === 0 ? fields.total : fields.monthly.replace(/\/月$/, ''),
     'product.price_per_period': fields.total && fields.months > 0 ? `${fields.total}/${fields.months === 12 ? '年' : fields.months === 1 ? '月' : `${fields.months}个月`}` : fields.total,

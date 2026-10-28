@@ -1,4 +1,5 @@
 import { billingMonths, productPriceFields, resolveProductPrice, skuById, skuCopy } from '../productPricing.js';
+import { productFieldPlaceholders } from './fieldPreview.js';
 
 // 1 year = 12 months = 52 weeks, represented exactly without rounded month prices.
 const periodUnits = { year: 156, month: 13, week: 3 };
@@ -58,6 +59,7 @@ function packagePeers(document, target) {
 }
 
 export function packageDisplayFields(document, packageNode, selected = false, fallbackKey) {
+  if(document.productFieldPreview)return productFieldPlaceholders(packageNode,selected);
   const row = document.products[packageNode?.props.dataKey ?? fallbackKey] ?? {};
   const sku = skuById(row.skuId);
   if (row.skuId && !sku) return {};

@@ -178,11 +178,13 @@ test('flow preview from a migrated modal board starts at the main page and enter
   const binding = modalBindings(migrated)[0];
   await click(`选择画板：${binding.modal.name}`); await click('预览流程');
   const preview = renderer.root.findByType(Presentation);
+  const targetModalId=modalBindings(preview.props.document)[0].modal.id;
   assert.equal(preview.props.document.settings.buttonModalVersion, 1); assert.equal(preview.props.currentPaywallId, 'primary');
-  assert.ok(text(preview).includes('页面预览')); assert.ok(text(preview).includes('¥100')); assert.equal(text(preview).includes('¥50'), false);
+  assert.ok(text(preview).includes('页面预览')); assert.ok(text(preview).includes('¥{总价}')); assert.equal(text(preview).includes('¥100'), false);
+  assert.ok(preview.findAll(item=>typeof item.type==='string'&&item.props['data-component-id']==='primary-package').length);assert.equal(preview.findAll(item=>typeof item.type==='string'&&item.props['data-component-id']==='offer-package').length,0);
   const opener = preview.findAll((item) => typeof item.type === 'string' && item.props['data-component-id'] === modalBindings(preview.props.document)[0].button.id && item.props.onClick)[0];
   assert.ok(opener); await act(async () => opener.props.onClick({ stopPropagation() {}, preventDefault() {} }));
-  assert.ok(text(preview).includes('¥50'));
+  assert.ok(text(preview).includes('¥{总价}'));assert.ok(preview.findAll(item=>typeof item.type==='string'&&item.props['data-component-id']===targetModalId).length);
   await click('关闭付费墙预览'); assert.ok(text(preview).includes('付费墙已关闭'));
 });
 
@@ -193,7 +195,7 @@ test('closing the primary displays the saved offer with its own products; closin
   const h = await mount(doc, offerings);
   assert.ok(h.visible('primary-package')); await h.click('dismiss-main');
   assert.equal(h.visible('primary-package'), false); assert.ok(h.visible('offer-package'));
-  assert.ok(text(h.renderer.root).includes('¥50')); assert.equal(text(h.renderer.root).includes('¥100'), false);
+  assert.ok(text(h.renderer.root).includes('¥{总价}')); assert.equal(text(h.renderer.root).includes('¥100'), false);assert.equal(text(h.renderer.root).includes('¥50'),false);
   await h.click('dismiss-offer'); assert.ok(text(h.renderer.root).includes('付费墙已关闭')); assert.equal(h.visible('primary-package'), false);
   await h.click('重新预览'); assert.ok(h.visible('primary-package'));
   await h.click('关闭付费墙预览'); assert.ok(h.visible('offer-package'));

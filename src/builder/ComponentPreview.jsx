@@ -337,7 +337,7 @@ export default function ComponentPreview({ document: sourceDocument, selectedId,
       const scope=owningModal(document,node.id)?commerce.floating:commerce.background;
       const target=owner?.type==='Package'?owner:scope.selectedPackage;
       const row=document.products[target?.props.dataKey??target?.id];
-      if(!row||!productPriceFields(row).total){onStatus('请先选择有效的商品套餐');return;}
+      if(document.productFieldPreview?!target:!row||!productPriceFields(row).total){onStatus('请先选择有效的商品套餐');return;}
     }
     if (action.action === 'NavigateTo') { onStatus('请先选择跳转目标'); return; }
     if (action.action === 'OpenSheet') {
