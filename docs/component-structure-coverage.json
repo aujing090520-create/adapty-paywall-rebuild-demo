@@ -2605,12 +2605,12 @@
   "sourceHashes": {
     "src/builder/componentCatalog.js": "f872eaed831757cc1457411deb8adc612a11edf77ffe8093a0436c247376e06a",
     "src/builder/componentDocument.js": "a6daa190c90fb7b593cbc4b269f3e9e054e06fc26873d0fb426f42174ec81ff4",
-    "src/builder/componentOperations.js": "d700a5eb341b95edb82085f04c1b9245766e5904491c4f515cab8c4490317246",
-    "src/builder/ComponentPreview.jsx": "a3ff4355f1b9832ba3d1fc92b14bb4c4a3f9a19568d8add2982be78dd808405e",
+    "src/builder/componentOperations.js": "8b56600f66a89eedd2f9ef29664aedcfd7ba306df31ba935580b5bc8d4fc4cc2",
+    "src/builder/ComponentPreview.jsx": "fa1a31402c78fea49cd0063cb1236cca0e7b8110a3eccfc21af3368c2e3050af",
     "src/builder/screenLayout.js": "3bab6b36c926bdaa63a22da6dd608cd5a3543b537db8c2e7926c3821486406db",
     "src/builder/navigationRows.js": "131ae049f145da06260e37edc855c7e05c135317d2ef3366d8e78cff64fcd321",
     "src/builder/buttonModals.js": "859c187f1743ecec941d60b4ca596297200e6060fb90adb3bc79b81dd6e707b7",
-    "src/builder/ComponentEditor.jsx": "83b690c3b87b1f6828b08b94d96cdc076092fc3a281a006922383fefae1a1405",
+    "src/builder/ComponentEditor.jsx": "8d36e203a961eb81ee101bc0d53768b7f1db7a52595c4d3919620943844685f7",
     "src/builder/componentEditor.css": "43093c1dcd228821dba532aa771e2e84b7e00dbc0f2b3d47c1cebcbd1178650e",
     "src/builder/referenceTemplateStructure.js": "54fd4f981788251c30c51abae023d6764f918252bd351d56bd42220a4baaaa75",
     "docs/reference-structure/revenuecat-hierarchy-2026-10-26.json": "3d598f78c41db1d5e0d4b7a8dd2fef217f2e9d23cc82d2886a65c8ce51614312"

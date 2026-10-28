@@ -969,7 +969,7 @@
 <tr data-component="倒计时"><td>倒计时</td><td>尺寸</td><td>最大高度</td><td class="key">maxHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="倒计时状态内容"><td>倒计时状态内容</td><td>尺寸</td><td>最大高度</td><td class="key">maxHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="多页面流程"><td>多页面流程</td><td>尺寸</td><td>最大高度</td><td class="key">maxHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
-<tr data-component="自定义组件"><td>自定义组件</td><td>尺寸</td><td>加载时初始高度</td><td class="key">loadingHeight</td><td>0–2000 px</td><td>ZIP未完成加载和首次测量前的占位高度</td><td>高度为适应内容；收到真实高度后由组件内容决定</td><td>300</td></tr>
+<tr data-component="自定义组件"><td>自定义组件</td><td>尺寸</td><td>加载时初始高度</td><td class="key">loadingHeight</td><td>0–2000 px</td><td>ZIP未完成加载和首次测量前的占位高度</td><td>高度为适应内容且非旧版HTML；收到真实高度后由组件内容决定</td><td>300</td></tr>
 <tr data-component="页面"><td>页面</td><td>布局间距</td><td>内边距配置方式</td><td class="key">paddingMode</td><td>轴向</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；纵向同时修改上下，横向同时修改左右</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
 <tr data-component="页面"><td>页面</td><td>布局间距</td><td>内边距配置方式</td><td class="key">paddingMode</td><td>独立</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；分别编辑各边；切换时显式转换数值</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>布局间距</td><td>内边距配置方式</td><td class="key">paddingMode</td><td>轴向</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；纵向同时修改上下，横向同时修改左右</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
@@ -2858,9 +2858,9 @@
 <tr data-component="购买按钮"><td>购买按钮</td><td>动作属性</td><td>附带应用用户 ID</td><td class="key">action.attachAppUserId</td><td>关闭</td><td>附加示例用户demo-preview，不读取真实用户；禁用此能力或不使用该状态</td><td>仅自定义结账；默认勾选</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>动作属性</td><td>附带环境</td><td class="key">action.attachEnvironment</td><td>开启</td><td>附加sandbox示例环境；启用此能力或使用该状态</td><td>仅自定义结账；默认勾选</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="购买按钮"><td>购买按钮</td><td>动作属性</td><td>附带环境</td><td class="key">action.attachEnvironment</td><td>关闭</td><td>附加sandbox示例环境；禁用此能力或不使用该状态</td><td>仅自定义结账；默认勾选</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="标签页"><td>标签页</td><td>页面属性</td><td>默认页面</td><td class="key">defaultIndex</td><td>当前值</td><td>设置初次展示页，并同步当前编辑预览页</td><td>页面使用真实子节点顺序；不复制正文，不修改其他页面</td><td>0</td></tr>
-<tr data-component="轮播"><td>轮播</td><td>页面属性</td><td>默认页面</td><td class="key">defaultIndex</td><td>当前值</td><td>设置初次展示页，并同步当前编辑预览页</td><td>页面使用真实子节点顺序；不复制正文，不修改其他页面</td><td>0</td></tr>
-<tr data-component="多页面流程"><td>多页面流程</td><td>页面属性</td><td>默认页面</td><td class="key">defaultIndex</td><td>当前值</td><td>设置初次展示页，并同步当前编辑预览页</td><td>页面使用真实子节点顺序；不复制正文，不修改其他页面</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="标签页"><td>标签页</td><td>页面属性</td><td>默认页面</td><td class="key">defaultIndex</td><td>当前值</td><td>设置初次展示页，并同步当前编辑预览页；流程同步保存初始步骤ID，避免旧ID覆盖新选择</td><td>页面使用真实子节点顺序；不复制正文，不修改其他页面</td><td>0</td></tr>
+<tr data-component="轮播"><td>轮播</td><td>页面属性</td><td>默认页面</td><td class="key">defaultIndex</td><td>当前值</td><td>设置初次展示页，并同步当前编辑预览页；流程同步保存初始步骤ID，避免旧ID覆盖新选择</td><td>页面使用真实子节点顺序；不复制正文，不修改其他页面</td><td>0</td></tr>
+<tr data-component="多页面流程"><td>多页面流程</td><td>页面属性</td><td>默认页面</td><td class="key">defaultIndex / initialStepId</td><td>当前值</td><td>设置初次展示页，并同步当前编辑预览页；流程同步保存初始步骤ID，避免旧ID覆盖新选择</td><td>页面使用真实子节点顺序；不复制正文，不修改其他页面</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="轮播"><td>轮播</td><td>页面属性</td><td>页面纵向对齐</td><td class="key">pageAlignment</td><td>顶部</td><td>高度不同时控制轮播页在轨道内的位置；页顶对齐</td><td>实际轨道比该页高时可见</td><td>顶部</td></tr>
 <tr data-component="轮播"><td>轮播</td><td>页面属性</td><td>页面纵向对齐</td><td class="key">pageAlignment</td><td>居中</td><td>高度不同时控制轮播页在轨道内的位置；页垂直居中</td><td>实际轨道比该页高时可见</td><td>顶部</td></tr>
 <tr data-component="轮播"><td>轮播</td><td>页面属性</td><td>页面纵向对齐</td><td class="key">pageAlignment</td><td>底部</td><td>高度不同时控制轮播页在轨道内的位置；页底对齐</td><td>实际轨道比该页高时可见</td><td>顶部</td></tr>
@@ -2889,8 +2889,8 @@
 <tr data-component="时间线"><td>时间线</td><td>间距</td><td>节点间距</td><td class="key">itemSpacing</td><td>0–200 px</td><td>相邻时间节点的纵向间隔</td><td>由时间线父组件统一控制，子层不重复拥有该间距</td><td>24</td></tr>
 <tr data-component="时间线"><td>时间线</td><td>间距</td><td>标题与描述</td><td class="key">textSpacing</td><td>0–200 px</td><td>同一节点标题与描述之间的间隔</td><td>由时间线父组件统一控制，子层不重复拥有该间距</td><td>4</td></tr>
 <tr data-component="时间线"><td>时间线</td><td>间距</td><td>列间距</td><td class="key">columnGutter</td><td>0–200 px</td><td>图标列与文字列之间的横向距离</td><td>由时间线父组件统一控制，子层不重复拥有该间距</td><td>16</td></tr>
-<tr data-component="时间节点"><td>时间节点</td><td>连接线</td><td>连接线启用</td><td class="key">connectorEnabled</td><td>开启</td><td>显示连接到下一节点的线，末项不额外绘制尾线；启用此能力或使用该状态</td><td>至少存在下一个时间节点</td><td>开启</td></tr>
-<tr data-component="时间节点"><td>时间节点</td><td>连接线</td><td>连接线启用</td><td class="key">connectorEnabled</td><td>关闭</td><td>显示连接到下一节点的线，末项不额外绘制尾线；禁用此能力或不使用该状态</td><td>至少存在下一个时间节点</td><td>开启</td></tr>
+<tr data-component="时间节点"><td>时间节点</td><td>连接线</td><td>连接线启用</td><td class="key">connectorEnabled</td><td>开启</td><td>显示连接到下一节点的线，末项不额外绘制尾线；不适用时隐藏设置但保留原值；启用此能力或使用该状态</td><td>当前节点和后续可见时间节点都具有图标或图片标记</td><td>开启</td></tr>
+<tr data-component="时间节点"><td>时间节点</td><td>连接线</td><td>连接线启用</td><td class="key">connectorEnabled</td><td>关闭</td><td>显示连接到下一节点的线，末项不额外绘制尾线；不适用时隐藏设置但保留原值；禁用此能力或不使用该状态</td><td>当前节点和后续可见时间节点都具有图标或图片标记</td><td>开启</td></tr>
 <tr data-component="时间节点"><td>时间节点</td><td>连接线</td><td>连接线宽度</td><td class="key">connectorWidth</td><td>0–100 px</td><td>设置连接线厚度</td><td>连接线启用</td><td>8</td></tr>
 <tr data-component="时间节点"><td>时间节点</td><td>连接线</td><td>连接线纵向留白</td><td class="key">connectorMarginVertical</td><td>0–200 px</td><td>从图标接合位置缩短对应端线段，不改变节点文字尺寸</td><td>对应统一/上下独立模式；连接线已启用</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="时间节点"><td>时间节点</td><td>连接线</td><td>连接线留白上</td><td class="key">connectorMarginTop</td><td>0–200 px</td><td>从图标接合位置缩短对应端线段，不改变节点文字尺寸</td><td>对应统一/上下独立模式；连接线已启用</td><td>依当前模板/条件继承</td></tr>

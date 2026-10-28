@@ -14,15 +14,22 @@ import '../src/builder/componentEditor.css';
 function fixture(type){
   const groups={Tab:'Tabs',TabControl:'Tabs',TabButton:'Tabs',Slide:'Carousel',PageControl:'Carousel',Indicators:'Carousel',CountdownState:'Countdown',SwitchCase:'Switch',CheckoutState:'ExpressCheckout',Wallet:'ExpressCheckout',TimelineItem:'Timeline'};
   let body=createCatalogComponent(groups[type]??type,'sample');
-  if(type==='Flow')body=c('sample','Flow','多页面流程',{},[c('one','Screen','第一步',{},[c('one/text','Text','文字',{text:'第一步'})]),c('two','Screen','第二步',{},[c('two/text','Text','文字',{text:'第二步'})])]);
+  if(type==='Flow')body=c('sample','Flow','多页面流程',{initialStepId:'two',defaultIndex:0},[c('one','Screen','第一步',{},[c('one/text','Text','文字',{text:'第一步'})]),c('two','Screen','第二步',{},[c('two/text','Text','文字',{text:'第二步'})])]);
   const selected=[...indexDocument({root:body}).nodes.values()].find(node=>node.type===type);
   if(['Text','ProductParameter'].includes(type)){
     if(type==='Text')selected.props={text:'套餐价格',fontSize:16,fontWeight:400,color:'#112233',runs:[{text:'套餐',fontSize:16,color:'#112233'},{text:'价格',fontSize:18,fontWeight:700}]};
     body=c('plan','Package','商品套餐',{dataKey:'annual',group:'plan',defaultSelected:false,borderWidth:1,borderColor:'#777777',paddingVertical:16,paddingHorizontal:16},[selected]);
   }
   if(type==='Image')selected.props.src='/ht-retention-gift.png';
-  if(type==='Icon')selected.props.icon='heart';
-  if(type==='Custom')selected.props.html='<p style="font:18px sans-serif;color:#20664f">自定义内容</p>';
+  if(type==='Icon'){
+    selected.props={...selected.props,icon:'heart',color:'#112233',selectedColor:'#abcdef'};
+    body=c('icon-plan','Package','商品套餐',{defaultSelected:false},[selected]);
+  }
+  if(type==='Stack'){
+    selected.props={...selected.props,axis:'horizontal',widthMode:'fixed',width:220};
+    selected.children=[c('wide-a','Text','文字',{text:'第一个条目',widthMode:'fixed',width:200}),c('wide-b','Text','文字',{text:'第二个条目',widthMode:'fixed',width:200})];
+  }
+  if(type==='Custom')selected.props={...selected.props,heightMode:'fit',html:'<p style="font:18px sans-serif;color:#20664f">自定义内容</p>'};
   if(['Header','Footer','Screen','Stack','CheckoutState','SwitchCase','CountdownState'].includes(type)&&!selected.children.length)selected.children.push(c(`${selected.id}/copy`,'Text','文字',{text:'示例内容',fontSize:20}));
   const plan=c('purchase-plan','Package','商品套餐',{dataKey:'annual',defaultSelected:true},[c('plan-label','Text','文字',{binding:{key:'annual',field:'name'}})]);
   const children=[body,...(['Wallet','PurchaseButton','ExpressCheckout'].includes(type)?[plan,c('agreement','Toggle','协议',{required:true,initial:false})]:[])];

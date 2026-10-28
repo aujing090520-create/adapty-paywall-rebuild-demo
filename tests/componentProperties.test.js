@@ -464,7 +464,8 @@ test('timeline parent owns icon alignment and exactly three spacings, items own 
   await h.segment('宽度','固定');await h.change('固定宽度','240');assert.equal(h.node().props.style.width,'240px');
   await h.change('内边距纵向','6');await h.change('内边距横向','9');assert.equal(h.node().props.style.padding,'6px 9px');
   await h.close();
-  const item=await mount(createCatalogComponent('TimelineItem','sample'));
+  const itemNode=createCatalogComponent('TimelineItem','sample');
+  const item=await mount(itemNode,{source:fixture(component('timeline','Timeline','时间线',{},[itemNode,createCatalogComponent('TimelineItem','next')]))});
   await item.change('连接线宽度','5');await item.change('连接线纵向留白','7');await item.change('连接线颜色值','#abcdef');await item.change('连接线颜色不透明度','45');
   const props=indexDocument(item.document()).nodes.get('sample').props;
   assert.equal(props.connectorWidth,5);assert.equal(props.connectorMarginVertical,7);assert.equal(props.connectorColor,'#abcdef');assert.equal(props.connectorOpacity,45);

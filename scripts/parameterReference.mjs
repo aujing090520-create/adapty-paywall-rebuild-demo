@@ -64,7 +64,7 @@ for(const axis of ['width','height']){
   const limited=owners.filter(type=>!['Icon','Indicators'].includes(type));
   for(const bound of ['min','max'])add(limited,'尺寸',`${bound==='min'?'最小':'最大'}${label}`,`${bound}${cap}`,'限制尺寸的下界或上界；上下界冲突时同步修正另一界','只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除',[],'0–2000 px；最大值0表示未设置');
 }
-add(['Custom'],'尺寸','加载时初始高度','loadingHeight','ZIP未完成加载和首次测量前的占位高度','高度为适应内容；收到真实高度后由组件内容决定',[],'0–2000 px');
+add(['Custom'],'尺寸','加载时初始高度','loadingHeight','ZIP未完成加载和首次测量前的占位高度','高度为适应内容且非旧版HTML；收到真实高度后由组件内容决定',[],'0–2000 px');
 for(const [prefix,label] of [['padding','内边距'],['margin','外边距']]){
   const owners=prefix==='margin'?spaced.filter(type=>type!=='Screen'):spaced;
   add(owners,'布局间距',`${label}配置方式`,`${prefix}Mode`,'同一组边距的轴向/独立表示，不是两份叠加配置','轮播只有上下内边距；时间线中的图标不提供外边距',[['axis','轴向','纵向同时修改上下，横向同时修改左右'],['individual','独立','分别编辑各边；切换时显式转换数值']]);
@@ -185,7 +185,7 @@ add(['PurchaseButton'],'动作属性','结账链接','action.actionUrl','自定�
 add(['PurchaseButton'],'动作属性','链接打开方式','action.openMethod','自定义结账链接的打开方式','自定义结账',[['external_browser','外部浏览器','另开URL'],['deep_link','深链','使用应用协议URL']]);
 for(const [key,name,meaning] of [['attachPackageId','附带商品套餐 ID','把选中商品ID附加到URL'],['attachAppUserId','附带应用用户 ID','附加示例用户demo-preview，不读取真实用户'],['attachEnvironment','附带环境','附加sandbox示例环境']])add(['PurchaseButton'],'动作属性',name,`action.${key}`,meaning,'仅自定义结账；默认勾选',bool);
 
-for(const type of ['Tabs','Carousel','Flow'])add([type],'页面属性','默认页面','defaultIndex','设置初次展示页，并同步当前编辑预览页','页面使用真实子节点顺序；不复制正文，不修改其他页面');
+for(const type of ['Tabs','Carousel','Flow'])add([type],'页面属性','默认页面',type==='Flow'?'defaultIndex / initialStepId':'defaultIndex','设置初次展示页，并同步当前编辑预览页；流程同步保存初始步骤ID，避免旧ID覆盖新选择','页面使用真实子节点顺序；不复制正文，不修改其他页面');
 add(['Carousel'],'页面属性','页面纵向对齐','pageAlignment','高度不同时控制轮播页在轨道内的位置','实际轨道比该页高时可见',[['top','顶部','页顶对齐'],['center','居中','页垂直居中'],['bottom','底部','页底对齐']]);
 add(['Carousel'],'页面属性','页面间距','pageSpacing','相邻轮播页面之间的间隔','至少两个轮播页',[],'0–200 px');
 add(['Carousel'],'页面属性','邻页露出','pagePeek','让两侧相邻页面各露出指定宽度','轨道需有足够宽度；不是页面内边距',[],'0–100 px');
@@ -201,7 +201,7 @@ paints(['Indicators'],'填充','背景颜色','background',true,'默认/当前�
 
 add(['Timeline'],'时间线属性','图标对齐','iconAlignment','使图标对齐标题行或标题加描述的整体中心','时间节点中有真实图标和文字',[['title','标题','图标中心对齐标题中心'],['content','标题和描述','图标对齐整块文字中心']]);
 for(const [key,name,meaning] of [['itemSpacing','节点间距','相邻时间节点的纵向间隔'],['textSpacing','标题与描述','同一节点标题与描述之间的间隔'],['columnGutter','列间距','图标列与文字列之间的横向距离']])add(['Timeline'],'间距',name,key,meaning,'由时间线父组件统一控制，子层不重复拥有该间距',[],'0–200 px');
-add(['TimelineItem'],'连接线','连接线启用','connectorEnabled','显示连接到下一节点的线，末项不额外绘制尾线','至少存在下一个时间节点',bool);
+add(['TimelineItem'],'连接线','连接线启用','connectorEnabled','显示连接到下一节点的线，末项不额外绘制尾线；不适用时隐藏设置但保留原值','当前节点和后续可见时间节点都具有图标或图片标记',bool);
 add(['TimelineItem'],'连接线','连接线宽度','connectorWidth','设置连接线厚度','连接线启用',[],'0–100 px');
 for(const [key,label] of [['connectorMarginVertical','连接线纵向留白'],['connectorMarginTop','连接线留白上'],['connectorMarginBottom','连接线留白下']])add(['TimelineItem'],'连接线',label,key,'从图标接合位置缩短对应端线段，不改变节点文字尺寸','对应统一/上下独立模式；连接线已启用',[],'0–200 px');
 add(['TimelineItem'],'连接线','切换连接线上下留白','connectorMarginMode','统一留白或上下独立表示','连接线已启用',[['axis','统一','上下同值'],['individual','上下独立','上下不同值']]);
