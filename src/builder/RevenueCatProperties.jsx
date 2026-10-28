@@ -7,6 +7,7 @@ import { PRODUCT_TEXT_VARIABLES, TIMER_TEXT_VARIABLES, variableIssues } from './
 import {ITEM_VARIABLES} from './businessData.js';
 import {timeSources,TIME_SCOPES} from './businessTime.js';
 import {packageSelectionGroups} from './componentOperations.js';
+import {COMPARISON_ORDER_RULES} from './comparisonOrdering.js';
 import { Italic, Underline, Strikethrough } from 'lucide-react';
 import { PRODUCT_PARAMETERS, PRODUCT_PARAMETER_OPTIONS, PACKAGE_PRICE_MODES, packagePriceMode, effectiveProductParameter, productParameterPreview } from '../products/productParameters.js';
 import {isGradient,pickerColor,pickerPaint} from './colorModel.js';
@@ -186,10 +187,16 @@ function ContentSection({ selected, p, patch, document, nodes, parents, findPack
     </PropertySection>;
   }
   if(type==='Stack') {
+    const ordering=p.comparisonTableVersion===2?<PropertySection title="展示顺序">
+      <Select label="展示顺序" value={p.comparisonOrderMode??'canvas'} options={[[ 'canvas','按画布顺序' ],[ 'rule','按用户规则' ]]} onChange={comparisonOrderMode=>patch({comparisonOrderMode})}/>
+      {p.comparisonOrderMode==='rule'&&<>
+        <Select label="排序规则" value={p.comparisonOrderRule??''} options={[[ '', '请选择排序规则' ],...COMPARISON_ORDER_RULES.map(rule=>[rule.key,rule.name]),...(p.comparisonOrderRule&&!COMPARISON_ORDER_RULES.some(rule=>rule.key===p.comparisonOrderRule)?[[p.comparisonOrderRule,'原规则不可用（按画布顺序）']]:[])]} onChange={comparisonOrderRule=>patch({comparisonOrderRule})}/>
+      </>}
+    </PropertySection>:null;
     let owner=selected;
     while(owner && !owner.props.comparisonTableVersion) owner=nodes.get(parents.get(owner.id));
-    if(owner && !p.dataSource && !p.collapsible && !p.horizontalScroll) return null;
-    return <PropertySection title="数据与展开"><Select label="数据列表来源" value={p.dataSource??''} options={[[ '', '普通子组件' ],['gifts','当前 SKU 礼包'],['benefits','会员福利']]} onChange={dataSource=>patch({dataSource:dataSource||null})}/><CheckboxField label="允许展开收起" checked={Boolean(p.collapsible)} onChange={collapsible=>patch({collapsible})}/>{p.collapsible&&<><Field label="展开按钮文案"><input aria-label="展开按钮文案" value={p.collapseLabel??'展开内容'} onChange={e=>patch({collapseLabel:e.target.value})}/></Field><NumberField label="自动展开延时" value={p.autoExpandDelay??1500} min={-1} max={60000} unit="ms" onChange={autoExpandDelay=>patch({autoExpandDelay})}/></>}<CheckboxField label="允许横向浏览" checked={Boolean(p.horizontalScroll)} onChange={horizontalScroll=>patch({horizontalScroll})}/></PropertySection>;
+    if(owner && !p.dataSource && !p.collapsible && !p.horizontalScroll) return ordering;
+    return <>{ordering}<PropertySection title="数据与展开"><Select label="数据列表来源" value={p.dataSource??''} options={[[ '', '普通子组件' ],['gifts','当前 SKU 礼包'],['benefits','会员福利']]} onChange={dataSource=>patch({dataSource:dataSource||null})}/><CheckboxField label="允许展开收起" checked={Boolean(p.collapsible)} onChange={collapsible=>patch({collapsible})}/>{p.collapsible&&<><Field label="展开按钮文案"><input aria-label="展开按钮文案" value={p.collapseLabel??'展开内容'} onChange={e=>patch({collapseLabel:e.target.value})}/></Field><NumberField label="自动展开延时" value={p.autoExpandDelay??1500} min={-1} max={60000} unit="ms" onChange={autoExpandDelay=>patch({autoExpandDelay})}/></>}<CheckboxField label="允许横向浏览" checked={Boolean(p.horizontalScroll)} onChange={horizontalScroll=>patch({horizontalScroll})}/></PropertySection></>;
   }
   if (type === 'Image' || type === 'Video') return <><PropertySection title="素材">
     {type==='Image'&&<Select label="媒体类型" value={p.mediaType??'image'} options={[[ 'image','图片' ],['pag','PAG 动画']]} onChange={mediaType=>patch({mediaType,...(mediaType==='pag'&&p.heightMode==='fit'?{heightMode:'fixed',height:p.height||160}:{})})}/>}

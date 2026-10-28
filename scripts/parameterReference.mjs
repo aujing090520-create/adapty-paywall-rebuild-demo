@@ -7,6 +7,8 @@ import {PRODUCT_PARAMETER_OPTIONS} from '../src/products/productParameters.js';
 
 export const definitions=[];
 const add=(types,group,label,key,meaning,condition='该组件显示且当前模块已启用',options=[],range='')=>definitions.push({types,group,label,key,meaning,condition,options,range});
+add(['Stack'],'展示顺序','展示顺序','comparisonOrderMode','整张特权对比表按画布或用户规则展示，三列按稳定特权标识同步重排，表头固定','仅特权表最外层；不改写模板图层顺序',[['canvas','按画布顺序','默认及回退顺序'],['rule','按用户规则','采用所选规则结果']]);
+add(['Stack'],'展示顺序','排序规则','comparisonOrderRule','选择排序规则，缺失或无有效结果时按画布顺序展示；未返回条目按原顺序追加','特权表选择按用户规则时；当前规则是Demo示例，未接入真实用户接口');
 const without=(...types)=>COMPONENT_TYPES.filter(type=>!types.includes(type));
 const containers=[...CONTAINER_TYPES].filter(type=>!['Tabs','Carousel','PageControl','Timeline','TimelineItem','Switch','ExpressCheckout','Countdown'].includes(type));
 const sized=without('TimelineItem');

@@ -21,6 +21,7 @@ import {safeTextLink,richTextFontFamily} from './richTextModel.js';
 import {textRuleProps} from './textRules.js';
 import {logicNode} from './paywallLogic.js';
 import {comparisonRowProps} from './htVipColumn.js';
+import {orderedComparisonCells} from './comparisonOrdering.js';
 import {resolveBusinessTime,clockAnchor,clockNow} from './businessTime.js';
 import {localizedDocument} from './contentLocalization.js';
 import {businessList,interpolateItem} from './businessData.js';
@@ -193,7 +194,7 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
   }
   const attributes = { 'data-component-id': node.id, 'data-component-type': node.type, 'data-axis': props.axis, 'data-width': props.widthMode, 'data-height': props.heightMode, className: `nc-node nc-${node.type.toLowerCase()} ${floating ? 'nc-modal-surface' : ''} ${editing && selectedId === node.id ? 'nc-inspected' : ''} ${editing && context.hoveredId === node.id ? 'nc-hovered' : ''}`, style, onClick: select };
   if(repeated&&repeated.index>0){attributes['data-component-id']=`${node.id}::${repeated.item.id}`;attributes['data-template-id']=node.id;}
-  const children = (items = node.children, background = true) => <>{background && <BackgroundVideo props={props} />}{entries?entries.map((item,index)=><ItemContext.Provider key={item.id} value={{item,index}}>{items.filter(child=>child.type!=='BottomSheet').map(child=><NativeComponent key={child.id} node={child} packageNode={currentPackage}/>)}</ItemContext.Provider>):items.map((child) => <NativeComponent key={child.id} node={child} packageNode={currentPackage} />)}{background&&<ComponentBadge node={visualNode} document={document} packageNode={variablePackage} timer={timer}/>}</>;
+  const children = (items = orderedComparisonCells(node,parentNode,context.businessOrdering), background = true) => <>{background && <BackgroundVideo props={props} />}{entries?entries.map((item,index)=><ItemContext.Provider key={item.id} value={{item,index}}>{items.filter(child=>child.type!=='BottomSheet').map(child=><NativeComponent key={child.id} node={child} packageNode={currentPackage}/>)}</ItemContext.Provider>):items.map((child) => <NativeComponent key={child.id} node={child} packageNode={currentPackage} />)}{background&&<ComponentBadge node={visualNode} document={document} packageNode={variablePackage} timer={timer}/>}</>;
   if(props.dataSource||props.collapsible)return <div {...attributes} style={{...style,...containerStyle(visualNode),...(props.horizontalScroll?{overflowX:'auto',overscrollBehaviorX:'contain'}:{}),...(props.collapsible?{display:'flex',flexDirection:'column'}:{})}}>{props.collapsible?<Disclosure label={props.collapseLabel??'展开内容'} delay={props.autoExpandDelay??1500} scope={`${variablePackage?.id??''}:${entries?.map(item=>item.id).join(',')??node.id}`} editing={editing}>{children()}</Disclosure>:children()}</div>;
   if(node.type==='PageControl')return <div {...attributes} style={{...style,display:'flex',justifyContent:'center',alignItems:'center',gap:props.gap}}>{children()}</div>;
   if(node.type==='Indicators')return <>{sequence?.pages.map((page,index)=>{
@@ -292,7 +293,7 @@ function Countdown({ props }) {
   const parts = [Math.floor(remaining / 3600), Math.floor(remaining / 60) % 60, remaining % 60];
   return <span className="nc-countdown"><span style={{ color: props.prefixColor }}>{props.prefix}</span>{parts.map((part, index) => <React.Fragment key={index}>{index > 0 && <span>:</span>}<strong style={{ background: props.digitBackground, borderRadius: 4, padding: '0 3px' }}>{String(part).padStart(2, '0')}</strong></React.Fragment>)}<span>{props.suffix}</span></span>;
 }
-export default function ComponentPreview({ document: sourceDocument, businessTime, selectedId, highlightedId, onSelect, editing, inspectable = true, navigation, onNavigate, onStatus, onDismiss, onResume, dismissRequest = 0, dismissOnBackdrop = false }) {
+export default function ComponentPreview({ document: sourceDocument, businessTime, businessOrdering, selectedId, highlightedId, onSelect, editing, inspectable = true, navigation, onNavigate, onStatus, onDismiss, onResume, dismissRequest = 0, dismissOnBackdrop = false }) {
   const document=useMemo(()=>localizedDocument(sourceDocument,navigation),[sourceDocument,navigation?.contentLocale,navigation?.contentTheme,navigation?.contentPlatform]);
   const [localRuntime, setRuntime] = useState({});
   const clock=useMemo(()=>clockAnchor(businessTime),[businessTime]);
@@ -426,7 +427,7 @@ export default function ComponentPreview({ document: sourceDocument, businessTim
     const element = event.target.closest?.('[data-component-id]');
     setHoveredId(canvasSelectionTarget(nodeIndex.get(element?.dataset.templateId??element?.dataset.componentId), selectedId, nodeIndex, parentIndex));
   };
-  const common={document,nodeIndex,parentIndex,viewportHeight,selectedId,onSelect,editing,hoveredId:editing?highlightedId??(inspectable?hoveredId:null):null,runtime,setRuntime,runAction,onStatus};
+  const common={document,nodeIndex,parentIndex,viewportHeight,selectedId,onSelect,editing,hoveredId:editing?highlightedId??(inspectable?hoveredId:null):null,runtime,setRuntime,runAction,onStatus,businessOrdering};
   const direction=document.previewContentLocale==='ar'?'rtl':'ltr';
   return <PreviewContext.Provider value={{...common,...commerce.background}}>
     <style>{fontStyles(document.fonts)}</style>

@@ -1,4 +1,5 @@
 import { component } from './componentDocument.js';
+import { comparisonItemKey } from './comparisonOrdering.js';
 
 export const COMPARISON_ROW_KEYS = ['action','hidden','visibleWhen','heightMode','height','minHeight','maxHeight'];
 
@@ -20,7 +21,16 @@ export function buildBlueVipColumn(document) {
       const children=node.children.map(visit);
       return children.some((child,index)=>child!==node.children[index])?{...node,children}:node;
     }
-    if (node.props.comparisonTableVersion === 2) return node;
+    if (node.props.comparisonTableVersion === 2) {
+      let changed = false;
+      const children = node.children.map(column => ({...column, children: column.children.map(cell => {
+        const key = comparisonItemKey(cell.props.comparisonRowId);
+        if (!key || cell.props.comparisonItemKey) return cell;
+        changed = true;
+        return {...cell, props: {...cell.props, comparisonItemKey: key}};
+      })}));
+      return changed ? {...node, children} : node;
+    }
     const underlay = node.children.find(child => child.id === 'benefits/column-background');
     if (document.templateId !== 'ht-blue-privilege' && !underlay) return node;
     const rowGroup = node.children.find(child => child.id === 'benefits/rows');
@@ -43,7 +53,7 @@ export function buildBlueVipColumn(document) {
       const iconLayout = cell.type === 'Stack' && cell.children.length === 1 && cell.children[0].type === 'Icon';
       const content = iconLayout ? cell.children[0] : cell;
       const rawIcon = content.type === 'Icon';
-      const cellProps = {...row.props,axis:'vertical',gap:0,paddingMode:'individual',paddingTop:0,paddingRight:0,paddingBottom:0,paddingLeft:0,widthMode:'fill',flexGrow:0,align:'stretch',justify:rawIcon?'center':'start',background:underlay||index===2?'transparent':row.props.background??'transparent',comparisonRowId:row.id};
+      const cellProps = {...row.props,axis:'vertical',gap:0,paddingMode:'individual',paddingTop:0,paddingRight:0,paddingBottom:0,paddingLeft:0,widthMode:'fill',flexGrow:0,align:'stretch',justify:rawIcon?'center':'start',background:underlay||index===2?'transparent':row.props.background??'transparent',comparisonRowId:row.id,comparisonItemKey:comparisonItemKey(row.id)};
       const leaf = {...content,props:{...content.props,widthMode:rawIcon?'fixed':'fill',heightMode:rawIcon?'fixed':'fill',...(rawIcon?{width:content.props.iconSize??content.props.fontSize??14,height:content.props.iconSize??content.props.fontSize??14,alignSelf:'center'}:{}),flexGrow:rawIcon?0:1,...(index===2 && content.props.background===background?{background:'transparent'}:{})}};
       columns[index].push(component(index===0?row.id:iconLayout?cell.id:`${cell.id}/cell`,row.type,row.name,cellProps,[leaf]));
     }));

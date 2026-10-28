@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "change_kind": "interactive",
+  "changed_controls": [
+    {
+      "control_id": "comparisonOrderMode",
+      "route": "/ -> 构建器与生成器 -> 蓝色特权页 -> 特权表最外层",
+      "action": "展示顺序 select: canvas -> rule -> canvas -> rule",
+      "state_before": "canvas; no rule selector",
+      "state_after": "rule selector visible; returning to canvas restores default; selected rule retained",
+      "output_evidence": "IAB tab 58: default order translation,visitors,nearby,exposure,partners restored in all three columns; property renderer persistence test passes",
+      "status": "passed"
+    },
+    {
+      "control_id": "comparisonOrderRule",
+      "route": "/ -> 构建器与生成器 -> 蓝色特权页 -> 特权表最外层",
+      "action": "排序规则 select: social-first -> learning-first; open 预览流程",
+      "state_before": "default order translation,visitors,nearby,exposure,partners",
+      "state_after": "social order visitors,nearby,exposure,partners,translation; learning order translation,partners,visitors,nearby,exposure",
+      "output_evidence": "IAB tab 58 DOM: all three columns same row identity sequence and equal Y per row; preview session same order; header remains first; /tmp/paywall-comparison-order-evidence/comparison-order-local.jpg",
+      "status": "passed"
+    }
+  ],
+  "affected_templates": ["ht-blue-privilege"],
+  "verified_templates": ["ht-blue-privilege"],
+  "visual_verification_evidence": ["IAB tab 58 actual editor and preview; screenshot sha256 560e315a379f6911fd8b8959ff13a862b3321590b11c966441bed40d3e94296f"],
+  "tests": {"passed": 612, "failed": 0, "build": "passed"},
+  "release_authorization": {
+    "source": "user: 那你改吧; existing published Demo normal release chain",
+    "remote": "https://github.com/aujing090520-create/adapty-paywall-rebuild-demo.git",
+    "branch": "main",
+    "vercel_project": "adapty-paywall-rebuild-demo",
+    "production": "https://adapty-paywall-rebuild-demo.vercel.app/",
+    "exclusions": "No user-record saves, no changes to default order or styles, no real user-profile API, no unrelated test-results files"
+  }
+}
