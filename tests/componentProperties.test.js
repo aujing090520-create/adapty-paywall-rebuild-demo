@@ -12,6 +12,7 @@ import { templates, createBuilderNodes } from '../src/templates/templateDefiniti
 import { importComponentDocument, validDocument } from '../src/builder/componentDocument.js';
 import {workflowEdges} from '../src/builder/workflow.js';
 import { createDefaultPaywallRecord } from '../src/defaultPaywalls.js';
+import { buildBlueVipColumn } from '../src/builder/htVipColumn.js';
 
 let server, Properties, Preview, Editor;
 const mounted = new Set();
@@ -1363,6 +1364,53 @@ test('canvas first-click selects a button before its label; drill-in and floatin
     await click('label');assert.equal(selected,'label','second click drills into editable label');
     await click('sheet-title');assert.equal(selected,'sheet-title','floating title cannot select its enclosing launcher across a sheet boundary');
   }finally{if(renderer)await act(async()=>renderer.unmount());}
+});
+
+test('canvas selection reveals only its layer row, expands ancestors, and does not interrupt manual scrolling',async()=>{
+  const source=fixture(component('outer','Stack','外层',{},[component('copy','Text','文字',{text:'正文'})]));
+  let renderer, bounds={top:120,bottom:188}, reads=0;
+  const tree={scrollTop:100,scrollLeft:42,offsetHeight:200,clientHeight:200,clientTop:0,
+    getBoundingClientRect:()=>({top:100,height:400}),
+    querySelector:selector=>{assert.equal(selector,'.ne-tree-row.selected');reads++;return {getBoundingClientRect:()=>bounds};}};
+  const row=id=>renderer.root.findAll(item=>item.type==='div'&&item.props['data-layer-id']===id)[0];
+  const clickCanvas=async id=>act(async()=>renderer.root.findAll(item=>item.type==='div'&&item.props['data-component-id']===id)[0].props.onClick(event()));
+  try{
+    await act(async()=>{renderer=TestRenderer.create(React.createElement(Editor,{template:{id:'audit'},initialNodes:[],initialDocument:source,persistence:'session'}),{createNodeMock:element=>element.props.className==='ne-tree'?tree:null});});
+    assert.equal(tree.scrollTop,100);
+    await act(async()=>row('outer').findAllByType('button').find(item=>item.props['aria-expanded']===true).props.onClick());
+    assert.equal(row('copy'),undefined);
+    bounds={top:700,bottom:768};await clickCanvas('copy');
+    assert.ok(row('copy').props.className.includes('selected'));
+    assert.equal(row('outer').findAllByType('button').find(item=>item.props['aria-expanded']!==undefined).props['aria-expanded'],true);
+    assert.equal(tree.scrollTop,234,'below-viewport row scrolls only the missing distance, accounting for scale');
+    bounds={top:40,bottom:108};await clickCanvas('outer');assert.equal(tree.scrollTop,204);
+    bounds={top:220,bottom:288};await clickCanvas('copy');assert.equal(tree.scrollTop,204,'visible row does not scroll');
+    tree.scrollTop=450;bounds={top:700,bottom:768};const before=reads;
+    await act(async()=>row('outer').props.onMouseEnter());
+    assert.equal(tree.scrollTop,450);assert.equal(reads,before,'hover/document-independent renders do not pull back the layer tree');
+    await clickCanvas('copy');assert.equal(tree.scrollTop,584,'clicking the same canvas node reveals it again after manual scrolling');
+    assert.equal(tree.scrollLeft,42,'no horizontal or ancestor scroll operation');
+  }finally{if(renderer)await act(async()=>renderer.unmount());}
+});
+
+test('comparison containers omit unrelated business-list controls while gifts and generic stacks retain them',async()=>{
+  const template=templates.find(item=>item.id==='ht-blue-privilege');
+  const source=upgradeCanonicalComponents(buildBlueVipColumn(importComponentDocument(createBuilderNodes(template.id),template)));
+  const table=indexDocument(source).nodes.get('benefits');assert.equal(table.props.comparisonTableVersion,2);
+  for(const node of [table,table.children[0],table.children[0].children[0]]){
+    const h=await mount(node,{source});
+    try{
+      assert.equal(h.renderer.root.findAll(item=>item.type==='select'&&item.props['aria-label']==='数据列表来源').length,0);
+      assert.equal(h.renderer.root.findAll(item=>item.type==='input'&&item.props['aria-label']==='允许展开收起').length,0);
+      assert.ok(h.renderer.root.findAll(item=>item.type==='section'&&item.props.className?.includes('rc-layout-section')).length,'layout remains editable');
+    }finally{await h.close();}
+  }
+  for(const props of [{},{dataSource:'gifts',collapsible:true},{dataSource:'benefits',horizontalScroll:true}]){
+    const h=await mount(component('list','Stack','列表',props,[]));
+    try{const control=h.renderer.root.findByProps({'aria-label':'数据列表来源'});assert.equal(control.props.value,props.dataSource??'');assert.equal(control.findAllByType('option').length,3);}finally{await h.close();}
+  }
+  const custom=updateComponent(source,table.id,{props:{dataSource:'benefits'}}),h=await mount(indexDocument(custom).nodes.get(table.id),{source:custom});
+  try{await h.select('数据列表来源','');assert.equal(indexDocument(h.document()).nodes.get(table.id).props.dataSource,null);}finally{await h.close();}
 });
 
 test('layer hover highlights the exact container on its own artboard without changing selection or content',async()=>{

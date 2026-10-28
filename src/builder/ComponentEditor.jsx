@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Plus, Trash2, Copy, ChevronRight, ChevronDown, ArrowUp, ArrowDown, Eye, EyeOff, Pencil, Save, FolderOpen, X, Layers, Type, Image as ImageIcon, FolderClosed as PackageIcon, MoreHorizontal, MousePointerClick, Smartphone, Workflow, GalleryHorizontal, PanelTop, PanelBottom, Clock3, ToggleLeft, ListOrdered, Video, Star, Code, CreditCard, Columns2, Rows2, Minus, Maximize2 } from 'lucide-react';
 import { COMPONENT_NAMES, CONTAINER_TYPES, componentLayerLabel, uniqueSceneName, componentProps, importComponentDocument, indexDocument, validDocument, updateComponent, insertComponent, canContain, readComponentDocument, saveComponentDocument, cloneComponent, captureNativeComponent, resolveComponentText } from './componentDocument.js';
 import { DEMO_SKUS } from '../productPricing.js';
@@ -120,6 +120,24 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
   const parent = nodes.get(parents.get(selected.id));
   const insertionParent = CONTAINER_TYPES.has(selected.type) ? selected : parent ?? document.root;
   const pickerParent = nodes.get(addTarget);
+  const layerTree = useRef(null);
+  const layerReveal = useRef({});
+  useLayoutEffect(() => {
+    if (!editing || stepPicker || pickerParent) return;
+    const previous = layerReveal.current;
+    if (!previous.pending && previous.id === selected.id && previous.scope === scope) return;
+    const tree = layerTree.current, row = tree?.querySelector('.ne-tree-row.selected');
+    if (!row) return;
+    layerReveal.current = { id: selected.id, scope };
+    const viewport = tree.getBoundingClientRect(), bounds = row.getBoundingClientRect();
+    const scale = viewport.height / tree.offsetHeight;
+    if (!(scale > 0)) return;
+    const top = viewport.top + tree.clientTop * scale;
+    const bottom = top + tree.clientHeight * scale;
+    // Reveal only the layer row, without scrolling the page or the canvas.
+    if (bounds.top < top) tree.scrollTop += (bounds.top - top) / scale;
+    else if (bounds.bottom > bottom) tree.scrollTop += Math.min(bounds.top - top, bounds.bottom - bottom) / scale;
+  });
   const commerceAllowed = Boolean(pickerParent && owningModal(document,pickerParent.id)) || !workflowContext(document).steps.some((page)=>page.id===owningScreen(document,pickerParent?.id)?.id&&page.id!==workflowContext(document).final?.id);
   const menuNode = nodes.get(layerMenu?.id);
   latest.current = document;
@@ -136,6 +154,7 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
   }, [mainDocument, blockedSave, persistence]);
   useEffect(() => { if (persistence === 'session') return; const flush = () => { if (!blockedSave) saveComponentDocument(localStorage, latestMain.current); }; window.addEventListener('pagehide', flush); return () => { flush(); window.removeEventListener('pagehide', flush); }; }, [blockedSave, persistence]);
   const select = (id, source = document, targetOwner = owner) => {
+    layerReveal.current.pending = true;
     setSettingsOpen(false);
     setAddTarget(null); setLayerMenu(null); setRenaming(null);
     setFocusedOfferingId(targetOwner); setEditing(true);
@@ -278,7 +297,7 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
     <div className="builder ne-builder" ref={workbench}>
       <aside className="ne-layers">{stepPicker?<React.Suspense fallback={<p>加载内容来源…</p>}>{stepPicker==='exit'?<CloseTargetPicker key={exitSource.id} document={mainDocument} source={exitSource} offerings={offerings} boundOfferings={boundExits} initialId={creationSurfaceId} onBack={()=>setStepPicker(false)} onCreate={createModal} onBind={bindModal} onBindSaved={bindSaved} onImport={importModal} onSourceChange={setExitSourceId}/>:<StepPicker offerings={offerings} nextStep={workflow.initial} onBack={()=>setStepPicker(false)} onAdd={addStep}/>}</React.Suspense>:pickerParent?<ComponentPicker commerceAllowed={commerceAllowed} parent={pickerParent} onBack={()=>setAddTarget(null)} onAdd={add}/>:<>
         <header><strong>图层</strong><button className="ne-icon" title="添加组件" aria-label="添加组件" onClick={()=>openAdd(insertionParent.id===document.root.id?pages.active.id:insertionParent.id)}><Plus size={17}/></button></header>
-        <div className="ne-tree">
+        <div className="ne-tree" ref={layerTree}>
           <div role="tree" aria-label="组件图层">{workflow.steps.map((page)=>renderTree(mainDocument.settings?.presentationSurfaceId?indexDocument(mainDocument).nodes.get(mainDocument.settings.presentationSurfaceId):page,0,mainDocument,null))}
             {mainPages.shared.filter((node)=>!isOverlaySurface(node)).map((node)=>renderTree(node,0,mainDocument,null))}
           </div>
