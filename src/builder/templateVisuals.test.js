@@ -25,7 +25,7 @@ test('HT defaults preserve business data and retained content while three scenes
     const oldNodes = indexDocument(before).nodes, nextNodes = indexDocument(after).nodes;
     if (id === 'ht-blue-privilege') {
       for(const key of oldNodes.keys())assert.ok(nextNodes.has(key));
-      assert.deepEqual([...nextNodes.keys()].filter(key=>!oldNodes.has(key)),['hero-image/navigation','hero-image/back','hero-image/back/icon','benefits/column-background','benefits/non-vip-space','benefits/vip-background','benefits/rows','$main/footer','products/package-0/product-label','products/package-0/product-label/text','products/package-0/product-info','products/package-2/product-label','products/package-2/product-label/text']);
+      assert.deepEqual([...nextNodes.keys()].filter(key=>!oldNodes.has(key)),['hero-image/navigation','hero-image/back','hero-image/back/icon','benefits/column-background','benefits/non-vip-space','benefits/vip-background','benefits/rows','products/package-0/product-label','products/package-0/product-label/text','products/package-0/product-info','products/package-2/product-label','products/package-2/product-label/text','$main/footer']);
     }
     else assert.equal(after.htSceneVersion, 1);
     for (const [key, node] of oldNodes) {

@@ -49,7 +49,7 @@ test('actual administration saves names, protects navigation, copies real canvas
     await click('保存');assert.deepEqual(readSavedPaywall(storage,'test-2').document,migrated);
     await click('Duplicate');
     assert.equal(listSavedPaywalls(storage).length,1,'copy is initially unsaved');assert.equal(pageInput().props.value,'原画布');
-    await act(async()=>pageInput().props.onChange({target:{value:'副本画布'}}));await click('保存');
+    await act(async()=>pageInput().props.onChange({target:{value:'副本画布'}}));await click('确认样式');assert.equal(listSavedPaywalls(storage).length,1);await click('创建');
     const saved=listSavedPaywalls(storage);assert.equal(saved.length,2);
     const copy=saved.find(record=>record.paywall.id!=='test-2');assert.equal(copy.paywall.name,'改名成功 (Copy)');assert.equal(copy.document.root.name,'副本画布');assert.equal(closeTargetId(copy.document,'page'),closeTargetId(source,'page'));
     const copiedBinding=modalBindings(copy.document)[0],originalBinding=modalBindings(migrated)[0];

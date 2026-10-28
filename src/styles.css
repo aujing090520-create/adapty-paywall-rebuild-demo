@@ -152,6 +152,9 @@ textarea { min-height: 80px; resize: vertical; }
 .create-status-switch > i { width: 26px; height: 26px; border-radius: 50%; background: #fff; }
 .create-status-switch.enabled { flex-direction: row-reverse; padding: 3px 3px 3px 10px; background: #236b56; }
 .create-metadata-error { margin: 0 0 0 168px; color: #c12c3f; font-size: 13px; }
+.create-style-summary { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; min-width: 0; }
+.create-style-summary strong { font-size: 14px; overflow-wrap: anywhere; }
+.create-submit { display: flex; justify-content: flex-end; margin-top: 28px; }
 .create-methods { min-width: 0; padding: 12px 0 20px 28px; border-left: 1px solid #e3e3e7; }
 .create-methods h2 { margin: 0 0 18px; font-size: 16px; }
 .create-methods > button { display: grid; grid-template-columns: 24px minmax(0, 1fr) 18px; align-items: center; gap: 12px; width: 100%; min-height: 68px; margin-bottom: 12px; padding: 14px; border: 1px solid #dcdce3; border-radius: 6px; background: #fff; color: #37333f; text-align: left; }

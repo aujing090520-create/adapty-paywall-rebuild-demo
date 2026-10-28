@@ -1,4 +1,5 @@
 import { component, createNativeComponent, canContain, indexDocument } from './componentDocument.js';
+import { repairBlueProductPlacement } from './htTemplateFooters.js';
 import { businessPreset } from './businessPresets.js';
 
 // Public picker entries are building blocks or transparent Stack compositions.
@@ -149,5 +150,5 @@ export function upgradeCanonicalComponents(document) {
     return children.some((child,index)=>child!==node.children[index])?{...node,children}:node;
   };
   const root=visit(document.root);
-  return changed?{...document,root}:document;
+  return repairBlueProductPlacement(changed?{...document,root}:document);
 }

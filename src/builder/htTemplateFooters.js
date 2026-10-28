@@ -4,7 +4,7 @@ import { component } from './componentDocument.js';
 export function buildHtTemplateFooter(document, variant) {
   if (!['blue-privilege', 'membership-plans', 'payment-recovery'].includes(variant)) return document;
   const blue = variant === 'blue-privilege';
-  const ids = [...(blue ? ['products'] : []), 'timer', 'agreement', 'purchase', 'legal', 'links', '$home'];
+  const ids = ['timer', 'agreement', 'purchase', 'legal', 'links', '$home'];
   const hasPurchase = (node) => node.id === 'purchase' || node.children.some((child) => child.type !== 'Screen' && hasPurchase(child));
   const visit = (node) => {
     if (node.type !== 'Screen' || !hasPurchase(node)) return { ...node, children: node.children.map(visit) };
@@ -24,5 +24,19 @@ export function buildHtTemplateFooter(document, variant) {
     }, ids.map((id) => moved.get(id)).filter(Boolean));
     return { ...node, children: [...content, footer] };
   };
-  return { ...document, root: visit(document.root) };
+  return { ...document, ...(blue ? {blueProductPlacementVersion:1} : {}), root: visit(document.root) };
+}
+
+// Repair only the old generated Blue footer placement, preserving every node and style.
+export function repairBlueProductPlacement(document) {
+  if(document.templateId!=='ht-blue-privilege'||document.blueProductPlacementVersion===1)return document;
+  const visit=node=>{
+    const children=node.children.map(visit);
+    if(node.type!=='Screen')return {...node,children};
+    const footer=children.find(child=>child.type==='Footer'&&child.id===`${node.id}/footer`);
+    const products=footer?.children.find(child=>child.id==='products'&&child.type==='Stack');
+    if(!products)return {...node,children};
+    return {...node,children:children.flatMap(child=>child===footer?[products,{...footer,children:footer.children.filter(item=>item!==products)}]:[child])};
+  };
+  return {...document,blueProductPlacementVersion:1,root:visit(document.root)};
 }

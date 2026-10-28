@@ -326,6 +326,7 @@ export default function App() {
   const [builderRevision, setBuilderRevision] = useState(0);
   const [resetPending, setResetPending] = useState(false);
   const [builderOrigin, setBuilderOrigin] = useState("existing");
+  const [creationStyleConfirmed, setCreationStyleConfirmed] = useState(false);
   const [activeNode, setActiveNode] = useState("links");
   const [unknownOpen, setUnknownOpen] = useState(false);
   const [placementFilter, setPlacementFilter] = useState([]);
@@ -409,14 +410,21 @@ export default function App() {
   const startCreation = () => requestWorkspaceAction(() => {
     restoreBuilder();
     setDraft(freshPaywallDraft());
+    setCreationStyleConfirmed(false);
     setBuilderOrigin('create');
     setViewNow('create');
   });
 
   const startBlankBuilder = () => {
-    const run = () => { restoreBuilder(); setBuilderOrigin('create'); setViewNow('builder'); };
+    const run = () => { restoreBuilder(); setCreationStyleConfirmed(false); setBuilderOrigin('create'); setViewNow('builder'); };
     if (builderDocument?.root.children.length) setPendingAction({ run, title: '从空白画布重新开始？', replace: true });
     else run();
+  };
+
+  const confirmCreationStyle = () => {
+    if (!builderDocument) return notify('页面样式尚未就绪，请稍后重试。');
+    setCreationStyleConfirmed(true);
+    setViewNow('create');
   };
 
   const openPaywall = (item) => requestWorkspaceAction(() => {
@@ -447,6 +455,7 @@ export default function App() {
       }
       const index = templates.findIndex((template) => template.id === content.templateId);
       restoreBuilder(); setBuilderOrigin('create');
+      setCreationStyleConfirmed(false);
       setDraft({ ...paywallMetadata(record?.paywall.config), name: `${record?.paywall.name ?? original.name} (Copy)` });
       setAppliedTemplate(index < 0 ? null : index); setTemplateSelected(index < 0 ? null : index);
       setBuilderNodes(index < 0 ? [] : createBuilderNodes(content.templateId));
@@ -486,6 +495,7 @@ export default function App() {
     setActiveNode((current) => removed.has(current) ? (remaining[0]?.id ?? null) : current);
   };
   const applyTemplate = (templateIndex) => {
+    if (builderOrigin === 'create') setCreationStyleConfirmed(false);
     setExitOfferDrafts({});
     const template = templates[templateIndex];
     const nextNodes = createBuilderNodes(template.id);
@@ -500,6 +510,7 @@ export default function App() {
 
   const saveBuilder = () => {
     if (!builderDocument) { notify('请先打开构建器，确认页面内容后保存。'); return false; }
+    if (builderOrigin === 'create' && (!creationStyleConfirmed || view !== 'create')) { notify('请先确认样式，再返回创建页进行创建。'); return false; }
     if (builderOrigin === 'create' && paywallMetadataError(draft)) { notify(paywallMetadataError(draft)); return false; }
     if (generalName !== null && !generalName.trim()) { notify('请填写付费墙名称'); return false; }
     const paywall = builderOrigin === 'create' ? { id: `local-${crypto.randomUUID()}`, name: draft.name.trim(), state: draft.enabled ? 'Draft' : 'Inactive', products: Object.keys(builderDocument.products).length, startedAt: new Date().toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' }), config: paywallMetadata(draft) } : { ...selected, name: generalName?.trim() || selected.name, products: Object.keys(builderDocument.products).length };
@@ -602,6 +613,10 @@ export default function App() {
               setView={setView}
               setModal={setModal}
               onStartBlank={startBlankBuilder}
+              onCreate={() => { if (saveBuilder()) setViewNow('general'); }}
+              onEditStyle={() => { setCreationStyleConfirmed(false); setViewNow('builder'); }}
+              styleTitle={builderDocument ? (appliedTemplate === null ? '空白页面' : templates[appliedTemplate].title) : null}
+              styleConfirmed={creationStyleConfirmed}
               markUnknown={markUnknown}
             />
           )}
@@ -646,6 +661,7 @@ export default function App() {
             <PaywallWorkspace
               selected={builderOrigin === "create" ? { ...selected, name: draft.name } : selected}
               isNew={builderOrigin === "create"}
+              confirmCreationStyle={confirmCreationStyle}
               draft={draft}
               setDraft={setDraft}
               view={view}
@@ -732,7 +748,7 @@ export default function App() {
         />
       )}
       {modal?.kind === "ai" && <AiModal onClose={() => setModal(null)} markUnknown={markUnknown} />}
-      {pendingAction && <div className="modal-backdrop workspace-confirm-backdrop"><section className="modal" role="dialog" aria-modal="true" aria-label={pendingAction.title}><header><h2>{pendingAction.title}</h2></header><p>{pendingAction.replace?'当前未保存的画布内容将被所选模板替换。':'离开后，尚未保存的修改不会保留。'}</p><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setPendingAction(null)}>{pendingAction.replace?'取消':'继续编辑'}</button><button type="button" className="secondary danger-outline" onClick={()=>{const next=pendingAction;setPendingAction(null);if(!next.replace)discardBuilder();next.run();}}>{pendingAction.replace?'替换画布':'放弃并继续'}</button>{!pendingAction.replace&&(builderDocument||view==='general')&&<button type="button" className="primary" onClick={()=>{if((builderDocument?saveBuilder:saveGeneral)()){const next=pendingAction;setPendingAction(null);next.run();}}}>保存并继续</button>}</div></section></div>}
+      {pendingAction && <div className="modal-backdrop workspace-confirm-backdrop"><section className="modal" role="dialog" aria-modal="true" aria-label={pendingAction.title}><header><h2>{pendingAction.title}</h2></header><p>{pendingAction.replace?'当前未保存的画布内容将被所选模板替换。':'离开后，尚未保存的修改不会保留。'}</p><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setPendingAction(null)}>{pendingAction.replace?'取消':'继续编辑'}</button><button type="button" className="secondary danger-outline" onClick={()=>{const next=pendingAction;setPendingAction(null);if(!next.replace)discardBuilder();next.run();}}>{pendingAction.replace?'替换画布':'放弃并继续'}</button>{!pendingAction.replace&&(builderDocument||view==='general')&&<button type="button" className="primary" onClick={()=>{if(builderOrigin==='create'){setPendingAction(null);setViewNow('create');}else if((builderDocument?saveBuilder:saveGeneral)()){const next=pendingAction;setPendingAction(null);next.run();}}}>{builderOrigin==='create'?'返回创建页':'保存并继续'}</button>}</div></section></div>}
       {modal?.kind === "migration" && (
         <MigrationModal
           onClose={() => setModal(null)}
@@ -828,14 +844,14 @@ function PaywallList({
 }
 
 
-function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setView, duplicate, setModal, markUnknown, builderNodes, setBuilderNodes, updateBuilderNode, removeBuilderNode, activeNode, setActiveNode, appliedTemplate, builderDocument, setBuilderDocument, builderRevision, builderDirty, saveBuilder, discardBuilder, offerings, prepareExitOffer, changeExitOffer, templateLinks, setTemplateLinks, notify, generalName, onGeneralNameChange, saveGeneral, discardGeneral }) {
+function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setView, duplicate, setModal, markUnknown, builderNodes, setBuilderNodes, updateBuilderNode, removeBuilderNode, activeNode, setActiveNode, appliedTemplate, builderDocument, setBuilderDocument, builderRevision, builderDirty, saveBuilder, discardBuilder, offerings, prepareExitOffer, changeExitOffer, templateLinks, setTemplateLinks, notify, generalName, onGeneralNameChange, saveGeneral, discardGeneral, confirmCreationStyle }) {
   if (view === "builder") {
     const template = appliedTemplate !== null ? templates[appliedTemplate] : { id: "blank", title: "空白页面" };
     const initialNodes = appliedTemplate !== null ? builderNodes : [];
     return <section className="builder-page">
-      {isNew ? <><button className="back" onClick={() => setView("create")}><ArrowLeft size={18} /> 创建付费墙</button><div className="workspace-heading"><div><span className="eyebrow">新建付费墙</span><h1>{selected.name}</h1></div></div></> : <WorkspaceHeader selected={selected} setView={setView} duplicate={duplicate} setModal={setModal} markUnknown={markUnknown} />}
+      {isNew ? <><button className="back" onClick={() => setView("create")}><ArrowLeft size={18} /> 创建付费墙</button><div className="workspace-heading"><div><span className="eyebrow">新建付费墙</span><h1>{selected.name || '编辑样式'}</h1></div></div></> : <WorkspaceHeader selected={selected} setView={setView} duplicate={duplicate} setModal={setModal} markUnknown={markUnknown} />}
       <div className="detail-tabs"><button onClick={() => setView(isNew ? "create" : "general")}>General</button><button className="active">Builder & Generator</button></div>
-      <div className="template-context observed-tree"><span>模板</span><strong>{template.title}</strong><button className="secondary" onClick={() => setModal({ kind: "templates" })}><LayoutTemplate size={15} /> 更换模板</button><div className="builder-save-actions"><span role="status">{builderDirty ? '未保存' : '已保存'}</span><button type="button" className="secondary" onClick={discardBuilder}>放弃修改</button><button type="button" className="primary" onClick={saveBuilder}><Save size={15}/>保存</button></div></div>
+      <div className="template-context observed-tree"><span>模板</span><strong>{template.title}</strong><button className="secondary" onClick={() => setModal({ kind: "templates" })}><LayoutTemplate size={15} /> 更换模板</button><div className="builder-save-actions"><span role="status">{isNew ? '尚未创建' : builderDirty ? '未保存' : '已保存'}</span><button type="button" className="secondary" onClick={discardBuilder}>放弃修改</button><button type="button" className="primary" onClick={isNew ? confirmCreationStyle : saveBuilder}>{isNew ? <Check size={15}/> : <Save size={15}/>} {isNew ? '确认样式' : '保存'}</button></div></div>
       <ComponentEditor key={`${template.id}:${builderRevision}`} template={template} initialNodes={initialNodes} initialDocument={builderDocument} onDocumentChange={setBuilderDocument} persistence="session" offerings={offerings} currentPaywallId={isNew ? undefined : selected.id} onCreateExitOffer={prepareExitOffer} onExitOfferChange={changeExitOffer}/>
     </section>;
   }

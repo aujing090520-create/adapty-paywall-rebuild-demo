@@ -24,11 +24,11 @@ test('creation metadata has exactly the eight supplied types and no legacy produ
   assert.equal(paywallMetadataError({ name: '有效名称', styleType: 'SKU半窗' }), '');
 });
 
-test('simple creation validates both entry methods and preserves independent category and enabled metadata', async () => {
-  let app, latest, method = null, modal = null;
+test('creation methods allow empty names while the explicit Create validates confirmed style and metadata', async () => {
+  let app, latest, method = null, modal = null, created = 0;
   function Harness() {
     const [draft, setDraft] = React.useState(freshPaywallDraft()); latest = draft;
-    return React.createElement(CreatePaywall, { draft, setDraft, setView: (value) => { method = value; }, setModal: (value) => { modal = value; }, onStartBlank: () => { method = 'builder'; } });
+    return React.createElement(CreatePaywall, { draft, setDraft, setView: (value) => { method = value; }, setModal: (value) => { modal = value; }, onStartBlank: () => { method = 'builder'; }, onCreate: () => { created++; }, styleConfirmed: true, styleTitle: '蓝色特权页' });
   }
   const text = (node) => typeof node === 'string' ? node : node.children?.map(text).join('') ?? '';
   const click = async (label) => act(async () => app.root.findAll((node) => node.type === 'button' && text(node).trim() === label)[0].props.onClick());
@@ -39,14 +39,21 @@ test('simple creation validates both entry methods and preserves independent cat
     assert.equal(app.root.findAllByType('table').length, 0);
     assert.equal(app.root.findAllByType('textarea').length, 0);
     assert.deepEqual(app.root.findAllByType('option').map(text), PAYWALL_STYLE_TYPES);
-    await click('选择模板'); assert.equal(modal, null); assert.ok(app.root.findByProps({ role: 'alert' }));
-    await click('从空白开始'); assert.equal(method, null);
+    await click('选择模板'); assert.deepEqual(modal, {kind:'templates'}); assert.equal(app.root.findAllByProps({ role: 'alert' }).length,0);
+    await click('从空白开始'); assert.equal(method, 'builder');
+    await click('创建'); assert.equal(created,0); assert.ok(app.root.findByProps({role:'alert'}));
     await act(async () => app.root.findByProps({ 'aria-label': 'paywall 样式名称' }).props.onChange({ target: { value: '新的样式' } }));
     await act(async () => app.root.findByProps({ 'aria-label': 'paywall 样式类型' }).props.onChange({ target: { value: '免费试用页' } }));
     await click('禁用'); assert.equal(latest.enabled, true);
     await click('选择模板'); assert.deepEqual(modal, { kind: 'templates' });
     assert.deepEqual(latest, { styleType: '免费试用页', name: '新的样式', enabled: true });
     await click('从空白开始'); assert.equal(method, 'builder');
+    await click('创建'); assert.equal(created,1);
     await click('启用'); assert.equal(latest.enabled, false);
   } finally { if (app) await act(async () => app.unmount()); }
+});
+
+test('Create cannot submit valid metadata before a style is confirmed',async()=>{
+  let app,created=false;await act(async()=>{app=TestRenderer.create(React.createElement(CreatePaywall,{draft:{...freshPaywallDraft(),name:'有效名称'},setDraft(){},setView(){},setModal(){},onCreate(){created=true;}}));});
+  try{await act(async()=>app.root.findAll(item=>item.type==='button'&&item.children.some(child=>child==='创建'))[0].props.onClick());assert.equal(created,false);assert.match(app.root.findByProps({role:'alert'}).children.join(''),/确认页面样式/);}finally{await act(async()=>app.unmount());}
 });
