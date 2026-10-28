@@ -5,6 +5,8 @@ import { workflowContext, stepDestination, owningScreen } from './workflow.js';
 import { selectedStyleKey, stateStyleProps, spacingModePatch, dimensionModePatch, imageMask, cornerModePatch, CORNER_KEYS, selectionOwner, sequencePages, BADGE_DEFAULTS, utcDateTimeInput, textPropertyPatch } from './propertyModel.js';
 import { PRODUCT_TEXT_VARIABLES, TIMER_TEXT_VARIABLES, variableIssues } from './textVariables.js';
 import {ITEM_VARIABLES} from './businessData.js';
+import { Italic, Underline, Strikethrough } from 'lucide-react';
+import { PRODUCT_PARAMETERS, PRODUCT_PARAMETER_OPTIONS, effectiveProductParameter, productParameterPreview } from '../products/productParameters.js';
 import {isGradient,pickerColor,pickerPaint} from './colorModel.js';
 import IconField from './IconField.jsx';
 import { TEXT_RULES, textRuleName, textRuleProps, textRulePatch } from './textRules.js';
@@ -143,6 +145,15 @@ function MediaEditor({ value, type, onChange, onError, background = false }) {
 function ContentSection({ selected, p, patch, document, nodes, parents, findPackage, resolveText, changeProduct, fieldNames, demoSkus, setNavigation, onStatus, setDefaultPackage, onMediaType, onPageControl, onModalCreate, onModalEdit, rule='default' }) {
   const [uploading,setUploading]=React.useState(false);
   const type = selected.type;
+  if (type === 'ProductParameter') {
+    const owner = findPackage(selected.id, nodes, parents), key = effectiveProductParameter(p.parameter, owner);
+    return <PropertySection title="参数属性">
+      <Select label="商品参数" value={p.parameter} options={PRODUCT_PARAMETER_OPTIONS} onChange={parameter => patch({parameter,strike:Boolean(PRODUCT_PARAMETERS[parameter]?.strike)})}/>
+      <Field label="默认态输出"><output aria-label="默认态输出">{productParameterPreview(p.parameter,owner)||'不显示'}</output></Field>
+      {p.parameter==='productLabel'&&<Field label="选中态输出"><output aria-label="选中态输出">{productParameterPreview(p.parameter,owner,true)||'不显示'}</output></Field>}
+      {owner?.props.productType==='lifetime'&&key!==p.parameter&&<Field label="终身适配"><output>{key?`使用${PRODUCT_PARAMETERS[key].label}`:'不显示此参数'}</output></Field>}
+    </PropertySection>;
+  }
   if(type==='Toggle' && p.switchControl)return <PropertySection title="开关填充"><PaintField label="滑块颜色" property="thumbColor" p={p} patch={patch}/><PaintField label="轨道颜色" property="trackColor" p={p} patch={patch}/></PropertySection>;
   if(type==='Indicators')return null;
   if(type==='PageControl')return <PropertySection title="分页控件属性"><NumberField label="指示器间距" value={p.gap} max={200} onChange={(gap)=>patch({gap})}/></PropertySection>;
@@ -166,7 +177,7 @@ function ContentSection({ selected, p, patch, document, nodes, parents, findPack
     let listOwner=nodes.get(parents.get(selected.id));while(listOwner&&!listOwner.props.dataSource)listOwner=nodes.get(parents.get(listOwner.id));
     return <PropertySection title="文字属性">
       {issues.length>0&&<small role="status">{issues.map(item=>`${item.key}：${item.reason}`).join('；')}。预览以空值回退。</small>}
-      {rule==='default' && boundPackage && !p.timerField && <Select label="内容来源" value={p.binding?'product':'custom'} options={[[ 'custom','自定义文字' ],[ 'product','商品字段' ]]} onChange={(source)=>patch(source==='product'?{binding:{key:boundPackage.props.dataKey??boundPackage.id,field:'name'},runs:null}:{binding:null,productField:null,runs:null,text:resolveText(selected,document,boundPackage)})}/>}
+      {!document.productParameterVersion && rule==='default' && boundPackage && !p.timerField && <Select label="内容来源" value={p.binding?'product':'custom'} options={[[ 'custom','自定义文字' ],[ 'product','商品字段' ]]} onChange={(source)=>patch(source==='product'?{binding:{key:boundPackage.props.dataKey??boundPackage.id,field:'name'},runs:null}:{binding:null,productField:null,runs:null,text:resolveText(selected,document,boundPackage)})}/>}
       {rule==='default' && owner && p.timerField && <Select label="倒计时字段（旧模板）" value={p.timerField} options={[[ 'none', '普通文字' ], ...[['days','天'],['hours','小时'],['minutes','分钟'],['seconds','秒']].flatMap(([key, label]) => [[key, `${label}（补零）`], [`${key}WithoutZero`, `${label}（不补零）`]])]} onChange={(value) => patch({ timerField: value === 'none' ? null : value, ...(value !== 'none' ? { binding: null, runs: null } : {}) })} />}
       {!p.timerField && (rule==='default' && p.binding ? <Field label="文字内容"><textarea aria-label="文字内容" value={resolveText({...selected,props:p}, document, boundPackage)} readOnly/></Field> : <React.Suspense fallback={<div className="rc-rich-loading">加载文字编辑器</div>}><RichTextEditor key={selected.id} aria-label="文字内容" p={p} value={resolveText({...selected,props:p},document,boundPackage)} onChange={patch} variables={[...PRODUCT_TEXT_VARIABLES,...(document.logic?.variables??[]).filter(item=>item.key).map(item=>[`business.${item.key}`,`业务变量：${item.key}`]),...(owner?TIMER_TEXT_VARIABLES:[]),...(listOwner?ITEM_VARIABLES:[])]}/></React.Suspense>)}
       {rule==='default' && p.binding && <><Select label="商品字段" value={p.binding.field} options={Object.entries(fieldNames)} onChange={(field) => patch({ binding: { ...p.binding, field },...(document.productFieldPreview&&(field==='reference'||field==='referencePrice'||p.binding.field==='reference'||p.binding.field==='referencePrice')?{strike:['reference','referencePrice'].includes(field)}:{}) })} />{!boundPackage&&<button type="button" className="rc-secondary" onClick={() => patch({ binding: null, runs: null, text: resolveText(selected, document, boundPackage) })}>转为独立文字</button>}</>}
@@ -182,14 +193,15 @@ function ContentSection({ selected, p, patch, document, nodes, parents, findPack
   if (type === 'Package') {
     const row = document.products[p.dataKey] ?? {};
     const display = (field, selectedState = false) => resolveText({ props: { binding: { key: p.dataKey, field } } }, document, selected, selectedState);
-    const hasLabel = (node) => node.props.productField === 'badgeText' || node.children.some(hasLabel);
+    const hasLabel = (node) => node.props.productField === 'badgeText' || node.props.parameter === 'productLabel' || node.children.some(hasLabel);
+    const parameters = document.productParameterVersion || p.productType;
     return <PropertySection title="商品属性">
-      {!document.productFieldPreview&&<Select label="商品 SKU" value={row.skuId ?? ''} options={[[ '', '模板示例数据' ], ...demoSkus.map((sku) => [sku.id, `${sku.displayName} · ${sku.id}`])]} onChange={(skuId) => changeProduct('skuId', skuId)} />}
-      <Select label="价格显示" value={p.priceMode ?? '1'} options={[[ '1', '总价' ], [ '0', '月均价' ], [ '3', '总价 / 月均划线价' ], [ '4', '月均价 / 总划线价' ]]} onChange={(priceMode) => patch({ priceMode })} />
+      {!parameters&&!document.productFieldPreview&&<Select label="商品 SKU" value={row.skuId ?? ''} options={[[ '', '模板示例数据' ], ...demoSkus.map((sku) => [sku.id, `${sku.displayName} · ${sku.id}`])]} onChange={(skuId) => changeProduct('skuId', skuId)} />}
+      {parameters ? <Select label="商品类型" value={p.productType??'subscription'} options={[[ 'subscription','订阅商品' ],[ 'lifetime','终身商品（非订阅）' ]]} onChange={productType=>patch({productType})}/> : <Select label="价格显示" value={p.priceMode ?? '1'} options={[[ '1', '总价' ], [ '0', '月均价' ], [ '3', '总价 / 月均划线价' ], [ '4', '月均价 / 总划线价' ]]} onChange={(priceMode) => patch({ priceMode })} />}
       <Select label="默认选中" value={p.defaultSelected ? 'yes' : 'no'} options={[[ 'yes', '是' ], [ 'no', '否' ]]} onChange={(value) => setDefaultPackage(value === 'yes')} />
       <Field label="选择组"><input value={p.group ?? selected.id} onChange={(event) => patch({ group: event.target.value })} /></Field>
       {hasLabel(selected)&&<CheckboxField label="显示商品标签" checked={document.productFieldPreview?p.productLabelEnabled!==false:(p.productLabelEnabled??row.showBadge)!==false} onChange={(productLabelEnabled)=>patch({productLabelEnabled})}/>}
-      {document.productFieldPreview||row.skuId ? <>{[['name','商品周期名称'],['price','售卖价'],['reference','划线价'],['badgeText','商品标签（未选中）'],['badgeText','商品标签（选中）'],['productInfo','商品信息']].map(([field,label],index)=><Field key={label} label={label}><input aria-label={label} readOnly value={display(field,index===4)} placeholder="不展示"/></Field>)}</> : Object.entries(fieldNames).map(([key,label])=><Field key={key} label={label}><input value={row[key]??''} onChange={(event)=>changeProduct(key,event.target.value)}/></Field>)}
+      {!parameters&&(document.productFieldPreview||row.skuId ? <>{[['name','商品周期名称'],['price','售卖价'],['reference','划线价'],['badgeText','商品标签（未选中）'],['badgeText','商品标签（选中）'],['productInfo','商品信息']].map(([field,label],index)=><Field key={label} label={label}><input aria-label={label} readOnly value={display(field,index===4)} placeholder="不展示"/></Field>)}</> : Object.entries(fieldNames).map(([key,label])=><Field key={key} label={label}><input value={row[key]??''} onChange={(event)=>changeProduct(key,event.target.value)}/></Field>))}
     </PropertySection>;
   }
   if (type === 'Button' || type === 'PurchaseButton') return <PropertySection title="动作属性"><ActionFields p={p} patch={patch} nodes={nodes} parents={parents} type={type} document={document} selected={selected} onModalCreate={onModalCreate} onModalEdit={onModalEdit}/></PropertySection>;
@@ -231,7 +243,7 @@ function LayoutSection({ selected, p, patch, parent }) {
 function AppearanceSection({ selected, p, patch, onStatus }) {
   const image = ['Image','Video'].includes(selected.type);
   const mask = imageMask(p);
-  if (['Text', 'Timeline', 'TimelineItem','Countdown','Wallet','Custom'].includes(selected.type) || selected.type==='Toggle'&&p.switchControl) return null;
+  if (['Text', 'ProductParameter', 'Timeline', 'TimelineItem','Countdown','Wallet','Custom'].includes(selected.type) || selected.type==='Toggle'&&p.switchControl) return null;
   if (selected.type === 'Screen') return <FillSection selected={selected} p={p} patch={patch} onStatus={onStatus} required />;
   if (selected.type === 'Indicators')return <><PropertySection title="填充"><PaintField label="背景颜色" property="background" p={p} patch={patch}/></PropertySection><BorderShadowSections p={p} patch={patch} strokeOnly/></>;
   if (selected.type === 'Icon') {
@@ -315,8 +327,9 @@ export default function RevenueCatProperties({ selected, p, patch, document, nod
     {selected.type==='Text'&&<div className="rc-text-rule"><Select label="文字规则" value={rule} options={TEXT_RULES} onChange={(value)=>{if(value!=='default'&&!p.textRules?.[value])patch(textRulePatch(p,value,{}));setNavigation({textRule:value});}}/></div>}
     <ContentSection key={rule} rule={rule} selected={selected} p={selected.type==='Text'?textP:p} patch={selected.type==='Text'?textPatch:patch} document={document} nodes={nodes} parents={parents} findPackage={findPackage} resolveText={resolveText} changeProduct={changeProduct} fieldNames={fieldNames} demoSkus={demoSkus} setNavigation={setNavigation} onStatus={onStatus} setDefaultPackage={setDefaultPackage} onMediaType={onMediaType} onPageControl={onPageControl} onModalCreate={onModalCreate} onModalEdit={onModalEdit}/>
     {stateful && rule==='default' && <PropertySection title="状态样式"><SegmentedField label="状态" value={packageState} options={[[ 'default', '默认' ], [ 'selected', selected.type==='Indicators'?'当前':'选中' ]]} onChange={value=>setNavigation({[stateKey]:value})}/></PropertySection>}
-    {selected.type === 'Text' && <PropertySection title="文字样式">
+    {['Text','ProductParameter'].includes(selected.type) && <PropertySection title="文字样式">
       <TypographyFields p={rule==='default'?styleP:textP} patch={rule==='default'?stylePatch:textPatch}/>
+      {selected.type==='ProductParameter'&&<div className="rc-segmented" aria-label="参数文字格式">{[['italic','斜体',Italic],['underline','下划线',Underline],['strike','删除线',Strikethrough]].map(([key,label,Icon])=><button key={key} type="button" className={styleP[key]?'active':''} title={label} aria-label={label} aria-pressed={Boolean(styleP[key])} onClick={()=>stylePatch({[key]:!styleP[key]})}><Icon size={16}/></button>)}</div>}
     </PropertySection>}
     {selected.type === 'Countdown' && !selected.children.length && <PropertySection title="文字样式"><div className="rc-two-columns"><NumberField label="字号" value={p.fontSize} min={8} max={160} onChange={(fontSize) => patch({ fontSize })} /><ColorField label="颜色" value={p.color} onChange={(color) => patch({ color })} /></div></PropertySection>}
     {rule==='default'&&<LayoutSection selected={selected} p={styleP} patch={stylePatch} parent={nodes.get(parents.get(selected.id))}/>}

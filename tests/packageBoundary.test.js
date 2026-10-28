@@ -14,8 +14,8 @@ test('Package owns product binding and selection while its child Stack owns edit
   assert.equal(componentLayerLabel(product),'商品套餐');
   assert.equal(product.type,'Package'); assert.equal(content.type,'Stack');
   assert.equal(content.props.dataKey,undefined); assert.equal(content.props.group,undefined);
-  assert.deepEqual(content.children.filter(node=>node.type==='Text').map(node=>node.props.binding),[{key:'plan',field:'name'},{key:'plan',field:'reference'},{key:'plan',field:'price'},{key:'plan',field:'productInfo'}]);
-  assert.deepEqual(content.children[0].children[0].props.binding,{key:'plan',field:'badgeText'});
+  assert.deepEqual(content.children.filter(node=>node.type==='ProductParameter').map(node=>node.props.parameter),['skuDuration','totalReferencePrice','totalPrice','productInfo']);
+  assert.equal(content.children[0].children[0].props.parameter,'productLabel');
   const source=doc([product]),{nodes,parents}=indexDocument(source),label=nodes.get('plan/price');
   assert.equal(canvasSelectionTarget(label,'page',nodes,parents),'plan');
   assert.equal(canvasSelectionTarget(label,'plan',nodes,parents),'plan/price');

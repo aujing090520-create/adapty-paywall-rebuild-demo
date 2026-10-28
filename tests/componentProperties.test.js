@@ -74,47 +74,38 @@ test('GA01: selected typography edits stay independent from default rich text an
   }finally{await h.close();}
 });
 
-test('Package text exposes an explicit source switch; ordinary page text remains independent', async () => {
-  const source=createDefaultPaywallRecord('test4').document, node=indexDocument(source).nodes.get('products/package-0/term');
+test('Package parameters expose field selection without editable text; ordinary page text stays independent', async () => {
+  const source=upgradeCanonicalComponents(createDefaultPaywallRecord('test4').document), node=indexDocument(source).nodes.get('products/package-0/term');
   const originalProducts=structuredClone(source.products), h=await mount(node,{source});
   try {
-    const input=()=>h.renderer.root.findAll(item=>item.type==='textarea'&&item.props['aria-label']==='文字内容')[0];
-    assert.equal(input().props.readOnly,true);
-    await h.select('内容来源','custom');
-    assert.equal(indexDocument(h.document()).nodes.get(node.id).props.binding,null);
-    assert.deepEqual(h.node().children,['12个月']);
-    await h.change('文字内容','我的说明'); assert.deepEqual(h.node().children,['我的说明']);
-    await h.select('内容来源','product');
-    assert.deepEqual(indexDocument(h.document()).nodes.get(node.id).props.binding,{key:'products/data-0',field:'name'});
-    await h.select('商品字段','productInfo'); assert.deepEqual(h.node().children,['节省63%']);
-    await h.select('商品字段','badgeText'); assert.deepEqual(h.node().children,['🔥30% OFF']);
+    assert.equal(node.type,'ProductParameter');
+    assert.equal(h.renderer.root.findAllByType('textarea').length,0);
+    assert.equal(h.renderer.root.findAll(item=>item.type==='select'&&item.props['aria-label']==='内容来源').length,0);
+    await h.select('商品参数','productInfo'); assert.deepEqual(h.node().children,['{商品信息}']);
+    await h.select('商品参数','productLabel'); assert.deepEqual(h.node().children,['{商品标签}']);
     assert.deepEqual(h.document().products,originalProducts);
     assert.equal(indexDocument(h.document()).nodes.get(node.id).props.fontSize,node.props.fontSize);
     const values=new Map(), storage={getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,value)};
     assert.ok(saveComponentDocument(storage,h.document()));
-    assert.equal(indexDocument(readComponentDocument(storage,h.document().templateId)).nodes.get(node.id).props.binding.field,'badgeText');
+    assert.equal(indexDocument(readComponentDocument(storage,h.document().templateId)).nodes.get(node.id).props.parameter,'productLabel');
   } finally { await h.close(); }
   const plain=await mount(component('ordinary-title','Text','文字',{text:'页面标题'}));
   try { assert.equal(plain.renderer.root.findAll(item=>item.type==='select'&&item.props['aria-label']==='内容来源').length,0); } finally { await plain.close(); }
 });
 
-test('bound Package field summary and live preview follow source copy, floor savings, SKU changes and selected labels', async () => {
+test('Package preview uses parameter references and switches lifetime semantics without changing source records', async () => {
   const template = templates.find(entry=>entry.id==='ht-blue-privilege');
   const source = upgradeCanonicalComponents(importComponentDocument(createBuilderNodes(template.id),template));
   const annual = indexDocument(source).nodes.get('products/package-1');
   source.products[annual.props.dataKey].selectedBadgeText='运营选中标签';
   const h = await mount(annual,{source,editing:false});
   try {
-    const field=label=>h.renderer.root.findAll(item=>item.type==='input'&&item.props['aria-label']===label)[0];
-    assert.equal(field('商品信息').props.value,'节省47%');
-    assert.equal(field('商品周期名称').props.value,'12个月');
-    assert.equal(field('商品标签（选中）').props.value,'运营选中标签');
-    assert.equal(field('商品周期名称').props.readOnly,true);
     const tag=h.node('products/package-1-badgeText');
-    assert.equal(tag.children.join(''),'运营选中标签');
-    await h.select('商品 SKU','DEMO-MEMBER-LIFETIME');
-    assert.equal(field('商品信息').props.value,'永久会员权益');
-    assert.equal(field('商品周期名称').props.value,'终身');
+    assert.equal(tag.children.join(''),'{选中商品标签}');
+    await h.select('商品类型','lifetime');
+    assert.equal(indexDocument(h.document()).nodes.get(annual.id).props.productType,'lifetime');
+    assert.equal(h.document().products[annual.props.dataKey].selectedBadgeText,'运营选中标签');
+    assert.equal(h.renderer.root.findAll(item=>item.type==='select'&&item.props['aria-label']==='商品 SKU').length,0);
     await h.check('显示商品标签',false);
     assert.equal(h.node('products/badge-1'),undefined);
   } finally { await h.close(); }
@@ -129,7 +120,7 @@ for (const type of COMPONENT_TYPES.filter((type) => !['Timeline', 'TimelineItem'
     if (type === 'Text') node.props.text = '文字';
     const h = await mount(node);
     if(type === 'Icon') await h.optional('图标背景');
-    if(!['Text','Screen'].includes(type)) {
+    if(!['Text','ProductParameter','Screen'].includes(type)) {
     if(type !== 'Icon') {
     await h.select(['Image','Video'].includes(type) ? '遮罩' : '形状', 'rectangle');
     }
@@ -166,7 +157,7 @@ for (const type of COMPONENT_TYPES.filter((type) => !['Timeline', 'TimelineItem'
     assert.equal(h.node().props.style.margin, '-7px 14px -7px 9px');
     await h.click('外边距切换为轴向配置'); assert.equal(h.node().props.style.margin, '-7px 14px');
     }
-    if(!['Text','Screen'].includes(type)) {
+    if(!['Text','ProductParameter','Screen'].includes(type)) {
     assert.equal(h.renderer.root.findAll((item) => item.type === 'input' && item.props['aria-label'] === '透明度').length, 0);
     if (!Number(indexDocument(h.document()).nodes.get('sample').props.borderWidth)) await h.optional('边框');
     await h.change('边框宽度', '3'); await h.change('边框颜色值', '#456789');
@@ -372,11 +363,11 @@ test('image and video sources, fit, masks and image overlays reach media output'
   await v.close();
 });
 
-test('package SKU and pricing mode use centralized data rather than stale manual values', async () => {
+test('package selection owns product type but individual parameters own price display', async () => {
   const h = await mount(createCatalogComponent('Package', 'sample'));
-  await h.select('商品 SKU', 'DEMO-BLUE-YEAR');
-  assert.ok(h.node('sample/price').children.join('').includes('488'));
-  await h.select('价格显示', '0'); assert.ok(h.node('sample/price').children.join('').includes('40.67'));
+  assert.equal(h.renderer.root.findAll(item=>item.type==='select'&&item.props['aria-label']==='价格显示').length,0);
+  assert.deepEqual(h.node('sample/price').children,['¥{总价}']);
+  await h.select('商品类型','lifetime');assert.deepEqual(h.node('sample/price').children,['¥{总价}']);
   await h.close();
 });
 
@@ -1303,7 +1294,10 @@ test('all 45 templates preserve original copy, media and product data after fixe
     for(const [id,node] of before){
       const current=after.get(id);assert.ok(current,`${template.id}:${id}`);
       if(node.type==='Countdown'&&!node.children.length)continue;
-      for(const key of ['text','runs','src','binding','action','dataKey'])assert.deepEqual(current.props[key],node.props[key],`${template.id}:${id}:${key}`);
+      for(const key of ['text','runs','src','binding','action','dataKey']){
+        if(current.type==='ProductParameter'&&['text','runs','binding'].includes(key)){assert.equal(current.props[key],undefined);continue;}
+        assert.deepEqual(current.props[key],node.props[key],`${template.id}:${id}:${key}`);
+      }
       if(node.type==='Icon'&&(node.props.widthMode==='fill'||node.props.heightMode==='fill')){
         const parent=after.get(indexDocument(next).parents.get(id));assert.equal(parent.props.widthMode,node.props.widthMode);assert.equal(parent.props.flexGrow,node.props.flexGrow);
       }

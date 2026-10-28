@@ -17,7 +17,7 @@ test('carousel has three pages plus unique PageControl and Indicators, never a f
   assert.deepEqual(catalogFor(node).flatMap((group)=>group.items).map(([type])=>type),['Slide']);
 });
 test('removing pagination is persistent and enabling creates the actual editable child exactly once',()=>{
-  const source=fixture(createCatalogComponent('Carousel','carousel')),removed=togglePageControl(source,'carousel',false);
+  const source=upgradeCanonicalComponents(fixture(createCatalogComponent('Carousel','carousel'))),removed=togglePageControl(source,'carousel',false);
   assert.equal(indexDocument(removed).nodes.get('carousel').children.length,3);
   assert.equal(upgradeCanonicalComponents(removed),removed);
   const enabled=togglePageControl(removed,'carousel',true);

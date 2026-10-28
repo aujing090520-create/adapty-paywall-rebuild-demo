@@ -24,7 +24,8 @@ test('fill does not claim a definite height through auto-sized ancestors', () =>
 });
 
 test('component layers use type names, text uses resolved copy and screens retain scene identity', () => {
-  for(const type of COMPONENT_TYPES.filter(type=>!['Screen','Text'].includes(type))) assert.equal(componentLayerLabel(component('id',type,'自定义别名')),COMPONENT_NAMES[type]);
+  for(const type of COMPONENT_TYPES.filter(type=>!['Screen','Text','ProductParameter'].includes(type))) assert.equal(componentLayerLabel(component('id',type,'自定义别名')),COMPONENT_NAMES[type]);
+  assert.equal(componentLayerLabel(component('id','ProductParameter','自定义别名',{parameter:'monthlyPrice'})),'商品参数 · 月价');
   assert.equal(componentLayerLabel(component('id','Text','旧标题'),'真实正文'),'真实正文');
   assert.equal(componentLayerLabel(component('id','Text','旧标题'),'   '),'文字');
   assert.equal(componentLayerLabel(component('id','Screen','权益介绍')),'权益介绍');

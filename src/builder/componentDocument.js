@@ -7,11 +7,12 @@ import { effectiveFillType } from './propertyModel.js';
 import { localSettingsResetting } from '../templateStorage.js';
 import { packageDisplayFields } from '../products/packageFields.js';
 import {validWorkbenchConfiguration} from './workbenchModel.js';
+import { PRODUCT_PARAMETERS, productParameterPreview } from '../products/productParameters.js';
 
 export const DOCUMENT_VERSION = 3;
-export const COMPONENT_TYPES = ['Screen', 'Stack', 'Text', 'Image', 'Video', 'Icon', 'Custom', 'Header', 'Footer', 'Package', 'PurchaseButton', 'BottomSheet', 'ExpressCheckout', 'CheckoutState', 'Wallet', 'Button', 'Tabs', 'Tab', 'TabControl', 'TabButton', 'Carousel', 'Slide', 'PageControl', 'Indicators', 'Timeline', 'TimelineItem', 'Switch', 'SwitchCase', 'Toggle', 'Countdown', 'CountdownState', 'Flow'];
+export const COMPONENT_TYPES = ['Screen', 'Stack', 'Text', 'ProductParameter', 'Image', 'Video', 'Icon', 'Custom', 'Header', 'Footer', 'Package', 'PurchaseButton', 'BottomSheet', 'ExpressCheckout', 'CheckoutState', 'Wallet', 'Button', 'Tabs', 'Tab', 'TabControl', 'TabButton', 'Carousel', 'Slide', 'PageControl', 'Indicators', 'Timeline', 'TimelineItem', 'Switch', 'SwitchCase', 'Toggle', 'Countdown', 'CountdownState', 'Flow'];
 export const COMPONENT_NAMES = { Screen: '页面', Stack: '布局容器', Text: '文字', Image: '图片', Video: '视频', Icon: '图标', Custom: '自定义网页', Header: '页头', Footer: '页脚', Package: '商品', PurchaseButton: '购买按钮', BottomSheet: '底部弹层', ExpressCheckout: '快捷结账', CheckoutState: '结账状态内容', Wallet: '钱包按钮', Button: '按钮', Tabs: '标签页', Tab: '标签页面', TabControl: '标签按钮组', TabButton: '标签按钮', Carousel: '轮播', Slide: '轮播页', Timeline: '时间线', TimelineItem: '时间节点', Switch: '开关', SwitchCase: '开关状态内容', Toggle: '开关控件', Countdown: '倒计时', CountdownState: '倒计时状态内容', Flow: '多页面流程' };
-Object.assign(COMPONENT_NAMES, { PageControl: '分页控件', Indicators: '分页指示器',Custom:'自定义组件',BottomSheet:'弹窗',Package:'商品套餐' });
+Object.assign(COMPONENT_NAMES, { ProductParameter: '商品参数', PageControl: '分页控件', Indicators: '分页指示器',Custom:'自定义组件',BottomSheet:'弹窗',Package:'商品套餐' });
 export const CONTAINER_TYPES = new Set(['Screen', 'Stack', 'Header', 'Footer', 'Package', 'PurchaseButton', 'BottomSheet', 'ExpressCheckout', 'CheckoutState', 'Button', 'Tabs', 'Tab', 'TabControl', 'TabButton', 'Carousel', 'Slide', 'PageControl', 'Timeline', 'TimelineItem', 'Switch', 'SwitchCase', 'Countdown', 'CountdownState', 'Flow']);
 export const DEFAULT_PROPS = { axis: 'vertical', gap: 8, align: 'stretch', justify: 'start', widthMode: 'fill', width: 160, minWidth: 0, maxWidth: 0, heightMode: 'fit', height: 160, minHeight: 0, maxHeight: 0, paddingTop: 0, paddingRight: 0, paddingBottom: 0, paddingLeft: 0, paddingVertical: 0, paddingHorizontal: 0, paddingMode: 'axis', marginTop: 0, marginRight: 0, marginBottom: 0, marginLeft: 0, marginVertical: 0, marginHorizontal: 0, marginMode: 'axis', background: 'transparent', color: '#171717', radius: 0, borderWidth: 0, borderColor: '#dedee3', fontSize: 14, fontWeight: 400, textAlign: 'left', objectFit: 'contain', opacity: 100, alignSelf: 'auto', shadowX: 0, shadowY: 0, shadowBlur: 0, shadowColor: '#000000', shape: 'rectangle', fillType: 'color', mask: 'none', overlayColor: 'transparent', iconBackground: 'transparent', iconRadius: 0 };
 export const componentProps = (node) => {
@@ -51,6 +52,7 @@ export const component = (id, type, name, props = {}, children = []) => ({ id, t
 export function componentLayerLabel(node, content = '') {
   if (node.type === 'Screen') return node.name || COMPONENT_NAMES.Screen;
   if (node.type === 'Text') return content.trim() || COMPONENT_NAMES.Text;
+  if (node.type === 'ProductParameter') return `商品参数 · ${PRODUCT_PARAMETERS[node.props.parameter]?.label ?? '未选择'}`;
   if (node.type === 'SwitchCase' && [0, 1].includes(node.props.index)) return `${node.props.index === 1 ? '开启' : '关闭'} · ${COMPONENT_NAMES.SwitchCase}`;
   return COMPONENT_NAMES[node.type] || node.type;
 }
@@ -88,6 +90,7 @@ export function validDocument(document) {
   const visit = (node, depth = 0) => {
     if (depth > 40 || !node || typeof node.id !== 'string' || ids.has(node.id) || !COMPONENT_TYPES.includes(node.type) || !Array.isArray(node.children) || !node.props || typeof node.props !== 'object') return false;
     ids.add(node.id);
+    if (node.type === 'ProductParameter' && !Object.hasOwn(PRODUCT_PARAMETERS, node.props.parameter)) return false;
     return (CONTAINER_TYPES.has(node.type) || !node.children.length) && node.children.every((child) => visit(child, depth + 1));
   };
   return visit(document.root) && (!document.settings?.presentationSurfaceId || indexDocument(document).nodes.get(document.settings.presentationSurfaceId)?.type === 'BottomSheet');
@@ -137,6 +140,7 @@ export function moveComponent(document, id, parentId, at = Infinity) {
   return insertComponent(removeComponent(document, id), parentId, node, at);
 }
 export function resolveComponentText(node, document, packageNode, selected = false) {
+  if (node.type === 'ProductParameter') return productParameterPreview(node.props.parameter, packageNode, selected);
   const binding = node.props.binding;
   if (!binding) return node.props.runs?.length ? node.props.runs.map((run) => `${run.breakBefore ? '\n' : ''}${run.text ?? ''}`).join('') : node.props.text ?? '';
   return String(packageDisplayFields(document, packageNode, selected, binding.key)[binding.field] ?? '');

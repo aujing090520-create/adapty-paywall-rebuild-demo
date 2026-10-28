@@ -250,7 +250,8 @@ test('actual editor migrates legacy retention once, nests the copied modal under
   const { button: opener, modal } = modalBindings(latest)[0];
   assert.equal(opener.name, '关闭按钮'); assert.equal(opener.props.action.action, 'OpenSheet');
   assert.equal(indexDocument(latest).parents.get(modal.id), opener.id);
-  assert.deepEqual(indexDocument(latest).nodes.get('primary-package'), indexDocument(doc).nodes.get('primary-package'));
+  assert.equal(indexDocument(latest).nodes.get('primary-package').props.productType,'subscription');
+  assert.equal(indexDocument(latest).nodes.get('primary-package').children[0].type,'ProductParameter');
   assert.deepEqual(latest.products.sku, doc.products.sku);
   assert.equal(upgradeButtonModals(latest, offerings, 'primary'), latest, 'version marker makes migration idempotent');
   assert.deepEqual({ doc, offer }, before);

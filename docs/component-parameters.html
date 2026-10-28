@@ -1,11 +1,12 @@
 <!doctype html><html lang="zh-CN"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>组件参数功能表</title><style>
 *{box-sizing:border-box}body{margin:0;background:#fff;color:#24262b;font:14px/1.6 system-ui,-apple-system,sans-serif;letter-spacing:0}main{padding:24px;max-width:1800px;margin:auto}h1{font-size:24px;margin:0 0 12px}p{max-width:1200px;color:#60646c;margin:8px 0}a{color:#375dc1}header{border-bottom:1px solid #dedfe3;padding-bottom:16px}.filters{position:sticky;top:0;z-index:2;display:flex;flex-wrap:wrap;align-items:end;gap:12px;background:#fff;padding:16px 0;border-bottom:1px solid #dedfe3}.filters label{display:grid;gap:4px;font-size:12px;color:#5f636b}.filters input,.filters select{border:1px solid #cdd0d7;border-radius:4px;height:36px;padding:6px 10px;font:14px system-ui;color:#24262b;background:#fff}.filters input{width:320px;max-width:80vw}.filters span{margin-left:auto;color:#2b745c;font-size:13px}.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:1100px;font-size:12px;table-layout:fixed}th,td{border-bottom:1px solid #e4e6e9;padding:10px 12px;text-align:left;vertical-align:top;overflow-wrap:anywhere}th{background:#f4f5f7;font-weight:600}th:nth-child(1){width:100px}th:nth-child(2){width:130px}th:nth-child(3){width:150px}th:nth-child(4){width:170px}th:nth-child(5){width:140px}th:nth-child(8){width:150px}.key{font-family:ui-monospace,monospace;color:#67617c}tr:nth-child(even){background:#fcfcfd}tr[hidden]{display:none}h2{font-size:17px;margin:20px 0 6px}.notes{font-size:13px}code{font-family:ui-monospace,monospace} @media(max-width:600px){main{padding:16px}.filters span{margin-left:0}}
-</style><main><header><h1>组件参数功能表</h1><p>本表覆盖当前Demo的32种基础/结构组件，共3592条参数字段或选项记录。按实际中文面板和当前源码整理，不把它当作RevenueCat全部能力等价证明。新建值不是四张HT手动模板的默认值；模板和已存记录始终以自身配置为准。</p><p>更新：2026-10-26 · <a href="./component-parameters.csv">CSV表格</a> · <a href="https://adapty-paywall-rebuild-demo.vercel.app/">线上Demo</a></p></header>
+</style><main><header><h1>组件参数功能表</h1><p>本表覆盖当前Demo的33种基础/结构组件，共3676条参数字段或选项记录。按实际中文面板和当前源码整理，不把它当作RevenueCat全部能力等价证明。新建值不是四张HT手动模板的默认值；模板和已存记录始终以自身配置为准。</p><p>更新：2026-10-26 · <a href="./component-parameters.csv">CSV表格</a> · <a href="https://adapty-paywall-rebuild-demo.vercel.app/">线上Demo</a></p></header>
 <section class="notes"><h2>先分清三个不同概念</h2><p>轴向决定横向/纵向/叠放；对齐控制交叉轴位置；分布沿主轴分配剩余空间。按内容适应的容器没有多余空间时，分布可能同形；不能通过悄悄放大框体来伪造效果。子项间距是额外基础间隔，和外边距不是同一参数。</p><p>已修复：标准对齐始终三项，旧拉伸值只读保留；有界纵向容器的填满高度分配剩余空间，不再让每个子项各占100%。</p><h2>验收范围</h2><p>真实SKU后端、Billing交易、恢复/兑换/钱包交易和真实关闭不做。源端凹凸遮罩、完整媒体库/主题及跨标签组结构等未闭环项仍见审计台账；本表中的限制列明确区分演示与真实能力。</p><p>布局语义来源：<a href="https://www.revenuecat.com/docs/tools/paywalls/creating-paywalls/component-properties">RevenueCat官方组件属性</a>。其余字段按本地当前面板和真实渲染实现列出；没有重新核对全部原端隐藏字段的项目不宣称一致。</p></section>
-<div class="filters"><label>组件<select id="component"><option value="">全部组件</option><option>页面</option><option>布局容器</option><option>文字</option><option>图片</option><option>视频</option><option>图标</option><option>自定义组件</option><option>页头</option><option>页脚</option><option>商品套餐</option><option>购买按钮</option><option>弹窗</option><option>快捷结账</option><option>结账状态内容</option><option>钱包按钮</option><option>按钮</option><option>标签页</option><option>标签页面</option><option>标签按钮组</option><option>标签按钮</option><option>轮播</option><option>轮播页</option><option>分页控件</option><option>分页指示器</option><option>时间线</option><option>时间节点</option><option>开关</option><option>开关状态内容</option><option>开关控件</option><option>倒计时</option><option>倒计时状态内容</option><option>多页面流程</option></select></label><label>参数 / 功能搜索<input id="query" type="search" placeholder="搜索参数、字段或功能"></label><span id="count"></span></div><div class="table-wrap"><table><thead><tr><th>组件</th><th>配置模块</th><th>参数</th><th>内部字段</th><th>字段选项/范围</th><th>功能</th><th>生效条件/限制</th><th>新建默认值来源</th></tr></thead><tbody><tr data-component="页面"><td>页面</td><td>图层管理</td><td>页面名称</td><td class="key">name</td><td>当前值</td><td>为不同屏幕场景命名，不修改正文、价格或前端文案</td><td>只有Screen允许重命名；其他组件的旧name数据保留但不作为图层名称展示</td><td>页面</td></tr>
+<div class="filters"><label>组件<select id="component"><option value="">全部组件</option><option>页面</option><option>布局容器</option><option>文字</option><option>商品参数</option><option>图片</option><option>视频</option><option>图标</option><option>自定义组件</option><option>页头</option><option>页脚</option><option>商品套餐</option><option>购买按钮</option><option>弹窗</option><option>快捷结账</option><option>结账状态内容</option><option>钱包按钮</option><option>按钮</option><option>标签页</option><option>标签页面</option><option>标签按钮组</option><option>标签按钮</option><option>轮播</option><option>轮播页</option><option>分页控件</option><option>分页指示器</option><option>时间线</option><option>时间节点</option><option>开关</option><option>开关状态内容</option><option>开关控件</option><option>倒计时</option><option>倒计时状态内容</option><option>多页面流程</option></select></label><label>参数 / 功能搜索<input id="query" type="search" placeholder="搜索参数、字段或功能"></label><span id="count"></span></div><div class="table-wrap"><table><thead><tr><th>组件</th><th>配置模块</th><th>参数</th><th>内部字段</th><th>字段选项/范围</th><th>功能</th><th>生效条件/限制</th><th>新建默认值来源</th></tr></thead><tbody><tr data-component="页面"><td>页面</td><td>图层管理</td><td>页面名称</td><td class="key">name</td><td>当前值</td><td>为不同屏幕场景命名，不修改正文、价格或前端文案</td><td>只有Screen允许重命名；其他组件的旧name数据保留但不作为图层名称展示</td><td>页面</td></tr>
 <tr data-component="页面"><td>页面</td><td>图层管理</td><td>组件类型 / 图层名称</td><td class="key">editor.layerLabel</td><td>当前值</td><td>普通组件固定显示中文组件名称；文字组件显示实际正文或绑定商品的实际值；Screen保留场景名称</td><td>不再提供普通组件和弹窗的重命名；旧数据别名不删除，不依靠图标猜组件类型</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>图层管理</td><td>组件类型 / 图层名称</td><td class="key">editor.layerLabel</td><td>当前值</td><td>普通组件固定显示中文组件名称；文字组件显示实际正文或绑定商品的实际值；Screen保留场景名称</td><td>不再提供普通组件和弹窗的重命名；旧数据别名不删除，不依靠图标猜组件类型</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>图层管理</td><td>组件类型 / 图层名称</td><td class="key">editor.layerLabel</td><td>当前值</td><td>普通组件固定显示中文组件名称；文字组件显示实际正文或绑定商品的实际值；Screen保留场景名称</td><td>不再提供普通组件和弹窗的重命名；旧数据别名不删除，不依靠图标猜组件类型</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>图层管理</td><td>组件类型 / 图层名称</td><td class="key">editor.layerLabel</td><td>当前值</td><td>普通组件固定显示中文组件名称；文字组件显示实际正文或绑定商品的实际值；Screen保留场景名称</td><td>不再提供普通组件和弹窗的重命名；旧数据别名不删除，不依靠图标猜组件类型</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图片"><td>图片</td><td>图层管理</td><td>组件类型 / 图层名称</td><td class="key">editor.layerLabel</td><td>当前值</td><td>普通组件固定显示中文组件名称；文字组件显示实际正文或绑定商品的实际值；Screen保留场景名称</td><td>不再提供普通组件和弹窗的重命名；旧数据别名不删除，不依靠图标猜组件类型</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="视频"><td>视频</td><td>图层管理</td><td>组件类型 / 图层名称</td><td class="key">editor.layerLabel</td><td>当前值</td><td>普通组件固定显示中文组件名称；文字组件显示实际正文或绑定商品的实际值；Screen保留场景名称</td><td>不再提供普通组件和弹窗的重命名；旧数据别名不删除，不依靠图标猜组件类型</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图标"><td>图标</td><td>图层管理</td><td>组件类型 / 图层名称</td><td class="key">editor.layerLabel</td><td>当前值</td><td>普通组件固定显示中文组件名称；文字组件显示实际正文或绑定商品的实际值；Screen保留场景名称</td><td>不再提供普通组件和弹窗的重命名；旧数据别名不删除，不依靠图标猜组件类型</td><td>依当前模板/条件继承</td></tr>
@@ -44,6 +45,8 @@
 <tr data-component="布局容器"><td>布局容器</td><td>图层管理</td><td>显示状态</td><td class="key">hidden</td><td>隐藏</td><td>控制组件及其整棵子树是否渲染；从预览布局中移除，不保留占位</td><td>当前节点不是页面根节点</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>图层管理</td><td>显示状态</td><td class="key">hidden</td><td>显示</td><td>控制组件及其整棵子树是否渲染；渲染组件</td><td>当前节点不是页面根节点</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>图层管理</td><td>显示状态</td><td class="key">hidden</td><td>隐藏</td><td>控制组件及其整棵子树是否渲染；从预览布局中移除，不保留占位</td><td>当前节点不是页面根节点</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>图层管理</td><td>显示状态</td><td class="key">hidden</td><td>显示</td><td>控制组件及其整棵子树是否渲染；渲染组件</td><td>当前节点不是页面根节点</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>图层管理</td><td>显示状态</td><td class="key">hidden</td><td>隐藏</td><td>控制组件及其整棵子树是否渲染；从预览布局中移除，不保留占位</td><td>当前节点不是页面根节点</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图片"><td>图片</td><td>图层管理</td><td>显示状态</td><td class="key">hidden</td><td>显示</td><td>控制组件及其整棵子树是否渲染；渲染组件</td><td>当前节点不是页面根节点</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图片"><td>图片</td><td>图层管理</td><td>显示状态</td><td class="key">hidden</td><td>隐藏</td><td>控制组件及其整棵子树是否渲染；从预览布局中移除，不保留占位</td><td>当前节点不是页面根节点</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="视频"><td>视频</td><td>图层管理</td><td>显示状态</td><td class="key">hidden</td><td>显示</td><td>控制组件及其整棵子树是否渲染；渲染组件</td><td>当前节点不是页面根节点</td><td>依当前模板/条件继承</td></tr>
@@ -102,6 +105,7 @@
 <tr data-component="倒计时状态内容"><td>倒计时状态内容</td><td>图层管理</td><td>显示状态</td><td class="key">hidden</td><td>隐藏</td><td>控制组件及其整棵子树是否渲染；从预览布局中移除，不保留占位</td><td>当前节点不是页面根节点</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>图层管理</td><td>图层拖动</td><td class="key">图层树操作</td><td>当前值</td><td>在左侧图层树调整顺序，拖入容器时移动整棵子树，保留组件内容、样式及商品数据</td><td>不是右侧配置字段；目标必须允许容纳该节点且不能形成循环</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>图层管理</td><td>图层拖动</td><td class="key">图层树操作</td><td>当前值</td><td>在左侧图层树调整顺序，拖入容器时移动整棵子树，保留组件内容、样式及商品数据</td><td>不是右侧配置字段；目标必须允许容纳该节点且不能形成循环</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>图层管理</td><td>图层拖动</td><td class="key">图层树操作</td><td>当前值</td><td>在左侧图层树调整顺序，拖入容器时移动整棵子树，保留组件内容、样式及商品数据</td><td>不是右侧配置字段；目标必须允许容纳该节点且不能形成循环</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图片"><td>图片</td><td>图层管理</td><td>图层拖动</td><td class="key">图层树操作</td><td>当前值</td><td>在左侧图层树调整顺序，拖入容器时移动整棵子树，保留组件内容、样式及商品数据</td><td>不是右侧配置字段；目标必须允许容纳该节点且不能形成循环</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="视频"><td>视频</td><td>图层管理</td><td>图层拖动</td><td class="key">图层树操作</td><td>当前值</td><td>在左侧图层树调整顺序，拖入容器时移动整棵子树，保留组件内容、样式及商品数据</td><td>不是右侧配置字段；目标必须允许容纳该节点且不能形成循环</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图标"><td>图标</td><td>图层管理</td><td>图层拖动</td><td class="key">图层树操作</td><td>当前值</td><td>在左侧图层树调整顺序，拖入容器时移动整棵子树，保留组件内容、样式及商品数据</td><td>不是右侧配置字段；目标必须允许容纳该节点且不能形成循环</td><td>依当前模板/条件继承</td></tr>
@@ -137,6 +141,7 @@
 <tr data-component="页面"><td>页面</td><td>尺寸</td><td>实际尺寸</td><td class="key">editor.renderedSize</td><td>当前值</td><td>显示选中组件实际外框的设计像素尺寸，包含内边距与边框，不包含外边距</td><td>只读；切换固定模式沿用当前测量值，不突然跳回160px；画布缩放不改变值</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>尺寸</td><td>实际尺寸</td><td class="key">editor.renderedSize</td><td>当前值</td><td>显示选中组件实际外框的设计像素尺寸，包含内边距与边框，不包含外边距</td><td>只读；切换固定模式沿用当前测量值，不突然跳回160px；画布缩放不改变值</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>尺寸</td><td>实际尺寸</td><td class="key">editor.renderedSize</td><td>当前值</td><td>显示选中组件实际外框的设计像素尺寸，包含内边距与边框，不包含外边距</td><td>只读；切换固定模式沿用当前测量值，不突然跳回160px；画布缩放不改变值</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>尺寸</td><td>实际尺寸</td><td class="key">editor.renderedSize</td><td>当前值</td><td>显示选中组件实际外框的设计像素尺寸，包含内边距与边框，不包含外边距</td><td>只读；切换固定模式沿用当前测量值，不突然跳回160px；画布缩放不改变值</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图片"><td>图片</td><td>尺寸</td><td>实际尺寸</td><td class="key">editor.renderedSize</td><td>当前值</td><td>显示选中组件实际外框的设计像素尺寸，包含内边距与边框，不包含外边距</td><td>只读；切换固定模式沿用当前测量值，不突然跳回160px；画布缩放不改变值</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="视频"><td>视频</td><td>尺寸</td><td>实际尺寸</td><td class="key">editor.renderedSize</td><td>当前值</td><td>显示选中组件实际外框的设计像素尺寸，包含内边距与边框，不包含外边距</td><td>只读；切换固定模式沿用当前测量值，不突然跳回160px；画布缩放不改变值</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图标"><td>图标</td><td>尺寸</td><td>实际尺寸</td><td class="key">editor.renderedSize</td><td>当前值</td><td>显示选中组件实际外框的设计像素尺寸，包含内边距与边框，不包含外边距</td><td>只读；切换固定模式沿用当前测量值，不突然跳回160px；画布缩放不改变值</td><td>依当前模板/条件继承</td></tr>
@@ -185,6 +190,7 @@
 <tr data-component="页面"><td>页面</td><td>保存范围</td><td>保存</td><td class="key">paywall.save</td><td>当前值</td><td>已有记录将当前整份组件文档按付费墙ID保存到当前浏览器，不修改模板默认内容</td><td>新建时确认样式仅返回创建页，填写名称并点击创建后才写记录；不是组件库保存，不代表线上发布或真实交易</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>保存范围</td><td>保存</td><td class="key">paywall.save</td><td>当前值</td><td>已有记录将当前整份组件文档按付费墙ID保存到当前浏览器，不修改模板默认内容</td><td>新建时确认样式仅返回创建页，填写名称并点击创建后才写记录；不是组件库保存，不代表线上发布或真实交易</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>保存范围</td><td>保存</td><td class="key">paywall.save</td><td>当前值</td><td>已有记录将当前整份组件文档按付费墙ID保存到当前浏览器，不修改模板默认内容</td><td>新建时确认样式仅返回创建页，填写名称并点击创建后才写记录；不是组件库保存，不代表线上发布或真实交易</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>保存范围</td><td>保存</td><td class="key">paywall.save</td><td>当前值</td><td>已有记录将当前整份组件文档按付费墙ID保存到当前浏览器，不修改模板默认内容</td><td>新建时确认样式仅返回创建页，填写名称并点击创建后才写记录；不是组件库保存，不代表线上发布或真实交易</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图片"><td>图片</td><td>保存范围</td><td>保存</td><td class="key">paywall.save</td><td>当前值</td><td>已有记录将当前整份组件文档按付费墙ID保存到当前浏览器，不修改模板默认内容</td><td>新建时确认样式仅返回创建页，填写名称并点击创建后才写记录；不是组件库保存，不代表线上发布或真实交易</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="视频"><td>视频</td><td>保存范围</td><td>保存</td><td class="key">paywall.save</td><td>当前值</td><td>已有记录将当前整份组件文档按付费墙ID保存到当前浏览器，不修改模板默认内容</td><td>新建时确认样式仅返回创建页，填写名称并点击创建后才写记录；不是组件库保存，不代表线上发布或真实交易</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图标"><td>图标</td><td>保存范围</td><td>保存</td><td class="key">paywall.save</td><td>当前值</td><td>已有记录将当前整份组件文档按付费墙ID保存到当前浏览器，不修改模板默认内容</td><td>新建时确认样式仅返回创建页，填写名称并点击创建后才写记录；不是组件库保存，不代表线上发布或真实交易</td><td>依当前模板/条件继承</td></tr>
@@ -217,6 +223,7 @@
 <tr data-component="页面"><td>页面</td><td>保存范围</td><td>放弃修改</td><td class="key">paywall.discard</td><td>当前值</td><td>恢复当前付费墙上次明确保存的版本；无保存版本时恢复当前模板默认内容</td><td>丢弃工作会话修改，不改模板默认素材、文案或SKU</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>保存范围</td><td>放弃修改</td><td class="key">paywall.discard</td><td>当前值</td><td>恢复当前付费墙上次明确保存的版本；无保存版本时恢复当前模板默认内容</td><td>丢弃工作会话修改，不改模板默认素材、文案或SKU</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>保存范围</td><td>放弃修改</td><td class="key">paywall.discard</td><td>当前值</td><td>恢复当前付费墙上次明确保存的版本；无保存版本时恢复当前模板默认内容</td><td>丢弃工作会话修改，不改模板默认素材、文案或SKU</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>保存范围</td><td>放弃修改</td><td class="key">paywall.discard</td><td>当前值</td><td>恢复当前付费墙上次明确保存的版本；无保存版本时恢复当前模板默认内容</td><td>丢弃工作会话修改，不改模板默认素材、文案或SKU</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图片"><td>图片</td><td>保存范围</td><td>放弃修改</td><td class="key">paywall.discard</td><td>当前值</td><td>恢复当前付费墙上次明确保存的版本；无保存版本时恢复当前模板默认内容</td><td>丢弃工作会话修改，不改模板默认素材、文案或SKU</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="视频"><td>视频</td><td>保存范围</td><td>放弃修改</td><td class="key">paywall.discard</td><td>当前值</td><td>恢复当前付费墙上次明确保存的版本；无保存版本时恢复当前模板默认内容</td><td>丢弃工作会话修改，不改模板默认素材、文案或SKU</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图标"><td>图标</td><td>保存范围</td><td>放弃修改</td><td class="key">paywall.discard</td><td>当前值</td><td>恢复当前付费墙上次明确保存的版本；无保存版本时恢复当前模板默认内容</td><td>丢弃工作会话修改，不改模板默认素材、文案或SKU</td><td>依当前模板/条件继承</td></tr>
@@ -249,6 +256,7 @@
 <tr data-component="页面"><td>页面</td><td>保存范围</td><td>重新套用模板</td><td class="key">template.apply</td><td>当前值</td><td>重新实例化模板默认内容，不读取上次未保存编辑或模板ID自动缓存</td><td>有未保存内容时先确认替换；取消保留；已保存付费墙仍可从列表重新打开</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>保存范围</td><td>重新套用模板</td><td class="key">template.apply</td><td>当前值</td><td>重新实例化模板默认内容，不读取上次未保存编辑或模板ID自动缓存</td><td>有未保存内容时先确认替换；取消保留；已保存付费墙仍可从列表重新打开</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>保存范围</td><td>重新套用模板</td><td class="key">template.apply</td><td>当前值</td><td>重新实例化模板默认内容，不读取上次未保存编辑或模板ID自动缓存</td><td>有未保存内容时先确认替换；取消保留；已保存付费墙仍可从列表重新打开</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>保存范围</td><td>重新套用模板</td><td class="key">template.apply</td><td>当前值</td><td>重新实例化模板默认内容，不读取上次未保存编辑或模板ID自动缓存</td><td>有未保存内容时先确认替换；取消保留；已保存付费墙仍可从列表重新打开</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图片"><td>图片</td><td>保存范围</td><td>重新套用模板</td><td class="key">template.apply</td><td>当前值</td><td>重新实例化模板默认内容，不读取上次未保存编辑或模板ID自动缓存</td><td>有未保存内容时先确认替换；取消保留；已保存付费墙仍可从列表重新打开</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="视频"><td>视频</td><td>保存范围</td><td>重新套用模板</td><td class="key">template.apply</td><td>当前值</td><td>重新实例化模板默认内容，不读取上次未保存编辑或模板ID自动缓存</td><td>有未保存内容时先确认替换；取消保留；已保存付费墙仍可从列表重新打开</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图标"><td>图标</td><td>保存范围</td><td>重新套用模板</td><td class="key">template.apply</td><td>当前值</td><td>重新实例化模板默认内容，不读取上次未保存编辑或模板ID自动缓存</td><td>有未保存内容时先确认替换；取消保留；已保存付费墙仍可从列表重新打开</td><td>依当前模板/条件继承</td></tr>
@@ -281,6 +289,7 @@
 <tr data-component="页面"><td>页面</td><td>保存范围</td><td>离开工作区</td><td class="key">paywall.leave</td><td>当前值</td><td>已有记录存在未保存内容时可保存并继续、放弃并继续或继续编辑；新建可返回创建页继续配置；浏览器离开使用原生未保存保护</td><td>保存失败不继续离开；名称和画布修改都属于同一工作区；新建不能从离开提示直接保存记录</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>保存范围</td><td>离开工作区</td><td class="key">paywall.leave</td><td>当前值</td><td>已有记录存在未保存内容时可保存并继续、放弃并继续或继续编辑；新建可返回创建页继续配置；浏览器离开使用原生未保存保护</td><td>保存失败不继续离开；名称和画布修改都属于同一工作区；新建不能从离开提示直接保存记录</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>保存范围</td><td>离开工作区</td><td class="key">paywall.leave</td><td>当前值</td><td>已有记录存在未保存内容时可保存并继续、放弃并继续或继续编辑；新建可返回创建页继续配置；浏览器离开使用原生未保存保护</td><td>保存失败不继续离开；名称和画布修改都属于同一工作区；新建不能从离开提示直接保存记录</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>保存范围</td><td>离开工作区</td><td class="key">paywall.leave</td><td>当前值</td><td>已有记录存在未保存内容时可保存并继续、放弃并继续或继续编辑；新建可返回创建页继续配置；浏览器离开使用原生未保存保护</td><td>保存失败不继续离开；名称和画布修改都属于同一工作区；新建不能从离开提示直接保存记录</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图片"><td>图片</td><td>保存范围</td><td>离开工作区</td><td class="key">paywall.leave</td><td>当前值</td><td>已有记录存在未保存内容时可保存并继续、放弃并继续或继续编辑；新建可返回创建页继续配置；浏览器离开使用原生未保存保护</td><td>保存失败不继续离开；名称和画布修改都属于同一工作区；新建不能从离开提示直接保存记录</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="视频"><td>视频</td><td>保存范围</td><td>离开工作区</td><td class="key">paywall.leave</td><td>当前值</td><td>已有记录存在未保存内容时可保存并继续、放弃并继续或继续编辑；新建可返回创建页继续配置；浏览器离开使用原生未保存保护</td><td>保存失败不继续离开；名称和画布修改都属于同一工作区；新建不能从离开提示直接保存记录</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图标"><td>图标</td><td>保存范围</td><td>离开工作区</td><td class="key">paywall.leave</td><td>当前值</td><td>已有记录存在未保存内容时可保存并继续、放弃并继续或继续编辑；新建可返回创建页继续配置；浏览器离开使用原生未保存保护</td><td>保存失败不继续离开；名称和画布修改都属于同一工作区；新建不能从离开提示直接保存记录</td><td>依当前模板/条件继承</td></tr>
@@ -313,6 +322,7 @@
 <tr data-component="页面"><td>页面</td><td>后台管理</td><td>基础名称 / 复制</td><td class="key">paywall.general</td><td>当前值</td><td>基础名称保存写入同一记录；复制读取已保存完整画布、商品和相关弹窗，打开未保存独立副本</td><td>名称为空阻止保存；副本保存前不产生正式记录；基础设置商品入口进入实际画布商品配置，不伪造临时新增结果</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>后台管理</td><td>基础名称 / 复制</td><td class="key">paywall.general</td><td>当前值</td><td>基础名称保存写入同一记录；复制读取已保存完整画布、商品和相关弹窗，打开未保存独立副本</td><td>名称为空阻止保存；副本保存前不产生正式记录；基础设置商品入口进入实际画布商品配置，不伪造临时新增结果</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>后台管理</td><td>基础名称 / 复制</td><td class="key">paywall.general</td><td>当前值</td><td>基础名称保存写入同一记录；复制读取已保存完整画布、商品和相关弹窗，打开未保存独立副本</td><td>名称为空阻止保存；副本保存前不产生正式记录；基础设置商品入口进入实际画布商品配置，不伪造临时新增结果</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>后台管理</td><td>基础名称 / 复制</td><td class="key">paywall.general</td><td>当前值</td><td>基础名称保存写入同一记录；复制读取已保存完整画布、商品和相关弹窗，打开未保存独立副本</td><td>名称为空阻止保存；副本保存前不产生正式记录；基础设置商品入口进入实际画布商品配置，不伪造临时新增结果</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图片"><td>图片</td><td>后台管理</td><td>基础名称 / 复制</td><td class="key">paywall.general</td><td>当前值</td><td>基础名称保存写入同一记录；复制读取已保存完整画布、商品和相关弹窗，打开未保存独立副本</td><td>名称为空阻止保存；副本保存前不产生正式记录；基础设置商品入口进入实际画布商品配置，不伪造临时新增结果</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="视频"><td>视频</td><td>后台管理</td><td>基础名称 / 复制</td><td class="key">paywall.general</td><td>当前值</td><td>基础名称保存写入同一记录；复制读取已保存完整画布、商品和相关弹窗，打开未保存独立副本</td><td>名称为空阻止保存；副本保存前不产生正式记录；基础设置商品入口进入实际画布商品配置，不伪造临时新增结果</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图标"><td>图标</td><td>后台管理</td><td>基础名称 / 复制</td><td class="key">paywall.general</td><td>当前值</td><td>基础名称保存写入同一记录；复制读取已保存完整画布、商品和相关弹窗，打开未保存独立副本</td><td>名称为空阻止保存；副本保存前不产生正式记录；基础设置商品入口进入实际画布商品配置，不伪造临时新增结果</td><td>依当前模板/条件继承</td></tr>
@@ -607,6 +617,9 @@
 <tr data-component="文字"><td>文字</td><td>尺寸</td><td>宽度</td><td class="key">widthMode</td><td>适应内容</td><td>决定尺寸的计算方式；尺寸随内容收缩，不凭空产生可分配空间</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>适应内容</td></tr>
 <tr data-component="文字"><td>文字</td><td>尺寸</td><td>宽度</td><td class="key">widthMode</td><td>填满</td><td>决定尺寸的计算方式；使用父容器可用空间；纵向有界容器中的填满高度分摊剩余高度</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>适应内容</td></tr>
 <tr data-component="文字"><td>文字</td><td>尺寸</td><td>宽度</td><td class="key">widthMode</td><td>固定</td><td>决定尺寸的计算方式；使用明确的设计像素尺寸，不是浏览器缩放后的截图尺寸</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>适应内容</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>尺寸</td><td>宽度</td><td class="key">widthMode</td><td>适应内容</td><td>决定尺寸的计算方式；尺寸随内容收缩，不凭空产生可分配空间</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>适应内容</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>尺寸</td><td>宽度</td><td class="key">widthMode</td><td>填满</td><td>决定尺寸的计算方式；使用父容器可用空间；纵向有界容器中的填满高度分摊剩余高度</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>适应内容</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>尺寸</td><td>宽度</td><td class="key">widthMode</td><td>固定</td><td>决定尺寸的计算方式；使用明确的设计像素尺寸，不是浏览器缩放后的截图尺寸</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>适应内容</td></tr>
 <tr data-component="图片"><td>图片</td><td>尺寸</td><td>宽度</td><td class="key">widthMode</td><td>适应内容</td><td>决定尺寸的计算方式；尺寸随内容收缩，不凭空产生可分配空间</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>填满</td></tr>
 <tr data-component="图片"><td>图片</td><td>尺寸</td><td>宽度</td><td class="key">widthMode</td><td>填满</td><td>决定尺寸的计算方式；使用父容器可用空间；纵向有界容器中的填满高度分摊剩余高度</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>填满</td></tr>
 <tr data-component="图片"><td>图片</td><td>尺寸</td><td>宽度</td><td class="key">widthMode</td><td>固定</td><td>决定尺寸的计算方式；使用明确的设计像素尺寸，不是浏览器缩放后的截图尺寸</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>填满</td></tr>
@@ -688,6 +701,7 @@
 <tr data-component="页面"><td>页面</td><td>尺寸</td><td>固定宽度</td><td class="key">width</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>宽度选择固定时显示</td><td>160</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>尺寸</td><td>固定宽度</td><td class="key">width</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>宽度选择固定时显示</td><td>160</td></tr>
 <tr data-component="文字"><td>文字</td><td>尺寸</td><td>固定宽度</td><td class="key">width</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>宽度选择固定时显示</td><td>160</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>尺寸</td><td>固定宽度</td><td class="key">width</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>宽度选择固定时显示</td><td>160</td></tr>
 <tr data-component="图片"><td>图片</td><td>尺寸</td><td>固定宽度</td><td class="key">width</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>宽度选择固定时显示</td><td>160</td></tr>
 <tr data-component="视频"><td>视频</td><td>尺寸</td><td>固定宽度</td><td class="key">width</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>宽度选择固定时显示</td><td>160</td></tr>
 <tr data-component="自定义组件"><td>自定义组件</td><td>尺寸</td><td>固定宽度</td><td class="key">width</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>宽度选择固定时显示</td><td>160</td></tr>
@@ -719,6 +733,7 @@
 <tr data-component="页面"><td>页面</td><td>尺寸</td><td>最小宽度</td><td class="key">minWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>页面宽度不提供新增约束入口，仅兼容旧记录已有值。只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>尺寸</td><td>最小宽度</td><td class="key">minWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="文字"><td>文字</td><td>尺寸</td><td>最小宽度</td><td class="key">minWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>尺寸</td><td>最小宽度</td><td class="key">minWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="图片"><td>图片</td><td>尺寸</td><td>最小宽度</td><td class="key">minWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="视频"><td>视频</td><td>尺寸</td><td>最小宽度</td><td class="key">minWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="自定义组件"><td>自定义组件</td><td>尺寸</td><td>最小宽度</td><td class="key">minWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
@@ -748,6 +763,7 @@
 <tr data-component="页面"><td>页面</td><td>尺寸</td><td>最大宽度</td><td class="key">maxWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>页面宽度不提供新增约束入口，仅兼容旧记录已有值。只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>尺寸</td><td>最大宽度</td><td class="key">maxWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="文字"><td>文字</td><td>尺寸</td><td>最大宽度</td><td class="key">maxWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>尺寸</td><td>最大宽度</td><td class="key">maxWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="图片"><td>图片</td><td>尺寸</td><td>最大宽度</td><td class="key">maxWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="视频"><td>视频</td><td>尺寸</td><td>最大宽度</td><td class="key">maxWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="自定义组件"><td>自定义组件</td><td>尺寸</td><td>最大宽度</td><td class="key">maxWidth</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
@@ -783,6 +799,9 @@
 <tr data-component="文字"><td>文字</td><td>尺寸</td><td>高度</td><td class="key">heightMode</td><td>适应内容</td><td>决定尺寸的计算方式；尺寸随内容收缩，不凭空产生可分配空间</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>适应内容</td></tr>
 <tr data-component="文字"><td>文字</td><td>尺寸</td><td>高度</td><td class="key">heightMode</td><td>填满</td><td>决定尺寸的计算方式；使用父容器可用空间；纵向有界容器中的填满高度分摊剩余高度</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>适应内容</td></tr>
 <tr data-component="文字"><td>文字</td><td>尺寸</td><td>高度</td><td class="key">heightMode</td><td>固定</td><td>决定尺寸的计算方式；使用明确的设计像素尺寸，不是浏览器缩放后的截图尺寸</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>适应内容</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>尺寸</td><td>高度</td><td class="key">heightMode</td><td>适应内容</td><td>决定尺寸的计算方式；尺寸随内容收缩，不凭空产生可分配空间</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>适应内容</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>尺寸</td><td>高度</td><td class="key">heightMode</td><td>填满</td><td>决定尺寸的计算方式；使用父容器可用空间；纵向有界容器中的填满高度分摊剩余高度</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>适应内容</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>尺寸</td><td>高度</td><td class="key">heightMode</td><td>固定</td><td>决定尺寸的计算方式；使用明确的设计像素尺寸，不是浏览器缩放后的截图尺寸</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>适应内容</td></tr>
 <tr data-component="图片"><td>图片</td><td>尺寸</td><td>高度</td><td class="key">heightMode</td><td>适应内容</td><td>决定尺寸的计算方式；尺寸随内容收缩，不凭空产生可分配空间</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>固定</td></tr>
 <tr data-component="图片"><td>图片</td><td>尺寸</td><td>高度</td><td class="key">heightMode</td><td>填满</td><td>决定尺寸的计算方式；使用父容器可用空间；纵向有界容器中的填满高度分摊剩余高度</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>固定</td></tr>
 <tr data-component="图片"><td>图片</td><td>尺寸</td><td>高度</td><td class="key">heightMode</td><td>固定</td><td>决定尺寸的计算方式；使用明确的设计像素尺寸，不是浏览器缩放后的截图尺寸</td><td>子项约束、父容器尺寸和内外边距共同影响最终尺寸</td><td>固定</td></tr>
@@ -861,6 +880,7 @@
 <tr data-component="页面"><td>页面</td><td>尺寸</td><td>固定高度</td><td class="key">height</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>高度选择固定时显示</td><td>160</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>尺寸</td><td>固定高度</td><td class="key">height</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>高度选择固定时显示</td><td>160</td></tr>
 <tr data-component="文字"><td>文字</td><td>尺寸</td><td>固定高度</td><td class="key">height</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>高度选择固定时显示</td><td>160</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>尺寸</td><td>固定高度</td><td class="key">height</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>高度选择固定时显示</td><td>160</td></tr>
 <tr data-component="图片"><td>图片</td><td>尺寸</td><td>固定高度</td><td class="key">height</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>高度选择固定时显示</td><td>180</td></tr>
 <tr data-component="视频"><td>视频</td><td>尺寸</td><td>固定高度</td><td class="key">height</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>高度选择固定时显示</td><td>160</td></tr>
 <tr data-component="自定义组件"><td>自定义组件</td><td>尺寸</td><td>固定高度</td><td class="key">height</td><td>0–2000 px</td><td>指定固定设计像素尺寸</td><td>高度选择固定时显示</td><td>160</td></tr>
@@ -891,6 +911,7 @@
 <tr data-component="页面"><td>页面</td><td>尺寸</td><td>最小高度</td><td class="key">minHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>尺寸</td><td>最小高度</td><td class="key">minHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="文字"><td>文字</td><td>尺寸</td><td>最小高度</td><td class="key">minHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>尺寸</td><td>最小高度</td><td class="key">minHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="图片"><td>图片</td><td>尺寸</td><td>最小高度</td><td class="key">minHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="视频"><td>视频</td><td>尺寸</td><td>最小高度</td><td class="key">minHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="自定义组件"><td>自定义组件</td><td>尺寸</td><td>最小高度</td><td class="key">minHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
@@ -919,6 +940,7 @@
 <tr data-component="页面"><td>页面</td><td>尺寸</td><td>最大高度</td><td class="key">maxHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>尺寸</td><td>最大高度</td><td class="key">maxHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="文字"><td>文字</td><td>尺寸</td><td>最大高度</td><td class="key">maxHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>尺寸</td><td>最大高度</td><td class="key">maxHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="图片"><td>图片</td><td>尺寸</td><td>最大高度</td><td class="key">maxHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="视频"><td>视频</td><td>尺寸</td><td>最大高度</td><td class="key">maxHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
 <tr data-component="自定义组件"><td>自定义组件</td><td>尺寸</td><td>最大高度</td><td class="key">maxHeight</td><td>0–2000 px；最大值0表示未设置</td><td>限制尺寸的下界或上界；上下界冲突时同步修正另一界</td><td>只有填满模式能新增约束；旧记录已有约束保留显示和效力，切换尺寸模式时清除</td><td>0</td></tr>
@@ -951,6 +973,8 @@
 <tr data-component="布局容器"><td>布局容器</td><td>布局间距</td><td>内边距配置方式</td><td class="key">paddingMode</td><td>独立</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；分别编辑各边；切换时显式转换数值</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
 <tr data-component="文字"><td>文字</td><td>布局间距</td><td>内边距配置方式</td><td class="key">paddingMode</td><td>轴向</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；纵向同时修改上下，横向同时修改左右</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
 <tr data-component="文字"><td>文字</td><td>布局间距</td><td>内边距配置方式</td><td class="key">paddingMode</td><td>独立</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；分别编辑各边；切换时显式转换数值</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>布局间距</td><td>内边距配置方式</td><td class="key">paddingMode</td><td>轴向</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；纵向同时修改上下，横向同时修改左右</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>布局间距</td><td>内边距配置方式</td><td class="key">paddingMode</td><td>独立</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；分别编辑各边；切换时显式转换数值</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
 <tr data-component="图片"><td>图片</td><td>布局间距</td><td>内边距配置方式</td><td class="key">paddingMode</td><td>轴向</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；纵向同时修改上下，横向同时修改左右</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
 <tr data-component="图片"><td>图片</td><td>布局间距</td><td>内边距配置方式</td><td class="key">paddingMode</td><td>独立</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；分别编辑各边；切换时显式转换数值</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
 <tr data-component="视频"><td>视频</td><td>布局间距</td><td>内边距配置方式</td><td class="key">paddingMode</td><td>轴向</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；纵向同时修改上下，横向同时修改左右</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
@@ -1006,6 +1030,7 @@
 <tr data-component="页面"><td>页面</td><td>布局间距</td><td>内边距纵向</td><td class="key">paddingVertical</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>布局间距</td><td>内边距纵向</td><td class="key">paddingVertical</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="文字"><td>文字</td><td>布局间距</td><td>内边距纵向</td><td class="key">paddingVertical</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>布局间距</td><td>内边距纵向</td><td class="key">paddingVertical</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="图片"><td>图片</td><td>布局间距</td><td>内边距纵向</td><td class="key">paddingVertical</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="视频"><td>视频</td><td>布局间距</td><td>内边距纵向</td><td class="key">paddingVertical</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="图标"><td>图标</td><td>布局间距</td><td>内边距纵向</td><td class="key">paddingVertical</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
@@ -1035,6 +1060,7 @@
 <tr data-component="页面"><td>页面</td><td>布局间距</td><td>内边距横向</td><td class="key">paddingHorizontal</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>布局间距</td><td>内边距横向</td><td class="key">paddingHorizontal</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="文字"><td>文字</td><td>布局间距</td><td>内边距横向</td><td class="key">paddingHorizontal</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>布局间距</td><td>内边距横向</td><td class="key">paddingHorizontal</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="图片"><td>图片</td><td>布局间距</td><td>内边距横向</td><td class="key">paddingHorizontal</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="视频"><td>视频</td><td>布局间距</td><td>内边距横向</td><td class="key">paddingHorizontal</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="图标"><td>图标</td><td>布局间距</td><td>内边距横向</td><td class="key">paddingHorizontal</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
@@ -1063,6 +1089,7 @@
 <tr data-component="页面"><td>页面</td><td>布局间距</td><td>内边距上</td><td class="key">paddingTop</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>布局间距</td><td>内边距上</td><td class="key">paddingTop</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="文字"><td>文字</td><td>布局间距</td><td>内边距上</td><td class="key">paddingTop</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>布局间距</td><td>内边距上</td><td class="key">paddingTop</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="图片"><td>图片</td><td>布局间距</td><td>内边距上</td><td class="key">paddingTop</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="视频"><td>视频</td><td>布局间距</td><td>内边距上</td><td class="key">paddingTop</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="图标"><td>图标</td><td>布局间距</td><td>内边距上</td><td class="key">paddingTop</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
@@ -1092,6 +1119,7 @@
 <tr data-component="页面"><td>页面</td><td>布局间距</td><td>内边距右</td><td class="key">paddingRight</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>布局间距</td><td>内边距右</td><td class="key">paddingRight</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="文字"><td>文字</td><td>布局间距</td><td>内边距右</td><td class="key">paddingRight</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>布局间距</td><td>内边距右</td><td class="key">paddingRight</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="图片"><td>图片</td><td>布局间距</td><td>内边距右</td><td class="key">paddingRight</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="视频"><td>视频</td><td>布局间距</td><td>内边距右</td><td class="key">paddingRight</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="图标"><td>图标</td><td>布局间距</td><td>内边距右</td><td class="key">paddingRight</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
@@ -1120,6 +1148,7 @@
 <tr data-component="页面"><td>页面</td><td>布局间距</td><td>内边距下</td><td class="key">paddingBottom</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>布局间距</td><td>内边距下</td><td class="key">paddingBottom</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="文字"><td>文字</td><td>布局间距</td><td>内边距下</td><td class="key">paddingBottom</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>布局间距</td><td>内边距下</td><td class="key">paddingBottom</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="图片"><td>图片</td><td>布局间距</td><td>内边距下</td><td class="key">paddingBottom</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="视频"><td>视频</td><td>布局间距</td><td>内边距下</td><td class="key">paddingBottom</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="图标"><td>图标</td><td>布局间距</td><td>内边距下</td><td class="key">paddingBottom</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
@@ -1149,6 +1178,7 @@
 <tr data-component="页面"><td>页面</td><td>布局间距</td><td>内边距左</td><td class="key">paddingLeft</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>布局间距</td><td>内边距左</td><td class="key">paddingLeft</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="文字"><td>文字</td><td>布局间距</td><td>内边距左</td><td class="key">paddingLeft</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>布局间距</td><td>内边距左</td><td class="key">paddingLeft</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="图片"><td>图片</td><td>布局间距</td><td>内边距左</td><td class="key">paddingLeft</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="视频"><td>视频</td><td>布局间距</td><td>内边距左</td><td class="key">paddingLeft</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="图标"><td>图标</td><td>布局间距</td><td>内边距左</td><td class="key">paddingLeft</td><td>0–500 px</td><td>增加内容与框体边缘的距离，会减少可用于内容的内部空间</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
@@ -1178,6 +1208,8 @@
 <tr data-component="布局容器"><td>布局容器</td><td>布局间距</td><td>外边距配置方式</td><td class="key">marginMode</td><td>独立</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；分别编辑各边；切换时显式转换数值</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
 <tr data-component="文字"><td>文字</td><td>布局间距</td><td>外边距配置方式</td><td class="key">marginMode</td><td>轴向</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；纵向同时修改上下，横向同时修改左右</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
 <tr data-component="文字"><td>文字</td><td>布局间距</td><td>外边距配置方式</td><td class="key">marginMode</td><td>独立</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；分别编辑各边；切换时显式转换数值</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>布局间距</td><td>外边距配置方式</td><td class="key">marginMode</td><td>轴向</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；纵向同时修改上下，横向同时修改左右</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>布局间距</td><td>外边距配置方式</td><td class="key">marginMode</td><td>独立</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；分别编辑各边；切换时显式转换数值</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
 <tr data-component="图片"><td>图片</td><td>布局间距</td><td>外边距配置方式</td><td class="key">marginMode</td><td>轴向</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；纵向同时修改上下，横向同时修改左右</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
 <tr data-component="图片"><td>图片</td><td>布局间距</td><td>外边距配置方式</td><td class="key">marginMode</td><td>独立</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；分别编辑各边；切换时显式转换数值</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
 <tr data-component="视频"><td>视频</td><td>布局间距</td><td>外边距配置方式</td><td class="key">marginMode</td><td>轴向</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；纵向同时修改上下，横向同时修改左右</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
@@ -1232,6 +1264,7 @@
 <tr data-component="多页面流程"><td>多页面流程</td><td>布局间距</td><td>外边距配置方式</td><td class="key">marginMode</td><td>独立</td><td>同一组边距的轴向/独立表示，不是两份叠加配置；分别编辑各边；切换时显式转换数值</td><td>轮播只有上下内边距；时间线中的图标不提供外边距</td><td>轴向</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>布局间距</td><td>外边距纵向</td><td class="key">marginVertical</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="文字"><td>文字</td><td>布局间距</td><td>外边距纵向</td><td class="key">marginVertical</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>布局间距</td><td>外边距纵向</td><td class="key">marginVertical</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="图片"><td>图片</td><td>布局间距</td><td>外边距纵向</td><td class="key">marginVertical</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="视频"><td>视频</td><td>布局间距</td><td>外边距纵向</td><td class="key">marginVertical</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="图标"><td>图标</td><td>布局间距</td><td>外边距纵向</td><td class="key">marginVertical</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
@@ -1260,6 +1293,7 @@
 <tr data-component="多页面流程"><td>多页面流程</td><td>布局间距</td><td>外边距纵向</td><td class="key">marginVertical</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>布局间距</td><td>外边距横向</td><td class="key">marginHorizontal</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="文字"><td>文字</td><td>布局间距</td><td>外边距横向</td><td class="key">marginHorizontal</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>布局间距</td><td>外边距横向</td><td class="key">marginHorizontal</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="图片"><td>图片</td><td>布局间距</td><td>外边距横向</td><td class="key">marginHorizontal</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="视频"><td>视频</td><td>布局间距</td><td>外边距横向</td><td class="key">marginHorizontal</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="图标"><td>图标</td><td>布局间距</td><td>外边距横向</td><td class="key">marginHorizontal</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
@@ -1288,6 +1322,7 @@
 <tr data-component="多页面流程"><td>多页面流程</td><td>布局间距</td><td>外边距横向</td><td class="key">marginHorizontal</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>轴向模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>布局间距</td><td>外边距上</td><td class="key">marginTop</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="文字"><td>文字</td><td>布局间距</td><td>外边距上</td><td class="key">marginTop</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>布局间距</td><td>外边距上</td><td class="key">marginTop</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="图片"><td>图片</td><td>布局间距</td><td>外边距上</td><td class="key">marginTop</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="视频"><td>视频</td><td>布局间距</td><td>外边距上</td><td class="key">marginTop</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="图标"><td>图标</td><td>布局间距</td><td>外边距上</td><td class="key">marginTop</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
@@ -1316,6 +1351,7 @@
 <tr data-component="多页面流程"><td>多页面流程</td><td>布局间距</td><td>外边距上</td><td class="key">marginTop</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>布局间距</td><td>外边距右</td><td class="key">marginRight</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="文字"><td>文字</td><td>布局间距</td><td>外边距右</td><td class="key">marginRight</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>布局间距</td><td>外边距右</td><td class="key">marginRight</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="图片"><td>图片</td><td>布局间距</td><td>外边距右</td><td class="key">marginRight</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="视频"><td>视频</td><td>布局间距</td><td>外边距右</td><td class="key">marginRight</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="图标"><td>图标</td><td>布局间距</td><td>外边距右</td><td class="key">marginRight</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
@@ -1344,6 +1380,7 @@
 <tr data-component="多页面流程"><td>多页面流程</td><td>布局间距</td><td>外边距右</td><td class="key">marginRight</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>布局间距</td><td>外边距下</td><td class="key">marginBottom</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="文字"><td>文字</td><td>布局间距</td><td>外边距下</td><td class="key">marginBottom</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>布局间距</td><td>外边距下</td><td class="key">marginBottom</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="图片"><td>图片</td><td>布局间距</td><td>外边距下</td><td class="key">marginBottom</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="视频"><td>视频</td><td>布局间距</td><td>外边距下</td><td class="key">marginBottom</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="图标"><td>图标</td><td>布局间距</td><td>外边距下</td><td class="key">marginBottom</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
@@ -1372,6 +1409,7 @@
 <tr data-component="多页面流程"><td>多页面流程</td><td>布局间距</td><td>外边距下</td><td class="key">marginBottom</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>布局间距</td><td>外边距左</td><td class="key">marginLeft</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="文字"><td>文字</td><td>布局间距</td><td>外边距左</td><td class="key">marginLeft</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>布局间距</td><td>外边距左</td><td class="key">marginLeft</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="图片"><td>图片</td><td>布局间距</td><td>外边距左</td><td class="key">marginLeft</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="视频"><td>视频</td><td>布局间距</td><td>外边距左</td><td class="key">marginLeft</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
 <tr data-component="图标"><td>图标</td><td>布局间距</td><td>外边距左</td><td class="key">marginLeft</td><td>-200–500 px</td><td>增加框体外侧与相邻元素的距离；不等同于父级子项间距</td><td>独立模式；时间线图标无外边距</td><td>0</td></tr>
@@ -2483,19 +2521,50 @@
 <tr data-component="文字"><td>文字</td><td>文字样式</td><td>文字对齐</td><td class="key">textAlign</td><td>左对齐</td><td>段落在自身文字框内左对齐、居中或右对齐，不移动整个文字框；文字靠左</td><td>文字框有额外宽度时最明显</td><td>左对齐</td></tr>
 <tr data-component="文字"><td>文字</td><td>文字样式</td><td>文字对齐</td><td class="key">textAlign</td><td>居中</td><td>段落在自身文字框内左对齐、居中或右对齐，不移动整个文字框；文字在框内居中</td><td>文字框有额外宽度时最明显</td><td>左对齐</td></tr>
 <tr data-component="文字"><td>文字</td><td>文字样式</td><td>文字对齐</td><td class="key">textAlign</td><td>右对齐</td><td>段落在自身文字框内左对齐、居中或右对齐，不移动整个文字框；文字靠右</td><td>文字框有额外宽度时最明显</td><td>左对齐</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>文字样式</td><td>文字对齐</td><td class="key">textAlign</td><td>左对齐</td><td>段落在自身文字框内左对齐、居中或右对齐，不移动整个文字框；文字靠左</td><td>文字框有额外宽度时最明显</td><td>左对齐</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>文字样式</td><td>文字对齐</td><td class="key">textAlign</td><td>居中</td><td>段落在自身文字框内左对齐、居中或右对齐，不移动整个文字框；文字在框内居中</td><td>文字框有额外宽度时最明显</td><td>左对齐</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>文字样式</td><td>文字对齐</td><td class="key">textAlign</td><td>右对齐</td><td>段落在自身文字框内左对齐、居中或右对齐，不移动整个文字框；文字靠右</td><td>文字框有额外宽度时最明显</td><td>左对齐</td></tr>
 <tr data-component="文字"><td>文字</td><td>文字样式</td><td>字体</td><td class="key">fontFamily</td><td>当前值</td><td>选择系统或当前文档已上传字体族；旧字体保留兼容</td><td>字体族资源由文档统一保存，不按每个文字重复上传</td><td>系统字体</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>文字样式</td><td>字体</td><td class="key">fontFamily</td><td>当前值</td><td>选择系统或当前文档已上传字体族；旧字体保留兼容</td><td>字体族资源由文档统一保存，不按每个文字重复上传</td><td>系统字体</td></tr>
 <tr data-component="文字"><td>文字</td><td>文字样式</td><td>字重</td><td class="key">fontWeight</td><td>100–900</td><td>改变整段文字粗细，真实字形取决于字体文件包含的字重</td><td>100极细、200特细、300细、400常规、500中等、600半粗、700粗、800特粗、900极粗</td><td>400</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>文字样式</td><td>字重</td><td class="key">fontWeight</td><td>100–900</td><td>改变整段文字粗细，真实字形取决于字体文件包含的字重</td><td>100极细、200特细、300细、400常规、500中等、600半粗、700粗、800特粗、900极粗</td><td>400</td></tr>
 <tr data-component="文字"><td>文字</td><td>文字样式</td><td>字号</td><td class="key">fontSize</td><td>8–160 px</td><td>改变整个文字组件字号，不是只改变光标选区字号</td><td>配置单位是设计像素；手机预览会整体缩放</td><td>14</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>文字样式</td><td>字号</td><td class="key">fontSize</td><td>8–160 px</td><td>改变整个文字组件字号，不是只改变光标选区字号</td><td>配置单位是设计像素；手机预览会整体缩放</td><td>14</td></tr>
 <tr data-component="文字"><td>文字</td><td>文字样式</td><td>文字颜色</td><td class="key">color</td><td>纯色CSS颜色或渐变</td><td>设置此层独立涂色，不改变其他涂色或整组件透明度</td><td>对应文字存在</td><td>#000000</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>文字样式</td><td>文字颜色</td><td class="key">color</td><td>纯色CSS颜色或渐变</td><td>设置此层独立涂色，不改变其他涂色或整组件透明度</td><td>对应文字存在</td><td>#000000</td></tr>
 <tr data-component="文字"><td>文字</td><td>文字样式</td><td>文字颜色不透明度</td><td class="key">colorOpacity</td><td>0–100%</td><td>只影响此颜色；0完全透明，100完全不透明</td><td>对应文字存在；渐变时由各色标透明度控制，外部数值固定100</td><td>100</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>文字样式</td><td>文字颜色不透明度</td><td class="key">colorOpacity</td><td>0–100%</td><td>只影响此颜色；0完全透明，100完全不透明</td><td>对应文字存在；渐变时由各色标透明度控制，外部数值固定100</td><td>100</td></tr>
 <tr data-component="文字"><td>文字</td><td>文字样式 / 色板</td><td>文字颜色色值格式</td><td class="key">color</td><td>HEX / R / G / B / A</td><td>HEX、RGB、透明度是同一个颜色的不同表示，不能重复叠加透明度</td><td>对应文字存在</td><td>#000000</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>文字样式 / 色板</td><td>文字颜色色值格式</td><td class="key">color</td><td>HEX / R / G / B / A</td><td>HEX、RGB、透明度是同一个颜色的不同表示，不能重复叠加透明度</td><td>对应文字存在</td><td>#000000</td></tr>
 <tr data-component="文字"><td>文字</td><td>文字样式 / 色板</td><td>文字颜色渐变角度</td><td class="key">color</td><td>角度</td><td>旋转线性渐变方向</td><td>打开该颜色色板并切换渐变</td><td>#000000</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>文字样式 / 色板</td><td>文字颜色渐变角度</td><td class="key">color</td><td>角度</td><td>旋转线性渐变方向</td><td>打开该颜色色板并切换渐变</td><td>#000000</td></tr>
 <tr data-component="文字"><td>文字</td><td>文字样式 / 色板</td><td>文字颜色色标</td><td class="key">color</td><td>位置0–100%；颜色及透明度</td><td>调整每个色标的位置、颜色及透明度；可新增/移除色标</td><td>渐变模式；不是组件外部的不透明度</td><td>#000000</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>文字样式 / 色板</td><td>文字颜色色标</td><td class="key">color</td><td>位置0–100%；颜色及透明度</td><td>调整每个色标的位置、颜色及透明度；可新增/移除色标</td><td>渐变模式；不是组件外部的不透明度</td><td>#000000</td></tr>
 <tr data-component="文字"><td>文字</td><td>文字样式</td><td>背景颜色</td><td class="key">background</td><td>纯色CSS颜色或渐变</td><td>设置此层独立涂色，不改变其他涂色或整组件透明度</td><td>文字背景与父框体填充分属两层</td><td>透明</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>文字样式</td><td>背景颜色</td><td class="key">background</td><td>纯色CSS颜色或渐变</td><td>设置此层独立涂色，不改变其他涂色或整组件透明度</td><td>文字背景与父框体填充分属两层</td><td>透明</td></tr>
 <tr data-component="文字"><td>文字</td><td>文字样式</td><td>背景颜色不透明度</td><td class="key">backgroundOpacity</td><td>0–100%</td><td>只影响此颜色；0完全透明，100完全不透明</td><td>文字背景与父框体填充分属两层；渐变时由各色标透明度控制，外部数值固定100</td><td>100</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>文字样式</td><td>背景颜色不透明度</td><td class="key">backgroundOpacity</td><td>0–100%</td><td>只影响此颜色；0完全透明，100完全不透明</td><td>文字背景与父框体填充分属两层；渐变时由各色标透明度控制，外部数值固定100</td><td>100</td></tr>
 <tr data-component="文字"><td>文字</td><td>文字样式 / 色板</td><td>背景颜色色值格式</td><td class="key">background</td><td>HEX / R / G / B / A</td><td>HEX、RGB、透明度是同一个颜色的不同表示，不能重复叠加透明度</td><td>文字背景与父框体填充分属两层</td><td>透明</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>文字样式 / 色板</td><td>背景颜色色值格式</td><td class="key">background</td><td>HEX / R / G / B / A</td><td>HEX、RGB、透明度是同一个颜色的不同表示，不能重复叠加透明度</td><td>文字背景与父框体填充分属两层</td><td>透明</td></tr>
 <tr data-component="文字"><td>文字</td><td>文字样式 / 色板</td><td>背景颜色渐变角度</td><td class="key">background</td><td>角度</td><td>旋转线性渐变方向</td><td>打开该颜色色板并切换渐变</td><td>透明</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>文字样式 / 色板</td><td>背景颜色渐变角度</td><td class="key">background</td><td>角度</td><td>旋转线性渐变方向</td><td>打开该颜色色板并切换渐变</td><td>透明</td></tr>
 <tr data-component="文字"><td>文字</td><td>文字样式 / 色板</td><td>背景颜色色标</td><td class="key">background</td><td>位置0–100%；颜色及透明度</td><td>调整每个色标的位置、颜色及透明度；可新增/移除色标</td><td>渐变模式；不是组件外部的不透明度</td><td>透明</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>文字样式 / 色板</td><td>背景颜色色标</td><td class="key">background</td><td>位置0–100%；颜色及透明度</td><td>调整每个色标的位置、颜色及透明度；可新增/移除色标</td><td>渐变模式；不是组件外部的不透明度</td><td>透明</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>参数属性</td><td>商品参数</td><td class="key">parameter</td><td>SKU时长</td><td>引用外部商品字段，仅预览字段名，不编辑业务文案或绑定SKU；引用SKU时长</td><td>月价与划线月价在终身商品中分别显示总价与划线总价；切回订阅恢复原字段</td><td>总价</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>参数属性</td><td>商品参数</td><td class="key">parameter</td><td>总价</td><td>引用外部商品字段，仅预览字段名，不编辑业务文案或绑定SKU；引用总价</td><td>月价与划线月价在终身商品中分别显示总价与划线总价；切回订阅恢复原字段</td><td>总价</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>参数属性</td><td>商品参数</td><td class="key">parameter</td><td>月价</td><td>引用外部商品字段，仅预览字段名，不编辑业务文案或绑定SKU；引用月价</td><td>月价与划线月价在终身商品中分别显示总价与划线总价；切回订阅恢复原字段</td><td>总价</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>参数属性</td><td>商品参数</td><td class="key">parameter</td><td>划线总价</td><td>引用外部商品字段，仅预览字段名，不编辑业务文案或绑定SKU；引用划线总价</td><td>月价与划线月价在终身商品中分别显示总价与划线总价；切回订阅恢复原字段</td><td>总价</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>参数属性</td><td>商品参数</td><td class="key">parameter</td><td>划线月价</td><td>引用外部商品字段，仅预览字段名，不编辑业务文案或绑定SKU；引用划线月价</td><td>月价与划线月价在终身商品中分别显示总价与划线总价；切回订阅恢复原字段</td><td>总价</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>参数属性</td><td>商品参数</td><td class="key">parameter</td><td>商品标签</td><td>引用外部商品字段，仅预览字段名，不编辑业务文案或绑定SKU；引用商品标签</td><td>月价与划线月价在终身商品中分别显示总价与划线总价；切回订阅恢复原字段</td><td>总价</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>参数属性</td><td>商品参数</td><td class="key">parameter</td><td>商品信息</td><td>引用外部商品字段，仅预览字段名，不编辑业务文案或绑定SKU；引用商品信息</td><td>月价与划线月价在终身商品中分别显示总价与划线总价；切回订阅恢复原字段</td><td>总价</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>参数属性</td><td>商品参数</td><td class="key">parameter</td><td>节省比例</td><td>引用外部商品字段，仅预览字段名，不编辑业务文案或绑定SKU；引用节省比例</td><td>月价与划线月价在终身商品中分别显示总价与划线总价；切回订阅恢复原字段</td><td>总价</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>参数属性</td><td>商品参数</td><td class="key">parameter</td><td>辅助文案</td><td>引用外部商品字段，仅预览字段名，不编辑业务文案或绑定SKU；引用辅助文案</td><td>月价与划线月价在终身商品中分别显示总价与划线总价；切回订阅恢复原字段</td><td>总价</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>参数属性</td><td>默认态输出</td><td class="key">parameter</td><td>当前值</td><td>只读默认态字段占位，不是可编辑文字</td><td>该组件显示且当前模块已启用</td><td>totalPrice</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>参数属性</td><td>选中态输出</td><td class="key">parameter</td><td>当前值</td><td>只读{选中商品标签}，与默认{商品标签}分别映射</td><td>仅商品标签参数</td><td>totalPrice</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>参数属性</td><td>终身适配</td><td class="key">parameter</td><td>当前值</td><td>显示当前终身商品的有效字段；节省比例不显示但保留配置</td><td>所属套餐为终身商品，且该参数需要转换或隐藏</td><td>totalPrice</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>文字样式</td><td>斜体</td><td class="key">italic</td><td>当前值</td><td>调整参数整体文字格式，不修改外部字段值</td><td>该组件显示且当前模块已启用</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>文字样式</td><td>下划线</td><td class="key">underline</td><td>当前值</td><td>调整参数整体文字格式，不修改外部字段值</td><td>该组件显示且当前模块已启用</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>文字样式</td><td>删除线</td><td class="key">strike</td><td>当前值</td><td>调整参数整体文字格式，不修改外部字段值</td><td>该组件显示且当前模块已启用</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>文字规则</td><td>文字规则</td><td class="key">textRules</td><td>默认</td><td>切换默认或优惠分支的内容/格式；标准尺寸仍属于默认，不重复配置；默认文案与格式</td><td>预览使用当前选择规则，不是真实用户优惠资格判定</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>文字规则</td><td>文字规则</td><td class="key">textRules</td><td>首次优惠</td><td>切换默认或优惠分支的内容/格式；标准尺寸仍属于默认，不重复配置；首次优惠覆盖，未覆盖字段继承默认</td><td>预览使用当前选择规则，不是真实用户优惠资格判定</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>文字规则</td><td>文字规则</td><td class="key">textRules</td><td>促销优惠</td><td>切换默认或优惠分支的内容/格式；标准尺寸仍属于默认，不重复配置；促销优惠覆盖</td><td>预览使用当前选择规则，不是真实用户优惠资格判定</td><td>依当前模板/条件继承</td></tr>
@@ -2508,19 +2577,19 @@
 <tr data-component="文字"><td>文字</td><td>文字工具</td><td>行内代码</td><td class="key">runs.code</td><td>当前值</td><td>给选区使用等宽代码格式，不是HTML编辑</td><td>文字有选区时只改变选区；链接不接受脚本协议</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>文字工具</td><td>链接</td><td class="key">runs.link</td><td>当前值</td><td>为选区设置安全链接或移除链接</td><td>文字有选区时只改变选区；链接不接受脚本协议</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>文字工具</td><td>撤销/重做</td><td class="key">runs.history</td><td>当前值</td><td>撤销或恢复文字编辑</td><td>文字有选区时只改变选区；链接不接受脚本协议</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="文字"><td>文字</td><td>商品绑定</td><td>内容来源</td><td class="key">binding</td><td>自定义文字</td><td>选择自定义文字或所属套餐商品字段；转为自定义时保留当前显示文案，不修改SKU；可编辑独立文字</td><td>默认规则、位于商品套餐内且非倒计时字段；页面普通标题不新增此设置</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="文字"><td>文字</td><td>商品绑定</td><td>内容来源</td><td class="key">binding</td><td>商品字段</td><td>选择自定义文字或所属套餐商品字段；转为自定义时保留当前显示文案，不修改SKU；绑定所属套餐，随SKU或配置来源更新</td><td>默认规则、位于商品套餐内且非倒计时字段；页面普通标题不新增此设置</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="文字"><td>文字</td><td>商品绑定</td><td>商品字段</td><td class="key">binding.field</td><td>商品周期名称</td><td>选择此文字读取哪个商品字段；名称、价格等仍归商品记录所有；读取所属商品的商品周期名称</td><td>默认规则且内容来源为商品字段时显示</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="文字"><td>文字</td><td>商品绑定</td><td>商品字段</td><td class="key">binding.field</td><td>售卖价</td><td>选择此文字读取哪个商品字段；名称、价格等仍归商品记录所有；读取所属商品的售卖价</td><td>默认规则且内容来源为商品字段时显示</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="文字"><td>文字</td><td>商品绑定</td><td>商品字段</td><td class="key">binding.field</td><td>划线价</td><td>选择此文字读取哪个商品字段；名称、价格等仍归商品记录所有；读取所属商品的划线价</td><td>默认规则且内容来源为商品字段时显示</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="文字"><td>文字</td><td>商品绑定</td><td>商品字段</td><td class="key">binding.field</td><td>月均售卖价</td><td>选择此文字读取哪个商品字段；名称、价格等仍归商品记录所有；读取所属商品的月均售卖价</td><td>默认规则且内容来源为商品字段时显示</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="文字"><td>文字</td><td>商品绑定</td><td>商品字段</td><td class="key">binding.field</td><td>SKU 原价</td><td>选择此文字读取哪个商品字段；名称、价格等仍归商品记录所有；读取所属商品的SKU 原价</td><td>默认规则且内容来源为商品字段时显示</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="文字"><td>文字</td><td>商品绑定</td><td>商品字段</td><td class="key">binding.field</td><td>商品信息</td><td>选择此文字读取哪个商品字段；名称、价格等仍归商品记录所有；读取所属商品的商品信息</td><td>默认规则且内容来源为商品字段时显示</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="文字"><td>文字</td><td>商品绑定</td><td>商品字段</td><td class="key">binding.field</td><td>辅助文案</td><td>选择此文字读取哪个商品字段；名称、价格等仍归商品记录所有；读取所属商品的辅助文案</td><td>默认规则且内容来源为商品字段时显示</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="文字"><td>文字</td><td>商品绑定</td><td>商品字段</td><td class="key">binding.field</td><td>节省比例（兼容字段）</td><td>选择此文字读取哪个商品字段；名称、价格等仍归商品记录所有；读取所属商品的节省比例（兼容字段）</td><td>默认规则且内容来源为商品字段时显示</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="文字"><td>文字</td><td>商品绑定</td><td>商品字段</td><td class="key">binding.field</td><td>商品信息（兼容字段）</td><td>选择此文字读取哪个商品字段；名称、价格等仍归商品记录所有；读取所属商品的商品信息（兼容字段）</td><td>默认规则且内容来源为商品字段时显示</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="文字"><td>文字</td><td>商品绑定</td><td>商品字段</td><td class="key">binding.field</td><td>商品标签</td><td>选择此文字读取哪个商品字段；名称、价格等仍归商品记录所有；读取所属商品的商品标签</td><td>默认规则且内容来源为商品字段时显示</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="文字"><td>文字</td><td>商品绑定</td><td>转为独立文字</td><td class="key">binding</td><td>当前值</td><td>以当前实际文案解除绑定，后续不再随SKU更新</td><td>已有绑定且默认规则；不是复制第二份同时生效的字段</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="文字"><td>文字</td><td>旧版兼容</td><td>内容来源</td><td class="key">binding</td><td>自定义文字</td><td>仅旧版未升级文档的兼容入口；当前构建器普通文字与商品参数已经分离；旧版独立文字</td><td>升级时商品绑定文字自动迁移为商品参数；当前文字面板不提供来源切换</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="文字"><td>文字</td><td>旧版兼容</td><td>内容来源</td><td class="key">binding</td><td>商品字段</td><td>仅旧版未升级文档的兼容入口；当前构建器普通文字与商品参数已经分离；旧版绑定，升级后改用商品参数</td><td>升级时商品绑定文字自动迁移为商品参数；当前文字面板不提供来源切换</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="文字"><td>文字</td><td>旧版兼容</td><td>商品字段</td><td class="key">binding.field</td><td>商品周期名称</td><td>旧字段映射，在当前构建器迁移为ProductParameter.parameter；旧绑定商品周期名称</td><td>仅未升级的兼容文档；不是当前新增配置入口</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="文字"><td>文字</td><td>旧版兼容</td><td>商品字段</td><td class="key">binding.field</td><td>售卖价</td><td>旧字段映射，在当前构建器迁移为ProductParameter.parameter；旧绑定售卖价</td><td>仅未升级的兼容文档；不是当前新增配置入口</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="文字"><td>文字</td><td>旧版兼容</td><td>商品字段</td><td class="key">binding.field</td><td>划线价</td><td>旧字段映射，在当前构建器迁移为ProductParameter.parameter；旧绑定划线价</td><td>仅未升级的兼容文档；不是当前新增配置入口</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="文字"><td>文字</td><td>旧版兼容</td><td>商品字段</td><td class="key">binding.field</td><td>月均售卖价</td><td>旧字段映射，在当前构建器迁移为ProductParameter.parameter；旧绑定月均售卖价</td><td>仅未升级的兼容文档；不是当前新增配置入口</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="文字"><td>文字</td><td>旧版兼容</td><td>商品字段</td><td class="key">binding.field</td><td>SKU 原价</td><td>旧字段映射，在当前构建器迁移为ProductParameter.parameter；旧绑定SKU 原价</td><td>仅未升级的兼容文档；不是当前新增配置入口</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="文字"><td>文字</td><td>旧版兼容</td><td>商品字段</td><td class="key">binding.field</td><td>商品信息</td><td>旧字段映射，在当前构建器迁移为ProductParameter.parameter；旧绑定商品信息</td><td>仅未升级的兼容文档；不是当前新增配置入口</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="文字"><td>文字</td><td>旧版兼容</td><td>商品字段</td><td class="key">binding.field</td><td>辅助文案</td><td>旧字段映射，在当前构建器迁移为ProductParameter.parameter；旧绑定辅助文案</td><td>仅未升级的兼容文档；不是当前新增配置入口</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="文字"><td>文字</td><td>旧版兼容</td><td>商品字段</td><td class="key">binding.field</td><td>节省比例（兼容字段）</td><td>旧字段映射，在当前构建器迁移为ProductParameter.parameter；旧绑定节省比例（兼容字段）</td><td>仅未升级的兼容文档；不是当前新增配置入口</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="文字"><td>文字</td><td>旧版兼容</td><td>商品字段</td><td class="key">binding.field</td><td>商品信息（兼容字段）</td><td>旧字段映射，在当前构建器迁移为ProductParameter.parameter；旧绑定商品信息（兼容字段）</td><td>仅未升级的兼容文档；不是当前新增配置入口</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="文字"><td>文字</td><td>旧版兼容</td><td>商品字段</td><td class="key">binding.field</td><td>商品标签</td><td>旧字段映射，在当前构建器迁移为ProductParameter.parameter；旧绑定商品标签</td><td>仅未升级的兼容文档；不是当前新增配置入口</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="文字"><td>文字</td><td>旧版兼容</td><td>转为独立文字</td><td class="key">binding</td><td>当前值</td><td>未升级旧文档的解绑入口；当前参数组件不提供此操作</td><td>已有旧绑定且默认规则；当前需要独立文案时新增普通文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>文字变量</td><td>商品总价</td><td class="key">{{ product.price }}</td><td>当前值</td><td>插入变量占位符；商品内部读取所属商品，商品外部读取当前选中商品</td><td>有对应商品数据才可显示；终身商品不生成订阅月数</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>文字变量</td><td>商品月均价</td><td class="key">{{ product.price_per_month }}</td><td>当前值</td><td>插入变量占位符；商品内部读取所属商品，商品外部读取当前选中商品</td><td>有对应商品数据才可显示；终身商品不生成订阅月数</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>文字变量</td><td>商品价格与周期</td><td class="key">{{ product.price_per_period }}</td><td>当前值</td><td>插入变量占位符；商品内部读取所属商品，商品外部读取当前选中商品</td><td>有对应商品数据才可显示；终身商品不生成订阅月数</td><td>依当前模板/条件继承</td></tr>
@@ -2636,10 +2705,12 @@
 <tr data-component="图标"><td>图标</td><td>图标背景</td><td>圆角配置方式</td><td class="key">radiusMode</td><td>统一</td><td>统一或四角独立；四角同值</td><td>图标背景开启且矩形</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图标"><td>图标</td><td>图标背景</td><td>圆角配置方式</td><td class="key">radiusMode</td><td>四角</td><td>统一或四角独立；四角分别设置</td><td>图标背景开启且矩形</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品套餐"><td>商品套餐</td><td>兼容存储</td><td>商品 SKU</td><td class="key">products[dataKey].skuId</td><td>当前值</td><td>旧记录的SKU数据保留，不作为样式预览内容来源</td><td>当前构建器不提供SKU选择器；新组件无需绑定SKU。此行为只兼容旧数据，不是新增配置入口</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="商品套餐"><td>商品套餐</td><td>商品属性</td><td>价格显示</td><td class="key">priceMode</td><td>总价</td><td>决定价格字段占位文案的总价/月价组合，不读取金额；售价¥{总价}、划线价{总价}</td><td>只影响已存在的绑定文字，不新增文字节点</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="商品套餐"><td>商品套餐</td><td>商品属性</td><td>价格显示</td><td class="key">priceMode</td><td>月均价</td><td>决定价格字段占位文案的总价/月价组合，不读取金额；售价¥{月价}/月、划线价{月价}/月</td><td>只影响已存在的绑定文字，不新增文字节点</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="商品套餐"><td>商品套餐</td><td>商品属性</td><td>价格显示</td><td class="key">priceMode</td><td>总价 / 月均划线价</td><td>决定价格字段占位文案的总价/月价组合，不读取金额；售价¥{总价}、划线价{月价}/月</td><td>只影响已存在的绑定文字，不新增文字节点</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="商品套餐"><td>商品套餐</td><td>商品属性</td><td>价格显示</td><td class="key">priceMode</td><td>月均价 / 总划线价</td><td>决定价格字段占位文案的总价/月价组合，不读取金额；售价¥{月价}/月、划线价{总价}</td><td>只影响已存在的绑定文字，不新增文字节点</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="商品套餐"><td>商品套餐</td><td>商品属性</td><td>商品类型</td><td class="key">productType</td><td>订阅商品</td><td>选择订阅或终身结构语义，不绑定实际SKU；月价/划线月价保持原字段</td><td>终身不按月收费，不显示节省比例；切换类型保留原参数和样式</td><td>订阅商品</td></tr>
+<tr data-component="商品套餐"><td>商品套餐</td><td>商品属性</td><td>商品类型</td><td class="key">productType</td><td>终身商品（非订阅）</td><td>选择订阅或终身结构语义，不绑定实际SKU；月价转总价、划线月价转划线总价、节省比例隐藏</td><td>终身不按月收费，不显示节省比例；切换类型保留原参数和样式</td><td>订阅商品</td></tr>
+<tr data-component="商品套餐"><td>商品套餐</td><td>旧版兼容</td><td>价格显示</td><td class="key">priceMode</td><td>总价</td><td>升级时用于确定总价/月价的商品参数；升级后该值不覆盖参数选择；迁移为总价、划线总价</td><td>当前套餐不展示此控件；单个商品参数选择总价/月价</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="商品套餐"><td>商品套餐</td><td>旧版兼容</td><td>价格显示</td><td class="key">priceMode</td><td>月均价</td><td>升级时用于确定总价/月价的商品参数；升级后该值不覆盖参数选择；迁移为月价、划线月价</td><td>当前套餐不展示此控件；单个商品参数选择总价/月价</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="商品套餐"><td>商品套餐</td><td>旧版兼容</td><td>价格显示</td><td class="key">priceMode</td><td>总价 / 月均划线价</td><td>升级时用于确定总价/月价的商品参数；升级后该值不覆盖参数选择；迁移为总价、划线月价</td><td>当前套餐不展示此控件；单个商品参数选择总价/月价</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="商品套餐"><td>商品套餐</td><td>旧版兼容</td><td>价格显示</td><td class="key">priceMode</td><td>月均价 / 总划线价</td><td>升级时用于确定总价/月价的商品参数；升级后该值不覆盖参数选择；迁移为月价、划线总价</td><td>当前套餐不展示此控件；单个商品参数选择总价/月价</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品套餐"><td>商品套餐</td><td>商品属性</td><td>显示商品标签</td><td class="key">productLabelEnabled</td><td>显示</td><td>控制商品标签容器的可见性，不计算折扣；默认{商品标签}，选中{选中商品标签}</td><td>有商品标签子组件时展示；预览使用字段名占位，不因SKU标签为空隐藏</td><td>显示</td></tr>
 <tr data-component="商品套餐"><td>商品套餐</td><td>商品属性</td><td>显示商品标签</td><td class="key">productLabelEnabled</td><td>隐藏</td><td>控制商品标签容器的可见性，不计算折扣；隐藏标签容器，保留字段和样式</td><td>有商品标签子组件时展示；预览使用字段名占位，不因SKU标签为空隐藏</td><td>显示</td></tr>
 <tr data-component="商品套餐"><td>商品套餐</td><td>商品属性</td><td>商品周期名称</td><td class="key">products[dataKey].name</td><td>当前值</td><td>展示{SKU时长}</td><td>只读字段定义，不需要SKU或金额；实际视觉样式由绑定Text配置</td><td>依当前模板/条件继承</td></tr>
@@ -2666,6 +2737,8 @@
 <tr data-component="布局容器"><td>布局容器</td><td>状态样式</td><td>状态</td><td class="key">navigation.package-style</td><td>选中 / 当前</td><td>切换正在编辑和预览的状态；不是第二个“默认选中”字段；编辑选中或激活标准属性；未覆盖值继承默认</td><td>仅商品、标签按钮、指示器或处于商品/标签按钮内的子组件；文字正文共用，字号、字重、颜色及排版可分别配置；未覆盖值继承默认</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>状态样式</td><td>状态</td><td class="key">navigation.package-style</td><td>默认</td><td>切换正在编辑和预览的状态；不是第二个“默认选中”字段；编辑默认标准属性</td><td>仅商品、标签按钮、指示器或处于商品/标签按钮内的子组件；文字正文共用，字号、字重、颜色及排版可分别配置；未覆盖值继承默认</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>状态样式</td><td>状态</td><td class="key">navigation.package-style</td><td>选中 / 当前</td><td>切换正在编辑和预览的状态；不是第二个“默认选中”字段；编辑选中或激活标准属性；未覆盖值继承默认</td><td>仅商品、标签按钮、指示器或处于商品/标签按钮内的子组件；文字正文共用，字号、字重、颜色及排版可分别配置；未覆盖值继承默认</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>状态样式</td><td>状态</td><td class="key">navigation.package-style</td><td>默认</td><td>切换正在编辑和预览的状态；不是第二个“默认选中”字段；编辑默认标准属性</td><td>仅商品、标签按钮、指示器或处于商品/标签按钮内的子组件；文字正文共用，字号、字重、颜色及排版可分别配置；未覆盖值继承默认</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>状态样式</td><td>状态</td><td class="key">navigation.package-style</td><td>选中 / 当前</td><td>切换正在编辑和预览的状态；不是第二个“默认选中”字段；编辑选中或激活标准属性；未覆盖值继承默认</td><td>仅商品、标签按钮、指示器或处于商品/标签按钮内的子组件；文字正文共用，字号、字重、颜色及排版可分别配置；未覆盖值继承默认</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图片"><td>图片</td><td>状态样式</td><td>状态</td><td class="key">navigation.package-style</td><td>默认</td><td>切换正在编辑和预览的状态；不是第二个“默认选中”字段；编辑默认标准属性</td><td>仅商品、标签按钮、指示器或处于商品/标签按钮内的子组件；文字正文共用，字号、字重、颜色及排版可分别配置；未覆盖值继承默认</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图片"><td>图片</td><td>状态样式</td><td>状态</td><td class="key">navigation.package-style</td><td>选中 / 当前</td><td>切换正在编辑和预览的状态；不是第二个“默认选中”字段；编辑选中或激活标准属性；未覆盖值继承默认</td><td>仅商品、标签按钮、指示器或处于商品/标签按钮内的子组件；文字正文共用，字号、字重、颜色及排版可分别配置；未覆盖值继承默认</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="视频"><td>视频</td><td>状态样式</td><td>状态</td><td class="key">navigation.package-style</td><td>默认</td><td>切换正在编辑和预览的状态；不是第二个“默认选中”字段；编辑默认标准属性</td><td>仅商品、标签按钮、指示器或处于商品/标签按钮内的子组件；文字正文共用，字号、字重、颜色及排版可分别配置；未覆盖值继承默认</td><td>依当前模板/条件继承</td></tr>
@@ -3232,6 +3305,7 @@
 <tr data-component="页面"><td>页面</td><td>编辑器工具</td><td>上移</td><td class="key">moveBefore</td><td>当前值</td><td>在同一父容器中前移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>编辑器工具</td><td>上移</td><td class="key">moveBefore</td><td>当前值</td><td>在同一父容器中前移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>编辑器工具</td><td>上移</td><td class="key">moveBefore</td><td>当前值</td><td>在同一父容器中前移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>编辑器工具</td><td>上移</td><td class="key">moveBefore</td><td>当前值</td><td>在同一父容器中前移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图片"><td>图片</td><td>编辑器工具</td><td>上移</td><td class="key">moveBefore</td><td>当前值</td><td>在同一父容器中前移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="视频"><td>视频</td><td>编辑器工具</td><td>上移</td><td class="key">moveBefore</td><td>当前值</td><td>在同一父容器中前移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图标"><td>图标</td><td>编辑器工具</td><td>上移</td><td class="key">moveBefore</td><td>当前值</td><td>在同一父容器中前移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
@@ -3264,6 +3338,7 @@
 <tr data-component="页面"><td>页面</td><td>编辑器工具</td><td>下移</td><td class="key">moveAfter</td><td>当前值</td><td>在同一父容器中后移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>编辑器工具</td><td>下移</td><td class="key">moveAfter</td><td>当前值</td><td>在同一父容器中后移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>编辑器工具</td><td>下移</td><td class="key">moveAfter</td><td>当前值</td><td>在同一父容器中后移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>编辑器工具</td><td>下移</td><td class="key">moveAfter</td><td>当前值</td><td>在同一父容器中后移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图片"><td>图片</td><td>编辑器工具</td><td>下移</td><td class="key">moveAfter</td><td>当前值</td><td>在同一父容器中后移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="视频"><td>视频</td><td>编辑器工具</td><td>下移</td><td class="key">moveAfter</td><td>当前值</td><td>在同一父容器中后移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图标"><td>图标</td><td>编辑器工具</td><td>下移</td><td class="key">moveAfter</td><td>当前值</td><td>在同一父容器中后移</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
@@ -3296,6 +3371,7 @@
 <tr data-component="页面"><td>页面</td><td>编辑器工具</td><td>复制组件</td><td class="key">duplicate</td><td>当前值</td><td>复制真实子树，重新生成节点和商品记录ID</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>编辑器工具</td><td>复制组件</td><td class="key">duplicate</td><td>当前值</td><td>复制真实子树，重新生成节点和商品记录ID</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>编辑器工具</td><td>复制组件</td><td class="key">duplicate</td><td>当前值</td><td>复制真实子树，重新生成节点和商品记录ID</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>编辑器工具</td><td>复制组件</td><td class="key">duplicate</td><td>当前值</td><td>复制真实子树，重新生成节点和商品记录ID</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图片"><td>图片</td><td>编辑器工具</td><td>复制组件</td><td class="key">duplicate</td><td>当前值</td><td>复制真实子树，重新生成节点和商品记录ID</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="视频"><td>视频</td><td>编辑器工具</td><td>复制组件</td><td class="key">duplicate</td><td>当前值</td><td>复制真实子树，重新生成节点和商品记录ID</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图标"><td>图标</td><td>编辑器工具</td><td>复制组件</td><td class="key">duplicate</td><td>当前值</td><td>复制真实子树，重新生成节点和商品记录ID</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
@@ -3328,6 +3404,7 @@
 <tr data-component="页面"><td>页面</td><td>编辑器工具</td><td>删除组件</td><td class="key">remove</td><td>当前值</td><td>删除本组件子树，页面根节点禁止删除</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>编辑器工具</td><td>删除组件</td><td class="key">remove</td><td>当前值</td><td>删除本组件子树，页面根节点禁止删除</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>编辑器工具</td><td>删除组件</td><td class="key">remove</td><td>当前值</td><td>删除本组件子树，页面根节点禁止删除</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>编辑器工具</td><td>删除组件</td><td class="key">remove</td><td>当前值</td><td>删除本组件子树，页面根节点禁止删除</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图片"><td>图片</td><td>编辑器工具</td><td>删除组件</td><td class="key">remove</td><td>当前值</td><td>删除本组件子树，页面根节点禁止删除</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="视频"><td>视频</td><td>编辑器工具</td><td>删除组件</td><td class="key">remove</td><td>当前值</td><td>删除本组件子树，页面根节点禁止删除</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图标"><td>图标</td><td>编辑器工具</td><td>删除组件</td><td class="key">remove</td><td>当前值</td><td>删除本组件子树，页面根节点禁止删除</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
@@ -3360,6 +3437,7 @@
 <tr data-component="页面"><td>页面</td><td>编辑器工具</td><td>保存到组件库</td><td class="key">library.save</td><td>当前值</td><td>保存可复用子树，绑定文案以当前值转为独立文字，不转移SKU所有权</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>编辑器工具</td><td>保存到组件库</td><td class="key">library.save</td><td>当前值</td><td>保存可复用子树，绑定文案以当前值转为独立文字，不转移SKU所有权</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>编辑器工具</td><td>保存到组件库</td><td class="key">library.save</td><td>当前值</td><td>保存可复用子树，绑定文案以当前值转为独立文字，不转移SKU所有权</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>编辑器工具</td><td>保存到组件库</td><td class="key">library.save</td><td>当前值</td><td>保存可复用子树，绑定文案以当前值转为独立文字，不转移SKU所有权</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图片"><td>图片</td><td>编辑器工具</td><td>保存到组件库</td><td class="key">library.save</td><td>当前值</td><td>保存可复用子树，绑定文案以当前值转为独立文字，不转移SKU所有权</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="视频"><td>视频</td><td>编辑器工具</td><td>保存到组件库</td><td class="key">library.save</td><td>当前值</td><td>保存可复用子树，绑定文案以当前值转为独立文字，不转移SKU所有权</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图标"><td>图标</td><td>编辑器工具</td><td>保存到组件库</td><td class="key">library.save</td><td>当前值</td><td>保存可复用子树，绑定文案以当前值转为独立文字，不转移SKU所有权</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
@@ -3392,6 +3470,7 @@
 <tr data-component="页面"><td>页面</td><td>编辑器工具</td><td>打开组件库</td><td class="key">library.open</td><td>当前值</td><td>插入已保存的组件，或管理组件库记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>编辑器工具</td><td>打开组件库</td><td class="key">library.open</td><td>当前值</td><td>插入已保存的组件，或管理组件库记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>编辑器工具</td><td>打开组件库</td><td class="key">library.open</td><td>当前值</td><td>插入已保存的组件，或管理组件库记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>编辑器工具</td><td>打开组件库</td><td class="key">library.open</td><td>当前值</td><td>插入已保存的组件，或管理组件库记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图片"><td>图片</td><td>编辑器工具</td><td>打开组件库</td><td class="key">library.open</td><td>当前值</td><td>插入已保存的组件，或管理组件库记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="视频"><td>视频</td><td>编辑器工具</td><td>打开组件库</td><td class="key">library.open</td><td>当前值</td><td>插入已保存的组件，或管理组件库记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图标"><td>图标</td><td>编辑器工具</td><td>打开组件库</td><td class="key">library.open</td><td>当前值</td><td>插入已保存的组件，或管理组件库记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
@@ -3424,6 +3503,7 @@
 <tr data-component="页面"><td>页面</td><td>编辑器工具</td><td>重命名</td><td class="key">rename</td><td>当前值</td><td>修改图层名而非前端正文</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>编辑器工具</td><td>重命名</td><td class="key">rename</td><td>当前值</td><td>修改图层名而非前端正文</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>编辑器工具</td><td>重命名</td><td class="key">rename</td><td>当前值</td><td>修改图层名而非前端正文</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>编辑器工具</td><td>重命名</td><td class="key">rename</td><td>当前值</td><td>修改图层名而非前端正文</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图片"><td>图片</td><td>编辑器工具</td><td>重命名</td><td class="key">rename</td><td>当前值</td><td>修改图层名而非前端正文</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="视频"><td>视频</td><td>编辑器工具</td><td>重命名</td><td class="key">rename</td><td>当前值</td><td>修改图层名而非前端正文</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图标"><td>图标</td><td>编辑器工具</td><td>重命名</td><td class="key">rename</td><td>当前值</td><td>修改图层名而非前端正文</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
@@ -3456,6 +3536,7 @@
 <tr data-component="页面"><td>页面</td><td>编辑器工具</td><td>包入布局容器</td><td class="key">wrap</td><td>当前值</td><td>新建真实Stack包裹当前节点，不生成虚构图层</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>编辑器工具</td><td>包入布局容器</td><td class="key">wrap</td><td>当前值</td><td>新建真实Stack包裹当前节点，不生成虚构图层</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>编辑器工具</td><td>包入布局容器</td><td class="key">wrap</td><td>当前值</td><td>新建真实Stack包裹当前节点，不生成虚构图层</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>编辑器工具</td><td>包入布局容器</td><td class="key">wrap</td><td>当前值</td><td>新建真实Stack包裹当前节点，不生成虚构图层</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图片"><td>图片</td><td>编辑器工具</td><td>包入布局容器</td><td class="key">wrap</td><td>当前值</td><td>新建真实Stack包裹当前节点，不生成虚构图层</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="视频"><td>视频</td><td>编辑器工具</td><td>包入布局容器</td><td class="key">wrap</td><td>当前值</td><td>新建真实Stack包裹当前节点，不生成虚构图层</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图标"><td>图标</td><td>编辑器工具</td><td>包入布局容器</td><td class="key">wrap</td><td>当前值</td><td>新建真实Stack包裹当前节点，不生成虚构图层</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
@@ -3488,6 +3569,7 @@
 <tr data-component="页面"><td>页面</td><td>编辑器工具</td><td>复制/粘贴组件</td><td class="key">clipboard.fragment</td><td>当前值</td><td>应用内剪贴板复制真实子树，跨模板粘贴时隔离商品记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>编辑器工具</td><td>复制/粘贴组件</td><td class="key">clipboard.fragment</td><td>当前值</td><td>应用内剪贴板复制真实子树，跨模板粘贴时隔离商品记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>编辑器工具</td><td>复制/粘贴组件</td><td class="key">clipboard.fragment</td><td>当前值</td><td>应用内剪贴板复制真实子树，跨模板粘贴时隔离商品记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>编辑器工具</td><td>复制/粘贴组件</td><td class="key">clipboard.fragment</td><td>当前值</td><td>应用内剪贴板复制真实子树，跨模板粘贴时隔离商品记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图片"><td>图片</td><td>编辑器工具</td><td>复制/粘贴组件</td><td class="key">clipboard.fragment</td><td>当前值</td><td>应用内剪贴板复制真实子树，跨模板粘贴时隔离商品记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="视频"><td>视频</td><td>编辑器工具</td><td>复制/粘贴组件</td><td class="key">clipboard.fragment</td><td>当前值</td><td>应用内剪贴板复制真实子树，跨模板粘贴时隔离商品记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图标"><td>图标</td><td>编辑器工具</td><td>复制/粘贴组件</td><td class="key">clipboard.fragment</td><td>当前值</td><td>应用内剪贴板复制真实子树，跨模板粘贴时隔离商品记录</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
@@ -3520,6 +3602,7 @@
 <tr data-component="页面"><td>页面</td><td>编辑器工具</td><td>复制/粘贴样式</td><td class="key">clipboard.styles</td><td>当前值</td><td>复制受支持样式字段，不复制文案、动作、素材或SKU；完整徽标样式复制仍未闭环</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>编辑器工具</td><td>复制/粘贴样式</td><td class="key">clipboard.styles</td><td>当前值</td><td>复制受支持样式字段，不复制文案、动作、素材或SKU；完整徽标样式复制仍未闭环</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>编辑器工具</td><td>复制/粘贴样式</td><td class="key">clipboard.styles</td><td>当前值</td><td>复制受支持样式字段，不复制文案、动作、素材或SKU；完整徽标样式复制仍未闭环</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>编辑器工具</td><td>复制/粘贴样式</td><td class="key">clipboard.styles</td><td>当前值</td><td>复制受支持样式字段，不复制文案、动作、素材或SKU；完整徽标样式复制仍未闭环</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图片"><td>图片</td><td>编辑器工具</td><td>复制/粘贴样式</td><td class="key">clipboard.styles</td><td>当前值</td><td>复制受支持样式字段，不复制文案、动作、素材或SKU；完整徽标样式复制仍未闭环</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="视频"><td>视频</td><td>编辑器工具</td><td>复制/粘贴样式</td><td class="key">clipboard.styles</td><td>当前值</td><td>复制受支持样式字段，不复制文案、动作、素材或SKU；完整徽标样式复制仍未闭环</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图标"><td>图标</td><td>编辑器工具</td><td>复制/粘贴样式</td><td class="key">clipboard.styles</td><td>当前值</td><td>复制受支持样式字段，不复制文案、动作、素材或SKU；完整徽标样式复制仍未闭环</td><td>按图层父级/类型决定是否可用；不属于前端组件的第二份配置</td><td>依当前模板/条件继承</td></tr>
@@ -3554,6 +3637,7 @@
 <tr data-component="页面"><td>页面</td><td>预览</td><td>交互预览</td><td class="key">editing</td><td>当前值</td><td>在选图层编辑与执行点击/拖动行为之间切换</td><td>编辑态点击先选组件；真实付款、恢复与关闭行为排除</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>预览</td><td>交互预览</td><td class="key">editing</td><td>当前值</td><td>在选图层编辑与执行点击/拖动行为之间切换</td><td>编辑态点击先选组件；真实付款、恢复与关闭行为排除</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="文字"><td>文字</td><td>预览</td><td>交互预览</td><td class="key">editing</td><td>当前值</td><td>在选图层编辑与执行点击/拖动行为之间切换</td><td>编辑态点击先选组件；真实付款、恢复与关闭行为排除</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="商品参数"><td>商品参数</td><td>预览</td><td>交互预览</td><td class="key">editing</td><td>当前值</td><td>在选图层编辑与执行点击/拖动行为之间切换</td><td>编辑态点击先选组件；真实付款、恢复与关闭行为排除</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图片"><td>图片</td><td>预览</td><td>交互预览</td><td class="key">editing</td><td>当前值</td><td>在选图层编辑与执行点击/拖动行为之间切换</td><td>编辑态点击先选组件；真实付款、恢复与关闭行为排除</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="视频"><td>视频</td><td>预览</td><td>交互预览</td><td class="key">editing</td><td>当前值</td><td>在选图层编辑与执行点击/拖动行为之间切换</td><td>编辑态点击先选组件；真实付款、恢复与关闭行为排除</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="图标"><td>图标</td><td>预览</td><td>交互预览</td><td class="key">editing</td><td>当前值</td><td>在选图层编辑与执行点击/拖动行为之间切换</td><td>编辑态点击先选组件；真实付款、恢复与关闭行为排除</td><td>依当前模板/条件继承</td></tr>

@@ -25,13 +25,13 @@ for (const id of ['ht-membership-plans', 'ht-payment-recovery', 'ht-sku-sheet'])
     assert.ok(validDocument(next));
   });
 }
-test('member monthly and SKU original prices follow their bound SKU rather than a layout literal', () => {
+test('member monthly and SKU original price parameters do not depend on a bound SKU or layout literal', () => {
   const member = load('ht-membership-plans'), nodes = indexDocument(member).nodes;
-  assert.equal(resolveComponentText(nodes.get('products/monthly-1'), member, nodes.get('products/package-1')), '¥40.67/月');
+  assert.equal(resolveComponentText(nodes.get('products/monthly-1'), member, nodes.get('products/package-1')), '¥{月价}/月');
   const changed = { ...member, products: { ...member.products, [nodes.get('products/package-1').props.dataKey]: { skuId: 'DEMO-MEMBER-MONTH' } } };
-  assert.equal(resolveComponentText(nodes.get('products/monthly-1'), changed, nodes.get('products/package-1')), '¥78/月');
+  assert.equal(resolveComponentText(nodes.get('products/monthly-1'), changed, nodes.get('products/package-1')), '¥{月价}/月');
   const sku = load('ht-sku-sheet'), skuNodes = indexDocument(sku).nodes;
-  assert.equal(resolveComponentText(skuNodes.get('products/reference-0'), sku, skuNodes.get('products/package-0')), '¥488');
+  assert.equal(resolveComponentText(skuNodes.get('products/reference-0'), sku, skuNodes.get('products/package-0')), '{总价}');
 });
 test('membership keeps real carousel child count, distinct purchase section and editable header', () => {
   const nodes = indexDocument(load('ht-membership-plans')).nodes;

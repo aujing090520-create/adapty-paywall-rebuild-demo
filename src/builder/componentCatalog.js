@@ -1,12 +1,14 @@
 import { component, createNativeComponent, canContain, indexDocument } from './componentDocument.js';
 import { repairBlueProductPlacement } from './htTemplateFooters.js';
 import { businessPreset } from './businessPresets.js';
+import { upgradeProductParameters } from '../products/productParameters.js';
+import { billingMonths } from '../productPricing.js';
 
 // Public picker entries are building blocks or transparent Stack compositions.
 // Structural children are offered only by their owning container.
 export const COMPONENT_CATALOG = [
   { name: '基础', items: [ ['Text','文字'], ['Image','图片'], ['Video','视频'], ['Icon','图标'], ['Stack','布局容器'], ['Header','页头'], ['Footer','页脚'], ['Custom','自定义组件'] ] },
-  { name: '付费墙', items: [ ['Package','商品套餐'], ['BottomSheet','按钮打开的弹窗'], ['PurchaseButton','购买按钮'], ['ExpressCheckout','快捷结账'] ] },
+  { name: '付费墙', items: [ ['Package','商品套餐'], ['ProductParameter','商品参数'], ['BottomSheet','按钮打开的弹窗'], ['PurchaseButton','购买按钮'], ['ExpressCheckout','快捷结账'] ] },
   { name: '交互', items: [ ['Tabs','标签页'], ['Switch','开关'], ['Button','按钮'], ['CloseButton','关闭按钮'], ['BackButton','返回按钮'], ['Carousel','轮播'] ] },
   { name: '内容', items: [ ['Countdown','倒计时'], ['Timeline','时间线'], ['SocialProof','口碑展示'], ['FeatureList','权益列表'], ['Award','奖项展示'] ] },
   { name: '业务组合', items: [['GiftList','礼包组合'],['BenefitsStrip','福利组合'],['GiftEntry','赠送入口']] },
@@ -43,6 +45,7 @@ export function createCatalogComponent(type, id = crypto.randomUUID(), context =
   if (type === 'Toggle' && context.switchTarget) return component(id, type, '开关控件', { switchTarget: context.switchTarget, switchControl: true, thumbColor: '#ffffff', trackColor: context.index ? '#34c759' : '#e5e5ea' });
   if (['CloseButton','BackButton'].includes(type)) return component(id,'Button',type==='BackButton'?'返回按钮':'关闭按钮',{action:{action:type==='BackButton'?'NavigateBack':'Dismiss'},widthMode:'fixed',width:32,heightMode:'fixed',height:32,axis:'horizontal',align:'center',justify:'center',gap:0,background:'transparent',radius:16},[component(`${id}/icon`,'Icon','图标',{icon:`tabler:outline:${type==='BackButton'?'arrow-left':'x'}`,widthMode:'fixed',width:20,heightMode:'fixed',height:20,color:'#62626e'})]);
   if(type==='Text')return t(id,'文字',{widthMode:'fit',heightMode:'fit',fontSize:14,fontWeight:400,color:'#000000'});
+  if(type==='ProductParameter')return component(id,type,'商品参数',{parameter:'totalPrice',widthMode:'fit',heightMode:'fit',fontSize:14,fontWeight:400,color:'#000000'});
   if(type==='Icon')return component(id,type,'图标',{icon:'tabler:outline:icons',widthMode:'fixed',heightMode:'fixed',width:26,height:26,color:'#000000'});
   if(type==='Indicators')return component(id,type,'分页指示器',{widthMode:'fixed',width:5,heightMode:'fixed',height:5,background:'#000000',backgroundOpacity:30,selectedBackground:'#000000',selectedBackgroundOpacity:53,borderColor:'#000000'});
   if(type==='PageControl')return createPageControl(id);
@@ -77,7 +80,7 @@ export function createCatalogComponent(type, id = crypto.randomUUID(), context =
   ],{axis:'horizontal',gap:10,align:'start'})),{gap:16});
   if (type === 'SocialProof') return s(id,'口碑展示',[t(`${id}/stars`,'★★★★★',{color:'#ffb400',fontSize:22,textAlign:'center'}),t(`${id}/quote`,'用户评价',{textAlign:'center'}),t(`${id}/author`,'用户名称',{fontSize:12,color:'#777777',textAlign:'center'})]);
   if (type === 'Award') return s(id,'奖项展示',[component(`${id}/icon`,'Icon','奖项图标',{icon:'star',color:'#ffb400',iconSize:28,alignSelf:'center'}),t(`${id}/title`,'奖项名称',{fontSize:20,fontWeight:700,textAlign:'center'}),t(`${id}/source`,'颁发机构',{fontSize:12,color:'#777777',textAlign:'center'})]);
-  if (type === 'Package') return component(id,type,'商品套餐',{dataKey:id,group:id,defaultSelected:true,productLabelEnabled:true,gap:0,align:'start',radius:8,borderWidth:1,borderColor:'#cccccc',...pad(8),marginTop:8,marginRight:8,marginBottom:8,marginLeft:8},[
+  if (type === 'Package') return upgradeProductParameters({products:{},root:component(id,type,'商品套餐',{productType:'subscription',dataKey:id,group:id,defaultSelected:true,productLabelEnabled:true,gap:0,align:'start',radius:8,borderWidth:1,borderColor:'#cccccc',...pad(8),marginTop:8,marginRight:8,marginBottom:8,marginLeft:8},[
     s(`${id}/content`,'布局容器',[
       s(`${id}/label`,'布局容器',[t(`${id}/label/text`,'',{binding:{key:id,field:'badgeText'},fontSize:12,color:'#403060',widthMode:'fit'})],{productField:'badgeText',widthMode:'fit',background:'#f0ecff',radius:4,...pad(4)}),
       t(`${id}/name`,'',{binding:{key:id,field:'name'},fontSize:14,widthMode:'fit'}),
@@ -85,7 +88,7 @@ export function createCatalogComponent(type, id = crypto.randomUUID(), context =
       t(`${id}/price`,'',{binding:{key:id,field:'price'},fontSize:17,fontWeight:700,widthMode:'fit'}),
       t(`${id}/info`,'',{binding:{key:id,field:'productInfo'},fontSize:12,color:'#26715e',widthMode:'fit'}),
     ],{gap:6,align:'start'}),
-  ]);
+  ])}).root;
   if (type === 'Timeline') return component(id,type,'时间线',{itemSpacing:24,textSpacing:4,columnGutter:16,iconAlignment:'title'},[0,1,2].map((index)=>({...createCatalogComponent('TimelineItem',`${id}/item-${index}`),name:`节点 ${index+1}`})));
   if (type === 'CheckoutState') return component(id,type,'状态内容',{state:'available'},[]);
   if (type === 'CountdownState') return component(id,type,'状态内容',{state:'active'},[]);
@@ -150,5 +153,5 @@ export function upgradeCanonicalComponents(document) {
     return children.some((child,index)=>child!==node.children[index])?{...node,children}:node;
   };
   const root=visit(document.root);
-  return repairBlueProductPlacement(changed?{...document,root}:document);
+  return upgradeProductParameters(repairBlueProductPlacement(changed?{...document,root}:document), row => billingMonths(row) === 0 ? 'lifetime' : 'subscription');
 }

@@ -1,6 +1,6 @@
 export const CONTENT_LANGUAGES = [['zh-CN','中文'],['en','English'],['ar','العربية']];
 const fields=['text','runs','src','backgroundImage','backgroundVideo','pagSrc','fallbackSrc'];
-const withoutBackground=new Set(['Text','Timeline','TimelineItem','Countdown','Wallet','Custom','Indicators','Icon','Toggle']);
+const withoutBackground=new Set(['Text','ProductParameter','Timeline','TimelineItem','Countdown','Wallet','Custom','Indicators','Icon','Toggle']);
 export function resourceFields(node){
   if(!node)return [];
   if(node.type==='Image')return node.props.mediaType==='pag'?['pagSrc','fallbackSrc']:['src'];

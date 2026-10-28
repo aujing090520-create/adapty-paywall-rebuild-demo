@@ -16,8 +16,8 @@ function fixture(type){
   let body=createCatalogComponent(groups[type]??type,'sample');
   if(type==='Flow')body=c('sample','Flow','多页面流程',{},[c('one','Screen','第一步',{},[c('one/text','Text','文字',{text:'第一步'})]),c('two','Screen','第二步',{},[c('two/text','Text','文字',{text:'第二步'})])]);
   const selected=[...indexDocument({root:body}).nodes.values()].find(node=>node.type===type);
-  if(type==='Text'){
-    selected.props={text:'套餐价格',fontSize:16,fontWeight:400,color:'#112233',runs:[{text:'套餐',fontSize:16,color:'#112233'},{text:'价格',fontSize:18,fontWeight:700}]};
+  if(['Text','ProductParameter'].includes(type)){
+    if(type==='Text')selected.props={text:'套餐价格',fontSize:16,fontWeight:400,color:'#112233',runs:[{text:'套餐',fontSize:16,color:'#112233'},{text:'价格',fontSize:18,fontWeight:700}]};
     body=c('plan','Package','商品套餐',{dataKey:'annual',group:'plan',defaultSelected:false,borderWidth:1,borderColor:'#777777',paddingVertical:16,paddingHorizontal:16},[selected]);
   }
   if(type==='Image')selected.props.src='/ht-retention-gift.png';

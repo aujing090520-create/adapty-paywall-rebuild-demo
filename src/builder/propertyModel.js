@@ -94,8 +94,8 @@ export function textPropertyPatch(node, patch) {
     if (patch.controls === false && !(patch.autoPlay ?? node.props.autoPlay ?? false)) next.autoPlay = true;
   }
   if (['Image','Video'].includes(node.type) && patch.mask !== undefined) next.shape = 'rectangle';
-  if (node.type === 'Text' && patch.fontWeight !== undefined) next.bold = false;
-  if (node.type === 'Text' && patch.selectedFontWeight !== undefined) next.selectedBold = false;
+  if (['Text','ProductParameter'].includes(node.type) && patch.fontWeight !== undefined) next.bold = false;
+  if (['Text','ProductParameter'].includes(node.type) && patch.selectedFontWeight !== undefined) next.selectedBold = false;
   for (const prefix of ['', 'selected']) {
     for (const axis of ['Width', 'Height']) {
       const minKey = prefix ? `${prefix}Min${axis}` : `min${axis}`;
@@ -108,7 +108,7 @@ export function textPropertyPatch(node, patch) {
       }
     }
   }
-  if (node.type === 'Text' && patch.background !== undefined) { next.textBackground = 'transparent'; next.fillEnabled = true; }
+  if (['Text','ProductParameter'].includes(node.type) && patch.background !== undefined) { next.textBackground = 'transparent'; next.fillEnabled = true; }
   if (patch.bold !== undefined) next.fontWeight = patch.bold ? 700 : 400;
   if (node.type !== 'Text' || !node.props.runs?.length || patch.runs !== undefined) return next;
   const keys = ['fontSize', 'fontFamily', 'color', 'colorOpacity', 'fontWeight', 'bold', 'italic', 'underline'];

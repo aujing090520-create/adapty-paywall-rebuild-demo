@@ -6,6 +6,7 @@ import PaywallPresentation from './PaywallPresentation.jsx';
 import {fieldPreviewDocument} from '../products/fieldPreview.js';
 import PaywallSettings from './PaywallSettings.jsx';
 import { Settings } from 'lucide-react';
+import { Braces } from 'lucide-react';
 import ComponentPicker from './ComponentPicker.jsx';
 import LayerActionsMenu from './LayerActionsMenu.jsx';
 import { createCatalogComponent, upgradeCanonicalComponents, catalogFor, createTabSelector } from './componentCatalog.js';
@@ -33,7 +34,7 @@ const WorkbenchSettings = React.lazy(()=>import('./WorkbenchSettings.jsx'));
 
 const libraryKey = 'paywall-component-library-v3';
 const fieldNames = { name: '商品周期名称', price: '售卖价', reference: '划线价', monthlyPrice: '月均售卖价', referencePrice: 'SKU 原价', productInfo: '商品信息', supportingCopy: '辅助文案', savingCopy: '节省比例（兼容字段）', saveCopy: '商品信息（兼容字段）', badgeText: '商品标签' };
-const iconFor = (type,axis) => ({ Screen: Smartphone, Flow: Workflow, Stack:axis==='horizontal'?Columns2:axis==='overlay'?Layers:Rows2, Text: Type, Image: ImageIcon, Video, Icon: Star, Custom: Code, Package: PackageIcon, Button: MousePointerClick, PurchaseButton: CreditCard, Header: PanelTop, Footer: PanelBottom, BottomSheet: PanelBottom, Carousel: GalleryHorizontal, Tabs: Columns2, TabControl: Columns2, TabButton: MousePointerClick, Timeline: ListOrdered, Countdown: Clock3, Toggle: ToggleLeft, Switch: ToggleLeft, Wallet: CreditCard, ExpressCheckout: CreditCard }[type] ?? Layers);
+const iconFor = (type,axis) => ({ Screen: Smartphone, Flow: Workflow, Stack:axis==='horizontal'?Columns2:axis==='overlay'?Layers:Rows2, Text: Type, ProductParameter: Braces, Image: ImageIcon, Video, Icon: Star, Custom: Code, Package: PackageIcon, Button: MousePointerClick, PurchaseButton: CreditCard, Header: PanelTop, Footer: PanelBottom, BottomSheet: PanelBottom, Carousel: GalleryHorizontal, Tabs: Columns2, TabControl: Columns2, TabButton: MousePointerClick, Timeline: ListOrdered, Countdown: Clock3, Toggle: ToggleLeft, Switch: ToggleLeft, Wallet: CreditCard, ExpressCheckout: CreditCard }[type] ?? Layers);
 function Field({ label, children }) { return <label className="ne-field"><span>{label}</span>{children}</label>; }
 function Select({ label, value, onChange, options }) { return <Field label={label}><select aria-label={label} value={value ?? ''} onChange={(event) => onChange(event.target.value)}>{options.map((option) => { const [key, name] = Array.isArray(option) ? option : [option, option]; return <option key={key} value={key}>{name}</option>; })}</select></Field>; }
 function readLibrary() { try { const value = JSON.parse(localStorage.getItem(libraryKey) ?? '[]'); return Array.isArray(value) ? value.filter((item) => item?.name && validDocument({ version: 3, products: {}, fonts:item.fonts, root: { id: '$library', type: 'Screen', props: {}, children: [item.node] } })) : []; } catch { return []; } }
@@ -149,6 +150,7 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
     const reveal = {}; const expand = new Set(); let current = sourceNodes.get(id);
     while (current) {
       expand.add(current.id);
+      if (current.type === 'Package' && current.id === id) reveal[`package-style:${current.id}`] = 'selected';
       if (['overlay','sheet'].includes(current.props.presentation)) reveal.overlay = current.id;
       const owner = sourceNodes.get(sourceParents.get(current.id));
       if (owner && ['Tabs', 'Carousel', 'Flow'].includes(owner.type)) {const index=sequencePages(owner).findIndex((item)=>item.id===current.id);if(index>=0)reveal[owner.id]=index;}
