@@ -115,6 +115,8 @@ test('time-source settings creates both scopes, edits samples and protects refer
     const date=renderer.root.findAll(node=>node.type==='input'&&node.props['aria-label']==='样例到期时间（UTC）')[0];
     await act(async()=>date.props.onChange({target:{value:'2032-02-03T04:05:06'}}));
     assert.equal(document.business.timeSources[0].sample.expiresAt,'2032-02-03T04:05:06Z');
+    await act(async()=>date.props.onInput({currentTarget:{value:'2033-03-04T05:06'}}));
+    assert.equal(document.business.timeSources[0].sample.expiresAt,'2033-03-04T05:06Z');
   }finally{if(renderer)await act(async()=>renderer.unmount());}
 });
 
