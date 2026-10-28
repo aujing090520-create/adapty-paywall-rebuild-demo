@@ -3,6 +3,7 @@ import { repairBlueProductPlacement } from './htTemplateFooters.js';
 import { businessPreset } from './businessPresets.js';
 import { upgradeProductParameters } from '../products/productParameters.js';
 import { billingMonths } from '../productPricing.js';
+import {normalizeHtLabelSlots} from './layoutContainers.js';
 
 // Public picker entries are building blocks or transparent Stack compositions.
 // Structural children are offered only by their owning container.
@@ -153,5 +154,5 @@ export function upgradeCanonicalComponents(document) {
     return children.some((child,index)=>child!==node.children[index])?{...node,children}:node;
   };
   const root=visit(document.root);
-  return upgradeProductParameters(repairBlueProductPlacement(changed?{...document,root}:document), row => billingMonths(row) === 0 ? 'lifetime' : 'subscription');
+  return upgradeProductParameters(normalizeHtLabelSlots(repairBlueProductPlacement(changed?{...document,root}:document)), row => billingMonths(row) === 0 ? 'lifetime' : 'subscription');
 }

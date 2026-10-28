@@ -36,7 +36,7 @@ export function createDefaultPaywallRecord(id) {
     if (node.id === 'products') props = { ...props, axis: 'vertical', gap: 12, background: '#ffffff' };
     if (/^products\/package-[012]$/.test(node.id)) props = { ...props, axis: 'horizontal', align: 'center', gap: 12, widthMode: 'fill', heightMode: 'fit', minHeight: 96, paddingMode: 'individual', paddingTop: 10, paddingBottom: 10, paddingLeft: 12, paddingRight: 12 };
     if (/^products\/package-header-[012]$/.test(node.id)) props = { ...props, heightMode: 'fit', gap: 4 };
-    if (['products/badge-space-0', 'products/badge-space-2'].includes(node.id)) props = { ...props, hidden: true };
+    if (['products/badge-space-0', 'products/badge-space-2', 'products/package-0/product-label', 'products/package-2/product-label'].includes(node.id)) props = { ...props, hidden: true };
     return { ...node, props, children: node.children.map(visit) };
   };
   return { version: 1, paywall: { ...DEFAULT_VERTICAL_PAYWALL }, templateId: template.id, document: { ...document, root: visit(document.root) } };

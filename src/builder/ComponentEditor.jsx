@@ -321,8 +321,6 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
 }
 function findPackage(id, nodes, parents) { let current = nodes.get(id); while (current) { if (current.type === 'Package') return current; current = nodes.get(parents.get(current.id)); } return null; }
 function initialEditorCollapsed(document) {
-  const result=initialCollapsed(document.root),{steps,initial}=workflowContext(document);
-  for(const page of steps)if(page.id!==initial?.id)result.add(page.id);
-  return result;
+  return initialCollapsed(document.root);
 }
 function findAncestor(id,nodes,parents,type) {let current=nodes.get(id);while(current){if(current.type===type)return current;current=nodes.get(parents.get(current.id));}return null;}

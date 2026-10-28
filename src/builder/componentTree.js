@@ -61,12 +61,6 @@ export function compositionSummary(node) {
   return [...counts].map(([type, count]) => `${COMPONENT_NAMES[type]}${count > 1 ? ` × ${count}` : ''}`).join(' · ');
 }
 
-export function initialCollapsed(root) {
-  const result = new Set();
-  const visit = (node) => {
-    if (node !== root && node.children.length && !['Screen', 'Flow'].includes(node.type)) result.add(node.id);
-    node.children.forEach(visit);
-  };
-  visit(root);
-  return result;
+export function initialCollapsed() {
+  return new Set();
 }

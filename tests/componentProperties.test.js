@@ -784,9 +784,11 @@ test('layer tree uses one readable label, explicit indentation and inline expans
     const label=id=>row(id).findAll(item=>item.type==='button'&&item.props.className==='ne-tree-select')[0];
     const expand=id=>row(id).findAll(item=>item.type==='button'&&item.props.className==='ne-icon ne-expand')[0];
     assert.deepEqual(label('hero').findByProps({className:'ne-tree-label'}).children,['布局容器']);assert.equal(row('hero').findAllByType('small').length,0);
-    assert.equal(row('hero').props.style.paddingLeft,36);assert.equal(expand('hero').props['aria-expanded'],false);
-    await act(async()=>expand('hero').props.onClick());assert.equal(expand('hero').props['aria-expanded'],true);assert.equal(row('copy').props.style.paddingLeft,52);
-    await act(async()=>expand('copy').props.onClick());assert.equal(row('body').props.style.paddingLeft,68);assert.equal(label('body').props['aria-label'],'会员专属权益长文案');assert.equal(expand('body'),undefined);
+    assert.equal(row('hero').props.style.paddingLeft,36);assert.equal(expand('hero').props['aria-expanded'],true);
+    assert.equal(row('copy').props.style.paddingLeft,52);assert.equal(expand('copy').props['aria-expanded'],true);
+    await act(async()=>expand('hero').props.onClick());assert.equal(expand('hero').props['aria-expanded'],false);assert.equal(row('copy'),undefined);
+    await act(async()=>expand('hero').props.onClick());assert.equal(expand('hero').props['aria-expanded'],true);
+    assert.equal(row('body').props.style.paddingLeft,68);assert.equal(label('body').props['aria-label'],'会员专属权益长文案');assert.equal(expand('body'),undefined);
     assert.equal(label('heading').findByProps({className:'ne-tree-label'}).children.join(''),'实际标题正文');assert.match(label('heading').props.title,/实际标题正文/);assert.equal(label('heading').props['aria-label'],'实际标题正文（隐藏）');
     assert.equal(label('image').props['aria-label'],'图片');assert.equal(label('hero').findAllByType('svg')[0].props.className.includes('lucide-rows2'),true);assert.equal(label('copy').findAllByType('svg')[0].props.className.includes('lucide-columns2'),true);
     await act(async()=>label('copy').props.onClick());
@@ -1384,7 +1386,7 @@ test('layer hover highlights the exact container on its own artboard without cha
     assert.deepEqual(highlighted().map(item=>item.props['data-component-id']),['inner']);
     assert.deepEqual(selected().map(item=>item.props['data-component-id']),['outer']);
     await act(async()=>row('inner').props.onBlur({currentTarget:{contains:()=>false},relatedTarget:null}));assert.equal(highlighted().length,0);
-    await act(async()=>row('opener').findAllByType('button').find(item=>item.props.className==='ne-icon ne-expand').props.onClick());
+    assert.equal(row('opener').findAllByType('button').find(item=>item.props.className==='ne-icon ne-expand').props['aria-expanded'],true);
     await act(async()=>row('modal').props.onMouseEnter());
     assert.deepEqual(highlighted().map(item=>item.props['data-component-id']),['modal'],'inactive modal artboard can be highlighted without selecting it');
     assert.deepEqual(selected().map(item=>item.props['data-component-id']),['outer']);

@@ -19,8 +19,8 @@ test('test3 bundles an independent vertical three-package document without chang
   assert.equal(packages.length, 3);
   assert.ok(packages.every((node) => node.props.axis === 'horizontal' && node.props.minHeight === 96 && node.props.heightMode === 'fit'));
   assert.deepEqual(packages.map((node) => node.props.defaultSelected), [false, true, false]);
-  assert.ok(nodes.get('products/badge-space-0').props.hidden);
-  assert.ok(nodes.get('products/badge-space-2').props.hidden);
+  assert.ok(nodes.get('products/package-0/product-label').props.hidden);
+  assert.ok(nodes.get('products/package-2/product-label').props.hidden);
   assert.deepEqual(record.document.products, original.products);
   assert.equal(indexDocument(original).nodes.get('products').props.axis, 'horizontal');
   assert.deepEqual(importComponentDocument(createBuilderNodes(template.id), template), original);

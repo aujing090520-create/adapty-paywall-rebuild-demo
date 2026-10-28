@@ -8,6 +8,7 @@ import { localSettingsResetting } from '../templateStorage.js';
 import { packageDisplayFields } from '../products/packageFields.js';
 import {validWorkbenchConfiguration} from './workbenchModel.js';
 import { PRODUCT_PARAMETERS, productParameterPreview } from '../products/productParameters.js';
+import {pruneGeneratedEmptyLayouts,normalizeHtLabelSlots} from './layoutContainers.js';
 
 export const DOCUMENT_VERSION = 3;
 export const COMPONENT_TYPES = ['Screen', 'Stack', 'Text', 'ProductParameter', 'Image', 'Video', 'Icon', 'Custom', 'Header', 'Footer', 'Package', 'PurchaseButton', 'BottomSheet', 'ExpressCheckout', 'CheckoutState', 'Wallet', 'Button', 'Tabs', 'Tab', 'TabControl', 'TabButton', 'Carousel', 'Slide', 'PageControl', 'Indicators', 'Timeline', 'TimelineItem', 'Switch', 'SwitchCase', 'Toggle', 'Countdown', 'CountdownState', 'Flow'];
@@ -276,7 +277,7 @@ export function importComponentDocument(nodes, template = {}, calibrate = true) 
   const content = detailScreens.length ? [component('$pages', 'Flow', '付费墙与权益详情', { gap: 0 }, [component('$main', 'Screen', '特权首页', { gap: 0 }, rootNodes), ...detailScreens])] : rootNodes;
   const root = component('$screen', 'Screen', '付费墙页面', { background: dark ? '#10101c' : '#ffffff', color: foreground, gap: template.documentTemplate ? 0 : 18, ...insets(template.documentTemplate ? 0 : 20), backgroundImage: background?.config?.mediaSrc ?? '', backgroundFit: background?.config?.mediaFit ?? 'cover', ...(sheet ? { background: '#e6e6e6', paddingTop: template.documentTemplate === 'sku-sheet' ? 300 : 100 } : {}) }, content);
   const document = { version: DOCUMENT_VERSION, templateId: template.id ?? 'blank', root, products };
-  return calibrate ? calibrateTemplateVisuals(document, template, nodes) : document;
+  return calibrate ? pruneGeneratedEmptyLayouts(normalizeHtLabelSlots(calibrateTemplateVisuals(document, template, nodes))) : document;
 }
 function indexDocumentId(id, suffix) { return id + suffix; }
 function gradient(colors, fallback) { return Array.isArray(colors) && colors.length ? `linear-gradient(90deg, ${colors.join(', ')})` : fallback; }

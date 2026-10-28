@@ -209,7 +209,7 @@
     {
       "id": "connection",
       "family": "compatibility",
-      "nodes": 27,
+      "nodes": 26,
       "types": [
         "Button",
         "Image",
@@ -241,7 +241,7 @@
     {
       "id": "document",
       "family": "compatibility",
-      "nodes": 19,
+      "nodes": 18,
       "types": [
         "Button",
         "Image",
@@ -256,7 +256,7 @@
     {
       "id": "trial-white",
       "family": "compatibility",
-      "nodes": 38,
+      "nodes": 37,
       "types": [
         "Button",
         "Icon",
@@ -273,7 +273,7 @@
     {
       "id": "trial-blue",
       "family": "compatibility",
-      "nodes": 19,
+      "nodes": 18,
       "types": [
         "Image",
         "Package",
@@ -288,7 +288,7 @@
     {
       "id": "yoga",
       "family": "compatibility",
-      "nodes": 33,
+      "nodes": 32,
       "types": [
         "Icon",
         "Image",
@@ -303,7 +303,7 @@
     {
       "id": "report",
       "family": "compatibility",
-      "nodes": 40,
+      "nodes": 39,
       "types": [
         "Button",
         "Icon",
@@ -320,7 +320,7 @@
     {
       "id": "avatar",
       "family": "compatibility",
-      "nodes": 17,
+      "nodes": 16,
       "types": [
         "Image",
         "Package",
@@ -350,7 +350,7 @@
     {
       "id": "weather",
       "family": "compatibility",
-      "nodes": 31,
+      "nodes": 28,
       "types": [
         "Icon",
         "Image",
@@ -364,7 +364,7 @@
     {
       "id": "mindfulness",
       "family": "compatibility",
-      "nodes": 33,
+      "nodes": 32,
       "types": [
         "Button",
         "Carousel",
@@ -384,7 +384,7 @@
     {
       "id": "workout",
       "family": "compatibility",
-      "nodes": 32,
+      "nodes": 30,
       "types": [
         "Image",
         "PurchaseButton",
@@ -397,7 +397,7 @@
     {
       "id": "halloween",
       "family": "compatibility",
-      "nodes": 36,
+      "nodes": 35,
       "types": [
         "Button",
         "Carousel",
@@ -464,7 +464,7 @@
     {
       "id": "black-friday-timer",
       "family": "compatibility",
-      "nodes": 26,
+      "nodes": 25,
       "types": [
         "Button",
         "Image",
@@ -480,7 +480,7 @@
     {
       "id": "editing-plan",
       "family": "compatibility",
-      "nodes": 18,
+      "nodes": 17,
       "types": [
         "Button",
         "PurchaseButton",
@@ -493,7 +493,7 @@
     {
       "id": "audiobooks",
       "family": "compatibility",
-      "nodes": 19,
+      "nodes": 18,
       "types": [
         "Button",
         "Image",
@@ -576,7 +576,7 @@
     {
       "id": "premium-access",
       "family": "compatibility",
-      "nodes": 27,
+      "nodes": 26,
       "types": [
         "Button",
         "Image",
@@ -592,7 +592,7 @@
     {
       "id": "full-app",
       "family": "compatibility",
-      "nodes": 16,
+      "nodes": 15,
       "types": [
         "Button",
         "Image",
@@ -1070,7 +1070,7 @@
     {
       "id": "rc-source-14",
       "family": "reference-gallery",
-      "nodes": 53,
+      "nodes": 50,
       "types": [
         "Button",
         "Carousel",
@@ -1161,7 +1161,7 @@
     {
       "id": "rc-source-19",
       "family": "reference-gallery",
-      "nodes": 58,
+      "nodes": 55,
       "types": [
         "Button",
         "Carousel",
@@ -1225,7 +1225,7 @@
     {
       "id": "rc-source-22",
       "family": "reference-gallery",
-      "nodes": 62,
+      "nodes": 59,
       "types": [
         "Button",
         "Footer",
@@ -1368,7 +1368,7 @@
     {
       "id": "rc-source-30",
       "family": "reference-gallery",
-      "nodes": 52,
+      "nodes": 49,
       "types": [
         "Button",
         "Footer",
@@ -1574,7 +1574,7 @@
     {
       "id": "ht-blue-privilege",
       "family": "HT",
-      "nodes": 236,
+      "nodes": 234,
       "types": [
         "BottomSheet",
         "Button",
@@ -2603,14 +2603,14 @@
     "limitation": "Verified fixed-region boundaries and switch ownership do not imply full recursive hierarchy, visual or SDK equivalence. Template 38 has no observed source layer sample."
   },
   "sourceHashes": {
-    "src/builder/componentCatalog.js": "00e3e20dba87b57af88b2cc1b5f1e8049d8135ee3c6b9f89b522cadde3bcc6c7",
-    "src/builder/componentDocument.js": "30a4caa0dd5162c58ddb92af2bd64656c8bfbb669771e5c26e6bb87331282304",
-    "src/builder/componentOperations.js": "5364435376206f3c9338785d62cec8cfb3653eb3f86e7e9fac58f3e7cefa29fe",
+    "src/builder/componentCatalog.js": "9ac4f51c26f3127647a09f9b4e83d75ed57c1b389d3ab6ee916bb5bc8e8cb8b1",
+    "src/builder/componentDocument.js": "316f886f69432df060920c4c4ec0f785797c909d557efbb026bd874e01d56560",
+    "src/builder/componentOperations.js": "9df053ab5009d9d6d2373aa7871743618adf82b83fc4712a6846eefad215435c",
     "src/builder/ComponentPreview.jsx": "d2039477f5522247336d3db7febe816f268aee00782b12293713f4a0e900f2d5",
     "src/builder/screenLayout.js": "3bab6b36c926bdaa63a22da6dd608cd5a3543b537db8c2e7926c3821486406db",
     "src/builder/navigationRows.js": "131ae049f145da06260e37edc855c7e05c135317d2ef3366d8e78cff64fcd321",
     "src/builder/buttonModals.js": "859c187f1743ecec941d60b4ca596297200e6060fb90adb3bc79b81dd6e707b7",
-    "src/builder/ComponentEditor.jsx": "0bd4121403beaac51f28fc4b4a0f91f23f27515a6d3b365fd2df913aabc80a1a",
+    "src/builder/ComponentEditor.jsx": "876a9f557f16bb3f0e72b12fb63af305c12bed88f8e70585af6219bef64e5098",
     "src/builder/componentEditor.css": "43093c1dcd228821dba532aa771e2e84b7e00dbc0f2b3d47c1cebcbd1178650e",
     "src/builder/referenceTemplateStructure.js": "54fd4f981788251c30c51abae023d6764f918252bd351d56bd42220a4baaaa75",
     "docs/reference-structure/revenuecat-hierarchy-2026-10-26.json": "3d598f78c41db1d5e0d4b7a8dd2fef217f2e9d23cc82d2886a65c8ce51614312"

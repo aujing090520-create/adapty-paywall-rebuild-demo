@@ -18,8 +18,7 @@ test('page navigation exposes only the active real screen without rewriting its 
   assert.equal(compositionSummary(component('texts','Stack','内容',{},[component('a','Text','a'),component('b','Text','b')])),'文字 × 2');
   const root=component('root','Screen','页面',{},[flow]);
   const collapsed=initialCollapsed(root);
-  assert.ok(collapsed.has('hero'));
-  assert.ok(collapsed.has('product'));
+  assert.equal(collapsed.size,0);
   assert.ok(!collapsed.has('main'));
   assert.ok(!collapsed.has('flow'));
 });
