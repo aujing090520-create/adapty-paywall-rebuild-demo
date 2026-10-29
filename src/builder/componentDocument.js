@@ -54,6 +54,7 @@ export function componentLayerLabel(node, content = '') {
   if (node.type === 'Screen') return node.name || COMPONENT_NAMES.Screen;
   if (node.type === 'Text') return content.trim() || COMPONENT_NAMES.Text;
   if (node.type === 'ProductParameter') return `商品参数 · ${PRODUCT_PARAMETERS[node.props.parameter]?.label ?? '未选择'}`;
+  if (node.type === 'CountdownState') return ({active:'计时中',ended:'已结束',fallback:'数据不可用'})[node.props.state] ?? COMPONENT_NAMES.CountdownState;
   if (node.type === 'SwitchCase' && [0, 1].includes(node.props.index)) return `${node.props.index === 1 ? '开启' : '关闭'} · ${COMPONENT_NAMES.SwitchCase}`;
   return COMPONENT_NAMES[node.type] || node.type;
 }

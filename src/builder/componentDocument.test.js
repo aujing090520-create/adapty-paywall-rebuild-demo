@@ -1,11 +1,24 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { templates, createBuilderNodes } from '../templates/templateDefinitions.js';
-import { component, componentProps, importComponentDocument, indexDocument, validDocument, updateComponent, insertComponent, removeComponent, moveComponent, createNativeComponent, cloneComponent, captureNativeComponent, resolveComponentText, readComponentDocument, saveComponentDocument, DOCUMENT_PREFIX } from './componentDocument.js';
+import { component, componentLayerLabel, componentProps, importComponentDocument, indexDocument, validDocument, updateComponent, insertComponent, removeComponent, moveComponent, createNativeComponent, cloneComponent, captureNativeComponent, resolveComponentText, readComponentDocument, saveComponentDocument, DOCUMENT_PREFIX } from './componentDocument.js';
 import { clearLocalDemoSettings } from '../templateStorage.js';
 const catalog = templates.filter((entry) => entry.documentTemplate || entry.isGallery);
 const load = (id) => importComponentDocument(createBuilderNodes(id), templates.find((entry) => entry.id === id));
 const storage = () => { const values = new Map(); return { get length() { return values.size; }, key(index) { return [...values.keys()][index]; }, getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value), removeItem: (key) => values.delete(key) }; };
+
+test('countdown layer labels describe the configured state without renaming content or changing timer behavior', () => {
+  for (const [state,label] of [['active','计时中'],['ended','已结束'],['fallback','数据不可用']]) {
+    const node=component(state,'CountdownState','原有自定义名称',{state,gap:17},[component(`${state}/copy`,'Text','文字',{text:'用户配置文案'})]),before=structuredClone(node);
+    assert.equal(componentLayerLabel(node),label);assert.deepEqual(node,before);
+  }
+  assert.equal(componentLayerLabel(component('unknown','CountdownState','旧名称',{state:'unknown'})),'倒计时状态内容');
+  for (const template of templates) {
+    const document=importComponentDocument(createBuilderNodes(template.id),template),before=JSON.stringify(document);
+    for (const node of indexDocument(document).nodes.values()) if(node.type==='CountdownState')assert.equal(componentLayerLabel(node),({active:'计时中',ended:'已结束',fallback:'数据不可用'})[node.props.state]??'倒计时状态内容');
+    assert.equal(JSON.stringify(document),before);
+  }
+});
 
 test('all 45 current templates import into valid actual trees without mutating legacy data', () => {
   for (const template of catalog) {
