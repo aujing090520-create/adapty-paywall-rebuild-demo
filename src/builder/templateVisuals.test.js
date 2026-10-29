@@ -72,15 +72,15 @@ test('saved documents receive changed default values once without losing manual 
   assert.equal(migrateTemplateVisuals(result, previous, next), result);
 });
 
-test('previously split countdown digits receive the calibrated size without overwriting a custom digit', () => {
+test('consolidated countdown receives calibrated text size without overwriting a custom inline digit', () => {
   const old = load('ht-blue-privilege', false), current = load('ht-blue-privilege');
   let saved = upgradeCanonicalComponents(old);
-  const digit = [...indexDocument(saved).nodes.values()].find((node) => node.props.text === '{{ count_hours_with_zero }}');
-  saved = updateComponent(saved, digit.id, { props: { fontSize: 31 } });
+  const digit = [...indexDocument(saved).nodes.values()].find((node) => node.type==='Text'&&node.props.text?.includes('{{ count_hours_with_zero }}'));
+  saved = updateComponent(saved, digit.id, { props: { runs:digit.props.runs.map(run=>run.text==='{{ count_hours_with_zero }}'?{...run,fontSize:31}:run) } });
   const result = migrateTemplateVisuals(saved, old, current);
   const texts = [...indexDocument({ root: indexDocument(result).nodes.get('timer') }).nodes.values()].filter((node) => /\{\{ count_(hours|minutes|seconds)_with_zero \}\}/.test(node.props.text??''));
-  assert.equal(texts.find((node) => node.id === digit.id).props.fontSize, 31);
-  assert.ok(texts.filter((node) => node.id !== digit.id).every((node) => node.props.fontSize === 18));
+  assert.equal(texts.length,1);assert.equal(texts[0].props.fontSize,18);
+  assert.equal(texts[0].props.runs.find(run=>run.text==='{{ count_hours_with_zero }}').fontSize,31);
 });
 
 test('RevenueCat gallery trees do not receive HT-only defaults', () => {

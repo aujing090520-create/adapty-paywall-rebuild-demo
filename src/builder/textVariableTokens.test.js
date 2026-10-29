@@ -1,7 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {component,indexDocument} from './componentDocument.js';
-import {TIMER_VARIABLE_DEFINITIONS,upgradeTimerTextVariables} from './textVariableTokens.js';
+import {TIMER_VARIABLE_DEFINITIONS,upgradeTimerTextVariables,consolidateCountdownText} from './textVariableTokens.js';
+
+test('saved split countdowns consolidate once with actual copy, styles and business timing unchanged',()=>{
+  const state=component('active','CountdownState','计时中',{state:'active',axis:'horizontal',gap:5},[
+    component('prefix','Text','文字',{text:'还剩',fontSize:18,color:'#123456'}),
+    component('hours','Text','文字',{text:'{{ count_hours_with_zero }}',fontSize:23,fontWeight:700,background:'#8ced75',radius:4,paddingLeft:3,paddingRight:3}),
+    component('colon','Text','文字',{text:':',fontSize:18}),
+    component('minutes','Text','文字',{text:'{{ count_minutes_with_zero }}',fontSize:18})
+  ]);
+  const document={products:{untouched:{sku:'SKU'}},root:component('timer','Countdown','倒计时',{timeSource:'business',timeSourceId:'campaign'},[state,component('ended','CountdownState','已结束',{state:'ended'},[])])},before=structuredClone(document);
+  const result=consolidateCountdownText(document),timer=result.root,text=timer.children[0].children[0];
+  assert.equal(timer.children[0].children.length,1);assert.equal(text.id,'prefix');assert.equal(text.props.text,'还剩 {{ count_hours_with_zero }} : {{ count_minutes_with_zero }}');
+  const hours=text.props.runs.find(run=>run.text==='{{ count_hours_with_zero }}');assert.equal(hours.fontSize,23);assert.equal(hours.inlineBox.background,'#8ced75');assert.equal(hours.inlineBox.paddingLeft,3);
+  assert.deepEqual(timer.props,document.root.props);assert.equal(timer.children[1],document.root.children[1]);assert.equal(result.products,document.products);assert.deepEqual(document,before);assert.equal(consolidateCountdownText(result),result);
+  const custom=structuredClone(document);custom.root.children[0].children.push(component('custom','Stack','容器',{},[]));assert.equal(consolidateCountdownText(custom),custom);
+});
 import {availableTextVariables,interpolateVariables,variableIssues} from './textVariables.js';
 import {upgradeCanonicalComponents} from './componentCatalog.js';
 

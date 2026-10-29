@@ -5,7 +5,7 @@ import { upgradeProductParameters } from '../products/productParameters.js';
 import { billingMonths } from '../productPricing.js';
 import {normalizeHtLabelSlots} from './layoutContainers.js';
 import {buildBlueVipColumn} from './htVipColumn.js';
-import {upgradeTimerTextVariables} from './textVariableTokens.js';
+import {upgradeTimerTextVariables,consolidateCountdownText} from './textVariableTokens.js';
 
 // Public picker entries are building blocks or transparent Stack compositions.
 // Structural children are offered only by their owning container.
@@ -139,16 +139,12 @@ export function upgradeCanonicalComponents(document) {
     }
     if(node.type==='Countdown'&&!node.children.length){
       changed=true;
-      const native=createCatalogComponent('Countdown'),props=node.props,size=props.fontSize??24;
+      const native=createCatalogComponent('Countdown',node.id),props=node.props,size=props.fontSize??24;
       const active=native.children[0]; active.props.gap=5;
       const digits=['hours','separator-1','minutes','separator-2','seconds'].map((key)=>t(`${native.id}/${key}`,key.startsWith('separator')?':':'',{...(key.startsWith('separator')?{}:{timerField:key,fontWeight:700,background:props.digitBackground??'transparent',radius:4,paddingLeft:3,paddingRight:3}),widthMode:'fit',fontSize:size,color:props.color}));
       active.props.align='center';active.props.axis='horizontal';
       const parts=[...(props.prefix?[t(`${native.id}/prefix`,props.prefix,{widthMode:'fit',fontSize:size,color:props.prefixColor??props.color})]:[]),...digits,...(props.suffix?[t(`${native.id}/suffix`,props.suffix,{widthMode:'fit',fontSize:size,color:props.color})]:[])];
-      if(props.digitBackground&&props.digitBackground!=='transparent')active.children=parts;
-      else {
-        const runs=parts.map((part,index)=>({text:`${index?' ':''}${part.props.timerField?`{{ count_${part.props.timerField}_with_zero }}`:part.props.text}`,fontWeight:part.props.fontWeight??400,...(part.props.color?{color:part.props.color}:{})}));
-        active.children=[t(`${native.id}/countdown-text`,runs.map(run=>run.text).join(''),{runs,widthMode:'fit',fontSize:size,color:props.color,textAlign:'center'})];
-      }
+      active.children=parts;
       native.children[1]=component(`${native.id}/ended`,'CountdownState','结束内容',{state:'ended'},[t(`${native.id}/ended-text`,'优惠已结束',{textAlign:'center'})]);
       native.children[2]=component(`${native.id}/fallback`,'CountdownState','兜底内容',{state:'fallback'},[t(`${native.id}/fallback-text`,'限时优惠',{textAlign:'center'})]);
       return {...node,props:{...props,fallbackEnabled:props.fallbackEnabled??false,previewState:'auto'},children:native.children};
@@ -161,5 +157,5 @@ export function upgradeCanonicalComponents(document) {
     return children.some((child,index)=>child!==node.children[index])?{...node,children}:node;
   };
   const root=visit(document.root);
-  return upgradeProductParameters(upgradeTimerTextVariables(normalizeHtLabelSlots(buildBlueVipColumn(repairBlueProductPlacement(changed?{...document,root}:document)))), row => billingMonths(row) === 0 ? 'lifetime' : 'subscription');
+  return upgradeProductParameters(consolidateCountdownText(upgradeTimerTextVariables(normalizeHtLabelSlots(buildBlueVipColumn(repairBlueProductPlacement(changed?{...document,root}:document))))), row => billingMonths(row) === 0 ? 'lifetime' : 'subscription');
 }

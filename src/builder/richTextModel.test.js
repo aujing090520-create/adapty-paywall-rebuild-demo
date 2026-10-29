@@ -81,3 +81,11 @@ test('legacy countdown props open as variables instead of stale copy, runs or SK
   assert.equal(editor.getJSON().content[0].content[0].type,'variable');
   editor.destroy();
 });
+
+test('countdown inline boxes survive variable editing, formatting and save/reopen',()=>{
+  const box={background:'#8ced75',borderRadius:4,paddingLeft:3,paddingRight:3};
+  const editor=create({runs:[{text:'剩余 '},{text:'{{ count_hours_with_zero }}',inlineBox:box,fontWeight:700},{text:' 小时'}]});
+  editor.commands.setTextSelection({from:4,to:5});toggleTextFormat(editor,'underline');
+  const result=patch(editor),token=result.runs.find(run=>run.text.includes('count_hours'));
+  assert.deepEqual(token.inlineBox,box);const reopened=create(result);assert.deepEqual(patch(reopened),result);editor.destroy();reopened.destroy();
+});

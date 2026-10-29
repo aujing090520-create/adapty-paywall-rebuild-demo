@@ -91,14 +91,15 @@ test('Countdown fallback can be enabled, filled from its parent and disabled wit
   }finally{await h.close();}
 });
 
-test('decorated split digits remain independent while the Countdown parent can edit each actual text unit',async()=>{
+test('decorated countdown uses a single actual Text while preserving inline green digit boxes',async()=>{
   const document=upgradeCanonicalComponents(fixture(component('clock','Countdown','倒计时',{start:'02:03:04',prefix:'倒计时',digitBackground:'#8ced75',fontSize:18}))),timer=indexDocument(document).nodes.get('clock');
   const h=await mount(timer,{source:document});
   try{
-    const hours=timer.children[0].children.find(child=>child.props.text==='{{ count_hours_with_zero }}'),minutes=timer.children[0].children.find(child=>child.props.text==='{{ count_minutes_with_zero }}');
-    const snapshot=structuredClone(minutes);await h.select('文字单元',hours.id);await h.change('字号','23');
-    assert.equal(indexDocument(h.document()).nodes.get(hours.id).props.fontSize,23);assert.equal(h.node(hours.id).props.style.background,'#8ced75');
-    assert.deepEqual(indexDocument(h.document()).nodes.get(minutes.id),snapshot);assert.equal(timer.children[0].children.length,6);
+    const text=timer.children[0].children[0];assert.equal(timer.children[0].children.length,1);
+    await h.change('字号','23');assert.equal(indexDocument(h.document()).nodes.get(text.id).props.fontSize,23);
+    const hours=indexDocument(h.document()).nodes.get(text.id).props.runs.find(run=>run.text==='{{ count_hours_with_zero }}');
+    assert.equal(hours.inlineBox.background,'#8ced75');assert.equal(hours.inlineBox.borderRadius,4);
+    assert.ok(h.node(text.id).children.some(child=>child?.props?.style?.backgroundColor==='#8ced75'));
   }finally{await h.close();}
 });
 
