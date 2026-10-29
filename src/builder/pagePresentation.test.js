@@ -6,6 +6,7 @@ import {upgradeCanonicalComponents} from './componentCatalog.js';
 import {pageFrame,pagePresentation,upgradePagePresentation} from './pagePresentation.js';
 import {addNavigationButton,findNavigationButton} from './buttonModals.js';
 import {createNavigationRow} from './navigationRows.js';
+import {addWorkflowStep,workflowContext} from './workflow.js';
 
 for(const template of templates)test(`${template.id}: explicit presentation belongs to each screen, not layout children`,()=>{
   const raw=importComponentDocument(createBuilderNodes(template.id),template),before=structuredClone(raw),next=upgradeCanonicalComponents(raw),nodes=indexDocument(next).nodes;
@@ -28,6 +29,16 @@ for(const template of templates)test(`${template.id}: explicit presentation belo
 test('window caps its own height, fullscreen fills actual viewport and keeps remembered settings',()=>{
   assert.deepEqual(pageFrame({pagePresentation:'sheet',windowHeight:900,windowInset:20},600),{mode:'sheet',height:560,inset:20,radius:24});
   assert.deepEqual(pageFrame({pagePresentation:'fullscreen',windowHeight:500,windowInset:20,windowRadius:30},844),{mode:'fullscreen',height:844,inset:0,radius:0});
+});
+
+for(const id of ['ht-membership-plans','ht-payment-recovery','ht-sku-sheet'])test(`${id}: importing a legacy half-window as a new flow step preserves page presentation`,()=>{
+  const source=importComponentDocument(createBuilderNodes(id),templates.find(t=>t.id===id));
+  const document={version:3,products:{},root:component('main','Screen','初始页',{},[])};
+  const result=addWorkflowStep(document,{source});assert.ok(result.id);assert.ok(validDocument(result.document));
+  const screen=indexDocument(result.document).nodes.get(result.id);
+  assert.equal(screen.props.pagePresentation,'sheet');assert.ok(screen.props.windowHeight>0);
+  assert.equal(workflowContext(result.document).steps.length,2);
+  assert.ok([...indexDocument(result.document).nodes.values()].some(n=>n.type==='Package'));
 });
 
 test('adding navigation locates nested existing template close without duplicating or losing its modal action',()=>{

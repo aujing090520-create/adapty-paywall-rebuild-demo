@@ -1,6 +1,7 @@
 import { component, indexDocument, updateComponent, removeComponent, uniqueSceneName } from './componentDocument.js';
 import { copyFragment, pasteFragment, patchComponentProperties } from './componentOperations.js';
 import { pageContext, flowInitialIndex } from './componentTree.js';
+import { upgradePagePresentation } from './pagePresentation.js';
 
 export const MAX_STEPS = 10;
 export const auxiliaryScreen = (node) => node.props.auxiliary === true || /\/detail-screen-\d+$/.test(node.id);
@@ -92,6 +93,7 @@ export function addWorkflowStep(document, { source, screenId, beforeId, afterId,
   const at = afterId ? flow.children.findIndex((page)=>page.id===afterId)+1 : Math.max(0, flow.children.findIndex((page) => page.id === before));
   let id;
   if (source) {
+    source = upgradePagePresentation(source);
     const screen = indexDocument(source).nodes.get(screenId ?? workflowContext(source).initial?.id);
     if (screen?.type !== 'Screen') return { document, error: '请选择有效的来源屏幕' };
     let explicitSource=source;
