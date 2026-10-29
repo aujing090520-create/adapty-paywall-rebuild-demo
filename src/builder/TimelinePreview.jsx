@@ -3,6 +3,11 @@ import { paintColor } from './propertyModel.js';
 
 const TimelineContext = createContext(null);
 
+export function timelineConnectorGeometry(from,to,item,scale=1) {
+  const start=from.top+from.height/2,end=to.top+to.height/2;
+  return {left:(from.left+from.width/2-item.left)/scale,top:(start-item.top)/scale,height:Math.max(0,(end-start)/scale)};
+}
+
 export function TimelinePreview({ node, props, attributes, style, render }) {
   const root = useRef(null);
   const [connectors, setConnectors] = useState({});
@@ -18,7 +23,7 @@ export function TimelinePreview({ node, props, attributes, style, render }) {
         const destination = items[index + 1].querySelector('[data-timeline-marker]');
         if (!marker || !destination || !scale) return;
         const rect = item.getBoundingClientRect(), from = marker.getBoundingClientRect(), to = destination.getBoundingClientRect();
-        next[item.dataset.componentId] = { left: (from.left + from.width / 2 - rect.left) / scale, top: (from.bottom - rect.top) / scale, height: Math.max(0, (to.top - from.bottom) / scale) };
+        next[item.dataset.componentId] = timelineConnectorGeometry(from,to,rect,scale);
       });
       setConnectors((current) => JSON.stringify(current) === JSON.stringify(next) ? current : next);
     };
@@ -33,7 +38,7 @@ export function TimelinePreview({ node, props, attributes, style, render }) {
 
 export function TimelineItemPreview({ node, props, attributes, style, render }) {
   const timeline = useContext(TimelineContext) ?? {};
-  const marker = node.children.find((child) => ['Icon', 'Image'].includes(child.type));
+  const marker = node.children.find((child) => ['Icon', 'Image'].includes(child.type)&&!child.props.hidden);
   const content = node.children.filter((child) => child !== marker);
   const connector = timeline.connectors?.[node.id];
   const textSpacing = timeline.textSpacing ?? 4;

@@ -1,5 +1,5 @@
 import { component, componentProps, cloneComponent, indexDocument, insertComponent, updateComponent, canContain, removeComponent, moveComponent } from './componentDocument.js';
-import { STATE_STYLE_KEYS, selectedStyleKey, textPropertyPatch } from './propertyModel.js';
+import { STATE_STYLE_KEYS, selectedStyleKey, textPropertyPatch, BADGE_DEFAULTS, BADGE_COMPONENT_TYPES } from './propertyModel.js';
 import { createTabSelectorButton, createTabSelector, createPageControl } from './componentCatalog.js';
 import {fontResources,withFontResources} from './fontStyles.js';
 import {captureFragmentConfiguration,restoreFragmentConfiguration} from './fragmentConfiguration.js';
@@ -9,10 +9,18 @@ import {COMPARISON_ROW_KEYS} from './htVipColumn.js';
 const STYLE_KEYS = new Set(['axis','gap','align','justify','wrap','widthMode','width','minWidth','maxWidth','heightMode','height','minHeight','maxHeight','paddingMode','paddingTop','paddingRight','paddingBottom','paddingLeft','paddingVertical','paddingHorizontal','marginMode','marginTop','marginRight','marginBottom','marginLeft','marginVertical','marginHorizontal','background','backgroundImage','backgroundFit','backgroundVideo','fillType','color','radius','shape','borderWidth','borderColor','fontSize','fontWeight','fontFamily','fontStyle','textAlign','objectFit','opacity','alignSelf','strike','bold','italic','underline','textBackground','iconSize','iconBackground','iconRadius','selectedBorder','selectedBackground','selectedColor','shadowX','shadowY','shadowBlur','shadowColor']);
 for (const key of [...STATE_STYLE_KEYS, ...STATE_STYLE_KEYS.map(selectedStyleKey), 'lineHeight', 'flexGrow', 'mask', 'overlayColor', 'overlayEnabled', 'pageSpacing', 'pagePeek', 'pageControlPosition', 'dotColor', 'activeDotColor', 'itemSpacing', 'textSpacing', 'columnGutter', 'iconAlignment', 'connectorEnabled', 'connectorWidth', 'connectorColor', 'connectorOpacity', 'connectorMarginMode', 'connectorMarginVertical', 'connectorMarginTop', 'connectorMarginBottom']) STYLE_KEYS.add(key);
 for(const key of ['pageAlignment','transitionTime','transitionAnimation','thumbColor','trackColor','thumbColorOpacity','trackColorOpacity','walletStyle'])STYLE_KEYS.add(key);
-export const copyStyles = (node,fonts=[]) => {const styles=Object.fromEntries(Object.entries(componentProps(node)).filter(([key]) => STYLE_KEYS.has(key))),resources=fontResources(styles,fonts);return resources.length?{...styles,$fonts:resources}:styles;};
+export const copyStyles = (node,fonts=[]) => {
+  const styles=Object.fromEntries(Object.entries(componentProps(node)).filter(([key]) => STYLE_KEYS.has(key)));
+  if(BADGE_COMPONENT_TYPES.includes(node.type))styles.$badge={enabled:node.props.badgeEnabled??Boolean(node.props.badge),style:Object.fromEntries(Object.entries({...BADGE_DEFAULTS,...node.props.badge}).filter(([key])=>STYLE_KEYS.has(key)||['position','positionStyle','textBackgroundOpacity'].includes(key)))};
+  const resources=fontResources(styles,fonts);
+  return structuredClone(resources.length?{...styles,$fonts:resources}:styles);
+};
 export function pasteStyles(document, id, styles) {
-  if(!indexDocument(document).nodes.has(id))return document;
-  return patchComponentProperties(withFontResources(document,styles?.$fonts),id,Object.fromEntries(Object.entries(styles ?? {}).filter(([key])=>STYLE_KEYS.has(key))));
+  const node=indexDocument(document).nodes.get(id);
+  if(!node)return document;
+  let next=patchComponentProperties(withFontResources(document,styles?.$fonts),id,Object.fromEntries(Object.entries(styles ?? {}).filter(([key])=>STYLE_KEYS.has(key))));
+  if(BADGE_COMPONENT_TYPES.includes(node.type)&&styles?.$badge)next=updateComponent(next,id,{props:{badgeEnabled:styles.$badge.enabled,badge:{...BADGE_DEFAULTS,...node.props.badge,...structuredClone(styles.$badge.style)}}});
+  return next;
 }
 export function togglePageControl(document,id,enabled) {
   const node=indexDocument(document).nodes.get(id);

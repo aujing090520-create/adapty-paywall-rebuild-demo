@@ -2,7 +2,7 @@ import React from 'react';
 import { ArrowRight, ArrowDown, Layers3, AlignLeft, AlignCenter, AlignRight, AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal, AlignStartVertical, AlignCenterVertical, AlignEndVertical, SquareDashed, RectangleHorizontal, RectangleVertical, Plus, X, Settings2 } from 'lucide-react';
 import { CONTAINER_TYPES, componentProps, componentLayerLabel } from './componentDocument.js';
 import { workflowContext, stepDestination, owningScreen } from './workflow.js';
-import { selectedStyleKey, stateStyleProps, spacingModePatch, dimensionModePatch, imageMask, cornerModePatch, CORNER_KEYS, selectionOwner, sequencePages, BADGE_DEFAULTS, utcDateTimeInput, textPropertyPatch } from './propertyModel.js';
+import { selectedStyleKey, stateStyleProps, spacingModePatch, dimensionModePatch, imageMask, cornerModePatch, CORNER_KEYS, selectionOwner, sequencePages, BADGE_DEFAULTS, BADGE_COMPONENT_TYPES, utcDateTimeInput, textPropertyPatch } from './propertyModel.js';
 import { availableTextVariables, PRODUCT_TEXT_VARIABLES, variableIssues } from './textVariables.js';
 import {timerTextProps,TIMER_VARIABLE_DEFINITIONS} from './textVariableTokens.js';
 import {timeSources,TIME_SCOPES} from './businessTime.js';
@@ -170,7 +170,7 @@ function ContentSection({ selected, p, patch, styleP=p, stylePatch=patch, docume
     const timeline=nodes.get(parents.get(selected.id));
     const items=timeline?.type==='Timeline'?timeline.children.filter(child=>child.type==='TimelineItem'&&!child.props.hidden):[];
     const index=items.findIndex(child=>child.id===selected.id);
-    const hasMarker=node=>node?.children.some(child=>['Icon','Image'].includes(child.type));
+    const hasMarker=node=>node?.children.some(child=>['Icon','Image'].includes(child.type)&&!child.props.hidden);
     if(index<0||!hasMarker(selected)||!hasMarker(items[index+1]))return null;
     return <PropertySection title="连接线" optional><OptionalToggle enabled={p.connectorEnabled !== false} onChange={(connectorEnabled) => patch({ connectorEnabled })}/>{p.connectorEnabled !== false && <>
     <NumberField label="连接线宽度" value={p.connectorWidth ?? 1} max={100} onChange={(connectorWidth) => patch({ connectorWidth })}/>
@@ -235,7 +235,7 @@ function ContentSection({ selected, p, patch, styleP=p, stylePatch=patch, docume
   if (type === 'Button' || type === 'PurchaseButton') return <PropertySection title="动作属性"><ActionFields p={p} patch={patch} nodes={nodes} parents={parents} type={type} document={document} selected={selected} onModalCreate={onModalCreate} onModalEdit={onModalEdit}/></PropertySection>;
   if (['Tabs','Carousel','Flow'].includes(type)) return <><PropertySection title="页面属性">{type==='Carousel'&&<><Select label="页面纵向对齐" value={p.pageAlignment??'top'} options={[[ 'top','顶部' ],[ 'center','居中' ],[ 'bottom','底部' ]]} onChange={(pageAlignment)=>patch({pageAlignment})}/><NumberField label="页面间距" value={p.pageSpacing??0} max={200} onChange={(pageSpacing)=>patch({pageSpacing})}/><NumberField label="邻页露出" value={p.pagePeek??0} max={100} onChange={(pagePeek)=>patch({pagePeek})}/></>}
     <Select label="默认页面" value={type==='Flow'?flowInitialIndex(selected):p.defaultIndex??0} options={sequencePages(selected).map((node,index)=>[index,node.name])} onChange={(value)=>{const index=Number(value);patch({defaultIndex:index,...(type==='Flow'?{initialStepId:sequencePages(selected)[index]?.id}: {})});setNavigation({[selected.id]:index});}}/>
-    {type==='Carousel'&&<><CheckboxField label="循环播放" checked={Boolean(p.loop)} onChange={(loop)=>patch({loop})}/><CheckboxField label="自动切换" checked={Boolean(p.autoPlay)} onChange={(autoPlay)=>patch({autoPlay})}/>{p.autoPlay&&<><NumberField label="每页停留时间" value={p.autoPlayInterval??2500} min={250} max={60000} unit="ms" onChange={(autoPlayInterval)=>patch({autoPlayInterval})}/><NumberField label="过渡时间" value={p.transitionTime??500} max={10000} unit="ms" onChange={(transitionTime)=>patch({transitionTime})}/><Select label="过渡动画" value={p.transitionAnimation??'slide'} options={[[ 'slide','滑动' ],[ 'fade','淡入淡出' ]]} onChange={(transitionAnimation)=>patch({transitionAnimation})}/></>}</>}
+    {type==='Carousel'&&<><CheckboxField label="循环播放" checked={Boolean(p.loop)} onChange={(loop)=>patch({loop})}/><CheckboxField label="自动切换" checked={Boolean(p.autoPlay)} onChange={(autoPlay)=>patch({autoPlay})}/>{p.autoPlay&&<NumberField label="每页停留时间" value={p.autoPlayInterval??2500} min={250} max={60000} unit="ms" onChange={(autoPlayInterval)=>patch({autoPlayInterval})}/>}<NumberField label="过渡时间" value={p.transitionTime??500} max={10000} unit="ms" onChange={(transitionTime)=>patch({transitionTime})}/><Select label="过渡动画" value={p.transitionAnimation??'slide'} options={[[ 'slide','滑动' ],[ 'fade','淡入淡出' ]]} onChange={(transitionAnimation)=>patch({transitionAnimation})}/></>}
   </PropertySection>{type==='Carousel'&&<PropertySection title="分页控件" optional><OptionalToggle enabled={selected.children.some((child)=>child.type==='PageControl')} onChange={onPageControl}/>{selected.children.some((child)=>child.type==='PageControl')&&<Select label="分页器位置" value={p.pageControlPosition??'bottom'} options={[[ 'top','顶部' ],[ 'bottom','底部' ]]} onChange={(pageControlPosition)=>patch({pageControlPosition})}/>}</PropertySection>}</>;
   if (type === 'Toggle') return <PropertySection title="控件属性"><Select label="控件类型" value={p.control ?? 'switch'} options={[[ 'switch', '开关' ], [ 'checkbox', '勾选框' ]]} onChange={(control) => patch({ control })} />{!p.switchTarget && <SegmentedField label="初始状态" value={p.initial ? 'yes' : 'no'} options={[[ 'no', '关闭' ], [ 'yes', '开启' ]]} onChange={(value) => patch({ initial: value === 'yes' })} />}<SegmentedField label="购买前必须勾选" value={p.required ? 'yes' : 'no'} options={[[ 'no', '否' ], [ 'yes', '是' ]]} onChange={(value) => patch({ required: value === 'yes' })} /></PropertySection>;
   if (type === 'Countdown') {
@@ -369,7 +369,7 @@ function CountdownContentFields({selected,document,nodes,parents,navigation,setN
 }
 
 function BadgeSection({selected,p,patch}){
-  if(!['Stack','Package','Slide','PurchaseButton'].includes(selected.type))return null;
+  if(!BADGE_COMPONENT_TYPES.includes(selected.type))return null;
   const enabled=p.badgeEnabled??Boolean(p.badge),badge={...BADGE_DEFAULTS,...p.badge};
   const update=(values)=>{const {background,...typography}=values;patch({badge:{...badge,...textPropertyPatch({type:'Text',props:badge},typography),...('background' in values?{background}: {})},badgeEnabled:true});};
   return <PropertySection title="徽标" optional><OptionalToggle enabled={enabled} onChange={(badgeEnabled)=>patch({badgeEnabled,...(badgeEnabled&&!p.badge?{badge:{...BADGE_DEFAULTS}}:{})})}/>{enabled&&<div className="rc-badge-properties">

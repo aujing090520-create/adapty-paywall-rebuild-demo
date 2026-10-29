@@ -7,7 +7,7 @@ import { component, componentProps, indexDocument, updateComponent, saveComponen
 import { DEMO_SKUS } from '../src/productPricing.js';
 import { copyStyles, pasteStyles, patchComponentProperties, patchCountdownContent, togglePageControl } from '../src/builder/componentOperations.js';
 import { createCatalogComponent, upgradeCanonicalComponents } from '../src/builder/componentCatalog.js';
-import { countdownSeconds, defaultPackagePatch } from '../src/builder/propertyModel.js';
+import { countdownSeconds, defaultPackagePatch, BADGE_COMPONENT_TYPES } from '../src/builder/propertyModel.js';
 import { templates, createBuilderNodes } from '../src/templates/templateDefinitions.js';
 import { importComponentDocument, validDocument } from '../src/builder/componentDocument.js';
 import {workflowEdges} from '../src/builder/workflow.js';
@@ -16,6 +16,42 @@ import { buildBlueVipColumn } from '../src/builder/htVipColumn.js';
 
 let server, Properties, Preview, Editor;
 const mounted = new Set();
+
+test('reference audit: manual carousel exposes transition settings without enabling automatic advancement',async()=>{
+  const h=await mount(createCatalogComponent('Carousel','sample'));
+  try{
+    await h.check('自动切换',false);await h.change('过渡时间','650');await h.select('过渡动画','fade');
+    const node=indexDocument(h.document()).nodes.get('sample');assert.equal(node.props.transitionTime,650);assert.equal(node.props.transitionAnimation,'fade');assert.equal(node.props.autoPlay,false);
+    assert.equal(h.renderer.root.findAll(item=>item.type==='input'&&item.props['aria-label']==='每页停留时间').length,0);
+  }finally{await h.close();}
+});
+
+test('reference audit: native Switch control exposes only actual thumb/track settings, legacy agreement keeps its controls',async()=>{
+  const owner=createCatalogComponent('Switch','switch'),control=[...indexDocument({root:owner}).nodes.values()].find(n=>n.type==='Toggle');
+  const h=await mount(control,{source:fixture(owner)});
+  try{assert.equal(h.renderer.root.findAll(n=>typeof n.type==='string'&&['控件类型','购买前必须勾选'].includes(n.props['aria-label'])).length,0);await h.change('滑块颜色值','#ff0000');assert.equal(indexDocument(h.document()).nodes.get(control.id).props.thumbColor,'#ff0000');}finally{await h.close();}
+  const legacy=await mount(component('legacy','Toggle','协议',{control:'checkbox',required:true}));try{await legacy.select('控件类型','switch');assert.equal(indexDocument(legacy.document()).nodes.get('legacy').props.control,'switch');}finally{await legacy.close();}
+});
+
+for(const type of BADGE_COMPONENT_TYPES)test(`reference audit: ${type} owns a real optional badge and preserves child content`,async()=>{
+  const node=component('sample',type,'父容器',{},[component('copy','Text','文字',{text:'原始内容'})]);
+  const h=await mount(node);
+  try{await h.optional('徽标');await h.change('徽标文字','限时');const badge=h.renderer.root.findAll(n=>n.type==='span'&&n.props['data-badge-owner']==='sample');assert.equal(badge.length,1);assert.equal(indexDocument(h.document()).nodes.get('copy').props.text,'原始内容');await h.optional('徽标');assert.equal(h.renderer.root.findAll(n=>n.type==='span'&&n.props['data-badge-owner']==='sample').length,0);assert.equal(indexDocument(h.document()).nodes.get('sample').props.badge.text,'限时');}finally{await h.close();}
+});
+
+test('reference audit: timeline connectors begin and end at icon centers under canvas scaling',async()=>{
+  const {timelineConnectorGeometry}=await server.ssrLoadModule('/src/builder/TimelinePreview.jsx');
+  const geometry=timelineConnectorGeometry({left:20,top:30,width:20,height:20},{left:20,top:90,width:20,height:20},{left:10,top:20},0.5);
+  assert.deepEqual(geometry,{left:40,top:40,height:120});
+});
+
+test('reference audit: style copying includes badge appearance but never its copy, runs, action or product data',async()=>{
+  const source=component('source','Button','按钮',{action:{action:'Dismiss'},badgeEnabled:true,badge:{text:'源文案',runs:[{text:'源文案',bold:true}],background:'#ee3344',position:'bottom-right',radius:7,fontSize:19}});
+  const target=component('target','Button','按钮',{action:{action:'OpenURL',actionUrl:'https://example.com'},badgeEnabled:false,badge:{text:'目标文案',runs:[{text:'目标文案',italic:true}]}},[component('target/text','Text','文字',{text:'按钮正文'})]);
+  const document=fixture(component('group','Stack','容器',{},[source,target])),before=structuredClone(document),styles=copyStyles(source),result=pasteStyles(document,target.id,styles),badge=indexDocument(result).nodes.get(target.id).props.badge;
+  assert.equal(badge.background,'#ee3344');assert.equal(badge.position,'bottom-right');assert.equal(badge.fontSize,19);assert.equal(badge.text,'目标文案');assert.deepEqual(badge.runs,target.props.badge.runs);assert.deepEqual(indexDocument(result).nodes.get(target.id).props.action,target.props.action);assert.equal(indexDocument(result).nodes.get('target/text').props.text,'按钮正文');assert.deepEqual(result.products,document.products);assert.deepEqual(document,before);
+  const values=new Map(),storage={getItem:key=>values.get(key),setItem:(key,value)=>values.set(key,value)};assert.ok(saveComponentDocument(storage,result));assert.deepEqual(indexDocument(readComponentDocument(storage,'audit')).nodes.get(target.id).props.badge,badge);
+});
 before(async () => {
   globalThis.ResizeObserver = class { observe() {} disconnect() {} };
   server = await createServer({ configFile: false, logLevel: 'silent', server: { middlewareMode: true, hmr: false, watch: null } });

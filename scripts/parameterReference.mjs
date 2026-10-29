@@ -1,6 +1,6 @@
 import {COMPONENT_TYPES,COMPONENT_NAMES,CONTAINER_TYPES,componentProps,indexDocument} from '../src/builder/componentDocument.js';
 import {createCatalogComponent} from '../src/builder/componentCatalog.js';
-import {BADGE_DEFAULTS} from '../src/builder/propertyModel.js';
+import {BADGE_DEFAULTS,BADGE_COMPONENT_TYPES} from '../src/builder/propertyModel.js';
 import {PRODUCT_TEXT_VARIABLES,TIMER_TEXT_VARIABLES} from '../src/builder/textVariables.js';
 import {iconLabel} from '../src/builder/iconLabels.js';
 import {PRODUCT_PARAMETER_OPTIONS} from '../src/products/productParameters.js';
@@ -192,8 +192,8 @@ add(['Carousel'],'页面属性','邻页露出','pagePeek','让两侧相邻页面
 add(['Carousel'],'页面属性','循环播放','loop','末页之后继续到首个页面','至少两个页面；与视频循环是不同字段',bool);
 add(['Carousel'],'页面属性','自动切换','autoPlay','按停留时间自动切换页面','交互预览生效；编辑态不自动切走正在编辑的内容',bool);
 add(['Carousel'],'页面属性','每页停留时间','autoPlayInterval','两次自动切换之间的等待时间','开启自动切换',[],'250–60000 ms');
-add(['Carousel'],'页面属性','过渡时间','transitionTime','设置切页动画持续时间','开启自动切换配置；点击和实际拖动也使用轮播引擎',[],'0–10000 ms');
-add(['Carousel'],'页面属性','过渡动画','transitionAnimation','选择轮播过渡方式','开启自动切换配置',[['slide','滑动','横向滑动'],['fade','淡入淡出','切换页面透明度']]);
+add(['Carousel'],'页面属性','过渡时间','transitionTime','设置切页动画持续时间','手动和自动切换均可配置；实际拖动使用轮播引擎',[],'0–10000 ms');
+add(['Carousel'],'页面属性','过渡动画','transitionAnimation','选择轮播过渡方式','不依赖自动切换开关',[['slide','滑动','横向滑动'],['fade','淡入淡出','切换页面透明度']]);
 add(['Carousel'],'分页控件','分页控件启用','children.PageControl','添加/移除实际分页控件子树，不生成多余轮播页面','轮播页仍由Slide子节点定义',bool);
 add(['Carousel'],'分页控件','分页器位置','pageControlPosition','把实际分页控件放在页面轨道上方或下方','分页控件存在',[['top','顶部','轨道上方'],['bottom','底部','轨道下方']]);
 add(['PageControl'],'分页控件属性','指示器间距','gap','相邻指示点之间的间隔','存在分页指示器',[],'0–200 px');
@@ -203,7 +203,7 @@ add(['Timeline'],'时间线属性','图标对齐','iconAlignment','使图标对�
 for(const [key,name,meaning] of [['itemSpacing','节点间距','相邻时间节点的纵向间隔'],['textSpacing','标题与描述','同一节点标题与描述之间的间隔'],['columnGutter','列间距','图标列与文字列之间的横向距离']])add(['Timeline'],'间距',name,key,meaning,'由时间线父组件统一控制，子层不重复拥有该间距',[],'0–200 px');
 add(['TimelineItem'],'连接线','连接线启用','connectorEnabled','显示连接到下一节点的线，末项不额外绘制尾线；不适用时隐藏设置但保留原值','当前节点和后续可见时间节点都具有图标或图片标记',bool);
 add(['TimelineItem'],'连接线','连接线宽度','connectorWidth','设置连接线厚度','连接线启用',[],'0–100 px');
-for(const [key,label] of [['connectorMarginVertical','连接线纵向留白'],['connectorMarginTop','连接线留白上'],['connectorMarginBottom','连接线留白下']])add(['TimelineItem'],'连接线',label,key,'从图标接合位置缩短对应端线段，不改变节点文字尺寸','对应统一/上下独立模式；连接线已启用',[],'0–200 px');
+for(const [key,label] of [['connectorMarginVertical','连接线纵向留白'],['connectorMarginTop','连接线留白上'],['connectorMarginBottom','连接线留白下']])add(['TimelineItem'],'连接线',label,key,'从相邻图标的中心位置缩短对应端线段，不改变节点文字尺寸','对应统一/上下独立模式；连接线已启用',[],'0–200 px');
 add(['TimelineItem'],'连接线','切换连接线上下留白','connectorMarginMode','统一留白或上下独立表示','连接线已启用',[['axis','统一','上下同值'],['individual','上下独立','上下不同值']]);
 paints(['TimelineItem'],'连接线','连接线颜色','connectorColor',false,'连接线启用','connectorOpacity');
 add(['Switch'],'开关属性','默认状态','defaultIndex','决定初始展示关闭/开启内容，并同步预览','两份SwitchCase子树分别编辑',[['0','关闭','展示关闭内容'],['1','开启','展示开启内容']]);
@@ -233,7 +233,7 @@ add(['Custom'],'自定义组件','移除 ZIP','customBundle','移除当前组件
 add(['Custom'],'兼容','HTML（旧配置）','html','编辑原有隔离HTML内容，不作为新的ZIP入口','只有旧html存在且未关联ZIP');
 add(['Custom'],'自定义组件','下载示例','example.zip','下载示例资源，不修改当前组件','示例仅用于功能验证，不作为正式模板数据');
 
-const badgeOwners=['Stack','Package','Slide','PurchaseButton'];
+const badgeOwners=BADGE_COMPONENT_TYPES;
 add(badgeOwners,'徽标','徽标启用','badgeEnabled','启用父组件独立徽标，不插入影响其他子项顺序的文字节点','徽标位置相对所属框体',bool);
 add(badgeOwners,'徽标 / 文字','徽标文字','badge.text / badge.runs','徽标正文及真实选区格式；不覆盖父框体正文','徽标启用；支持与文字组件相同的六项选区工具与商品变量');
 for(const [label,key,meaning] of [['粗体','bold','选区粗体'],['斜体','italic','选区斜体'],['删除线','strikethrough','选区删除线'],['下划线','underline','选区下划线'],['行内代码','code','选区等宽代码格式'],['链接','link','选区安全链接']])add(badgeOwners,'徽标 / 文字工具',`徽标${label}`,`badge.runs.${key}`,meaning,'徽标启用且存在文字选区，不修改父级或子组件文字');
@@ -253,7 +253,7 @@ add(badgeOwners,'徽标边框','徽标边框宽度','badge.borderWidth','徽标�
 for(const [key,label] of [['shadowX','徽标X 偏移'],['shadowY','徽标Y 偏移'],['shadowBlur','徽标模糊']])add(badgeOwners,'徽标阴影',label,`badge.${key}`,'改变徽标自身投影，不改变所属商品/容器的投影','徽标阴影开启',[],key==='shadowBlur'?'0–100 px':'-100–100 px');
 paints(badgeOwners,'徽标阴影','徽标阴影颜色','badge.shadowColor',false,'徽标阴影开启','badge.shadowOpacity');
 
-for(const [label,key,meaning] of [['上移','moveBefore','在同一父容器中前移'],['下移','moveAfter','在同一父容器中后移'],['复制组件','duplicate','复制真实子树，重新生成节点和商品记录ID'],['删除组件','remove','删除本组件子树，页面根节点禁止删除'],['保存到组件库','library.save','保存可复用子树，绑定文案以当前值转为独立文字，不转移SKU所有权'],['打开组件库','library.open','插入已保存的组件，或管理组件库记录'],['重命名','rename','修改图层名而非前端正文'],['包入布局容器','wrap','新建真实Stack包裹当前节点，不生成虚构图层'],['复制/粘贴组件','clipboard.fragment','应用内剪贴板复制真实子树，跨模板粘贴时隔离商品记录'],['复制/粘贴样式','clipboard.styles','复制受支持样式字段，不复制文案、动作、素材或SKU；完整徽标样式复制仍未闭环']])add(all,'编辑器工具',label,key,meaning,'按图层父级/类型决定是否可用；不属于前端组件的第二份配置');
+for(const [label,key,meaning] of [['上移','moveBefore','在同一父容器中前移'],['下移','moveAfter','在同一父容器中后移'],['复制组件','duplicate','复制真实子树，重新生成节点和商品记录ID'],['删除组件','remove','删除本组件子树，页面根节点禁止删除'],['保存到组件库','library.save','保存可复用子树，绑定文案以当前值转为独立文字，不转移SKU所有权'],['打开组件库','library.open','插入已保存的组件，或管理组件库记录'],['重命名','rename','修改图层名而非前端正文'],['包入布局容器','wrap','新建真实Stack包裹当前节点，不生成虚构图层'],['复制/粘贴组件','clipboard.fragment','应用内剪贴板复制真实子树，跨模板粘贴时隔离商品记录'],['复制/粘贴样式','clipboard.styles','复制受支持样式及徽标外框、字体、位置与启用状态；保留目标正文、徽标文案/选区格式、动作和SKU']])add(all,'编辑器工具',label,key,meaning,'按图层父级/类型决定是否可用；不属于前端组件的第二份配置');
 add(['Screen','Flow'],'页面管理','编辑页面','navigation.page','选择当前编辑的真实Screen，图层树与预览同步','文档包含多页时；全局外观仍属于文档根节点');
 add(all,'预览','交互预览','editing','在选图层编辑与执行点击/拖动行为之间切换','编辑态点击先选组件；真实付款、恢复与关闭行为排除');
 add(['ExpressCheckout','CheckoutState'],'状态内容','预览状态','navigation.checkout','从左侧选可用/不可用/加载子层切换预览，不重复设置父级默认状态','真实设备钱包检测不在Demo中执行');
