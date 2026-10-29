@@ -122,6 +122,14 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
   const pickerParent = nodes.get(addTarget);
   const layerTree = useRef(null);
   const documentProperties = useRef(null);
+  const presentationRequest = useRef(false);
+  useLayoutEffect(()=>{
+    if(!presentationRequest.current)return;
+    presentationRequest.current=false;
+    const panel=documentProperties.current;
+    const section=panel&&[...panel.querySelectorAll('.rc-prop-section')].find(node=>node.querySelector('strong')?.textContent==='页面展示');
+    if(section)panel.scrollTop+=section.getBoundingClientRect().top-panel.getBoundingClientRect().top-54;
+  });
   const layerReveal = useRef({});
   useLayoutEffect(() => {
     if (!editing || stepPicker || pickerParent) return;
@@ -307,7 +315,7 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
       </>}</aside>
       <div className="canvas-area ne-canvas ne-artboard-canvas">{flowWarnings.length>0&&<div className="ne-workflow-issues" role="status">{flowWarnings.map((message)=><div key={message}>{message}</div>)}</div>}
         <div className="device-controls"><span>iPhone · 390 × 844</span>
-          {editing&&!surface&&<button type="button" className="secondary" onClick={()=>{select(pages.active.id);documentProperties.current?.scrollTo({top:0});}}><Smartphone size={15}/>页面展示</button>}
+          {editing&&!surface&&<button type="button" className="secondary" onClick={()=>{presentationRequest.current=true;select(pages.active.id);}}><Smartphone size={15}/>页面展示</button>}
           <div className="ne-preview-context"><button type="button" className="ne-icon" aria-label="条件与联动" title="条件与联动" onClick={()=>setWorkbenchPanel('logic')}><Workflow size={16}/></button><button type="button" className="ne-icon" aria-label="业务数据与内容语言" title="业务数据与内容语言" onClick={()=>setWorkbenchPanel('data')}><Settings size={16}/></button><select aria-label="内容语言预览" value={previewContext.contentLocale??document.localization?.defaultLocale??'zh-CN'} onChange={e=>updatePreviewContext({contentLocale:e.target.value})}><option value="zh-CN">中文</option><option value="en">English</option><option value="ar">العربية</option></select><select aria-label="内容主题预览" value={previewContext.contentTheme??'light'} onChange={e=>updatePreviewContext({contentTheme:e.target.value})}><option value="light">浅色</option><option value="dark">深色</option></select><select aria-label="内容平台预览" value={previewContext.contentPlatform??'ios'} onChange={e=>updatePreviewContext({contentPlatform:e.target.value})}><option value="ios">iOS</option><option value="android">Android</option></select></div>
           <div className="ne-zoom"><button className="ne-icon" aria-label="缩小画布" title="缩小画布" disabled={zoom<=0.3} onClick={()=>setZoom((value)=>Math.max(0.3,Math.round((value-0.1)*100)/100))}><Minus size={15}/></button><select aria-label="画布缩放" value={zoom} onChange={(event)=>setZoom(Number(event.target.value))}>{[0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1].map((value)=><option value={value} key={value}>{Math.round(value*100)}%</option>)}</select><button className="ne-icon" aria-label="放大画布" title="放大画布" disabled={zoom>=1} onClick={()=>setZoom((value)=>Math.min(1,Math.round((value+0.1)*100)/100))}><Plus size={15}/></button><button className="ne-icon" aria-label="适应画布" title="适应画布" onClick={fitBoards}><Maximize2 size={15}/></button></div>
           <button className="secondary" onClick={()=>editing?startPreview('flow'):setEditing(true)}>{editing?<Eye size={15}/>:<Pencil size={15}/>} {editing?'预览流程':'返回编辑'}</button>
