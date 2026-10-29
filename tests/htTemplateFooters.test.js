@@ -23,10 +23,20 @@ for (const id of ['ht-blue-privilege', 'ht-membership-plans', 'ht-payment-recove
     if (nodes.has('links')) assert.equal(parents.get('links'), footer.id);
     if (nodes.has('$home')) assert.equal(parents.get('$home'), footer.id);
     assert.equal(nodes.get('purchase').props.action.action, 'Purchase');
-    assert.notEqual(parents.get('products'), footer.id);
+    if(id==='ht-membership-plans'){
+      assert.equal(parents.get('products'),footer.id);
+      assert.equal(parents.get('member/plans-heading'),footer.id);
+      assert.equal(nodes.has('timer'),false);
+      assert.equal(footer.children[0].id,'member/plans-heading');
+      assert.equal(parents.get('member/cancel-note'),footer.id);
+      assert.match(nodes.get('legal').props.text,/24小时.*自动续订/);
+      assert.equal(nodes.has('member/purchase-area'),false);
+    }else{
+      assert.notEqual(parents.get('products'), footer.id);
+      assert.equal(parents.get('timer'), footer.id);
+      assert.equal(footer.children[0].id,'timer');
+    }
     if(id==='ht-blue-privilege') { assert.equal(parents.get('products'),screen.id); assert.equal(nodes.get('purchase').type,'PurchaseButton'); }
-    assert.equal(parents.get('timer'), footer.id);
-    assert.equal(footer.children[0].id,'timer');
     assert.ok([...nodes.values()].filter((entry) => entry.type === 'Package').every((entry) => document.products[entry.props.dataKey].skuId));
     const chrome = screenChromeLayout(screen);
     assert.equal(chrome.footer, footer);

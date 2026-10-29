@@ -1,3 +1,5 @@
+import {createMemberComparisonButton} from './memberComparison.js';
+
 // Editable scene composition from the three original HT Figma preview frames.
 const node = (id, type, name, props = {}, children = []) => ({ id, type, name, props, children });
 const stack = (id, name, children, props = {}) => node(id, 'Stack', name, { gap: 0, ...props }, children.filter(Boolean));
@@ -54,8 +56,8 @@ export function rebuildHtTemplateScene(document, template) {
     const carousel = take('carousel', { background: 'linear-gradient(#e2f0ff 20%, #ffffff)', radius: 0, gap: 0, dotColor: '#dedede', activeDotColor: '#151515' });
     carousel.props.pageControlVersion = 1;
     carousel.children = [slide, node('carousel/page-control', 'PageControl', '分页控件', { gap: 8, heightMode: 'fixed', height: 16 }, [node('carousel/indicators', 'Indicators', '分页指示器', { widthMode: 'fixed', width: 8, heightMode: 'fixed', height: 8, background: '#dedede', selectedBackground: '#151515' })])];
-    const heading = stack('member/plans-heading', '套餐标题', [text('member/plans-title', '标题', '选择套餐', { fontSize: 14, fontWeight: 600 }), text('member/compare-label', '特权对比', '特权对比', { widthMode: 'fit', color: '#8f8f8f' })], { axis: 'horizontal', justify: 'between', heightMode: 'fixed', height: 20 });
-    sheet = stack('member/sheet', '会员套餐半窗', [carousel, stack('member/purchase-area', '套餐与购买', [heading, products, timer, purchase, take('legal', { textAlign: 'center', ...margin() }), take('links', { ...margin() })], { ...padding(16), gap: 12, background: '#f7f7f7' }), home()], { background: '#f7f7f7', radiusMode: 'individual', radiusTopLeft: 20, radiusTopRight: 20, gap: 0 });
+    const heading = stack('member/plans-heading', '套餐标题', [text('member/plans-title', '标题', '选择套餐', { fontSize: 14, fontWeight: 600 }), createMemberComparisonButton(text('member/compare-label', '特权对比', '特权对比', { widthMode: 'fit', color: '#8f8f8f' }))], { axis: 'horizontal', justify: 'between', align:'center', heightMode: 'fixed', height: 24 });
+    sheet = stack('member/sheet', '会员套餐半窗', [carousel, stack('member/purchase-area', '套餐与购买', [heading, products, purchase, text('member/cancel-note','取消说明','可随时取消',{fontSize:11,color:'#aaaaaa',textAlign:'center'}), take('legal', { textAlign: 'left', ...margin() }), take('links', { ...margin() })], { ...padding(16), gap: 12, background: '#f7f7f7' }), home()], { background: '#f7f7f7', radiusMode: 'individual', radiusTopLeft: 20, radiusTopRight: 20, gap: 0 });
   } else if (recovery) {
     children.push(image('recovery/backdrop', '来源页面背景', '/figma-paywall-assets/recovery-art.png', 844, { overlayColor: '#000000', overlayOpacity: 48, objectFit: 'cover' }));
     sheet = stack('offer-card', '支付恢复半窗', [closeRow('recovery/header', [], 28), take('headline', { fontSize: 24, lineHeight: 28 / 24, ...margin(), ...padding(0) }), take('hero-image', { ...margin() }), take('caption', { fontSize: 14, lineHeight: 20 / 14, ...margin(), ...padding(0) }), products, timer, purchase, take('legal', { ...margin(), fontSize: 11, textAlign: 'center' }), take('links', { ...margin() }), home()], { background: '#ffffff', radiusMode: 'individual', radiusTopLeft: 24, radiusTopRight: 24, ...padding(0, 20), gap: 12, minHeight: 674 });

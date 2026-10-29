@@ -11,7 +11,8 @@ for (const id of ['ht-membership-plans', 'ht-payment-recovery', 'ht-sku-sheet'])
   test(`${id}: one editable scene, close/checkout ownership, original SKU records and persistence`, () => {
     const document = load(id), { nodes, parents } = indexDocument(document);
     assert.ok(validDocument(document));
-    assert.equal(documentArtboards(document).length, 1);
+    assert.equal(documentArtboards(document).filter(board=>board.kind==='页面').length, 1);
+    assert.equal(documentArtboards(document).filter(board=>board.kind==='弹层').length,id==='ht-membership-plans'?1:0);
     assert.equal(nodes.get('purchase').type, 'PurchaseButton');
     assert.equal(nodes.get('purchase').props.action.action, 'Purchase');
     assert.notEqual(parents.get('products'), document.root.id);

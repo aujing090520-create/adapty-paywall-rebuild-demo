@@ -56,7 +56,7 @@ export const templates = [
   { id: "rc-review-list", title: "纵向评价列表", subtitle: "RevenueCat · Vertical list of reviews", tags: ["3 products", "Reviews", "Award"], productCount: 3, media: "none", components: ["Reviews", "Award"], category: "Popular", theme: "clean", visual: "rc-review-list", previewTone: "coral", sourceProvider: "RevenueCat", sourceTemplate: "Vertical list of reviews", isNew: true },
   ...revenueCatGallery,
   { id: "ht-blue-privilege", title: "蓝色特权页", subtitle: "蓝色特权对比与商品套餐", tags: ["3 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-blue", visual: "ht-blue", documentTemplate: "blue-privilege", prdScreenshot: "/ht-prd-screenshots/blue-privilege.png" },
-  { id: "ht-membership-plans", title: "HelloTalk 会员套餐页", subtitle: "会员订阅方案与访客示例轮播", tags: ["3 products", "Carousel", "Timer"], productCount: 2, media: "image", components: ["Carousel", "Timer"], category: "Popular", theme: "ht-plans", visual: "ht-plans", documentTemplate: "membership-plans", prdScreenshot: "/ht-prd-screenshots/membership-plans.jpg" },
+  { id: "ht-membership-plans", title: "HelloTalk 会员套餐页", subtitle: "会员订阅方案与访客示例轮播", tags: ["3 products", "Carousel"], productCount: 3, media: "image", components: ["Carousel"], category: "Popular", theme: "ht-plans", visual: "ht-plans", documentTemplate: "membership-plans", prdScreenshot: "/ht-prd-screenshots/membership-plans.jpg" },
   { id: "ht-payment-recovery", title: "HelloTalk 支付未完成页", subtitle: "支付恢复与倒计时优惠", tags: ["2 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-recovery", visual: "ht-recovery", documentTemplate: "payment-recovery", prdScreenshot: "/ht-prd-screenshots/payment-recovery.png" },
   { id: "ht-sku-sheet", title: "HelloTalk SKU 半窗", subtitle: "横版促销视觉与套餐选择", tags: ["2 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-sku", visual: "ht-sku", documentTemplate: "sku-sheet", prdScreenshot: "/ht-prd-screenshots/sku-sheet.jpg" },
 ];
@@ -706,9 +706,8 @@ export function createBuilderNodes(templateId = "knowledge") {
     return [
       node("carousel", "Carousel", "", 0, { label: "访客示例轮播", config: { initialSlide: 0, slides: [{ id: "member-slide-1", image: "/figma-paywall-assets/member-hero.png", title: "解锁谁看了我", caption: "找到志同道合的学习语伴！" }] } }),
       node("products", "Products", "1个月|¥78|¥78/月\n12个月|¥488|节省48%\n终身|¥998|永久会员权益", 0, { config: { ...documentProductColors, productTemplate: "membership-plans", packageLayout: "standard", defaultSelected: 1, showOfferBadge: true } }),
-      node("timer", "Timer", "23:53:12", 0, { config: { enabled: true, format: "hh:mm:ss", separator: ":", prefix: "倒计时", suffix: "", resetMode: "Reset timer on every paywall view", prefixColor: "#303487", digitColor: "#303487", digitBackgroundColor: "#8ced75" } }),
       node("purchase", "Button", "继续", 0, { config: { action: "Purchase" } }),
-      node("legal", "Text", "可随时取消", 0, { label: "订阅说明", variant: "legal" }),
+      node("legal", "Text", "如果当前缴费期前24小时没有取消续订，系统会自动续订，费用将从你的iTunes账户收取，你可随时前往iTunes商店的设置界面管理自己的订阅设定。有关详细信息，请访问我们的服务条款及隐私政策。", 0, { label: "续订说明", variant: "legal" }),
       node("links", "Links", "服务条款 · 隐私政策", 0),
     ];
   }

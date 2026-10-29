@@ -64,6 +64,32 @@ after(async () => { for (const renderer of mounted) await act(async () => render
 const event = (value) => ({ target: { value }, stopPropagation() {}, preventDefault() {} });
 const fixture = (node) => ({ version: 3, templateId: 'audit', products: { sample: { name: '年度', price: '¥100', billingMonths: 12 } }, root: component('page', 'Screen', '页面', {}, [node]) });
 
+test('membership comparison is an editable button-owned sheet and closing it preserves the chosen package',async()=>{
+  const template=templates.find(t=>t.id==='ht-membership-plans');
+  const source=upgradeCanonicalComponents(importComponentDocument(createBuilderNodes(template.id),template));
+  const {nodes,parents}=indexDocument(source),opener=nodes.get('member/compare/button');
+  assert.equal(parents.get('member/compare/sheet'),opener.id);
+  const allowed=new Set(['BottomSheet','Stack','Text','Icon','Button']);
+  const visit=node=>{assert.ok(allowed.has(node.type),node.type);node.children.forEach(visit);};visit(nodes.get('member/compare/sheet'));
+  const h=await mount(opener,{source,editing:false});
+  try{
+    assert.equal(h.node('member/compare/sheet'),undefined);
+    await act(async()=>h.node('products/package-2').props.onClick(event()));
+    assert.equal(h.node('products/package-2').props['aria-pressed'],true);
+    await act(async()=>h.node().props.onClick(event()));
+    assert.ok(h.node('member/compare/sheet'));
+    await act(async()=>h.node('member/compare/close').props.onClick(event()));
+    assert.equal(h.node('member/compare/sheet'),undefined);
+    assert.equal(h.node('products/package-2').props['aria-pressed'],true);
+    await act(async()=>h.node().props.onClick(event()));
+    await act(async()=>h.node('member/compare/done').props.onClick(event()));
+    assert.equal(h.node('member/compare/sheet'),undefined);
+    assert.equal(h.node('products/package-2').props['aria-pressed'],true);
+    assert.deepEqual(h.document().products,source.products);
+    assert.deepEqual(h.document().root,source.root);
+  }finally{await h.close();}
+});
+
 test('page presentation switches the entire Screen, preserves window settings and fixes scroll ownership',async()=>{
   const screen=component('sample','Screen','Paywall',{pagePresentation:'sheet',windowHeight:500,windowInset:0},[component('body','Text','正文',{text:'页面内容'}),component('footer','Footer','页脚',{},[component('cta','Button','购买',{action:{action:'Purchase'}})])]);
   const source={version:3,templateId:'audit',products:{},root:screen},h=await mount(screen,{source});
