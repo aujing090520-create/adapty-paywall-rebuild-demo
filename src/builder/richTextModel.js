@@ -1,3 +1,5 @@
+import {variableTextNodes, variableToken, timerTextProps} from './textVariableTokens.js';
+
 const own = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
 const markNames = ['bold', 'italic', 'strike', 'underline', 'code'];
 const known = new Set(['text', 'breakBefore', 'bold', 'italic', 'strikethrough', 'underline', 'code', 'link', 'color', 'colorOpacity', 'fontSize', 'fontWeight', 'fontFamily', 'backgroundColor']);
@@ -7,6 +9,8 @@ export function safeTextLink(value) {
 }
 
 export function textToEditorDocument(props, value = props.text ?? '') {
+  const normalized = timerTextProps(props);
+  if (normalized !== props) { props = normalized; value = props.text; }
   const paragraphs = [{ type: 'paragraph', content: [] }];
   for (const run of props.runs?.length ? props.runs : [{ text: value }]) {
     const marks = [];
@@ -20,7 +24,7 @@ export function textToEditorDocument(props, value = props.text ?? '') {
     const lines = `${run.breakBefore ? '\n' : ''}${run.text ?? ''}`.split('\n');
     lines.forEach((line, index) => {
       if (index) paragraphs.push({ type: 'paragraph', content: [] });
-      if (line) paragraphs.at(-1).content.push({ type: 'text', text: line, marks });
+      if (line) paragraphs.at(-1).content.push(...variableTextNodes(line, marks));
     });
   }
   return { type: 'doc', content: paragraphs };
@@ -36,14 +40,14 @@ export function editorDocumentToPatch(document) {
   };
   const visit = (node) => {
     if (node.type === 'hardBreak') { append('\n'); return; }
-    if (node.type === 'text') {
+    if (node.type === 'text' || node.type === 'variable') {
       const marks = node.marks ?? [], attributes = marks.find((mark) => mark.type === 'textStyle')?.attrs ?? {};
       const has = (type) => marks.some((mark) => mark.type === type);
       const style = { ...attributes.legacy, bold: has('bold'), italic: has('italic'), strikethrough: has('strike'), underline: has('underline'), code: has('code'), fontWeight: attributes.fontWeight ?? (has('bold') ? 700 : 400) };
       for (const key of ['color', 'colorOpacity', 'fontSize', 'fontFamily', 'backgroundColor']) if (attributes[key] !== undefined && attributes[key] !== null) style[key] = key === 'fontSize' ? Number.parseFloat(attributes[key]) : attributes[key];
       const href = marks.find((mark) => mark.type === 'link')?.attrs.href;
       if (safeTextLink(href)) style.link = href;
-      append(node.text, style);
+      append(node.type === 'variable' ? variableToken(node.attrs.key) : node.text, style);
     } else (node.content ?? []).forEach(visit);
   };
   (document.content ?? []).forEach((paragraph, index) => { if (index) append('\n'); visit(paragraph); });

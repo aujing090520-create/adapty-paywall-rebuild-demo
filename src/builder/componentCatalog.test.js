@@ -131,6 +131,6 @@ test('old countdown capabilities become real editable children without changing 
   assert.equal(next.products,original.products);
   const active=next.root.children[0].children[0];
   assert.equal(active.children[0].props.text,'倒计时');
-  assert.equal(active.children.find((node)=>node.props.timerField==='hours').props.background,'#8ced75');
+  assert.equal(active.children.find((node)=>node.props.text==='{{ count_hours_with_zero }}').props.background,'#8ced75');
   assert.equal(upgradeCanonicalComponents(next),next);
 });

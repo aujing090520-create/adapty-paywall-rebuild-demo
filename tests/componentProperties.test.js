@@ -735,13 +735,15 @@ test('purchase checks only visible agreements and a linked switch follows its de
   await linked.close();
 });
 
-test('timer field selection removes incompatible rich text and SKU binding', async () => {
+test('legacy countdown text opens the shared variable editor without an exclusive timer field selector', async () => {
   const node = component('sample', 'Text', '', { text: '原文',timerField:'hours', runs: [{ text: '遮挡计时值' }], binding: { field: 'price', key: 'sample' } });
   const source = fixture(component('timer', 'Countdown', '', { start: '02:03:04' }, [component('active', 'CountdownState', '', { state: 'active' }, [node])]));
   const h = await mount(node, { source });
-  await h.select('倒计时字段（旧模板）', 'hours');
-  assert.deepEqual(h.node().children, ['02']); assert.equal(indexDocument(h.document()).nodes.get('sample').props.binding, null);
-  await h.select('倒计时字段（旧模板）', 'minutes'); assert.deepEqual(h.node().children, ['03']);
+  assert.equal(h.renderer.root.findAll(item=>item.type==='select'&&item.props['aria-label']==='倒计时字段（旧模板）').length,0);
+  const editor=h.renderer.root.findAll(item=>item.props['aria-label']==='文字内容'&&item.props['aria-readonly']==='true')[0];
+  assert.equal(editor.children.join(''),'{{ count_hours_with_zero }}');
+  assert.equal(h.renderer.root.findAll(item=>item.type==='textarea'&&item.props['aria-label']==='文字内容').length,0);
+  assert.equal(indexDocument(h.document()).nodes.get('sample').props.timerField,'hours');
   await h.close();
 });
 

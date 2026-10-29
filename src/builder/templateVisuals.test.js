@@ -75,10 +75,10 @@ test('saved documents receive changed default values once without losing manual 
 test('previously split countdown digits receive the calibrated size without overwriting a custom digit', () => {
   const old = load('ht-blue-privilege', false), current = load('ht-blue-privilege');
   let saved = upgradeCanonicalComponents(old);
-  const digit = [...indexDocument(saved).nodes.values()].find((node) => node.props.timerField === 'hours');
+  const digit = [...indexDocument(saved).nodes.values()].find((node) => node.props.text === '{{ count_hours_with_zero }}');
   saved = updateComponent(saved, digit.id, { props: { fontSize: 31 } });
   const result = migrateTemplateVisuals(saved, old, current);
-  const texts = [...indexDocument({ root: indexDocument(result).nodes.get('timer') }).nodes.values()].filter((node) => node.props.timerField);
+  const texts = [...indexDocument({ root: indexDocument(result).nodes.get('timer') }).nodes.values()].filter((node) => /\{\{ count_(hours|minutes|seconds)_with_zero \}\}/.test(node.props.text??''));
   assert.equal(texts.find((node) => node.id === digit.id).props.fontSize, 31);
   assert.ok(texts.filter((node) => node.id !== digit.id).every((node) => node.props.fontSize === 18));
 });

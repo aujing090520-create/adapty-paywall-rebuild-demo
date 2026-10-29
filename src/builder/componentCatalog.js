@@ -5,6 +5,7 @@ import { upgradeProductParameters } from '../products/productParameters.js';
 import { billingMonths } from '../productPricing.js';
 import {normalizeHtLabelSlots} from './layoutContainers.js';
 import {buildBlueVipColumn} from './htVipColumn.js';
+import {upgradeTimerTextVariables} from './textVariableTokens.js';
 
 // Public picker entries are building blocks or transparent Stack compositions.
 // Structural children are offered only by their owning container.
@@ -155,5 +156,5 @@ export function upgradeCanonicalComponents(document) {
     return children.some((child,index)=>child!==node.children[index])?{...node,children}:node;
   };
   const root=visit(document.root);
-  return upgradeProductParameters(normalizeHtLabelSlots(buildBlueVipColumn(repairBlueProductPlacement(changed?{...document,root}:document))), row => billingMonths(row) === 0 ? 'lifetime' : 'subscription');
+  return upgradeProductParameters(upgradeTimerTextVariables(normalizeHtLabelSlots(buildBlueVipColumn(repairBlueProductPlacement(changed?{...document,root}:document)))), row => billingMonths(row) === 0 ? 'lifetime' : 'subscription');
 }

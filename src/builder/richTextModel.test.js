@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
 import {Editor} from '@tiptap/core';
+import {closeHistory} from '@tiptap/pm/history';
 import {textEditorExtensions,toggleTextFormat} from './richTextExtensions.js';
 import {textToEditorDocument,editorDocumentToPatch,safeTextLink} from './richTextModel.js';
 
@@ -49,4 +50,34 @@ test('empty content stays empty and scripts or untrusted HTML cannot become exec
   for(const value of ['javascript:alert(1)','data:text/html,hi','https://example.com/\nheader'])assert.equal(safeTextLink(value),'');
   const editor=create({text:'<script>alert(1)</script>'});assert.ok(!editor.getHTML().includes('<script>'));
   editor.commands.selectAll();editor.commands.deleteSelection();assert.deepEqual(patch(editor),{text:'',runs:null});editor.destroy();
+});
+
+test('literal copy and multiple variables round trip as atomic styled tokens, including future keys',()=>{
+  const source='剩余 {{ count_hours_with_zero }} 小时，{{ business.sale }} {{ future.custom_key }}';
+  const props={runs:[{text:source,color:'#cc2233',fontWeight:700,underline:true}]};
+  const editor=create(props),tokens=editor.getJSON().content[0].content.filter(node=>node.type==='variable');
+  assert.deepEqual(tokens.map(node=>node.attrs.key),['count_hours_with_zero','business.sale','future.custom_key']);
+  assert.equal(patch(editor).text,source);assert.equal(editor.getText(),source);
+  assert.equal(patch(editor).runs[0].color,'#cc2233');assert.equal(patch(editor).runs[0].underline,true);
+  assert.equal(editor.view.dom.querySelectorAll('[data-text-variable]').length,3);
+  const serialized=patch(editor),reopened=create(serialized);
+  assert.deepEqual(patch(reopened),serialized);editor.destroy();reopened.destroy();
+});
+
+test('a variable inserts at the actual selection, deletes as one unit and undo restores it',()=>{
+  const editor=create({text:'开始结束'});
+  editor.commands.setTextSelection(3);editor.commands.insertContent({type:'variable',attrs:{key:'count_minutes_without_zero'}});
+  const inserted=patch(editor);assert.equal(inserted.text,'开始{{ count_minutes_without_zero }}结束');
+  editor.view.dispatch(closeHistory(editor.state.tr));
+  editor.commands.deleteRange({from:3,to:4});assert.equal(patch(editor).text,'开始结束');
+  editor.commands.undo();assert.deepEqual(patch(editor),inserted);
+  editor.commands.redo();assert.equal(patch(editor).text,'开始结束');
+  editor.destroy();
+});
+
+test('legacy countdown props open as variables instead of stale copy, runs or SKU binding',()=>{
+  const editor=create({timerField:'hoursWithoutZero',text:'旧内容',binding:{field:'price'},runs:[{text:'旧格式'}],color:'#12ab34',fontWeight:700});
+  assert.equal(patch(editor).text,'{{ count_hours_without_zero }}');
+  assert.equal(editor.getJSON().content[0].content[0].type,'variable');
+  editor.destroy();
 });

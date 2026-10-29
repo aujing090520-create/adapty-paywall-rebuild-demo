@@ -1,6 +1,15 @@
-import { Extension } from '@tiptap/core';
+import { Extension, Node } from '@tiptap/core';
+import {variableToken} from './textVariableTokens.js';
 import StarterKit from '@tiptap/starter-kit';
 import { TextStyle, Color, FontSize, FontFamily, BackgroundColor } from '@tiptap/extension-text-style';
+
+const TextVariable = Node.create({
+  name:'variable', inline:true, group:'inline', atom:true,
+  addAttributes() { return { key:{default:'',parseHTML:element=>element.getAttribute('data-text-variable')} }; },
+  parseHTML() { return [{tag:'span[data-text-variable]'}]; },
+  renderHTML({node}) { return ['span',{'data-text-variable':node.attrs.key,class:'rc-variable-token',contenteditable:'false',title:variableToken(node.attrs.key)},node.attrs.key]; },
+  renderText({node}) { return variableToken(node.attrs.key); },
+});
 
 const StoredStyles = Extension.create({
   name: 'storedTextStyles',
@@ -13,7 +22,7 @@ const StoredStyles = Extension.create({
   },
 });
 
-export const textEditorExtensions = () => [StarterKit.configure({ blockquote: false, bulletList: false, orderedList: false, listItem: false, listKeymap: false, heading: false, horizontalRule: false, codeBlock: false, trailingNode: false, link: { openOnClick: false, autolink: false, defaultProtocol: 'https' } }), TextStyle, Color, FontSize, FontFamily, BackgroundColor, StoredStyles];
+export const textEditorExtensions = () => [StarterKit.configure({ blockquote: false, bulletList: false, orderedList: false, listItem: false, listKeymap: false, heading: false, horizontalRule: false, codeBlock: false, trailingNode: false, link: { openOnClick: false, autolink: false, defaultProtocol: 'https' } }), TextStyle, Color, FontSize, FontFamily, BackgroundColor, StoredStyles, TextVariable];
 
 export function toggleTextFormat(editor, name) {
   let chain = editor.chain();

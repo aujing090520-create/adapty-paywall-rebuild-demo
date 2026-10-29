@@ -3,6 +3,7 @@ import { packageDisplayFields, productPeriod } from '../products/packageFields.j
 import { ITEM_VARIABLES,businessList } from './businessData.js';
 import {businessValues} from './paywallLogic.js';
 import {PRODUCT_VARIABLE_PLACEHOLDERS} from '../products/fieldPreview.js';
+import {TIMER_VARIABLE_DEFINITIONS} from './textVariableTokens.js';
 
 export const PRODUCT_TEXT_VARIABLES = [
   ['product.price', '商品总价'],
@@ -17,7 +18,16 @@ export const PRODUCT_TEXT_VARIABLES = [
   ['product.savings', '节省比例'],
   ['product.gift_count', '礼包数量'],
 ];
-export const TIMER_TEXT_VARIABLES = [['days','天'],['hours','小时'],['minutes','分钟'],['seconds','秒']].flatMap(([unit,label])=>[[`count_${unit}_with_zero`,`${label}（补零）`],[`count_${unit}_without_zero`,`${label}（不补零）`]]);
+export const TIMER_TEXT_VARIABLES = TIMER_VARIABLE_DEFINITIONS.map(({key,label}) => [key,label]);
+
+export function availableTextVariables(document, { countdown=false, list=false }={}) {
+  return [
+    ...(countdown ? TIMER_TEXT_VARIABLES.map(item=>[...item,'倒计时']) : []),
+    ...PRODUCT_TEXT_VARIABLES.map(item=>[...item,'商品']),
+    ...(document.logic?.variables??[]).filter(item=>item.key).map(item=>[`business.${item.key}`,item.key,'业务']),
+    ...(list ? ITEM_VARIABLES.map(item=>[...item,'列表条目']) : []),
+  ];
+}
 
 export function variableValues(document, packageNode, timer, runtime={}) {
   const row = document.productFieldPreview?undefined:document.products[packageNode?.props.dataKey ?? packageNode?.id];
@@ -37,10 +47,7 @@ export function variableValues(document, packageNode, timer, runtime={}) {
     'product.savings': display.savingCopy,
     'product.gift_count': String(businessList(document,'gifts',packageNode).length),
   } : Object.fromEntries(PRODUCT_TEXT_VARIABLES.map(([key]) => [key, '']));
-  if (timer) for (const unit of ['days', 'hours', 'minutes', 'seconds']) {
-    values[`count_${unit}_with_zero`] = timer[unit];
-    values[`count_${unit}_without_zero`] = timer[`${unit}WithoutZero`];
-  }
+  if (timer) for (const {key,field} of TIMER_VARIABLE_DEFINITIONS) values[key] = timer[field];
   for(const [key,value] of Object.entries(businessValues(document,runtime)))if(key)values[`business.${key}`]=String(value??'');
   return values;
 }

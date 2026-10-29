@@ -3,8 +3,8 @@ import { ArrowRight, ArrowDown, Layers3, AlignLeft, AlignCenter, AlignRight, Ali
 import { CONTAINER_TYPES } from './componentDocument.js';
 import { workflowContext, stepDestination, owningScreen } from './workflow.js';
 import { selectedStyleKey, stateStyleProps, spacingModePatch, dimensionModePatch, imageMask, cornerModePatch, CORNER_KEYS, selectionOwner, sequencePages, BADGE_DEFAULTS, utcDateTimeInput, textPropertyPatch } from './propertyModel.js';
-import { PRODUCT_TEXT_VARIABLES, TIMER_TEXT_VARIABLES, variableIssues } from './textVariables.js';
-import {ITEM_VARIABLES} from './businessData.js';
+import { availableTextVariables, PRODUCT_TEXT_VARIABLES, variableIssues } from './textVariables.js';
+import {timerTextProps} from './textVariableTokens.js';
 import {timeSources,TIME_SCOPES} from './businessTime.js';
 import {packageSelectionGroups} from './componentOperations.js';
 import {COMPARISON_ORDER_RULES} from './comparisonOrdering.js';
@@ -182,16 +182,19 @@ function ContentSection({ selected, p, patch, styleP=p, stylePatch=patch, docume
   }
   if (type === 'Text') {
     const boundPackage = findPackage(selected.id, nodes, parents);
-    const issues=variableIssues(resolveText({...selected,props:p},document,boundPackage),document,boundPackage??[...nodes.values()].find(node=>node.type==='Package'&&node.props.defaultSelected));
+    const textProps=timerTextProps(p),legacyTimer=textProps!==p;
+    const issues=variableIssues(resolveText({...selected,props:textProps},document,boundPackage),document,boundPackage??[...nodes.values()].find(node=>node.type==='Package'&&node.props.defaultSelected));
     let owner = nodes.get(parents.get(selected.id));
     while (owner && owner.type !== 'Countdown') owner = nodes.get(parents.get(owner.id));
     let listOwner=nodes.get(parents.get(selected.id));while(listOwner&&!listOwner.props.dataSource)listOwner=nodes.get(parents.get(listOwner.id));
+    const variables=availableTextVariables(document,{countdown:Boolean(owner),list:Boolean(listOwner)});
+    const contextKeys=new Set(variables.filter(([, ,group])=>['倒计时','列表条目'].includes(group)).map(([key])=>key));
+    const visibleIssues=issues.filter(item=>!contextKeys.has(item.key));
     return <PropertySection title="文字属性">
-      {issues.length>0&&<small role="status">{issues.map(item=>`${item.key}：${item.reason}`).join('；')}。预览以空值回退。</small>}
+      {visibleIssues.length>0&&<small role="status">{visibleIssues.map(item=>`${item.key}：${item.reason}`).join('；')}。预览以空值回退。</small>}
       {!document.productParameterVersion && rule==='default' && boundPackage && !p.timerField && <Select label="内容来源" value={p.binding?'product':'custom'} options={[[ 'custom','自定义文字' ],[ 'product','商品字段' ]]} onChange={(source)=>patch(source==='product'?{binding:{key:boundPackage.props.dataKey??boundPackage.id,field:'name'},runs:null}:{binding:null,productField:null,runs:null,text:resolveText(selected,document,boundPackage)})}/>}
-      {rule==='default' && owner && p.timerField && <Select label="倒计时字段（旧模板）" value={p.timerField} options={[[ 'none', '普通文字' ], ...[['days','天'],['hours','小时'],['minutes','分钟'],['seconds','秒']].flatMap(([key, label]) => [[key, `${label}（补零）`], [`${key}WithoutZero`, `${label}（不补零）`]])]} onChange={(value) => patch({ timerField: value === 'none' ? null : value, ...(value !== 'none' ? { binding: null, runs: null } : {}) })} />}
-      {!p.timerField && (rule==='default' && p.binding ? <Field label="文字内容"><textarea aria-label="文字内容" value={resolveText({...selected,props:p}, document, boundPackage)} readOnly/></Field> : <React.Suspense fallback={<div className="rc-rich-loading">加载文字编辑器</div>}><RichTextEditor key={selected.id} aria-label="文字内容" p={p} value={resolveText({...selected,props:p},document,boundPackage)} onChange={patch} variables={[...PRODUCT_TEXT_VARIABLES,...(document.logic?.variables??[]).filter(item=>item.key).map(item=>[`business.${item.key}`,`业务变量：${item.key}`]),...(owner?TIMER_TEXT_VARIABLES:[]),...(listOwner?ITEM_VARIABLES:[])]}/></React.Suspense>)}
-      {rule==='default' && p.binding && <><Select label="商品字段" value={p.binding.field} options={Object.entries(fieldNames)} onChange={(field) => patch({ binding: { ...p.binding, field },...(document.productFieldPreview&&(field==='reference'||field==='referencePrice'||p.binding.field==='reference'||p.binding.field==='referencePrice')?{strike:['reference','referencePrice'].includes(field)}:{}) })} />{!boundPackage&&<button type="button" className="rc-secondary" onClick={() => patch({ binding: null, runs: null, text: resolveText(selected, document, boundPackage) })}>转为独立文字</button>}</>}
+      {rule==='default' && textProps.binding ? <Field label="文字内容"><textarea aria-label="文字内容" value={resolveText({...selected,props:textProps}, document, boundPackage)} readOnly/></Field> : <React.Suspense fallback={<div className="rc-rich-loading">加载文字编辑器</div>}><RichTextEditor key={selected.id} aria-label="文字内容" p={textProps} value={resolveText({...selected,props:textProps},document,boundPackage)} onChange={value=>patch({...value,...(legacyTimer?{timerField:null,binding:null}:{})})} variables={variables}/></React.Suspense>}
+      {rule==='default' && textProps.binding && <><Select label="商品字段" value={p.binding.field} options={Object.entries(fieldNames)} onChange={(field) => patch({ binding: { ...p.binding, field },...(document.productFieldPreview&&(field==='reference'||field==='referencePrice'||p.binding.field==='reference'||p.binding.field==='referencePrice')?{strike:['reference','referencePrice'].includes(field)}:{}) })} />{!boundPackage&&<button type="button" className="rc-secondary" onClick={() => patch({ binding: null, runs: null, text: resolveText(selected, document, boundPackage) })}>转为独立文字</button>}</>}
     </PropertySection>;
   }
   if(type==='Stack') {
