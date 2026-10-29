@@ -18,7 +18,7 @@ const variants=[{},full,{...full,paddingMode:'axis',marginMode:'axis',radiusMode
 
 test('reference covers every component and every rendered scalar field across default, optional and conditional panels',async()=>{
   const missing=new Set();let count=0;
-  for(const type of COMPONENT_TYPES)for(const props of variants){
+  for(const type of COMPONENT_TYPES)for(const props of [...variants,...(type==='Screen'?[{pagePresentation:'sheet'},{pagePresentation:'window'}]:[])]){
     const root=createCatalogComponent(type,'sample'),base=[...indexDocument({root}).nodes.values()].find(node=>node.type===type),selected={...base,props:{...base.props,...props}};
     const document={version:3,templateId:'reference',business:{timeSources:[{id:'sale',name:'活动',key:'campaign.sale',scope:'campaign',sample:{status:'active',expiresAt:'2030-01-01T00:00:00Z'}}]},products:{sample:{name:'示例商品',price:'¥100'}},root:component('page','Screen','页面',{},[selected])};
     const {nodes,parents}=indexDocument(document);let renderer;

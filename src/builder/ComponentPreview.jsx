@@ -21,6 +21,7 @@ import {safeTextLink,richTextFontFamily} from './richTextModel.js';
 import {textRuleProps} from './textRules.js';
 import {logicNode} from './paywallLogic.js';
 import {comparisonRowProps} from './htVipColumn.js';
+import {pageFrame} from './pagePresentation.js';
 import {orderedComparisonCells} from './comparisonOrdering.js';
 import {resolveBusinessTime,clockAnchor,clockNow} from './businessTime.js';
 import {localizedDocument} from './contentLocalization.js';
@@ -263,15 +264,23 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
     const disabled=!editing&&Boolean(props.disabled);
     return <div {...attributes} role="button" tabIndex={disabled?-1:0} aria-disabled={!editing && (blocked||disabled) || undefined} style={{ ...style, ...containerStyle(visualNode), ...(!editing&&(blocked||disabled)?{cursor:'default'}:{}),...(disabled?{opacity:(style.opacity??1)*.5}:{}) }} onClick={(event) => { select(event); if(disabled){event.stopPropagation();return;}if (node.type === 'TabButton') setRuntime((current) => ({ ...current, [props.target]: props.index })); else if (!editing) { event.stopPropagation(); runAction({...node,props},item); } }} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); if(disabled)return;if (editing) onSelect(node.id); else if (node.type === 'TabButton') setRuntime((current) => ({ ...current, [props.target]: props.index })); else runAction({...node,props},item); } }}>{children()}</div>;
   }
-  if (node.type === 'Screen' && node.children.some((child) => ['Header', 'Footer'].includes(child.type))) {
+  if (node.type === 'Screen' && !node.children.some(child => child.type === 'Flow') && (props.pagePresentation || node.children.some(child=>['Header','Footer'].includes(child.type)))) {
     const chrome = screenChromeLayout(node, runtime, context.nodeIndex);
-    // One viewport keeps scroll ownership; the first full-width media shares the header's grid row.
-    return <div {...attributes} data-axis="vertical" data-header-overlap={chrome.underHeader || undefined} style={{ ...style, display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gridTemplateRows: `${chrome.header ? 'auto' : '0px'} 1fr ${chrome.footer ? 'auto' : '0px'}`, minHeight: props.heightMode === 'fit' ? Math.max(style.minHeight ?? 0, context.viewportHeight) : style.minHeight }}>
+    if (!props.pagePresentation) return <div {...attributes} data-axis="vertical" data-header-overlap={chrome.underHeader||undefined} style={{...style,display:'grid',gridTemplateColumns:'minmax(0, 1fr)',gridTemplateRows:`${chrome.header?'auto':'0px'} 1fr ${chrome.footer?'auto':'0px'}`,minHeight:props.heightMode==='fit'?Math.max(style.minHeight??0,context.viewportHeight):style.minHeight}}>
+      <BackgroundVideo props={props}/>{chrome.header&&<NativeComponent node={chrome.header} packageNode={currentPackage} layoutStyle={{gridColumn:1,gridRow:1,alignSelf:'start'}}/>}
+      <div className="nc-screen-content" data-axis={props.axis} style={{...containerStyle(visualNode),gridColumn:1,gridRow:chrome.underHeader?'1 / 3':2,minWidth:0}}>{children(chrome.content,false)}</div>
+      {chrome.footer&&<NativeComponent node={chrome.footer} packageNode={currentPackage} layoutStyle={{gridColumn:1,gridRow:3,alignSelf:'end'}}/>}</div>;
+    const frame = pageFrame(props, context.viewportHeight);
+    // The presentation frame owns geometry; only content scrolls between fixed chrome rows.
+    const backdrop = node.children.find(child=>child.props.pageBackdrop);
+    return <div className="nc-page-frame" data-page-presentation={frame.mode} style={{height:context.viewportHeight,padding:frame.inset,background:frame.mode==='fullscreen'?'transparent':props.windowBackdrop??'#8f8f8f'}} onClick={select}>
+    {frame.mode!=='fullscreen'&&backdrop&&<NativeComponent node={backdrop} layoutStyle={{position:'absolute',inset:0,width:'100%',height:'100%',zIndex:0}}/>}
+    <div {...attributes} data-axis="vertical" data-header-overlap={chrome.underHeader || undefined} style={{ ...style, width:'100%',maxWidth:'100%',height:frame.height,minHeight:0,maxHeight:'100%',margin:0,borderRadius:frame.radius,overflow:'hidden', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gridTemplateRows: `${chrome.header ? 'auto' : '0px'} minmax(0, 1fr) ${chrome.footer ? 'auto' : '0px'}` }}>
       <BackgroundVideo props={props} />
       {chrome.header && <NativeComponent node={chrome.header} packageNode={currentPackage} layoutStyle={{ gridColumn: 1, gridRow: 1, alignSelf: 'start' }} />}
-      <div className="nc-screen-content" data-axis={props.axis} style={{ ...containerStyle(visualNode), gridColumn: 1, gridRow: chrome.underHeader ? '1 / 3' : 2, minWidth: 0 }}>{children(chrome.content, false)}</div>
+      <div className="nc-screen-content" role="region" aria-label={`${node.name}内容`} tabIndex={0} data-axis={props.axis} style={{ ...containerStyle(visualNode), gridColumn: 1, gridRow: chrome.underHeader ? '1 / 3' : 2, minWidth: 0,minHeight:0,overflowY:'auto',overflowX:'hidden',overscrollBehavior:'contain' }}>{children(chrome.content, false)}</div>
       {chrome.footer && <NativeComponent node={chrome.footer} packageNode={currentPackage} layoutStyle={{ gridColumn: 1, gridRow: 3, alignSelf: 'end' }} />}
-    </div>;
+    </div></div>;
   }
   return <div {...attributes} style={{ ...style, ...containerStyle(visualNode), ...(['Header','Footer'].includes(node.type)?{position:'sticky',[node.type==='Header'?'top':'bottom']:0,zIndex:4}:{} ), ...layoutStyle }}>{children()}</div>;
 }

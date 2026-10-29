@@ -9,6 +9,7 @@ import {timeSources,TIME_SCOPES} from './businessTime.js';
 import {packageSelectionGroups} from './componentOperations.js';
 import {COMPARISON_ORDER_RULES} from './comparisonOrdering.js';
 import {flowInitialIndex} from './componentTree.js';
+import {PAGE_PRESENTATIONS,pagePresentation} from './pagePresentation.js';
 import { Italic, Underline, Strikethrough } from 'lucide-react';
 import { PRODUCT_PARAMETERS, PRODUCT_PARAMETER_OPTIONS, PACKAGE_PRICE_MODES, packagePriceMode, effectiveProductParameter, productParameterPreview } from '../products/productParameters.js';
 import {isGradient,pickerColor,pickerPaint} from './colorModel.js';
@@ -276,7 +277,7 @@ function LayoutSection({ selected, p, patch, parent }) {
       {p.axis !== 'overlay' && <><Select label="分布" value={p.justify} options={[[ 'between', '两端分布' ], [ 'around', '各项两侧均分' ], [ 'evenly', '各项等距' ], [ 'start', '起始' ], [ 'center', '居中' ], [ 'end', '末尾' ]]} onChange={(justify) => patch({ justify })} /><NumberField label="子项间距" value={p.gap} max={200} onChange={(gap) => patch({ gap })} /></>}
       {p.wrap && p.axis === 'horizontal' && <SegmentedField label="换行（旧模板）" value="yes" options={[[ 'no', '不换行' ], [ 'yes', '换行' ]]} onChange={(value) => patch({ wrap: value === 'yes' })} />}
     </PropertySection>}
-    {sizeSection}
+    {!(selected.type==='Screen'&&p.pagePresentation)&&sizeSection}
     <PropertySection title="布局间距" className="rc-spacing-section"><SpacingField title="内边距" prefix="padding" p={p} patch={patch} verticalOnly={selected.type==='Carousel'} />{selected.type !== 'Screen' && !(selected.type==='Icon'&&parent?.type==='TimelineItem') && <SpacingField title="外边距" prefix="margin" p={p} patch={patch} />}</PropertySection>
   </>;
 }
@@ -393,6 +394,10 @@ export default function RevenueCatProperties({ selected, p, patch, document, nod
   const styleP = stateStyleProps(p, stateful && packageState === 'selected');
   const stylePatch = stateful && packageState === 'selected' ? (values) => patch(Object.fromEntries(Object.entries(values).map(([key, value]) => [selectedStyleKey(key), value]))) : patch;
   return <FontContext.Provider value={{fonts:document.fonts??[],onFontsChange}}><div className="rc-properties-body">
+    {selected.type==='Screen'&&!selected.children.some(child=>child.type==='Flow')&&<PropertySection title="页面展示">
+      <Select label="展示方式" value={pagePresentation(p)} options={PAGE_PRESENTATIONS} onChange={pagePresentation=>patch({pagePresentation,...(pagePresentation==='window'&&p.windowInset===undefined?{windowInset:20}:{})})}/>
+      {pagePresentation(p)!=='fullscreen'&&<><NumberField label="窗口高度" value={p.windowHeight??600} min={120} max={844} onChange={windowHeight=>patch({windowHeight})}/><NumberField label="窗口边距" value={p.windowInset??0} max={100} onChange={windowInset=>patch({windowInset})}/><NumberField label="窗口圆角" value={p.windowRadius??24} max={100} onChange={windowRadius=>patch({windowRadius})}/><ColorField label="窗口外背景" value={p.windowBackdrop??'#8f8f8f'} onChange={windowBackdrop=>patch({windowBackdrop})}/></>}
+    </PropertySection>}
     {selected.type==='Text'&&<div className="rc-text-rule"><Select label="文字规则" value={rule} options={TEXT_RULES} onChange={(value)=>{if(value!=='default'&&!p.textRules?.[value])patch(textRulePatch(p,value,{}));setNavigation({textRule:value});}}/></div>}
     <ContentSection key={rule} rule={rule} selected={selected} p={selected.type==='Text'?textP:p} patch={selected.type==='Text'?textPatch:patch} styleP={styleP} stylePatch={stylePatch} document={document} nodes={nodes} parents={parents} findPackage={findPackage} resolveText={resolveText} changeProduct={changeProduct} fieldNames={fieldNames} demoSkus={demoSkus} setNavigation={setNavigation} onStatus={onStatus} setDefaultPackage={setDefaultPackage} onPackageGroupChange={onPackageGroupChange} onMediaType={onMediaType} onPageControl={onPageControl} onModalCreate={onModalCreate} onModalEdit={onModalEdit} onTimeSources={onTimeSources}/>
     {selected.type==='Countdown'&&<CountdownContentFields selected={selected} document={document} nodes={nodes} parents={parents} navigation={navigation} setNavigation={setNavigation} onChange={onCountdownContentChange} onSelect={onSelectComponent} resolveText={resolveText} findPackage={findPackage} selectedState={stateful&&packageState==='selected'}/>}

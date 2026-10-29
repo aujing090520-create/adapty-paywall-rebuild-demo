@@ -71,8 +71,20 @@ export function navigationButton(kind, id = crypto.randomUUID()) {
 export function addNavigationButton(document, screenId, kind = 'close') {
   const screen = indexDocument(document).nodes.get(screenId);
   if (screen?.type !== 'Screen') return { document, id: null };
+  const existing = findNavigationButton(screen, kind);
+  if (existing) return {document,id:existing.id};
   const button = navigationButton(kind);
   return { document: appendNavigationButton(document,screenId,button), id: button.id };
+}
+
+export function findNavigationButton(screen, kind = 'close') {
+  const glyph = kind==='back'?'tabler:outline:arrow-left':'tabler:outline:x';
+  const visit = node => {
+    if(node.props.hidden||node.type==='BottomSheet'||node.type==='Screen'&&node!==screen)return null;
+    if(node.type==='Button'&&node.children.some(child=>child.type==='Icon'&&child.props.icon===glyph))return node;
+    return node.children.map(visit).find(Boolean)??null;
+  };
+  return screen&&visit(screen);
 }
 
 export function upgradeButtonModals(document, offerings = [], currentPaywallId) {

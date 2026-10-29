@@ -7,6 +7,11 @@ import {PRODUCT_PARAMETER_OPTIONS} from '../src/products/productParameters.js';
 
 export const definitions=[];
 const add=(types,group,label,key,meaning,condition='该组件显示且当前模块已启用',options=[],range='')=>definitions.push({types,group,label,key,meaning,condition,options,range});
+add(['Screen'],'页面展示','展示方式','pagePresentation','整个Paywall页面的呈现形态，不属于内部布局容器；多步骤逐屏配置','选中页面根容器或画布工具栏页面展示；不改变按钮与弹窗绑定',[['fullscreen','全屏页面','使用设备视口，保留窗口参数便于切回'],['sheet','底部半窗','固定到底部，内容在窗口内滚动'],['window','居中窗口','窗口居中，内容在窗口内滚动']]);
+add(['Screen'],'页面展示','窗口高度','windowHeight','窗口外框高度，超出可用屏幕时自动限制；不通过内容容器留白模拟半窗','底部半窗或居中窗口；切回全屏不丢弃窗口尺寸',[],'120–844 px');
+add(['Screen'],'页面展示','窗口边距','windowInset','窗口与设备四边保留的最小距离','底部半窗或居中窗口；默认半窗0px、首次居中20px',[],'0–100 px');
+add(['Screen'],'页面展示','窗口圆角','windowRadius','窗口整体外框的圆角；全屏呈现不使用该圆角','底部半窗或居中窗口',[],'0–100 px');
+add(['Screen'],'页面展示','窗口外背景','windowBackdrop','窗口外部的背景颜色，不改变窗口内部内容背景','底部半窗或居中窗口');
 add(['Stack'],'展示顺序','展示顺序','comparisonOrderMode','整张特权对比表按画布或用户规则展示，三列按稳定特权标识同步重排，表头固定','仅特权表最外层；不改写模板图层顺序',[['canvas','按画布顺序','默认及回退顺序'],['rule','按用户规则','采用所选规则结果']]);
 add(['Stack'],'展示顺序','排序规则','comparisonOrderRule','选择排序规则，缺失或无有效结果时按画布顺序展示；未返回条目按原顺序追加','特权表选择按用户规则时；当前规则是Demo示例，未接入真实用户接口');
 const without=(...types)=>COMPONENT_TYPES.filter(type=>!types.includes(type));

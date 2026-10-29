@@ -64,6 +64,23 @@ after(async () => { for (const renderer of mounted) await act(async () => render
 const event = (value) => ({ target: { value }, stopPropagation() {}, preventDefault() {} });
 const fixture = (node) => ({ version: 3, templateId: 'audit', products: { sample: { name: '年度', price: '¥100', billingMonths: 12 } }, root: component('page', 'Screen', '页面', {}, [node]) });
 
+test('page presentation switches the entire Screen, preserves window settings and fixes scroll ownership',async()=>{
+  const screen=component('sample','Screen','Paywall',{pagePresentation:'sheet',windowHeight:500,windowInset:0},[component('body','Text','正文',{text:'页面内容'}),component('footer','Footer','页脚',{},[component('cta','Button','购买',{action:{action:'Purchase'}})])]);
+  const source={version:3,templateId:'audit',products:{},root:screen},h=await mount(screen,{source});
+  try{
+    assert.equal(h.node().props.style.height,500);
+    const content=h.renderer.root.findByProps({'aria-label':'Paywall内容'});assert.equal(content.props.style.overflowY,'auto');assert.equal(content.props.style.minHeight,0);
+    assert.equal(h.renderer.root.findAll(n=>n.type==='input'&&n.props['aria-label']==='固定高度').length,0);
+    await h.select('展示方式','fullscreen');assert.equal(h.node().props.style.height,844);assert.equal(h.node().props.style.borderRadius,0);
+    assert.equal(h.renderer.root.findAll(n=>n.type==='input'&&n.props['aria-label']==='窗口高度').length,0);
+    await h.select('展示方式','window');await h.change('窗口高度','480');await h.change('窗口圆角','32');
+    await h.select('展示方式','fullscreen');await h.select('展示方式','sheet');
+    assert.equal(h.node().props.style.height,480);assert.equal(h.node().props.style.borderRadius,32);
+    assert.deepEqual(indexDocument(h.document()).nodes.get('cta').props,screen.children[1].children[0].props);
+    assert.deepEqual([...indexDocument(h.document()).nodes.keys()],[...indexDocument(source).nodes.keys()]);
+  }finally{await h.close();}
+});
+
 async function mount(node, { editing = true, source, initialNavigation = {} } = {}) {
   let latest, status;
   function Harness() {

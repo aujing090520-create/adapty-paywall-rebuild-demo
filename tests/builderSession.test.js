@@ -144,7 +144,7 @@ test('actual App links, edits and saves an existing canvas popup without copying
     assert.ok(modalBindings(editor().props.initialDocument).some(({modal})=>modal.id===offerId));
     await click('选择画板：挽留弹窗');assert.equal(widthField().props.value,'280');
     const existingIds=modalBindings(editor().props.initialDocument).map(({modal})=>modal.id);
-    await click('选择画板：特权首页');await click('添加返回按钮');
+    await click('选择画板：特权首页');await click('定位返回按钮');
     await act(async()=>app.root.findByProps({'aria-label':'点击动作'}).props.onChange({target:{value:'OpenSheet'}}));
     await click('新建空白弹窗');
     const bindings=modalBindings(editor().props.initialDocument),ids=bindings.map(({modal})=>modal.id);
