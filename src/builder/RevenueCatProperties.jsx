@@ -1,10 +1,10 @@
 import React from 'react';
 import { ArrowRight, ArrowDown, Layers3, AlignLeft, AlignCenter, AlignRight, AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal, AlignStartVertical, AlignCenterVertical, AlignEndVertical, SquareDashed, RectangleHorizontal, RectangleVertical, Plus, X, Settings2 } from 'lucide-react';
-import { CONTAINER_TYPES } from './componentDocument.js';
+import { CONTAINER_TYPES, componentProps, componentLayerLabel } from './componentDocument.js';
 import { workflowContext, stepDestination, owningScreen } from './workflow.js';
 import { selectedStyleKey, stateStyleProps, spacingModePatch, dimensionModePatch, imageMask, cornerModePatch, CORNER_KEYS, selectionOwner, sequencePages, BADGE_DEFAULTS, utcDateTimeInput, textPropertyPatch } from './propertyModel.js';
 import { availableTextVariables, PRODUCT_TEXT_VARIABLES, variableIssues } from './textVariables.js';
-import {timerTextProps} from './textVariableTokens.js';
+import {timerTextProps,TIMER_VARIABLE_DEFINITIONS} from './textVariableTokens.js';
 import {timeSources,TIME_SCOPES} from './businessTime.js';
 import {packageSelectionGroups} from './componentOperations.js';
 import {COMPARISON_ORDER_RULES} from './comparisonOrdering.js';
@@ -249,7 +249,7 @@ function ContentSection({ selected, p, patch, styleP=p, stylePatch=patch, docume
         {onTimeSources&&<button type="button" className="rc-secondary" onClick={onTimeSources}><Settings2 size={15}/>配置业务时间源</button>}
       </>:<><Field label="目标时间（UTC）"><input type="datetime-local" step="1" aria-label="目标时间（UTC）" value={utcDateTimeInput(p.deadline)} onInput={updateDeadline} onChange={updateDeadline}/></Field>{!p.deadline && p.start!==undefined && <Field label="起始时长（旧模板）"><input value={p.start} onChange={(event) => patch({ start: event.target.value })} /></Field>}</>}
       <Select label="计时单位" value={p.countFrom ?? 'hours'} options={[[ 'days', '天' ], [ 'hours', '小时' ], [ 'minutes', '分钟' ]]} onChange={(countFrom) => patch({ countFrom })} />
-      <CheckboxField label="自定义兜底内容" checked={p.fallbackEnabled!==false} onChange={(fallbackEnabled)=>patch({fallbackEnabled})}/>
+      <CheckboxField label="自定义兜底内容" checked={p.fallbackEnabled!==false} onChange={(fallbackEnabled)=>{patch({fallbackEnabled});if(!fallbackEnabled)setNavigation({[selected.id]:undefined});}}/>
     </PropertySection>;
   }
   if (type === 'Switch') return <PropertySection title="开关属性"><Select label="默认状态" value={p.defaultIndex??0} options={[[0,'关闭'],[1,'开启']]} onChange={(value)=>{patch({defaultIndex:Number(value)});setNavigation({[selected.id]:Number(value)});}}/></PropertySection>;
@@ -340,6 +340,34 @@ function TypographyFields({p,patch,badge=false}) {
   </>;
 }
 
+function CountdownContentFields({selected,document,nodes,parents,navigation,setNavigation,onChange,onSelect,resolveText,findPackage,selectedState=false}) {
+  const states=selected.children.filter(child=>child.type==='CountdownState'&&(child.props.state!=='fallback'||selected.props.fallbackEnabled!==false));
+  const state=states.find(child=>child.props.state===navigation[selected.id])??states.find(child=>child.props.state==='active')??states[0];
+  const [textId,setTextId]=React.useState(null);
+  if(!state||!onChange)return null;
+  const texts=state.children.filter(child=>child.type==='Text');
+  const simple=texts.length===state.children.length;
+  const text=texts.find(child=>child.id===textId)??texts[0];
+  const raw=text?timerTextProps(componentProps(text)):{text:'',widthMode:'fit',fontSize:24,fontWeight:700,textAlign:'center',color:'inherit'};
+  const p=stateStyleProps(raw,selectedState);
+  const patch=values=>onChange(state.id,text?.id??null,values);
+  const stylePatch=values=>patch(selectedState?Object.fromEntries(Object.entries(values).map(([key,value])=>[selectedStyleKey(key),value])):values);
+  const label=(node,index)=>{
+    const value=timerTextProps(node.props).text??'';
+    const variable=TIMER_VARIABLE_DEFINITIONS.find(item=>value.trim()===`{{ ${item.key} }}`);
+    return `${index+1}. ${variable?.label??(value.trim()===':'?'分隔符':value.trim()||'文字')}`;
+  };
+  return <PropertySection title="显示内容">
+    <Select label="编辑内容状态" value={state.props.state} options={states.map(child=>[child.props.state,componentLayerLabel(child)])} onChange={value=>{setTextId(null);setNavigation({[selected.id]:value});}}/>
+    {simple?<>
+      {texts.length>1&&<Select label="文字单元" value={text.id} options={texts.map((child,index)=>[child.id,label(child,index)])} onChange={setTextId}/>}
+      <React.Suspense fallback={<div className="rc-rich-loading">加载文字编辑器</div>}><RichTextEditor key={text?.id??state.id} aria-label="倒计时文字内容" p={raw} value={text?resolveText({...text,props:raw},document,findPackage?.(text.id,nodes,parents)):''} onChange={values=>patch({...values,...(text?.props.timerField?{timerField:null,binding:null}:{})})} variables={availableTextVariables(document,{countdown:true})}/></React.Suspense>
+      {text&&<TypographyFields p={p} patch={stylePatch}/>}
+    </>:null}
+    {onSelect&&<button type="button" className="rc-secondary" onClick={()=>onSelect(simple&&text?text.id:state.id)}>定位{simple&&text?'文字图层':'内容图层'}</button>}
+  </PropertySection>;
+}
+
 function BadgeSection({selected,p,patch}){
   if(!['Stack','Package','Slide','PurchaseButton'].includes(selected.type))return null;
   const enabled=p.badgeEnabled??Boolean(p.badge),badge={...BADGE_DEFAULTS,...p.badge};
@@ -355,7 +383,7 @@ function BadgeSection({selected,p,patch}){
   </div>}</PropertySection>;
 }
 
-export default function RevenueCatProperties({ selected, p, patch, document, nodes, parents, findPackage, resolveText, changeProduct, fieldNames, demoSkus, navigation = {}, setNavigation, onStatus, setDefaultPackage, onPackageGroupChange, onMediaType, onPageControl, onFontsChange, onModalCreate, onModalEdit, onTimeSources }) {
+export default function RevenueCatProperties({ selected, p, patch, document, nodes, parents, findPackage, resolveText, changeProduct, fieldNames, demoSkus, navigation = {}, setNavigation, onStatus, setDefaultPackage, onPackageGroupChange, onMediaType, onPageControl, onFontsChange, onModalCreate, onModalEdit, onTimeSources, onCountdownContentChange, onSelectComponent }) {
   const rule=selected.type==='Text'?textRuleName(navigation.textRule):'default';
   const textP=textRuleProps(p,rule), textPatch=(values)=>patch(textRulePatch(p,rule,values));
   const owner = selected.type==='Indicators'?selected:selectionOwner(selected, nodes, parents);
@@ -367,6 +395,7 @@ export default function RevenueCatProperties({ selected, p, patch, document, nod
   return <FontContext.Provider value={{fonts:document.fonts??[],onFontsChange}}><div className="rc-properties-body">
     {selected.type==='Text'&&<div className="rc-text-rule"><Select label="文字规则" value={rule} options={TEXT_RULES} onChange={(value)=>{if(value!=='default'&&!p.textRules?.[value])patch(textRulePatch(p,value,{}));setNavigation({textRule:value});}}/></div>}
     <ContentSection key={rule} rule={rule} selected={selected} p={selected.type==='Text'?textP:p} patch={selected.type==='Text'?textPatch:patch} styleP={styleP} stylePatch={stylePatch} document={document} nodes={nodes} parents={parents} findPackage={findPackage} resolveText={resolveText} changeProduct={changeProduct} fieldNames={fieldNames} demoSkus={demoSkus} setNavigation={setNavigation} onStatus={onStatus} setDefaultPackage={setDefaultPackage} onPackageGroupChange={onPackageGroupChange} onMediaType={onMediaType} onPageControl={onPageControl} onModalCreate={onModalCreate} onModalEdit={onModalEdit} onTimeSources={onTimeSources}/>
+    {selected.type==='Countdown'&&<CountdownContentFields selected={selected} document={document} nodes={nodes} parents={parents} navigation={navigation} setNavigation={setNavigation} onChange={onCountdownContentChange} onSelect={onSelectComponent} resolveText={resolveText} findPackage={findPackage} selectedState={stateful&&packageState==='selected'}/>}
     {stateful && rule==='default' && <PropertySection title="状态样式"><SegmentedField label="状态" value={packageState} options={[[ 'default', '默认' ], [ 'selected', selected.type==='Indicators'?'当前':'选中' ]]} onChange={value=>setNavigation({[stateKey]:value})}/></PropertySection>}
     {['Text','ProductParameter'].includes(selected.type) && <PropertySection title="文字样式">
       <TypographyFields p={rule==='default'?styleP:textP} patch={rule==='default'?stylePatch:textPatch}/>

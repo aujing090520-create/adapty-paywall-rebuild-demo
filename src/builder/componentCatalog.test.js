@@ -134,3 +134,11 @@ test('old countdown capabilities become real editable children without changing 
   assert.equal(active.children.find((node)=>node.props.text==='{{ count_hours_with_zero }}').props.background,'#8ced75');
   assert.equal(upgradeCanonicalComponents(next),next);
 });
+
+test('plain imported countdown defaults use one variable text, while decorated digits keep independent boxes',()=>{
+  const original=doc([component('plain','Countdown','倒计时',{start:'02:03:04',prefix:'剩余',suffix:'结束',color:'#123456',prefixColor:'#654321',fontSize:19})]),before=structuredClone(original);
+  const result=upgradeCanonicalComponents(original),timer=result.root.children[0],active=timer.children[0];
+  assert.equal(active.children.length,1);assert.equal(active.children[0].props.text,'剩余 {{ count_hours_with_zero }} : {{ count_minutes_with_zero }} : {{ count_seconds_with_zero }} 结束');
+  assert.equal(active.children[0].props.runs[0].color,'#654321');assert.equal(timer.props.fallbackEnabled,false);assert.deepEqual(original,before);
+  assert.equal(upgradeCanonicalComponents(result),result);
+});

@@ -143,10 +143,15 @@ export function upgradeCanonicalComponents(document) {
       const active=native.children[0]; active.props.gap=5;
       const digits=['hours','separator-1','minutes','separator-2','seconds'].map((key)=>t(`${native.id}/${key}`,key.startsWith('separator')?':':'',{...(key.startsWith('separator')?{}:{timerField:key,fontWeight:700,background:props.digitBackground??'transparent',radius:4,paddingLeft:3,paddingRight:3}),widthMode:'fit',fontSize:size,color:props.color}));
       active.props.align='center';active.props.axis='horizontal';
-      active.children=[...(props.prefix?[t(`${native.id}/prefix`,props.prefix,{widthMode:'fit',fontSize:size,color:props.prefixColor??props.color})]:[]),...digits,...(props.suffix?[t(`${native.id}/suffix`,props.suffix,{widthMode:'fit',fontSize:size,color:props.color})]:[])];
+      const parts=[...(props.prefix?[t(`${native.id}/prefix`,props.prefix,{widthMode:'fit',fontSize:size,color:props.prefixColor??props.color})]:[]),...digits,...(props.suffix?[t(`${native.id}/suffix`,props.suffix,{widthMode:'fit',fontSize:size,color:props.color})]:[])];
+      if(props.digitBackground&&props.digitBackground!=='transparent')active.children=parts;
+      else {
+        const runs=parts.map((part,index)=>({text:`${index?' ':''}${part.props.timerField?`{{ count_${part.props.timerField}_with_zero }}`:part.props.text}`,fontWeight:part.props.fontWeight??400,...(part.props.color?{color:part.props.color}:{})}));
+        active.children=[t(`${native.id}/countdown-text`,runs.map(run=>run.text).join(''),{runs,widthMode:'fit',fontSize:size,color:props.color,textAlign:'center'})];
+      }
       native.children[1]=component(`${native.id}/ended`,'CountdownState','结束内容',{state:'ended'},[t(`${native.id}/ended-text`,'优惠已结束',{textAlign:'center'})]);
       native.children[2]=component(`${native.id}/fallback`,'CountdownState','兜底内容',{state:'fallback'},[t(`${native.id}/fallback-text`,'限时优惠',{textAlign:'center'})]);
-      return {...node,props:{...props,previewState:'auto'},children:native.children};
+      return {...node,props:{...props,fallbackEnabled:props.fallbackEnabled??false,previewState:'auto'},children:native.children};
     }
     if(node.type==='CountdownState'&&node.props.state==='active'){
       const children=node.children.map((child)=>child.type==='Text'&&child.props.widthMode===undefined?{...child,props:{...child.props,widthMode:'fit'}}:visit(child));

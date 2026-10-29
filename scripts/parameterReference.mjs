@@ -222,6 +222,11 @@ add(['Countdown'],'倒计时属性','计时单位','countFrom','控制最大的�
 add(['Countdown'],'倒计时属性','自定义兜底内容','fallbackEnabled','计时输入不可用时是否展示兜底子树','正常计时不展示兜底；子树由图层选择编辑',bool);
 add(['Countdown'],'文字样式','字号','fontSize','旧倒计时未拆分子文字时，控制整段倒计时字号','仅无子组件的旧倒计时；新倒计时在真实Text子层配置',[],'8–160 px');
 add(['Countdown'],'文字样式','颜色','color','旧倒计时未拆分子文字时，控制整段倒计时颜色','仅无子组件的旧倒计时；新倒计时在真实Text子层配置');
+add(['Countdown'],'显示内容','编辑内容状态','navigation.<Countdown ID>','切换正在编辑及预览的计时中、已结束、数据不可用内容','编辑会话状态，不改到期时间；只有开启自定义兜底后才出现数据不可用选项');
+add(['Countdown'],'显示内容','文字单元','editor.countdownTextId','在倒计时面板选择需要编辑的真实文字子组件','仅保留独立数字底色等多文字结构时显示；不新增第二份正文');
+add(['Countdown'],'显示内容','倒计时文字内容','CountdownState.children[].props.text / runs','在倒计时组件内直接编辑普通文字、变量与选区样式','写入实际Text子组件；新普通倒计时默认只有一条变量文字；复杂自定义组合通过定位内容图层继续编辑');
+add(['Countdown'],'显示内容','定位文字图层 / 定位内容图层','editor.selection','定位对应真实子组件，展开图层并显示完整排版属性','只改变编辑选择；不改变用户文案或组件结构');
+for(const entry of [...definitions].filter(item=>item.types.includes('Text')&&['文字样式','字体资源'].includes(item.group)))add(['Countdown'],'显示内容 / 文字样式',entry.label,`CountdownState.children[当前文字].props.${entry.key}`,entry.meaning,'倒计时自身显示内容面板，写入当前真实文字；默认/选中样式独立保留',entry.options,entry.range);
 add(['Wallet'],'钱包样式','按钮样式','walletStyle','改变钱包外观，不伪造真实设备钱包可用性','交互只演示，不发起交易',[['black','黑色','黑底白字'],['white','白色','白底黑字'],['white-outline','白色描边','白底黑字黑边']]);
 add(['Custom'],'自定义组件','上传/替换 ZIP','customBundle','解析并缓存ZIP资源，用隔离iframe预览；替换失败保留原记录','自包含网页支持范围见审计台账；不等价原生SDK，不能读取父页面数据');
 add(['Custom'],'自定义组件','移除 ZIP','customBundle','移除当前组件与ZIP的关联，不清空其他组件配置','已关联ZIP');

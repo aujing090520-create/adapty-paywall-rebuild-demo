@@ -229,6 +229,17 @@ function tabStylePeers(document, id) {
   });
 }
 
+export function patchCountdownContent(document, timerId, stateId, textId, values) {
+  const timer=indexDocument(document).nodes.get(timerId);
+  const state=timer?.type==='Countdown'?timer.children.find(child=>child.id===stateId&&child.type==='CountdownState'):null;
+  if(!state)return document;
+  if(textId)return state.children.some(child=>child.id===textId&&child.type==='Text')?patchComponentProperties(document,textId,values):document;
+  if(state.children.length)return document;
+  const ids=indexDocument(document).nodes;let id=`${state.id}/text`,suffix=2;while(ids.has(id))id=`${state.id}/text-${suffix++}`;
+  const text=component(id,'Text','文字',textPropertyPatch({type:'Text',props:{}},{widthMode:'fit',fontSize:24,fontWeight:700,textAlign:'center',...values}));
+  return updateComponent(document,state.id,{children:[text]});
+}
+
 export function patchComponentProperties(document, id, values) {
   const node = indexDocument(document).nodes.get(id);
   if (!node) return document;

@@ -5,7 +5,7 @@ import TestRenderer, { act } from 'react-test-renderer';
 import { createServer } from 'vite';
 import { component, componentProps, indexDocument, updateComponent, saveComponentDocument, readComponentDocument, COMPONENT_TYPES, cloneComponent, resolveComponentText } from '../src/builder/componentDocument.js';
 import { DEMO_SKUS } from '../src/productPricing.js';
-import { copyStyles, pasteStyles, patchComponentProperties, togglePageControl } from '../src/builder/componentOperations.js';
+import { copyStyles, pasteStyles, patchComponentProperties, patchCountdownContent, togglePageControl } from '../src/builder/componentOperations.js';
 import { createCatalogComponent, upgradeCanonicalComponents } from '../src/builder/componentCatalog.js';
 import { countdownSeconds, defaultPackagePatch } from '../src/builder/propertyModel.js';
 import { templates, createBuilderNodes } from '../src/templates/templateDefinitions.js';
@@ -38,7 +38,7 @@ async function mount(node, { editing = true, source, initialNavigation = {} } = 
     latest = document;
     const patch = (props) => setDocument((current) => patchComponentProperties(current, node.id, props));
     return React.createElement(React.Fragment, null,
-      React.createElement(Properties, { selected, p: componentProps(selected), patch, document, nodes, parents, navigation, setNavigation, onStatus: (value) => { status = value; }, demoSkus: DEMO_SKUS, fieldNames: { name: '商品名称', price: '主价格', productInfo: '商品信息', badgeText: '商品标签' }, findPackage: (id) => { let current=nodes.get(id); while(current){if(current.type==='Package')return current;current=nodes.get(parents.get(current.id));}return null; }, resolveText: resolveComponentText, changeProduct: (key, value) => setDocument((current) => ({ ...current, products: { ...current.products, [selected.props.dataKey ?? selected.id]: { ...current.products[selected.props.dataKey ?? selected.id], [key]: value } } })), onMediaType: (type) => setDocument((current) => updateComponent(current, node.id, { type })), setDefaultPackage: (defaultSelected) => patch({ defaultSelected }) }),
+      React.createElement(Properties, { selected, p: componentProps(selected), patch, document, nodes, parents, navigation, setNavigation, onCountdownContentChange:(stateId,textId,values)=>setDocument(current=>patchCountdownContent(current,node.id,stateId,textId,values)),onSelectComponent:id=>{status=id;}, onStatus: (value) => { status = value; }, demoSkus: DEMO_SKUS, fieldNames: { name: '商品名称', price: '主价格', productInfo: '商品信息', badgeText: '商品标签' }, findPackage: (id) => { let current=nodes.get(id); while(current){if(current.type==='Package')return current;current=nodes.get(parents.get(current.id));}return null; }, resolveText: resolveComponentText, changeProduct: (key, value) => setDocument((current) => ({ ...current, products: { ...current.products, [selected.props.dataKey ?? selected.id]: { ...current.products[selected.props.dataKey ?? selected.id], [key]: value } } })), onMediaType: (type) => setDocument((current) => updateComponent(current, node.id, { type })), setDefaultPackage: (defaultSelected) => patch({ defaultSelected }) }),
       React.createElement(Preview, { document, selectedId: node.id, onSelect() {}, editing, navigation, onStatus: (value) => { status = value; } }),
     );
   }
@@ -60,6 +60,68 @@ async function mount(node, { editing = true, source, initialNavigation = {} } = 
     async close() { await act(async () => renderer.unmount()); mounted.delete(renderer); },
   };
 }
+
+test('Countdown parent edits the real child copy and typography, preserves timer rules and restores state on reopen',async()=>{
+  const timer=createCatalogComponent('Countdown','clock');timer.props={...timer.props,deadline:'',start:'02:03:04'};
+  const textId=timer.children[0].children[0].id,h=await mount(timer),before=structuredClone(timer.props);
+  try{
+    await h.editText({text:'剩余 {{ count_hours_with_zero }} : {{ count_minutes_without_zero }}',runs:null},'倒计时文字内容');
+    assert.equal(h.node(textId).children.join(''),'剩余 02 : 3');
+    await h.change('字号','27');await h.change('文字颜色值','#123456');
+    const configured=indexDocument(h.document()).nodes.get(textId);assert.equal(configured.props.fontSize,27);assert.equal(configured.props.color,'#123456');
+    assert.deepEqual(indexDocument(h.document()).nodes.get('clock').props,before);
+    await h.select('编辑内容状态','ended');await h.editText({text:'结束后的正文',runs:null},'倒计时文字内容');
+    assert.equal(h.node('clock/ended-text').children.join(''),'结束后的正文');assert.equal(h.node(textId),undefined);
+    await h.click('定位文字图层');assert.equal(h.status(),'clock/ended-text');
+    const values=new Map(),storage={getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,value)};
+    assert.ok(saveComponentDocument(storage,h.document()));assert.equal(indexDocument(readComponentDocument(storage,'audit')).nodes.get(textId).props.fontSize,27);
+  }finally{await h.close();}
+});
+
+test('Countdown fallback can be enabled, filled from its parent and disabled without losing its contents',async()=>{
+  const timer=createCatalogComponent('Countdown','clock'),h=await mount(timer);
+  try{
+    const options=()=>h.renderer.root.findAll(item=>item.type==='select'&&item.props['aria-label']==='编辑内容状态')[0].findAllByType('option').map(item=>item.props.value);
+    assert.deepEqual(options(),['active','ended']);await h.check('自定义兜底内容',true);assert.ok(options().includes('fallback'));
+    await h.select('编辑内容状态','fallback');await h.editText({text:'活动数据暂不可用',runs:null},'倒计时文字内容');
+    const fallback=indexDocument(h.document()).nodes.get('clock/fallback');assert.equal(fallback.children.length,1);assert.equal(h.node(fallback.children[0].id).children.join(''),'活动数据暂不可用');
+    await h.check('自定义兜底内容',false);assert.ok(!options().includes('fallback'));
+    assert.equal(indexDocument(h.document()).nodes.get(fallback.children[0].id).props.text,'活动数据暂不可用');
+    assert.ok(h.node('clock/countdown-text'));await h.check('自定义兜底内容',true);await h.select('编辑内容状态','fallback');assert.equal(h.node(fallback.children[0].id).children.join(''),'活动数据暂不可用');
+  }finally{await h.close();}
+});
+
+test('decorated split digits remain independent while the Countdown parent can edit each actual text unit',async()=>{
+  const document=upgradeCanonicalComponents(fixture(component('clock','Countdown','倒计时',{start:'02:03:04',prefix:'倒计时',digitBackground:'#8ced75',fontSize:18}))),timer=indexDocument(document).nodes.get('clock');
+  const h=await mount(timer,{source:document});
+  try{
+    const hours=timer.children[0].children.find(child=>child.props.text==='{{ count_hours_with_zero }}'),minutes=timer.children[0].children.find(child=>child.props.text==='{{ count_minutes_with_zero }}');
+    const snapshot=structuredClone(minutes);await h.select('文字单元',hours.id);await h.change('字号','23');
+    assert.equal(indexDocument(h.document()).nodes.get(hours.id).props.fontSize,23);assert.equal(h.node(hours.id).props.style.background,'#8ced75');
+    assert.deepEqual(indexDocument(h.document()).nodes.get(minutes.id),snapshot);assert.equal(timer.children[0].children.length,6);
+  }finally{await h.close();}
+});
+
+test('countdown parent updates cannot target a different timer or erase a custom composition',()=>{
+  const one=createCatalogComponent('Countdown','one'),two=createCatalogComponent('Countdown','two');
+  const document=fixture(component('wrapper','Stack','容器',{},[one,two]));
+  assert.equal(patchCountdownContent(document,'one','two/active','two/countdown-text',{text:'bad'}),document);
+  assert.equal(patchCountdownContent(document,'one','one/active',null,{text:'bad'}),document);
+  assert.equal(patchCountdownContent(document,'one','one/active','one/ended-text',{text:'bad'}),document);
+});
+
+test('real ComponentEditor can select Countdown and edit its child through the production owner lookup contract',async()=>{
+  const timer=createCatalogComponent('Countdown','clock'),source=fixture(timer);let renderer,latest;
+  try{
+    await act(async()=>{renderer=TestRenderer.create(React.createElement(Editor,{template:{id:'audit'},initialNodes:[],initialDocument:source,persistence:'session',onDocumentChange:value=>{latest=value;}}));});
+    const row=renderer.root.findAll(item=>item.type==='div'&&item.props['data-layer-id']==='clock')[0];
+    await act(async()=>row.findAllByType('button').find(item=>item.props.className==='ne-tree-select').props.onClick());
+    const editor=renderer.root.findAll(item=>typeof item.type==='function'&&item.props['aria-label']==='倒计时文字内容'&&typeof item.props.onChange==='function')[0];
+    assert.ok(editor);await act(async()=>editor.props.onChange({text:'剩余 {{ count_hours_with_zero }} 小时',runs:null}));
+    assert.equal(indexDocument(latest).nodes.get('clock/countdown-text').props.text,'剩余 {{ count_hours_with_zero }} 小时');
+    assert.equal(indexDocument(latest).nodes.get('clock').props.text,undefined);
+  }finally{if(renderer)await act(async()=>renderer.unmount());}
+});
 
 test('GA01: selected typography edits stay independent from default rich text and preserve content',async()=>{
   const label=component('sample','Text','文字',{text:'套餐价格',fontSize:16,fontWeight:400,color:'#112233',runs:[{text:'套餐',fontSize:16,color:'#112233'},{text:'价格',fontSize:18,fontWeight:700}]});
