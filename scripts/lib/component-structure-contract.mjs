@@ -95,5 +95,6 @@ export function structureCoverage() {
   });
   const gaps = coverage.observedSourceComparison.filter((source) => source.missingTypes.length || source.unmappedSourceTypes.length);
   coverage.referenceAlignment = { status: gaps.length ? 'partial' : 'type-presence-only', observedSamples: observed.length, samplesWithTypeGaps: coverage.observedSourceComparison.filter((source) => source.missingTypes.length).length, samplesNeedingTypeMapping: coverage.observedSourceComparison.filter((source) => source.unmappedSourceTypes.length).length, fixedRegionMismatches: coverage.observedSourceComparison.filter((source) => !source.fixedRegions.matches).length, limitation: 'Verified fixed-region boundaries and switch ownership do not imply full recursive hierarchy, visual or SDK equivalence. Template 38 has no observed source layer sample.' };
+  coverage.navigationPolicy={date:'2026-10-30',scope:'Generated template defaults and explicit navigation edits',behavior:'Existing close/back navigation uses screen-owned fixed Header; media-overlay placement is retained. This is a Demo usability correction, not claimed source Header-type parity.',savedTrees:'No automatic reparenting on read'};
   return coverage;
 }

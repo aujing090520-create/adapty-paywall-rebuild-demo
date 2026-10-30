@@ -7,6 +7,7 @@ import { availableTextVariables, PRODUCT_TEXT_VARIABLES, variableIssues } from '
 import {timerTextProps,TIMER_VARIABLE_DEFINITIONS} from './textVariableTokens.js';
 import {timeSources,TIME_SCOPES} from './businessTime.js';
 import {COUNTDOWN_MODES,countdownMode} from './countdownTiming.js';
+import {screenChromeLayout} from './screenLayout.js';
 import {packageSelectionGroups} from './componentOperations.js';
 import {COMPARISON_ORDER_RULES} from './comparisonOrdering.js';
 import {flowInitialIndex} from './componentTree.js';
@@ -151,6 +152,10 @@ function MediaEditor({ value, type, onChange, onError, background = false }) {
 function ContentSection({ selected, p, patch, styleP=p, stylePatch=patch, document, nodes, parents, findPackage, resolveText, changeProduct, fieldNames, demoSkus, setNavigation, onStatus, setDefaultPackage, onPackageGroupChange, onMediaType, onPageControl, onModalCreate, onModalEdit, onTimeSources, rule='default' }) {
   const [uploading,setUploading]=React.useState(false);
   const type = selected.type;
+  if(type==='Header'){
+    const screen=nodes.get(parents.get(selected.id));
+    return <PropertySection title="页头位置"><CheckboxField label="覆盖正文" checked={screen?.type==='Screen'?screenChromeLayout(screen).underHeader:Boolean(p.overlapContent)} onChange={overlapContent=>patch({overlapContent})}/></PropertySection>;
+  }
   if (type === 'ProductParameter') {
     const owner = findPackage(selected.id, nodes, parents), key = effectiveProductParameter(p.parameter, owner);
     return <PropertySection title="参数属性">

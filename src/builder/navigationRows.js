@@ -1,5 +1,6 @@
 import { component, indexDocument, updateComponent } from './componentDocument.js';
 import { createCatalogComponent } from './componentCatalog.js';
+import {pinScreenNavigation} from './templateNavigationHeaders.js';
 
 const isBack = (button) => button.children.some((child) => child.type === 'Icon' && child.props.icon === 'tabler:outline:arrow-left');
 const rowProps = (children) => children.length === 1
@@ -11,24 +12,30 @@ export function createNavigationRow(button, id = crypto.randomUUID()) {
 }
 
 export function appendNavigationButton(document, screenId, button) {
-  const screen = indexDocument(document).nodes.get(screenId);
+  let screen = indexDocument(document).nodes.get(screenId);
   if (screen?.type !== 'Screen') return document;
+  const pinned=pinScreenNavigation(screen);
+  if(pinned!==screen){document=updateComponent(document,screenId,{props:pinned.props,children:pinned.children});screen=pinned;}
   const findRow = (node) => {
     if (node.type === 'BottomSheet' || node.type === 'Screen' && node.id !== screenId) return null;
-    return node.type === 'Stack' && node.props.navigationRow ? node : node.children.map(findRow).find(Boolean);
+    const navigation=(['Stack','Header'].includes(node.type)&&node.props.navigationRow)||(node.type==='Header'&&node.props.fixedNavigation);
+    return navigation ? node : node.children.map(findRow).find(Boolean);
   };
   const row = findRow(screen);
   if (row) {
     const children = isBack(button) ? [button,...row.children] : [...row.children,button];
     return updateComponent(document,row.id,{children,props:rowProps(children)});
   }
-  return updateComponent(document,screenId,{children:[createNavigationRow(button),...screen.children]});
+  const header=screen.children.find(child=>child.type==='Header');
+  const navigation=createNavigationRow(button);
+  if(header)return updateComponent(document,header.id,{children:[navigation,...header.children]});
+  return updateComponent(document,screenId,{props:!screen.props.pagePresentation?{pagePresentation:'fullscreen'}:{},children:[{...navigation,type:'Header',name:'页头',props:{...navigation.props,fixedNavigation:true,overlapContent:true,shadowOpacity:0}},...screen.children]});
 }
 
 export function upgradeNavigationRows(document) {
   if (document.navigationRowsVersion === 2) return document;
   const migrated = document.navigationRowsVersion === 1;
-  const generatedHeader = (node) => node.type === 'Header' && node.name === '页头' && node.props.axis === 'horizontal'
+  const generatedHeader = (node) => node.type === 'Header' && !node.props.fixedNavigation && node.name === '页头' && node.props.axis === 'horizontal'
     && node.props.paddingHorizontal === 16 && node.props.paddingVertical === 8 && node.props.background === 'transparent' && node.props.shadowOpacity === 0
     && node.children.length > 0 && node.children.every((child) => child.type === 'Button' && child.props.width === 32 && child.props.height === 32 && child.children.some((entry) => entry.type === 'Icon' && ['tabler:outline:x','tabler:outline:arrow-left'].includes(entry.props.icon)));
   const visit = (node) => ({...node,...(generatedHeader(node)?{type:'Stack',name:'导航栏',props:{...node.props,navigationRow:true,...rowProps(node.children)}}:{}),children:node.children.map(visit)});

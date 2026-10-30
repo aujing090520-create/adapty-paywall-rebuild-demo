@@ -85,18 +85,22 @@ for (const order of [7, 8, 9]) test(`${order}: OFF/ON are complete isolated pack
   assert.ok(states[1].filter((entry) => entry.type === 'Package').every((entry) => !firstIds.has(entry.id)));
 });
 
-test('navigation remains an actual Button/Icon; only source four has fixed Header', () => {
+test('navigation remains Button/Icon inside a screen-owned fixed Header in every matching template', () => {
   for (const order of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 28, 31, 32, 33, 34, 35, 36, 39]) {
     const document = templateDocument(source(order));
     const index = indexDocument(document);
     const close = nodes(document).find((entry) => entry.type === 'Button' && entry.props.action?.action === 'Dismiss' && entry.children.some((child) => child.type === 'Icon'));
     assert.ok(close, `${order}: no real navigation action`);
-    assert.equal(index.nodes.get(index.parents.get(close.id)).type, 'Stack');
-    assert.equal(nodes(document).filter((entry) => entry.type === 'Header').length, order === 4 ? 1 : 0);
+    let owner=index.nodes.get(index.parents.get(close.id));
+    while(owner&&owner.type!=='Header'&&owner.type!=='Screen')owner=index.nodes.get(index.parents.get(owner.id));
+    assert.equal(owner.type,'Header');
+    assert.equal(index.nodes.get(index.parents.get(owner.id)).type,'Screen');
+    assert.equal(nodes(document).filter((entry) => entry.type === 'Header').length, 1);
   }
   const document = templateDocument(source(8));
   const hero = indexDocument(document).nodes.get('rc-source-8-hero');
-  assert.deepEqual(hero.children.map((entry) => entry.type), ['Stack', 'Image']);
+  assert.deepEqual(hero.children.map((entry) => entry.type), ['Image']);
+  assert.equal(indexDocument(document).nodes.get('rc-source-8-navigation').props.overlapContent,true);
 });
 
 test('single SKU renewal copy lives in its Package rather than a hidden decorative card', () => {

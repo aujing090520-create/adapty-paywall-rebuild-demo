@@ -27,3 +27,13 @@ test('non-media, hidden media and hidden header do not reserve an accidental ove
   assert.equal(screenChromeLayout(screen).header, undefined);
   assert.equal(screenChromeLayout(screen).underHeader, false);
 });
+test('explicit Header overlap handles composite heroes and may reserve space over direct images',()=>{
+  const screen=make(component('hero','Stack'));
+  screen.children[0].props.overlapContent=true;
+  assert.equal(screenChromeLayout(screen).underHeader,true);
+  screen.children[0].props.overlapContent=false;
+  assert.equal(screenChromeLayout(screen).underHeader,false);
+  const image=make(component('hero','Image'));
+  image.children[0].props.overlapContent=false;
+  assert.equal(screenChromeLayout(image).underHeader,false);
+});

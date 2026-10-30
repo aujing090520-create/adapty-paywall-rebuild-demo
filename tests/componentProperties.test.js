@@ -64,6 +64,19 @@ after(async () => { for (const renderer of mounted) await act(async () => render
 const event = (value) => ({ target: { value }, stopPropagation() {}, preventDefault() {} });
 const fixture = (node) => ({ version: 3, templateId: 'audit', products: { sample: { name: '年度', price: '¥100', billingMonths: 12 } }, root: component('page', 'Screen', '页面', {}, [node]) });
 
+test('Header overlap configuration visibly switches between a reserved top row and composite-hero overlay',async()=>{
+  const header=component('sample','Header','页头',{overlapContent:false},[component('header-copy','Text','文字',{text:'导航'})]);
+  const source=fixture(header);source.root.props.pagePresentation='fullscreen';source.root.children.push(component('hero','Stack','主视觉',{},[component('art','Image')]));
+  const h=await mount(header,{source});
+  const content=()=>h.renderer.root.findAll(node=>typeof node.type==='string'&&node.props.className==='nc-screen-content')[0];
+  try{
+    assert.equal(content().props.style.gridRow,2);
+    await h.check('覆盖正文',true);assert.equal(content().props.style.gridRow,'1 / 3');
+    await h.check('覆盖正文',false);assert.equal(content().props.style.gridRow,2);
+    assert.equal(indexDocument(h.document()).nodes.get('art').type,'Image');
+  }finally{await h.close();}
+});
+
 test('membership comparison is an editable button-owned sheet and closing it preserves the chosen package',async()=>{
   const template=templates.find(t=>t.id==='ht-membership-plans');
   const source=upgradeCanonicalComponents(importComponentDocument(createBuilderNodes(template.id),template));

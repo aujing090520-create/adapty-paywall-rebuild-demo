@@ -10,15 +10,15 @@ import { workflowIssues } from './workflow.js';
 
 const fixture = () => ({version:3,products:{sku:{price:'¥488',skuId:'unchanged'}},root:component('screen','Screen','主页面',{},[component('body','Text','正文',{text:'原内容'})])});
 
-test('close/back presets are editable icon buttons inside an ordinary navigation Stack',()=>{
+test('close/back presets are editable icon buttons inside one fixed navigation Header',()=>{
   const close = addNavigationButton(fixture(),'screen'), back=addNavigationButton(close.document,'screen','back');
   const {nodes}=indexDocument(back.document);
   assert.equal(nodes.get(close.id).props.action.action,'Dismiss');
   assert.equal(nodes.get(back.id).props.action.action,'NavigateBack');
   assert.equal(nodes.get(close.id).children[0].props.icon,'tabler:outline:x');
-  assert.equal(back.document.root.children.filter(node=>node.type==='Header').length,0);
+  assert.equal(back.document.root.children.filter(node=>node.type==='Header').length,1);
   const row=back.document.root.children.find(node=>node.props.navigationRow);
-  assert.equal(row.type,'Stack');assert.equal(row.children.length,2);
+  assert.equal(row.type,'Header');assert.equal(row.children.length,2);
   assert.deepEqual(row.children.map(node=>node.id),[back.id,close.id]);
   assert.ok(validDocument(back.document));
 });

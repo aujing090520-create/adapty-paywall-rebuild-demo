@@ -11,13 +11,14 @@ import { OVERLAY_ALIGNMENTS, overlayAlignmentStyle, stateStyleProps } from './pr
 const template=templates.find(entry=>entry.id==='ht-blue-privilege');
 const load=()=>importComponentDocument(createBuilderNodes(template.id),template);
 
-test('Blue default is hero > overlay navigation Stack > Back Button > editable Icon without changing hero height or SKU',()=>{
+test('Blue default is Screen > fixed overlay Header > Back Button > Icon without changing hero height or SKU',()=>{
   const document=load(),{nodes,parents}=indexDocument(document);
   assert.ok(validDocument(document));
-  assert.equal(parents.get('hero-image/navigation'),'hero-image');
-  assert.equal(nodes.get('hero-image').children[0].id,'hero-image/navigation');
-  assert.equal(nodes.get('hero-image').children[1].id,'hero-image/image');
-  assert.equal(nodes.get('hero-image/navigation').type,'Stack');
+  assert.equal(parents.get('hero-image/navigation'),'$main');
+  assert.equal(nodes.get('$main').children[0].id,'hero-image/navigation');
+  assert.equal(nodes.get('hero-image').children[0].id,'hero-image/image');
+  assert.equal(nodes.get('hero-image/navigation').type,'Header');
+  assert.equal(nodes.get('hero-image/navigation').props.overlapContent,true);
   assert.equal(nodes.get('hero-image/navigation').props.axis,'overlay');
   assert.equal(nodes.get('hero-image/navigation').props.overlayAlignment,'top-left');
   assert.equal(parents.get('hero-image/back'),'hero-image/navigation');
@@ -28,13 +29,14 @@ test('Blue default is hero > overlay navigation Stack > Back Button > editable I
   const removed=removeComponent(document,'hero-image/back');assert.equal(upgradeNavigationRows(removed),removed,'do not restore deliberately deleted navigation');
 });
 
-test('adding a Close button reuses Blue hero navigation and never creates a fixed Header or shifts content',()=>{
+test('adding a Close button reuses the same fixed Blue header without shifting content',()=>{
   const before=load(),result=addNavigationButton(before,'$main'),{nodes,parents}=indexDocument(result.document);
   assert.equal(parents.get(result.id),'hero-image/navigation');
   assert.equal(nodes.get('hero-image/navigation').props.axis,'horizontal');
   assert.equal(nodes.get('hero-image/navigation').children[0].id,'hero-image/back');
   assert.equal(nodes.get('hero-image/navigation').props.justify,'between');
-  assert.equal([...nodes.values()].filter(node=>node.type==='Header').length,0);
+  assert.equal([...nodes.values()].filter(node=>node.type==='Header').length,1);
+  assert.equal(nodes.get('hero-image/navigation').props.overlapContent,true);
   assert.deepEqual(result.document.products,before.products);
 });
 
@@ -62,13 +64,15 @@ test('missing old Blue default is added once while existing custom navigation is
 });
 
 test('version-one Blue drafts move navigation before image without changing actions, modal ownership or other children',()=>{
-  const source=load(),hero=indexDocument(source).nodes.get('hero-image');
-  let old=updateComponent(source,hero.id,{children:[...hero.children.slice(1),hero.children[0]]});
+  const source=load(),index=indexDocument(source),hero=index.nodes.get('hero-image'),header=index.nodes.get('hero-image/navigation');
+  const {fixedNavigation,overlapContent,...props}=header.props;
+  const legacy={...header,type:'Stack',name:'导航栏',props};
+  let old=updateComponent(removeComponent(source,header.id),hero.id,{children:[...hero.children,legacy]});
   old={...old,navigationRowsVersion:1};
   const bound=createButtonModal(old,'hero-image/back'),before=indexDocument(bound.document),next=upgradeNavigationRows(bound.document),after=indexDocument(next);
   assert.equal(next.navigationRowsVersion,2);
   assert.equal(after.nodes.get(hero.id).children[0].id,'hero-image/navigation');
-  assert.deepEqual(after.nodes.get(hero.id).children.slice(1).map(node=>node.id),hero.children.slice(1).map(node=>node.id));
+  assert.deepEqual(after.nodes.get(hero.id).children.slice(1).map(node=>node.id),hero.children.map(node=>node.id));
   assert.deepEqual(after.nodes.get('hero-image/navigation'),before.nodes.get('hero-image/navigation'));
   assert.deepEqual(after.nodes.get(bound.id),before.nodes.get(bound.id));
   assert.equal(after.parents.get(bound.id),'hero-image/back');

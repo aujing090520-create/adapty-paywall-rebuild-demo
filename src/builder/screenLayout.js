@@ -12,6 +12,6 @@ export function screenChromeLayout(screen, runtime = {}, nodes = new Map()) {
   const first = visible.find((child) => !['Header', 'Footer'].includes(child.type));
   const props = first && componentProps(first);
   const horizontalMargin = props && (props.marginMode === 'individual' ? Number(props.marginLeft) + Number(props.marginRight) : 2 * Number(props.marginHorizontal));
-  const underHeader = Boolean(header && ['Image', 'Video', 'Custom'].includes(first?.type) && props.widthMode === 'fill' && !horizontalMargin && !props.maxWidth);
+  const underHeader = Boolean(header && (header.props.overlapContent ?? (['Image', 'Video', 'Custom'].includes(first?.type) && props.widthMode === 'fill' && !horizontalMargin && !props.maxWidth)));
   return { header, footer, content, underHeader };
 }

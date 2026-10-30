@@ -3,6 +3,7 @@ import { resolveProductPrice, productPriceFields, skuById, skuCopy } from '../pr
 import { linkActionFor, visibleLinkLabels } from '../linkActions.js';
 import { HT_PRODUCT_DESIGN_DEFAULTS } from '../products/productStyleModel.js';
 import { calibrateTemplateVisuals } from './templateVisuals.js';
+import {buildTemplateNavigationHeaders} from './templateNavigationHeaders.js';
 import { effectiveFillType } from './propertyModel.js';
 import { localSettingsResetting } from '../templateStorage.js';
 import { packageDisplayFields } from '../products/packageFields.js';
@@ -278,7 +279,7 @@ export function importComponentDocument(nodes, template = {}, calibrate = true) 
   const content = detailScreens.length ? [component('$pages', 'Flow', '付费墙与权益详情', { gap: 0 }, [component('$main', 'Screen', '特权首页', { gap: 0 }, rootNodes), ...detailScreens])] : rootNodes;
   const root = component('$screen', 'Screen', '付费墙页面', { background: dark ? '#10101c' : '#ffffff', color: foreground, gap: template.documentTemplate ? 0 : 18, ...insets(template.documentTemplate ? 0 : 20), backgroundImage: background?.config?.mediaSrc ?? '', backgroundFit: background?.config?.mediaFit ?? 'cover', ...(sheet ? { background: '#e6e6e6', paddingTop: template.documentTemplate === 'sku-sheet' ? 300 : 100 } : {}) }, content);
   const document = { version: DOCUMENT_VERSION, templateId: template.id ?? 'blank', root, products };
-  return calibrate ? pruneGeneratedEmptyLayouts(normalizeHtLabelSlots(calibrateTemplateVisuals(document, template, nodes))) : document;
+  return calibrate ? buildTemplateNavigationHeaders(pruneGeneratedEmptyLayouts(normalizeHtLabelSlots(calibrateTemplateVisuals(document, template, nodes)))) : document;
 }
 function indexDocumentId(id, suffix) { return id + suffix; }
 function gradient(colors, fallback) { return Array.isArray(colors) && colors.length ? `linear-gradient(90deg, ${colors.join(', ')})` : fallback; }
