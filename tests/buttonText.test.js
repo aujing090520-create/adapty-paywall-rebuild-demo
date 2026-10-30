@@ -1,8 +1,23 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {component,indexDocument,removeComponent,updateComponent} from '../src/builder/componentDocument.js';
-import {buttonPackages,buttonTextResolution,upgradeTrialButtonText,buttonTextPreviewNavigation} from '../src/builder/buttonText.js';
+import {buttonPackages,buttonTextResolution,upgradeTrialButtonText,buttonTextPreviewNavigation,buttonTextLayerInfo} from '../src/builder/buttonText.js';
 import {buildFreeTrialTemplate} from '../src/builder/freeTrialTemplate.js';
+
+test('layer summaries expose package overrides and inheritance without changing content or adding layers',()=>{
+  const document=buildFreeTrialTemplate(),before=structuredClone(document),index=indexDocument(document),button=index.nodes.get('trial/purchase'),label=index.nodes.get('trial/purchase/text');
+  const parent=buttonTextLayerInfo(button,document,{},index);
+  assert.equal(parent.suffix,' · 套餐文案');assert.match(parent.title,/12个月（沿用默认）/);assert.match(parent.title,/1个月（单独配置）：继续/);
+  assert.equal(buttonTextLayerInfo(label,document,{},index).prefix,'默认文案');
+  const monthly=buttonTextLayerInfo(label,document,{[`button-text:${button.id}`]:'trial/monthly'},index);
+  assert.equal(monthly.prefix,'1个月（单独配置）');assert.equal(monthly.props.text,'继续');
+  assert.equal(buttonTextLayerInfo(label,document,{[`button-text:${button.id}`]:'trial/annual'},index).prefix,'12个月（沿用默认）');
+  assert.equal(buttonTextLayerInfo(label,document,{[`button-text:${button.id}`]:''},index).prefix,'默认文案');
+  assert.equal(buttonTextLayerInfo(label,document,{[`button-text:${button.id}`]:'deleted'},index).prefix,'默认文案');
+  assert.equal(buttonTextLayerInfo(index.nodes.get('trial/legal'),document,{},index),null);
+  assert.deepEqual(document,before);
+  button.props.buttonText.mode='default';assert.equal(buttonTextLayerInfo(button,document,{},index),null);
+});
 
 test('button label selection is confined to its group and screen and tolerates deleted packages',()=>{
   const document=buildFreeTrialTemplate(),button=indexDocument(document).nodes.get('trial/purchase'),label=indexDocument(document).nodes.get(button.props.buttonText.target);

@@ -994,6 +994,28 @@ test('default package selection is exclusive within its group, not across unrela
   assert.equal(indexDocument(doc).nodes.get('c').props.defaultSelected, true);
 });
 
+test('actual layer tree follows button package copy configuration without duplicating text layers',async()=>{
+  const previousStorage=globalThis.localStorage,previousWindow=globalThis.window,records=new Map();let editor;
+  globalThis.localStorage={getItem:key=>records.get(key)??null,setItem:(key,value)=>records.set(key,value)};globalThis.window={addEventListener(){},removeEventListener(){}};
+  const source=fixture(component('plans','Stack','套餐',{},[component('annual','Package','套餐',{group:'plans',defaultSelected:true}),component('monthly','Package','套餐',{group:'plans'}),component('cta','PurchaseButton','按钮',{action:{action:'Purchase'},buttonText:{mode:'package',target:'copy',group:'plans',default:{text:'领取体验'},variants:[{packageId:'monthly',text:'继续'}]}},[component('copy','Text','文字',{text:'旧的原始文字'})]) ]));
+  source.products={annual:{name:'年度'},monthly:{name:'月度'}};saveComponentDocument(localStorage,source);
+  try{
+    await act(async()=>{editor=TestRenderer.create(React.createElement(Editor,{template:{id:'audit'},initialNodes:[]}));});mounted.add(editor);
+    const row=id=>editor.root.findAll(item=>item.type==='div'&&item.props['data-layer-id']===id)[0];
+    const label=id=>row(id).findAll(item=>item.type==='button'&&item.props.className==='ne-tree-select')[0];
+    await act(async()=>label('cta').props.onClick());
+    assert.equal(label('cta').props['aria-label'],'购买按钮 · 套餐文案');assert.match(label('cta').props.title,/月度（单独配置）：继续/);
+    assert.equal(label('copy').props['aria-label'],'默认文案：领取体验');
+    const choose=async value=>act(async()=>editor.root.findAll(item=>item.type==='select'&&item.props['aria-label']==='配置套餐文案')[0].props.onChange(event(value)));
+    await choose('monthly');assert.equal(label('copy').props['aria-label'],'月度（单独配置）：继续');
+    assert.deepEqual(label('copy').findByProps({className:'ne-tree-copy-main'}).children,['继续']);assert.deepEqual(label('copy').findByProps({className:'ne-tree-copy-context'}).children,['月度 · 单独配置']);
+    await choose('annual');assert.equal(label('copy').props['aria-label'],'年度（沿用默认）：领取体验');
+    await choose('');assert.equal(label('copy').props['aria-label'],'默认文案：领取体验');
+    assert.equal(editor.root.findAll(item=>item.type==='div'&&item.props['data-layer-id']==='copy').length,1);
+    assert.equal(readComponentDocument(localStorage,'audit').root.children[0].children.at(-1).children[0].props.text,'旧的原始文字');
+  }finally{if(editor){await act(async()=>editor.unmount());mounted.delete(editor);}globalThis.localStorage=previousStorage;globalThis.window=previousWindow;}
+});
+
 test('layer tree uses one readable label, explicit indentation and inline expansion without changing template data',async()=>{
   const previousStorage=globalThis.localStorage,previousWindow=globalThis.window,records=new Map();let editor;
   globalThis.localStorage={getItem:key=>records.get(key)??null,setItem:(key,value)=>records.set(key,value)};globalThis.window={addEventListener(){},removeEventListener(){}};

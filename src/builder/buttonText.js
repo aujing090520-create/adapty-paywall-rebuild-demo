@@ -43,6 +43,20 @@ export function buttonTextOwner(document,id,index=tree(document)){
   while(node&&!buttonTypes.has(node.type)&&node.type!=='BottomSheet')node=index.nodes.get(index.parents.get(node.id));
   return node?.props.buttonText?.target===id&&buttonTypes.has(node.type)?node:null;
 }
+export function buttonTextLayerInfo(node,document,navigation={},index=tree(document)){
+  const button=buttonTypes.has(node.type)?node:buttonTextOwner(document,node.id,index);
+  if(button?.props.buttonText?.mode!=='package')return null;
+  const config=buttonTextConfig(button,document),packages=buttonPackages(document,button,index).filter(item=>(item.props.group??item.id)===config.group);
+  const name=(item,at)=>document.products[item.props.dataKey??item.id]?.name||`套餐 ${at+1} · ${item.id}`;
+  const content=value=>localizedButtonText(value,document).text??'';
+  const summary=['按选中套餐切换',`默认文案：${content(config.default)}`,...packages.map((item,at)=>{
+    const variant=config.variants.find(value=>value.packageId===item.id);
+    return `${name(item,at)}（${variant?'单独配置':'沿用默认'}）：${content(variant??config.default)}`;
+  })].join('\n');
+  if(node===button)return {suffix:' · 套餐文案',context:`套餐文案 · ${packages.filter(item=>config.variants.some(value=>value.packageId===item.id)).length}项单独配置`,title:summary};
+  const choice=navigation[`button-text:${button.id}`],at=packages.findIndex(item=>item.id===choice),variant=at>=0?config.variants.find(item=>item.packageId===choice):null;
+  return {prefix:at<0?'默认文案':`${name(packages[at],at)}（${variant?'单独配置':'沿用默认'}）`,context:at<0?'默认文案':`${name(packages[at],at)} · ${variant?'单独配置':'沿用默认'}`,props:{text:content(variant??config.default),runs:null,binding:null,productField:null},title:summary};
+}
 export function buttonTextResolution(node,document,runtime={},index=tree(document),editing=false){
   const button=buttonTextOwner(document,node.id,index);if(!button)return null;
   const config=buttonTextConfig(button,document),packages=buttonPackages(document,button,index).filter(item=>(item.props.group??item.id)===config.group);
