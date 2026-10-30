@@ -21,7 +21,9 @@ test('HT defaults preserve business data and retained content while three scenes
   for (const id of ['ht-blue-privilege', 'ht-membership-plans', 'ht-payment-recovery', 'ht-sku-sheet']) {
     const before = load(id, false), after = load(id);
     assert.ok(validDocument(after));
-    assert.deepEqual(after.products, before.products);
+    const expectedProducts=structuredClone(before.products);
+    if(id==='ht-payment-recovery')expectedProducts['products/data-0'].showReferencePrice=true;
+    assert.deepEqual(after.products, expectedProducts);
     const oldNodes = indexDocument(before).nodes, nextNodes = indexDocument(after).nodes;
     if (id === 'ht-blue-privilege') {
       for(const key of oldNodes.keys())if(!['products/badge-space-0','products/badge-space-2'].includes(key))assert.ok(nextNodes.has(key));

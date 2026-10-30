@@ -6,6 +6,7 @@ import { selectedStyleKey, stateStyleProps, spacingModePatch, dimensionModePatch
 import { availableTextVariables, PRODUCT_TEXT_VARIABLES, variableIssues } from './textVariables.js';
 import {timerTextProps,TIMER_VARIABLE_DEFINITIONS} from './textVariableTokens.js';
 import {timeSources,TIME_SCOPES} from './businessTime.js';
+import {COUNTDOWN_MODES,countdownMode} from './countdownTiming.js';
 import {packageSelectionGroups} from './componentOperations.js';
 import {COMPARISON_ORDER_RULES} from './comparisonOrdering.js';
 import {flowInitialIndex} from './componentTree.js';
@@ -241,14 +242,14 @@ function ContentSection({ selected, p, patch, styleP=p, stylePatch=patch, docume
   if (type === 'Toggle') return <PropertySection title="控件属性"><Select label="控件类型" value={p.control ?? 'switch'} options={[[ 'switch', '开关' ], [ 'checkbox', '勾选框' ]]} onChange={(control) => patch({ control })} />{!p.switchTarget && <SegmentedField label="初始状态" value={p.initial ? 'yes' : 'no'} options={[[ 'no', '关闭' ], [ 'yes', '开启' ]]} onChange={(value) => patch({ initial: value === 'yes' })} />}<SegmentedField label="购买前必须勾选" value={p.required ? 'yes' : 'no'} options={[[ 'no', '否' ], [ 'yes', '是' ]]} onChange={(value) => patch({ required: value === 'yes' })} /></PropertySection>;
   if (type === 'Countdown') {
     const sources=timeSources(document),source=sources.find(source=>source.id===p.timeSourceId);
-    const updateDeadline=event=>{const value=event.currentTarget?.value??event.target.value;patch({deadline:value?`${value.replace(/Z$/,'')}Z`:''});};
+    const updateDeadline=event=>{const value=event.currentTarget?.value??event.target.value;patch({timingMode:'deadline',deadline:value?`${value.replace(/Z$/,'')}Z`:''});};
     return <PropertySection title="倒计时属性">
       <Select label="时间来源" value={p.timeSource??'manual'} options={[[ 'manual','手动设置' ],['business','业务时间源']]} onChange={timeSource=>patch({timeSource})}/>
       {p.timeSource==='business'?<>
         <Select label="绑定时间源" value={p.timeSourceId??''} options={[[ '', '选择时间源' ],...(p.timeSourceId&&!source?[[p.timeSourceId,'时间源已失效']]:[]),...sources.map(source=>[source.id,`${source.name} · ${TIME_SCOPES.find(([key])=>key===source.scope)?.[1]??source.scope}`])]} onChange={timeSourceId=>patch({timeSourceId})}/>
         {source&&<><Field label="接口数据键"><input aria-label="绑定接口数据键" readOnly value={source.key}/></Field><Field label="时间字段"><input aria-label="时间字段" readOnly value="expiresAt（到期时间）"/></Field></>}
         {onTimeSources&&<button type="button" className="rc-secondary" onClick={onTimeSources}><Settings2 size={15}/>配置业务时间源</button>}
-      </>:<><Field label="目标时间（UTC）"><input type="datetime-local" step="1" aria-label="目标时间（UTC）" value={utcDateTimeInput(p.deadline)} onInput={updateDeadline} onChange={updateDeadline}/></Field>{!p.deadline && p.start!==undefined && <Field label="起始时长（旧模板）"><input value={p.start} onChange={(event) => patch({ start: event.target.value })} /></Field>}</>}
+      </>:<><Select label="计时方式" value={countdownMode(p)} options={COUNTDOWN_MODES} onChange={timingMode=>patch({timingMode})}/>{countdownMode(p)==='deadline'?<Field label="目标时间（UTC）"><input type="datetime-local" step="1" aria-label="目标时间（UTC）" value={utcDateTimeInput(p.deadline)} onInput={updateDeadline} onChange={updateDeadline}/></Field>:<Field label="计时时长（时:分:秒）"><input aria-label="计时时长（时:分:秒）" value={p.start??'00:10:00'} onChange={(event)=>patch({start:event.target.value})}/></Field>}</>}
       <Select label="计时单位" value={p.countFrom ?? 'hours'} options={[[ 'days', '天' ], [ 'hours', '小时' ], [ 'minutes', '分钟' ]]} onChange={(countFrom) => patch({ countFrom })} />
       <CheckboxField label="自定义兜底内容" checked={p.fallbackEnabled!==false} onChange={(fallbackEnabled)=>{patch({fallbackEnabled});if(!fallbackEnabled)setNavigation({[selected.id]:undefined});}}/>
     </PropertySection>;

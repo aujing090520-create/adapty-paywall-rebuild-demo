@@ -5,7 +5,8 @@ export function buildHtTemplateFooter(document, variant) {
   if (!['blue-privilege', 'membership-plans', 'payment-recovery'].includes(variant)) return document;
   const blue = variant === 'blue-privilege';
   const member = variant === 'membership-plans';
-  const ids = member ? ['member/plans-heading','products','agreement','purchase','member/cancel-note','legal','links','$home'] : ['timer', 'agreement', 'purchase', 'legal', 'links', '$home'];
+  const recovery = variant === 'payment-recovery';
+  const ids = member ? ['member/plans-heading','products','agreement','purchase','member/cancel-note','legal','links','$home'] : recovery ? ['products','recovery/renewal','timer','purchase','legal','links','$home'] : ['timer', 'agreement', 'purchase', 'legal', 'links', '$home'];
   const hasPurchase = (node) => node.id === 'purchase' || node.children.some((child) => child.type !== 'Screen' && hasPurchase(child));
   const visit = (node) => {
     if (node.type !== 'Screen' || !hasPurchase(node)) return { ...node, children: node.children.map(visit) };
@@ -19,7 +20,7 @@ export function buildHtTemplateFooter(document, variant) {
     };
     const content = node.children.map(extract).filter(Boolean);
     const footer = component(`${node.id}/footer`, 'Footer', '页脚', {
-      axis: 'vertical', widthMode: 'fill', heightMode: 'fit', gap: blue ? 0 : member ? 8 : 12,
+      axis: 'vertical', widthMode: 'fill', heightMode: 'fit', gap: blue ? 0 : 8,
       background: member ? '#f7f7f7' : '#ffffff',
       paddingMode: 'individual', paddingTop: blue ? 0 : 12, paddingBottom: 0,
       paddingLeft: blue ? 0 : member ? 16 : 20, paddingRight: blue ? 0 : member ? 16 : 20,

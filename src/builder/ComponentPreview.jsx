@@ -29,6 +29,7 @@ import {businessList,interpolateItem} from './businessData.js';
 import {fontStyles} from './fontStyles.js';
 import { isExitOfferStep } from './exitOffers.js';
 import { screenChromeLayout } from './screenLayout.js';
+import {entryCountdownDeadline,countdownMode} from './countdownTiming.js';
 
 const PreviewContext = createContext(null);
 const TimerContext = createContext(null);
@@ -236,7 +237,7 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
     if(props.switchControl)return <div {...attributes} style={{...style,width:51,height:31,padding:0,margin:0}}><button type="button" role="switch" aria-label={node.name} aria-checked={checked} style={{position:'relative',display:'block',border:0,width:51,height:31,padding:2,borderRadius:99,background:paintColor(props.trackColor,props.trackColorOpacity),cursor:'pointer'}} onClick={(event)=>{event.stopPropagation();if(editing)onSelect(node.id);else change(!checked);}}><span style={{display:'block',width:27,height:27,borderRadius:'50%',background:paintColor(props.thumbColor,props.thumbColorOpacity),transform:`translateX(${checked?20:0}px)`,boxShadow:'0 1px 3px #0003, 0 1px 2px #0002'}}/></button></div>;
     return <div {...attributes}><input type="checkbox" role={props.control === 'checkbox' ? 'checkbox' : 'switch'} aria-label={node.name} checked={checked} onChange={(event) => change(event.target.checked)} onClick={(event) => { event.stopPropagation(); if (editing) onSelect(node.id); }} /></div>;
   }
-  if (node.type === 'Countdown') return <div {...attributes} style={{...style,...containerStyle(visualNode)}}><BackgroundVideo props={props}/>{node.children.length ? <CountdownContent key={`${node.id}-${props.start}-${props.deadline}`} node={node} context={context} packageNode={currentPackage}/> : <Countdown key={`${node.id}-${props.start}`} props={props} />}</div>;
+  if (node.type === 'Countdown') return <div {...attributes} style={{...style,...containerStyle(visualNode)}}><BackgroundVideo props={props}/>{node.children.length ? <CountdownContent key={`${node.id}-${props.start}-${props.deadline}-${countdownMode(props)}-${editing}`} node={node} context={context} packageNode={currentPackage}/> : <Countdown key={`${node.id}-${props.start}`} props={props} />}</div>;
   if (node.type === 'Wallet') {
     const checkout=()=>runAction({...node,props:{...props,action:{action:'Purchase'}}});
     return <div {...attributes} role="button" tabIndex={0} style={{...style,...(props.walletStyle?{background:props.walletStyle==='black'?'#000000':'#ffffff',color:props.walletStyle==='black'?'#ffffff':'#000000',border:props.walletStyle==='white-outline'?'1px solid #000000':'none'}:{}),display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}} onClick={event=>{select(event);if(!editing){event.stopPropagation();checkout();}}} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();if(editing)onSelect(node.id);else checkout();}}}>{props.method === 'google' ? 'Google Pay' : 'Apple Pay'}</div>;
@@ -286,9 +287,12 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
 }
 function CountdownContent({node,context,packageNode}) {
   const now=Number.isFinite(context.runtime.$time?.now)?context.runtime.$time.now:Date.now();
-  const [opened] = useState(()=>now);
-  const duration = countdownSeconds(node.props.start ?? '00:10:00');
-  const deadline = node.props.deadline ? countdownDeadline(node.props.deadline) : duration === null ? NaN : opened + duration * 1000;
+  const [manualDeadline] = useState(()=>{
+    let storage;
+    try {storage=typeof window==='undefined'?undefined:window.localStorage;} catch { /* Unavailable storage uses the configured fallback state. */ }
+    return entryCountdownDeadline(node.props,{now,id:node.id,scope:context.countdownScope??context.document.templateId,storage,persist:!context.editing&&context.persistCountdown!==false&&node.props.timeSource!=='business'});
+  });
+  const deadline = countdownMode(node.props)==='deadline' ? countdownDeadline(node.props.deadline) : manualDeadline;
   const business=node.props.timeSource==='business'?resolveBusinessTime(context.document,node.props.timeSourceId,context.runtime):null;
   const seconds = business?.seconds??Math.max(0,Math.ceil((deadline-now)/1000)||0);
   const actualState=business?.state??(!Number.isFinite(deadline)?'fallback':seconds?'active':'ended');
@@ -304,7 +308,7 @@ function Countdown({ props }) {
   const parts = [Math.floor(remaining / 3600), Math.floor(remaining / 60) % 60, remaining % 60];
   return <span className="nc-countdown"><span style={{ color: props.prefixColor }}>{props.prefix}</span>{parts.map((part, index) => <React.Fragment key={index}>{index > 0 && <span>:</span>}<strong style={{ background: props.digitBackground, borderRadius: 4, padding: '0 3px' }}>{String(part).padStart(2, '0')}</strong></React.Fragment>)}<span>{props.suffix}</span></span>;
 }
-export default function ComponentPreview({ document: sourceDocument, businessTime, businessOrdering, selectedId, highlightedId, onSelect, editing, inspectable = true, navigation, onNavigate, onStatus, onDismiss, onResume, dismissRequest = 0, dismissOnBackdrop = false }) {
+export default function ComponentPreview({ document: sourceDocument, businessTime, businessOrdering, countdownScope, persistCountdown = true, selectedId, highlightedId, onSelect, editing, inspectable = true, navigation, onNavigate, onStatus, onDismiss, onResume, dismissRequest = 0, dismissOnBackdrop = false }) {
   const document=useMemo(()=>localizedDocument(sourceDocument,navigation),[sourceDocument,navigation?.contentLocale,navigation?.contentTheme,navigation?.contentPlatform]);
   const [localRuntime, setRuntime] = useState({});
   const clock=useMemo(()=>clockAnchor(businessTime),[businessTime]);
@@ -438,7 +442,7 @@ export default function ComponentPreview({ document: sourceDocument, businessTim
     const element = event.target.closest?.('[data-component-id]');
     setHoveredId(canvasSelectionTarget(nodeIndex.get(element?.dataset.templateId??element?.dataset.componentId), selectedId, nodeIndex, parentIndex));
   };
-  const common={document,nodeIndex,parentIndex,viewportHeight,selectedId,onSelect,editing,hoveredId:editing?highlightedId??(inspectable?hoveredId:null):null,runtime,setRuntime,runAction,onStatus,businessOrdering};
+  const common={document,nodeIndex,parentIndex,viewportHeight,countdownScope,persistCountdown,selectedId,onSelect,editing,hoveredId:editing?highlightedId??(inspectable?hoveredId:null):null,runtime,setRuntime,runAction,onStatus,businessOrdering};
   const direction=document.previewContentLocale==='ar'?'rtl':'ltr';
   return <PreviewContext.Provider value={{...common,...commerce.background}}>
     <style>{fontStyles(document.fonts)}</style>

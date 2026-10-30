@@ -45,7 +45,7 @@ test('membership keeps real carousel child count, distinct purchase section and 
 test('recovery separates dimmed source from sheet and badge/price no longer share the expanding label column', () => {
   const nodes = indexDocument(load('ht-payment-recovery')).nodes;
   assert.equal(nodes.get('recovery/backdrop').props.overlayOpacity, 48);
-  assert.equal(nodes.get('products/package-0').props.priceMode, '0');
+  assert.equal(nodes.get('products/package-0').props.priceMode, '4');
   assert.equal(nodes.get('products/badge-0').props.widthMode, 'fit');
   assert.equal(nodes.get('products/right-0').props.widthMode, 'fit');
 });

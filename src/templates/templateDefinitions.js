@@ -721,7 +721,7 @@ export function createBuilderNodes(templateId = "knowledge") {
       node("products", "Products", "1年会员|¥28.17/月|新用户立省 64%\n1个月会员|¥78/月|", 1, { config: { ...documentProductColors, productTemplate: "payment-recovery", packageLayout: "compact", defaultSelected: 0, showOfferBadge: true, selectedBorderGradient: ["#0180ff", "#0180ff", "#0180ff"], selectedBackground: "#d3edff", saveTextColor: "#ffffff", saveBackgroundColor: "#0180ff", purchaseBackgroundGradient: ["#014dff", "#0180ff", "#4ec4ff"] } }),
       node("timer", "Timer", "71:49:28", 1, { config: { enabled: true, format: "hh:mm:ss", separator: ":", prefix: "倒计时", suffix: "", resetMode: "Reset timer on every paywall view", prefixColor: "#0180ff", digitColor: "#0180ff" } }),
       node("purchase", "Button", "立即领取优惠", 1, { config: { action: "Purchase" } }),
-      node("legal", "Text", "首年优惠价，次年按标准价格续订，可随时取消。", 1, { label: "续订说明", variant: "legal" }),
+      node("legal", "Text", "如果当前缴费期前24小时没有取消续订，系统会自动续订，费用将从你的iTunes账户收取，你可随时前往iTunes商店的设置界面管理自己的订阅设定。有关详细信息，请访问我们的服务条款及隐私政策。", 1, { label: "续订说明", variant: "legal" }),
       node("links", "Links", "服务条款 · 隐私政策", 1),
     ];
   }

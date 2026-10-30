@@ -73,6 +73,11 @@ test('four HT defaults contain live label and information nodes without changing
     const { nodes } = indexDocument(document);
     for (const p of [...nodes.values()].filter((node) => node.type === 'Package')) {
       const descendants = []; const visit = (node) => { descendants.push(node); node.children.forEach(visit); }; visit(p);
+      if(id==='ht-payment-recovery'&&p.id==='products/package-1'){
+        assert.equal(descendants.some(node=>node.props.productField==='badgeText'),false);
+        assert.equal(descendants.some(node=>node.props.binding?.field==='productInfo'),false);
+        continue;
+      }
       assert.ok(descendants.some((node) => node.props.productField === 'badgeText'));
       assert.equal(descendants.filter((node) => node.type === 'Text' && node.props.binding?.field === 'productInfo' && !node.props.hidden).length, 1);
     }

@@ -31,6 +31,14 @@ for (const id of ['ht-blue-privilege', 'ht-membership-plans', 'ht-payment-recove
       assert.equal(parents.get('member/cancel-note'),footer.id);
       assert.match(nodes.get('legal').props.text,/24小时.*自动续订/);
       assert.equal(nodes.has('member/purchase-area'),false);
+    }else if(id==='ht-payment-recovery'){
+      assert.equal(parents.get('products'),footer.id);
+      assert.equal(parents.get('recovery/renewal'),footer.id);
+      assert.equal(parents.get('timer'),footer.id);
+      assert.deepEqual(footer.children.slice(0,4).map(node=>node.id),['products','recovery/renewal','timer','purchase']);
+      assert.equal(parents.get('recovery/header'),screen.id);
+      assert.equal(nodes.get('recovery/header').type,'Header');
+      assert.ok(nodes.get('recovery/header').children.some(node=>node.id==='recovery/header/close'&&node.props.action.action==='Dismiss'));
     }else{
       assert.notEqual(parents.get('products'), footer.id);
       assert.equal(parents.get('timer'), footer.id);
@@ -60,6 +68,7 @@ test('test3/test4 inherit the fixed Blue footer while preserving their separate 
   const template = templates.find((entry) => entry.id === 'ht-sku-sheet');
   assert.equal([...indexDocument(importComponentDocument(createBuilderNodes(template.id), template)).nodes.values()].filter((entry) => entry.type === 'Footer').length, 0);
 });
+
 
 test('old generated Blue footer repairs its product position once without losing user content or data',()=>{
   const template=templates.find(item=>item.id==='ht-blue-privilege'),source=importComponentDocument(createBuilderNodes(template.id),template);

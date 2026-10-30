@@ -9,6 +9,8 @@ export function buildHtPackageFields(document, variant) {
   const sampleBadge = [...all.values()].find((node) => /^products\/badge-\d+$/.test(node.id));
   const visit = (node) => {
     if (node.type !== 'Package' || node.props.group !== 'products') return { ...node, children: node.children.map(visit) };
+    // The recovery composition declares its two different package slots explicitly.
+    if (variant === 'payment-recovery') return node;
     const key = node.props.dataKey;
     let infoFound = false, labelFound = false;
     const decorate = (child) => {

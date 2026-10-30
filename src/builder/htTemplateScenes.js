@@ -29,9 +29,16 @@ export function rebuildHtTemplateScene(document, template) {
     const details = take(`products/detail-${index}`, { minHeight: 28, ...padding(0), gap: 0 });
     if (member && details) details.children = details.children.map((child) => ({ ...child, props: { ...child.props, selectedColor: '#2e89ff' } }));
     if (recovery) {
-      const left = stack(`products/left-${index}`, '商品名称', [name], { justify: 'center' });
-      const right = stack(`products/right-${index}`, '价格与优惠', [price, ...entry.children.flatMap((child) => child.children).filter((child) => child.props.binding?.field === 'saveCopy').map((child) => ({ ...child, props: { ...child.props, fontSize: 12, color: '#151515', textAlign: 'right' } }))], { widthMode: 'fit', align: 'end', gap: 2, justify: 'center' });
-      return { ...entry, props: { ...entry.props, priceMode: '0', minHeight: 76, ...padding(12, 16), ...margin(), borderWidth: 1, background: '#d3edff', selectedBackground: '#d3edff', color: '#151515', selectedColor: '#151515', axis: 'overlay' }, children: [stack(`products/row-${index}`, '套餐信息', [left, right], { axis: 'horizontal', justify: 'between', align: 'center', minHeight: 50 }), badge && stack(`products/tag-${index}`, '优惠角标', [badge], { alignSelf: 'start' })].filter(Boolean) };
+      const annual = index === 0;
+      if(badge)badge.props={...badge.props,productField:'badgeText',height:20,radius:10,radiusMode:'uniform',background:'#ff9000'};
+      name.props = {...name.props,widthMode:'fit',fontSize:16,textAlign:'left'};
+      price.props = {...price.props,widthMode:'fit',textAlign:'right'};
+      const reference = annual && binding(`products/reference-${index}`, '划线原价', key, 'referencePrice', {widthMode:'fit',fontSize:14,color:'#aaaaaa',strike:true});
+      const identity = annual ? stack(`products/identity-${index}`, '周期与原价', [name,reference], {axis:'horizontal',align:'center',gap:6}) : name;
+      const info = annual && binding(`products/package-${index}-productInfo`, '商品信息', key, 'productInfo', {fontSize:12,color:'#151515',textAlign:'left'});
+      const left = stack(`products/left-${index}`, '套餐左侧信息', [identity,info], {justify:'center',gap:2});
+      const right = stack(`products/right-${index}`, '标签与月均价', [annual && badge,price], {widthMode:'fit',align:'end',gap:2,justify:'center'});
+      return {...entry,props:{...entry.props,priceMode:annual?'4':'0',productLabelEnabled:annual,minHeight:76,...padding(10,12),...margin(),borderWidth:1,borderColor:'transparent',selectedBorderColor:'#ff8600',selectedBorder:'#ff8600',background:'#f0f0f0',selectedBackground:'#ffebe7',color:'#151515',selectedColor:'#151515',axis:'horizontal',align:'center',gap:8},children:[left,right]};
     }
     const monthly = binding(`products/monthly-${index}`, '月均价', key, 'monthlyPrice', { fontSize: 14, color: 'inherit', textAlign: 'center' });
     const reference = binding(`products/reference-${index}`, '参考价', key, 'referencePrice', { fontSize: 14, color: '#bdbdbd', strike: true, textAlign: 'center' });
@@ -60,10 +67,16 @@ export function rebuildHtTemplateScene(document, template) {
     sheet = stack('member/sheet', '会员套餐半窗', [carousel, stack('member/purchase-area', '套餐与购买', [heading, products, purchase, text('member/cancel-note','取消说明','可随时取消',{fontSize:11,color:'#aaaaaa',textAlign:'center'}), take('legal', { textAlign: 'left', ...margin() }), take('links', { ...margin() })], { ...padding(16), gap: 12, background: '#f7f7f7' }), home()], { background: '#f7f7f7', radiusMode: 'individual', radiusTopLeft: 20, radiusTopRight: 20, gap: 0 });
   } else if (recovery) {
     children.push(image('recovery/backdrop', '来源页面背景', '/figma-paywall-assets/recovery-art.png', 844, { overlayColor: '#000000', overlayOpacity: 48, objectFit: 'cover' }));
-    sheet = stack('offer-card', '支付恢复半窗', [closeRow('recovery/header', [], 28), take('headline', { fontSize: 24, lineHeight: 28 / 24, ...margin(), ...padding(0) }), take('hero-image', { ...margin() }), take('caption', { fontSize: 14, lineHeight: 20 / 14, ...margin(), ...padding(0) }), products, timer, purchase, take('legal', { ...margin(), fontSize: 11, textAlign: 'center' }), take('links', { ...margin() }), home()], { background: '#ffffff', radiusMode: 'individual', radiusTopLeft: 24, radiusTopRight: 24, ...padding(0, 20), gap: 12, minHeight: 674 });
+    const header = closeRow('recovery/header', [], 36);
+    header.type = 'Header'; header.props.justify = 'start';
+    header.children[0].props = {...header.children[0].props,width:36,height:36};
+    children.push(header);
+    purchase.props.background='linear-gradient(90deg, #ff8600, #ffb000)';
+    const renewal = text('recovery/renewal', '当前套餐续订说明', '首年 ¥{首年价}，次年按 ¥{续订价}/年自动续订，可随时取消。', {fontSize:11,lineHeight:1.35,color:'#999999',textAlign:'center'});
+    const legal = take('legal', {...margin(),fontSize:10,lineHeight:1.35,textAlign:'left'});
+    sheet = stack('offer-card', '支付恢复半窗', [take('headline', { fontSize: 24, lineHeight: 28 / 24, ...margin(), ...padding(0) }), take('hero-image', { ...margin() }), take('caption', { fontSize: 14, lineHeight: 20 / 14, ...margin(), ...padding(0) }), products, renewal, timer, purchase, legal, take('links', { ...margin() }), {...home(),props:{...home().props,height:24}}], { background: '#ffffff', radiusMode: 'individual', radiusTopLeft: 24, radiusTopRight: 24, ...padding(0, 20), gap: 12, minHeight: 0 });
     const hero = sheet.children.find((entry) => entry.id === 'hero-image');
     hero.children = [take('hero-image/image', { widthMode: 'fixed', width: 266.24, height: 195.52, alignSelf: 'center', objectFit: 'contain' })];
-    sheet.children[0].props.marginLeft = -12; sheet.children[0].props.marginRight = -12;
   } else {
     const header = closeRow('sku/header', [stack('sku/titles', '标题与副标题', [take('headline', { fontSize: 16, fontWeight: 500, textAlign: 'left' }), take('caption', { fontSize: 12, lineHeight: 16 / 12, textAlign: 'left' })], { gap: 0 })], 72);
     header.props.paddingLeft = 16; header.props.paddingRight = 16;
@@ -73,5 +86,7 @@ export function rebuildHtTemplateScene(document, template) {
   }
   const top = member ? 129 : recovery ? 170 : 289;
   children.push(stack('$scene', '弹层场景', [sheet], { ...padding(0), paddingTop: top, minHeight: 844 }));
-  return { ...document, htSceneVersion: 1, root: { ...document.root, props: { ...document.root.props, axis: 'overlay', background: '#8f8f8f', backgroundImage: '', ...padding(0), gap: 0 }, children } };
+  const renewalRules = recovery ? products.children.map((entry,index)=>({id:`recovery/renewal-${index}`,name:index===0?'年套餐续订说明':'月套餐续订说明',enabled:true,conditions:[{type:'sku',operator:'equals',value:document.products[entry.props.dataKey].skuId}],effects:[{target:'recovery/renewal',kind:'text',value:index===0?'首年 ¥{首年价}，次年按 ¥{续订价}/年自动续订，可随时取消。':'每月 ¥{月价} 自动续订，可随时取消。'}]})) : [];
+  const annualKey=recovery?products.children[0].props.dataKey:null;
+  return { ...document, ...(recovery?{products:{...document.products,[annualKey]:{...document.products[annualKey],showReferencePrice:true}},logic:{...document.logic,rules:[...document.logic?.rules??[],...renewalRules]}}:{}), htSceneVersion: 1, root: { ...document.root, props: { ...document.root.props, axis: 'overlay', background: '#8f8f8f', backgroundImage: '', ...padding(0), gap: 0 }, children } };
 }

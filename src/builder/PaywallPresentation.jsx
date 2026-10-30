@@ -23,13 +23,14 @@ export default function PaywallPresentation({ offerings = [], currentPaywallId, 
   const restart = () => { consumed.current.clear(); setResumeNavigation(null); setOffer(null); setClosed(false); setRequest(0); setRestarted(true); setSession((value) => value + 1); };
   const resume = () => { setResumeNavigation(underlayNavigation); setOffer(null); setRequest(0); };
   const render = (previewProps) => {
+    previewProps={...previewProps,countdownScope:offer?.id??currentPaywallId??`draft:${props.document.templateId}`};
     if(productFields)previewProps={...previewProps,document:fieldPreviewDocument(previewProps.document)};
     const background = productFields?fieldPreviewDocument(offer ? props.document : backdropDocument):offer ? props.document : backdropDocument;
     if (!background || !previewProps.document.settings?.presentationSurfaceId) return <ComponentPreview {...previewProps}/>;
     const { flow, pages } = pageContext(background);
     const source = exitOfferSource(background);
     const backgroundNavigation = offer ? underlayNavigation : backdropNavigation ?? (flow && source ? { [flow.id]: pages.findIndex((page) => page.id === source.id) } : {});
-    return <div className="ne-exit-sheet-presentation"><div className="ne-exit-underlay" inert="" aria-hidden="true"><ComponentPreview document={background} businessTime={props.businessTime} editing={false} navigation={backgroundNavigation} onSelect={() => {}} onStatus={() => {}}/></div><div className="ne-exit-foreground"><ComponentPreview {...previewProps} dismissOnBackdrop/></div></div>;
+    return <div className="ne-exit-sheet-presentation"><div className="ne-exit-underlay" inert="" aria-hidden="true"><ComponentPreview document={background} businessTime={props.businessTime} persistCountdown={false} editing={false} navigation={backgroundNavigation} onSelect={() => {}} onStatus={() => {}}/></div><div className="ne-exit-foreground"><ComponentPreview {...previewProps} dismissOnBackdrop/></div></div>;
   };
   if (props.editing) return render(props);
   return <div className="ne-presentation">
