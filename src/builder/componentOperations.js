@@ -5,6 +5,7 @@ import {fontResources,withFontResources} from './fontStyles.js';
 import {captureFragmentConfiguration,restoreFragmentConfiguration} from './fragmentConfiguration.js';
 import {applyPackagePriceMode,packagePriceMode} from '../products/productParameters.js';
 import {COMPARISON_ROW_KEYS} from './htVipColumn.js';
+import {removeButtonTextEffects} from './buttonText.js';
 
 const STYLE_KEYS = new Set(['axis','gap','align','justify','wrap','widthMode','width','minWidth','maxWidth','heightMode','height','minHeight','maxHeight','paddingMode','paddingTop','paddingRight','paddingBottom','paddingLeft','paddingVertical','paddingHorizontal','marginMode','marginTop','marginRight','marginBottom','marginLeft','marginVertical','marginHorizontal','background','backgroundImage','backgroundFit','backgroundVideo','fillType','color','radius','shape','borderWidth','borderColor','fontSize','fontWeight','fontFamily','fontStyle','textAlign','objectFit','opacity','alignSelf','strike','bold','italic','underline','textBackground','iconSize','iconBackground','iconRadius','selectedBorder','selectedBackground','selectedColor','shadowX','shadowY','shadowBlur','shadowColor']);
 for (const key of [...STATE_STYLE_KEYS, ...STATE_STYLE_KEYS.map(selectedStyleKey), 'lineHeight', 'flexGrow', 'mask', 'overlayColor', 'overlayEnabled', 'pageSpacing', 'pagePeek', 'pageControlPosition', 'dotColor', 'activeDotColor', 'itemSpacing', 'textSpacing', 'columnGutter', 'iconAlignment', 'connectorEnabled', 'connectorWidth', 'connectorColor', 'connectorOpacity', 'connectorMarginMode', 'connectorMarginVertical', 'connectorMarginTop', 'connectorMarginBottom']) STYLE_KEYS.add(key);
@@ -252,6 +253,7 @@ export function patchComponentProperties(document, id, values) {
   const node = indexDocument(document).nodes.get(id);
   if (!node) return document;
   let next = updateComponent(document, id, { props: textPropertyPatch(node, values) });
+  if(values.buttonText?.target)next=removeButtonTextEffects(next,values.buttonText.target);
   if (node.props.comparisonRowId) {
     const rowValues = Object.fromEntries(Object.entries(values).filter(([key])=>COMPARISON_ROW_KEYS.includes(key)));
     if (Object.keys(rowValues).length) for (const peer of indexDocument(document).nodes.values()) {

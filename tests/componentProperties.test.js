@@ -64,6 +64,30 @@ after(async () => { for (const renderer of mounted) await act(async () => render
 const event = (value) => ({ target: { value }, stopPropagation() {}, preventDefault() {} });
 const fixture = (node) => ({ version: 3, templateId: 'audit', products: { sample: { name: '年度', price: '¥100', billingMonths: 12 } }, root: component('page', 'Screen', '页面', {}, [node]) });
 
+for(const type of ['Button','PurchaseButton'])test(`${type} owns editable package labels, editor preview, fallback and saved runtime behavior`,async()=>{
+  const button=component('sample',type,'购买',{action:{action:'Purchase'}},[component('label','Text','文字',{text:'原默认',fontSize:18})]);
+  const source=fixture(component('plans','Stack','套餐',{},[component('annual','Package','年付',{group:'plans',defaultSelected:true}),component('monthly','Package','月付',{group:'plans'}),button]));source.productFieldPreview=true;
+  source.logic={variables:[{key:'days',value:3}],rules:[{conditions:[{type:'package',value:'monthly'}],effects:[{target:'label',kind:'text',value:'外部旧覆盖'}]}]};
+  const h=await mount(button,{source});let saved;
+  try{
+    await h.editText({text:'开始试用',runs:null},'按钮文案内容');
+    await h.select('文案切换方式','package');await h.select('配置套餐文案','monthly');
+    await h.editText({text:'继续 {{ business.days }}',runs:null},'按钮文案内容');
+    assert.deepEqual(h.node('label').children,['继续 3']);assert.equal(h.node('label').props.style.fontSize,18);
+    assert.equal(h.document().logic.rules.length,0);assert.equal(h.document().root.children[0].children.at(-1).props.buttonText.variants[0].packageId,'monthly');
+    await h.click('恢复默认文案');assert.deepEqual(h.node('label').children,['开始试用']);
+    await h.editText({text:'继续',runs:null},'按钮文案内容');
+    await h.select('文案切换方式','default');assert.deepEqual(h.node('label').children,['开始试用']);
+    await h.select('文案切换方式','package');await h.select('配置套餐文案','monthly');assert.deepEqual(h.node('label').children,['继续']);
+    saved=structuredClone(h.document());assert.equal(saved.root.children[0].children.at(-1).props.action.action,'Purchase');
+  }finally{await h.close();}
+  const values=new Map(),storage={getItem:key=>values.get(key),setItem:(key,value)=>values.set(key,value)};assert.ok(saveComponentDocument(storage,saved));saved=readComponentDocument(storage,'audit');
+  const live=await mount(indexDocument(saved).nodes.get('sample'),{source:saved,editing:false});
+  try{assert.deepEqual(live.node('label').children,['开始试用']);await act(async()=>live.node('monthly').props.onClick(event()));assert.deepEqual(live.node('label').children,['继续']);await act(async()=>live.node('annual').props.onClick(event()));assert.deepEqual(live.node('label').children,['开始试用']);}finally{await live.close();}
+  const text=await mount(indexDocument(saved).nodes.get('label'),{source:saved});
+  try{assert.equal(text.renderer.root.findAll(node=>typeof node.type==='function'&&node.props['aria-label']==='文字内容').length,0);await text.click('配置按钮文案');assert.equal(text.status(),'sample');}finally{await text.close();}
+});
+
 test('free trial composes three carousel pages, explicit trial purchase, selected-package purchase and a button-owned retention sheet',async()=>{
   const template=templates.find(t=>t.id==='ht-free-trial'),source=upgradeCanonicalComponents(importComponentDocument(createBuilderNodes(template.id),template));
   const h=await mount(indexDocument(source).nodes.get('trial/confirm'),{source,editing:false});

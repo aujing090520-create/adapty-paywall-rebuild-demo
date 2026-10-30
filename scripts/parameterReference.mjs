@@ -126,6 +126,14 @@ add(['ProductParameter'],'参数属性','终身适配','parameter','显示当前
 for(const [key,label] of [['italic','斜体'],['underline','下划线'],['strike','删除线']])add(['ProductParameter'],'文字样式',label,key,'调整参数整体文字格式，不修改外部字段值');
 add(['Text'],'文字规则','文字规则','textRules','切换默认或优惠分支的内容/格式；标准尺寸仍属于默认，不重复配置','预览使用当前选择规则，不是真实用户优惠资格判定',[['default','默认','默认文案与格式'],['introductory','首次优惠','首次优惠覆盖，未覆盖字段继承默认'],['promotional','促销优惠','促销优惠覆盖'],['multiphase','多阶段优惠','多阶段优惠覆盖']]);
 add(['Text'],'文字属性','文字内容','text / runs','编辑正文与真实选区格式；默认SKU绑定时只读，优惠分支可独立覆盖文案','优惠仅改格式时继续读取SKU；主动改优惠正文才覆盖，返回默认仍读原商品，不改SKU记录');
+add(['Text'],'按钮文字','文案配置位置','buttonText.target','按钮已接管此文字的内容，直接在所属按钮配置；本图层仅保留文字样式','所属按钮配置了按钮文案');
+add(['Button','PurchaseButton'],'按钮文案','文案切换方式','buttonText.mode','按钮组件内配置固定或按套餐切换的文案，不需要工作区文字替换规则','按钮存在文字子组件',[['default','固定文案','使用组件内默认文案'],['package','按选中套餐切换','匹配当前选择组内的套餐专属文案；未配置时沿用默认']]);
+add(['Button','PurchaseButton'],'按钮文案','文案文字图层','buttonText.target','选择按钮内实际承载文字样式和选区的Text，不新增文字图层','按钮内包含多个文字组件');
+add(['Button','PurchaseButton'],'按钮文案','文案关联选择组','buttonText.group','只联动同屏同弹窗中的指定套餐选择组，避免其他套餐组干扰','按选中套餐切换');
+add(['Button','PurchaseButton'],'按钮文案','配置套餐文案','buttonText.variants[].packageId','选择默认文案或某个套餐直接编辑，编辑态同步预览所选方案','按选中套餐切换；无真实SKU依赖');
+add(['Button','PurchaseButton'],'按钮文案','当前文案来源','buttonText.variants','只读显示单独配置或沿用默认，不是第二份业务字段','正在配置某个套餐');
+add(['Button','PurchaseButton'],'按钮文案','按钮文案内容','buttonText.default / buttonText.variants','组件持有正文及变量，文字样式仍由其Text子层控制','改变套餐不会改写保存值；未配置回退默认，主动清空允许空文案');
+add(['Button','PurchaseButton'],'按钮文案','恢复默认文案','buttonText.variants','删除当前套餐的专属覆盖，重新沿用默认内容','该套餐已单独配置；固定模式保留套餐文案以便切回');
 for(const [label,key,meaning] of [['粗体','bold','切换选区粗体'],['斜体','italic','切换选区斜体'],['删除线','strikethrough','给选区加删除线'],['下划线','underline','给选区加下划线'],['行内代码','code','给选区使用等宽代码格式，不是HTML编辑'],['链接','link','为选区设置安全链接或移除链接'],['撤销/重做','history','撤销或恢复文字编辑']])add(['Text'],'文字工具',label,`runs.${key}`,meaning,'文字有选区时只改变选区；链接不接受脚本协议');
 add(['Text'],'旧版兼容','内容来源','binding','仅旧版未升级文档的兼容入口；当前构建器普通文字与商品参数已经分离','升级时商品绑定文字自动迁移为商品参数；当前文字面板不提供来源切换',[['custom','自定义文字','旧版独立文字'],['product','商品字段','旧版绑定，升级后改用商品参数']]);
 add(['Text'],'旧版兼容','商品字段','binding.field','旧字段映射，在当前构建器迁移为ProductParameter.parameter','仅未升级的兼容文档；不是当前新增配置入口',Object.entries({name:'商品周期名称',price:'售卖价',reference:'划线价',monthlyPrice:'月均售卖价',referencePrice:'SKU 原价',productInfo:'商品信息',supportingCopy:'辅助文案',savingCopy:'节省比例（兼容字段）',saveCopy:'商品信息（兼容字段）',badgeText:'商品标签'}).map(([key,label])=>[key,label,`旧绑定${label}`]));

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, ArrowDown, Layers3, AlignLeft, AlignCenter, AlignRight, AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal, AlignStartVertical, AlignCenterVertical, AlignEndVertical, SquareDashed, RectangleHorizontal, RectangleVertical, Plus, X, Settings2 } from 'lucide-react';
+import { ArrowRight, ArrowDown, Layers3, AlignLeft, AlignCenter, AlignRight, AlignStartHorizontal, AlignCenterHorizontal, AlignEndHorizontal, AlignStartVertical, AlignCenterVertical, AlignEndVertical, SquareDashed, RectangleHorizontal, RectangleVertical, Plus, X, Settings2, RotateCcw } from 'lucide-react';
 import { CONTAINER_TYPES, componentProps, componentLayerLabel } from './componentDocument.js';
 import { workflowContext, stepDestination, owningScreen } from './workflow.js';
 import { selectedStyleKey, stateStyleProps, spacingModePatch, dimensionModePatch, imageMask, cornerModePatch, CORNER_KEYS, selectionOwner, sequencePages, BADGE_DEFAULTS, BADGE_COMPONENT_TYPES, utcDateTimeInput, textPropertyPatch } from './propertyModel.js';
@@ -10,6 +10,7 @@ import {COUNTDOWN_MODES,countdownMode} from './countdownTiming.js';
 import {screenChromeLayout} from './screenLayout.js';
 import {purchaseTargets} from './purchaseTarget.js';
 import {BUTTON_BADGE_TYPES,componentBadgeProps} from './propertyModel.js';
+import {buttonLabelTexts,buttonPackages,buttonTextConfig,buttonTextOwner,localizedButtonText,buttonTextPreviewNavigation} from './buttonText.js';
 import {packageSelectionGroups} from './componentOperations.js';
 import {COMPARISON_ORDER_RULES} from './comparisonOrdering.js';
 import {flowInitialIndex} from './componentTree.js';
@@ -152,7 +153,7 @@ function MediaEditor({ value, type, onChange, onError, background = false }) {
   return <div className="rc-media-editor">{value && (type === 'Video' ? <video src={value} controls /> : <img src={value} alt="当前素材" />)}<label className="rc-upload">{value ? '替换素材' : '上传素材'}<input type="file" accept={accept} onChange={(event) => { upload(event.target.files[0]); event.target.value = ''; }} /></label><Field label={type === 'Screen' ? '背景图片地址' : '素材地址'}><input value={value} onChange={(event) => onChange(event.target.value)} /></Field>{value && <button type="button" className="rc-secondary" onClick={() => onChange('')}>删除素材</button>}</div>;
 }
 
-function ContentSection({ selected, p, patch, styleP=p, stylePatch=patch, document, nodes, parents, findPackage, resolveText, changeProduct, fieldNames, demoSkus, setNavigation, onStatus, setDefaultPackage, onPackageGroupChange, onMediaType, onPageControl, onModalCreate, onModalEdit, onTimeSources, rule='default' }) {
+function ContentSection({ selected, p, patch, styleP=p, stylePatch=patch, document, nodes, parents, findPackage, resolveText, changeProduct, fieldNames, demoSkus, setNavigation, onStatus, setDefaultPackage, onPackageGroupChange, onMediaType, onPageControl, onModalCreate, onModalEdit, onTimeSources, onSelectComponent, rule='default' }) {
   const [uploading,setUploading]=React.useState(false);
   const type = selected.type;
   if(type==='Header'){
@@ -191,6 +192,8 @@ function ContentSection({ selected, p, patch, styleP=p, stylePatch=patch, docume
   </>}</PropertySection>;
   }
   if (type === 'Text') {
+    const buttonOwner=buttonTextOwner(document,selected.id,{nodes,parents});
+    if(buttonOwner)return <PropertySection title="按钮文字"><Field label="文案配置位置"><output>所属按钮组件</output></Field><button type="button" className="rc-secondary" onClick={()=>onSelectComponent?.(buttonOwner.id)}>配置按钮文案</button></PropertySection>;
     const boundPackage = findPackage(selected.id, nodes, parents);
     const textProps=timerTextProps(p),legacyTimer=textProps!==p;
     const issues=variableIssues(resolveText({...selected,props:textProps},document,boundPackage),document,boundPackage??[...nodes.values()].find(node=>node.type==='Package'&&node.props.defaultSelected));
@@ -266,6 +269,31 @@ function ContentSection({ selected, p, patch, styleP=p, stylePatch=patch, docume
   if (type === 'ExpressCheckout') return null;
   if (type === 'Custom') return <PropertySection title="自定义组件"><a className="rc-secondary" href="/custom-component/example.zip" download>下载示例</a><label className="rc-upload">{uploading?'正在校验 ZIP':p.customBundle?'替换 ZIP':'上传 ZIP'}<input type="file" accept=".zip,application/zip" disabled={uploading} onChange={async(event)=>{const file=event.target.files?.[0];event.target.value='';if(!file)return;setUploading(true);try{const {installCustomBundle}=await import('./customBundle.js');const customBundle=await installCustomBundle(file);patch({customBundle});}catch(error){onStatus(error.message);}finally{setUploading(false);}}}/></label>{p.customBundle&&<><div className="rc-custom-file">{p.customBundle.name}</div><button type="button" className="rc-secondary" onClick={()=>patch({customBundle:null})}>移除 ZIP</button></>}{p.html!==undefined&&!p.customBundle&&<Field label="HTML（旧配置）"><textarea className="ne-code-input" value={p.html} onChange={(event)=>patch({html:event.target.value})}/></Field>}</PropertySection>;
   return null;
+}
+
+function ButtonTextSection({selected,p,patch,document,navigation,setNavigation}){
+  const texts=buttonLabelTexts(selected),[choice,setChoice]=React.useState('');
+  React.useEffect(()=>setChoice(''),[selected.id,p.buttonText?.group]);
+  React.useEffect(()=>{if(texts.length)setNavigation({...buttonTextPreviewNavigation(document,selected),[`button-text:${selected.id}`]:''});},[selected.id]);
+  if(!['Button','PurchaseButton'].includes(selected.type)||!texts.length)return null;
+  const button={...selected,props:p},config=buttonTextConfig(button,document),packages=buttonPackages(document,button);
+  const groups=[...new Set(packages.map(item=>item.props.group??item.id))];
+  const options=packages.filter(item=>(item.props.group??item.id)===config.group);
+  const target=texts.find(item=>item.id===config.target),variant=config.variants.find(item=>item.packageId===choice),content=choice?variant??config.default:config.default;
+  const locale=navigation.contentLocale??document.localization?.defaultLocale??'zh-CN',display=localizedButtonText(content,document,locale);
+  const update=values=>patch({buttonText:{...config,...values}});
+  const edit=values=>{const next=locale===(document.localization?.defaultLocale??'zh-CN')?{...content,...values}:{...content,translations:{...content.translations,[locale]:values}};choice?update({variants:[...config.variants.filter(item=>item.packageId!==choice),{...next,packageId:choice}]}):update({default:next});};
+  return <PropertySection title="按钮文案">
+    {(texts.length>1||!target)&&<Select label="文案文字图层" value={config.target} options={[...(!target?[[config.target,'原文字图层不可用，请重新选择']]:[]),...texts.map((item,index)=>[item.id,`${index+1}. ${item.props.text||'文字'}`])]} onChange={target=>update({target,default:{text:texts.find(item=>item.id===target)?.props.text??'',runs:null}})}/>}
+    <Select label="文案切换方式" value={config.mode} options={[[ 'default','固定文案' ],...((packages.length||config.mode==='package')?[[ 'package','按选中套餐切换' ]]:[])]} onChange={mode=>{update({mode});setChoice('');setNavigation({[`button-text:${selected.id}`]:''});}}/>
+    {config.mode==='package'&&<>
+      <Select label="文案关联选择组" value={config.group} options={[[ '', '请选择套餐选择组' ],...(config.group&&!groups.includes(config.group)?[[config.group,'原选择组不可用']]:[]),...groups.map((group,index)=>[group,`套餐选择组 ${index+1}（${packages.filter(item=>(item.props.group??item.id)===group).length} 个套餐）`])]} onChange={group=>{update({group});setNavigation({[`button-text:${selected.id}`]:''});}}/>
+      <Select label="配置套餐文案" value={choice} options={[[ '', '默认文案' ],...options.map((item,index)=>[item.id,document.products[item.props.dataKey??item.id]?.name||`套餐 ${index+1} · ${item.id}`])]} onChange={value=>{setChoice(value);setNavigation({[`button-text:${selected.id}`]:value});}}/>
+      {choice&&<Field label="当前文案来源"><output>{variant?'该套餐单独配置':'沿用默认文案'}</output></Field>}
+    </>}
+    {!target?<output>原文字图层已移除，请重新选择</output>:<React.Suspense fallback={<div className="rc-rich-loading">加载文字编辑器</div>}><RichTextEditor key={`${selected.id}:${choice}:${locale}`} aria-label="按钮文案内容" p={{...target.props,...display}} value={display.text??''} onChange={edit} variables={availableTextVariables(document)}/></React.Suspense>}
+    {choice&&variant&&<button type="button" className="rc-secondary" aria-label="恢复默认文案" title="恢复默认文案" onClick={()=>update({variants:config.variants.filter(item=>item.packageId!==choice)})}><RotateCcw size={15}/>恢复默认文案</button>}
+  </PropertySection>;
 }
 
 function LayoutSection({ selected, p, patch, parent }) {
@@ -408,7 +436,8 @@ export default function RevenueCatProperties({ selected, p, patch, document, nod
       {pagePresentation(p)!=='fullscreen'&&<><NumberField label="窗口高度" value={p.windowHeight??600} min={120} max={844} onChange={windowHeight=>patch({windowHeight})}/><NumberField label="窗口边距" value={p.windowInset??0} max={100} onChange={windowInset=>patch({windowInset})}/><NumberField label="窗口圆角" value={p.windowRadius??24} max={100} onChange={windowRadius=>patch({windowRadius})}/><ColorField label="窗口外背景" value={p.windowBackdrop??'#8f8f8f'} onChange={windowBackdrop=>patch({windowBackdrop})}/></>}
     </PropertySection>}
     {selected.type==='Text'&&<div className="rc-text-rule"><Select label="文字规则" value={rule} options={TEXT_RULES} onChange={(value)=>{if(value!=='default'&&!p.textRules?.[value])patch(textRulePatch(p,value,{}));setNavigation({textRule:value});}}/></div>}
-    <ContentSection key={rule} rule={rule} selected={selected} p={selected.type==='Text'?textP:p} patch={selected.type==='Text'?textPatch:patch} styleP={styleP} stylePatch={stylePatch} document={document} nodes={nodes} parents={parents} findPackage={findPackage} resolveText={resolveText} changeProduct={changeProduct} fieldNames={fieldNames} demoSkus={demoSkus} setNavigation={setNavigation} onStatus={onStatus} setDefaultPackage={setDefaultPackage} onPackageGroupChange={onPackageGroupChange} onMediaType={onMediaType} onPageControl={onPageControl} onModalCreate={onModalCreate} onModalEdit={onModalEdit} onTimeSources={onTimeSources}/>
+    <ContentSection key={rule} rule={rule} selected={selected} p={selected.type==='Text'?textP:p} patch={selected.type==='Text'?textPatch:patch} styleP={styleP} stylePatch={stylePatch} document={document} nodes={nodes} parents={parents} findPackage={findPackage} resolveText={resolveText} changeProduct={changeProduct} fieldNames={fieldNames} demoSkus={demoSkus} setNavigation={setNavigation} onStatus={onStatus} setDefaultPackage={setDefaultPackage} onPackageGroupChange={onPackageGroupChange} onMediaType={onMediaType} onPageControl={onPageControl} onModalCreate={onModalCreate} onModalEdit={onModalEdit} onTimeSources={onTimeSources} onSelectComponent={onSelectComponent}/>
+    {['Button','PurchaseButton'].includes(selected.type)&&<ButtonTextSection selected={selected} p={p} patch={patch} document={document} navigation={navigation} setNavigation={setNavigation}/>}
     {selected.type==='Countdown'&&<CountdownContentFields selected={selected} document={document} nodes={nodes} parents={parents} navigation={navigation} setNavigation={setNavigation} onChange={onCountdownContentChange} onSelect={onSelectComponent} resolveText={resolveText} findPackage={findPackage} selectedState={stateful&&packageState==='selected'}/>}
     {stateful && rule==='default' && <PropertySection title="状态样式"><SegmentedField label="状态" value={packageState} options={[[ 'default', '默认' ], [ 'selected', selected.type==='Indicators'?'当前':'选中' ]]} onChange={value=>setNavigation({[stateKey]:value})}/></PropertySection>}
     {['Text','ProductParameter'].includes(selected.type) && <PropertySection title="文字样式">

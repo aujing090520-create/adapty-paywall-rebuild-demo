@@ -6,6 +6,7 @@ import {logicMatches} from '../src/builder/paywallLogic.js';
 import {purchaseTarget,purchaseTargets} from '../src/builder/purchaseTarget.js';
 import {structureIssues} from '../scripts/lib/component-structure-contract.mjs';
 import {copyFragment,pasteFragment} from '../src/builder/componentOperations.js';
+import {buttonTextResolution} from '../src/builder/buttonText.js';
 
 test('trial template uses only existing components with owned navigation, footer, packages and modal',()=>{
   const doc=buildFreeTrialTemplate(),{nodes,parents}=indexDocument(doc);
@@ -16,6 +17,8 @@ test('trial template uses only existing components with owned navigation, footer
   assert.equal(nodes.get('trial/confirm').props.action.packageId,'trial/annual');assert.equal(nodes.get('trial/purchase').props.action.packageId,undefined);
   assert.equal(nodes.get('trial/pages').props.autoPlay,false);
   assert.equal(nodes.get('trial/annual/price').type,'ProductParameter');assert.equal(nodes.get('trial/annual/price').props.parameter,'monthlyPrice');
+  assert.equal(nodes.get('trial/purchase').props.buttonText.mode,'package');
+  assert.equal(doc.logic.rules.some(rule=>rule.effects.some(effect=>effect.target==='trial/purchase/text')),false);
 });
 test('component page conditions use identities, preserve older tab conditions and reject stale targets',()=>{
   const doc=buildFreeTrialTemplate(),condition={enabled:true,conditions:[{type:'page',source:'trial/pages',value:'trial/plans'}]};
@@ -45,6 +48,9 @@ test('trial configuration roundtrips and copied subtrees remap package targets a
   assert.ok(button);assert.notEqual(button.props.action.packageId,'trial/annual');assert.equal(nodes.get(button.props.action.packageId)?.type,'Package');
   assert.equal(nodes.get(button.props.action.packageId).props.defaultSelected,true);
   assert.ok(nodes.has(nodes.get(button.props.action.packageId).props.group));
+  const linked=[...nodes.values()].find(node=>node.props.buttonText),config=linked.props.buttonText;
+  assert.equal(nodes.get(config.target).type,'Text');assert.ok(nodes.has(config.group));assert.equal(nodes.get(config.variants[0].packageId).type,'Package');
+  assert.equal(buttonTextResolution(nodes.get(config.target),result,{[`package:${config.group}`]:config.variants[0].packageId}).props.text,'继续');
   for(const rule of result.logic.rules)for(const condition of rule.conditions){if(condition.type==='page')assert.equal(nodes.get(condition.source)?.type,'Carousel');assert.ok(nodes.has(condition.value));}
   assert.deepEqual(structureIssues(result),[]);
 });

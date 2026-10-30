@@ -47,6 +47,7 @@ export function buildFreeTrialTemplate(){
   const header=n('trial/header','Header',{overlapContent:false,background:surface,gap:0,shadowOpacity:0},[hero]);
   const start={...action('trial/confirm','0元领取{{ business.trial_days }}天VIP体验',{action:'Purchase',packageId:annual.id}),type:'PurchaseButton'};
   const purchase={...action('trial/purchase','0元领取{{ business.trial_days }}天VIP体验',{action:'Purchase'},{hidden:true}),type:'PurchaseButton'};
+  purchase.props.buttonText={mode:'package',target:'trial/purchase/text',group:'trial/packages',default:{text:'0元领取{{ business.trial_days }}天VIP体验',runs:null},variants:[{packageId:monthly.id,text:'继续',runs:null}]};
   const footer=n('trial/footer','Footer',{background:surface,gap:10,...pad(0,14),paddingMode:'individual',paddingTop:4,paddingRight:14,paddingBottom:20,paddingLeft:14,shadowOpacity:0},[
     text('trial/cancel-note','订阅可随时取消，无需支付任何费用',{fontSize:12,color:'#999999',textAlign:'center'}),start,purchase,
     text('trial/legal','免费{{ business.trial_days }}天试用后，系统会以{{ business.renewal_price }}自动续订，可随时取消。费用将从你的账户收取。',{fontSize:9,color:'#b7b7b7'}),
@@ -55,6 +56,6 @@ export function buildFreeTrialTemplate(){
   ]);
   return {version:3,templateId:'ht-free-trial',productFieldPreview:true,productParameterVersion:1,settings:{buttonModalVersion:1},products:{'trial/annual':{name:'12个月',billingMonths:12},'trial/monthly':{name:'1个月',billingMonths:1}},logic:{variables:[{id:'trial-days',key:'trial_days',type:'number',value:3},{id:'trial-renewal-price',key:'renewal_price',type:'string',value:'¥{总价}'}],rules:[
     rule('确认套餐页',[pageCondition('plans')],[{target:start.id,kind:'hide'},{target:purchase.id,kind:'show'},copyEffect('trial/cancel-note','可随时在App Store取消')]),
-    rule('月度直接购买',[{type:'package',value:monthly.id}],[copyEffect('trial/purchase/text','继续'),copyEffect('trial/legal','如果当前缴费期前24小时没有取消续订，系统会自动续订，费用将从你的账户收取。可随时在账户设置管理订阅。')]),
+    rule('月度续订提示',[{type:'package',value:monthly.id}],[copyEffect('trial/legal','如果当前缴费期前24小时没有取消续订，系统会自动续订，费用将从你的账户收取。可随时在账户设置管理订阅。')]),
   ]},root:n('trial/screen','Screen',{pagePresentation:'fullscreen',background:surface,gap:0,heightMode:'fill'},[header,pages,footer])};
 }

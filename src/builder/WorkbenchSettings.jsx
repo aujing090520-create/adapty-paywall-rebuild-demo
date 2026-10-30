@@ -7,6 +7,7 @@ import {renameBusinessVariable,variableKeyError} from './workbenchModel.js';
 import TimeSourceSettings from './TimeSourceSettings.jsx';
 import {timeSources,TIME_STATES} from './businessTime.js';
 import {componentPages} from './componentPages.js';
+import {buttonTextOwner} from './buttonText.js';
 
 const uid=()=>crypto.randomUUID();
 const Field=({label,children})=><label className="rc-field"><span>{label}</span>{children}</label>;
@@ -31,7 +32,7 @@ export default function WorkbenchSettings({document,onChange,onClose,onPreview,i
   const items=dataType==='gifts'?business.bySku?.[activeSku]?.gifts??[]:business.benefits??[];
   const setItems=next=>onChange({...document,business:{...business,...(dataType==='gifts'?{bySku:{...business.bySku,[activeSku]:{...business.bySku?.[activeSku],gifts:next}}}:{benefits:next})}});
   const editItem=(index,key,value)=>setItems(items.map((item,at)=>at!==index?item:language==='zh-CN'?{...item,[key]:value}:{...item,translations:{...item.translations,[language]:{...item.translations?.[language],[key]:value}}}));
-  const translatable=nodes.filter(node=>node.type==='Text'&&!node.props.binding||resourceFields(node).length);
+  const translatable=nodes.filter(node=>node.type==='Text'&&!node.props.binding&&!buttonTextOwner(document,node.id)||resourceFields(node).length);
   const selected=translatable.find(node=>node.id===target)??translatable.find(node=>node.type==='Text')??translatable[0];
   const override=localization.translations?.[language]?.[selected?.id]??{};
   const setTranslation=(key,value)=>patchLocale({translations:{...localization.translations,[language]:{...localization.translations?.[language],[selected.id]:{...override,[key]:value,...(key==='text'?{runs:null}:{})}}}});
@@ -61,7 +62,7 @@ export default function WorkbenchSettings({document,onChange,onClose,onPreview,i
             </div>;
           })}
           <button type="button" className="secondary" onClick={()=>patchRule(rule.id,{conditions:[...rule.conditions,{type:'sku',value:'',operator:'equals'}]})}><Plus size={15}/>添加并且条件</button>
-          {rule.effects.map((effect,index)=>{const update=patch=>patchRule(rule.id,{effects:rule.effects.map((item,at)=>at===index?{...item,...patch}:item)});return <div className="ne-settings-row" key={index}><Select label="影响节点" value={effect.target} options={[[ '', '选择节点' ],...nodes.filter(node=>LOGIC_TARGET_TYPES.has(node.type)).map(node=>[node.id,label(node)])]} onChange={target=>update({target,kind:'show'})}/><Select label="联动行为" value={effect.kind} options={[[ 'show','显示' ],['hide','隐藏'],...(['Button','PurchaseButton'].includes(nodes.find(node=>node.id===effect.target)?.type)?[[ 'disable','禁用按钮' ],['enable','启用按钮']]:[]),...(nodes.find(node=>node.id===effect.target)?.type==='Text'?[[ 'text','替换文字' ]]:[])]} onChange={kind=>update({kind})}/>{effect.kind==='text'&&<Field label="联动文字"><textarea aria-label="联动文字" value={effect.value??''} onChange={e=>update({value:e.target.value})}/></Field>}<Remove label="删除联动" onClick={()=>patchRule(rule.id,{effects:rule.effects.filter((_,at)=>at!==index)})}/></div>;})}
+          {rule.effects.map((effect,index)=>{const update=patch=>patchRule(rule.id,{effects:rule.effects.map((item,at)=>at===index?{...item,...patch}:item)});return <div className="ne-settings-row" key={index}><Select label="影响节点" value={effect.target} options={[[ '', '选择节点' ],...nodes.filter(node=>LOGIC_TARGET_TYPES.has(node.type)&&!buttonTextOwner(document,node.id)).map(node=>[node.id,label(node)])]} onChange={target=>update({target,kind:'show'})}/><Select label="联动行为" value={effect.kind} options={[[ 'show','显示' ],['hide','隐藏'],...(['Button','PurchaseButton'].includes(nodes.find(node=>node.id===effect.target)?.type)?[[ 'disable','禁用按钮' ],['enable','启用按钮']]:[]),...(nodes.find(node=>node.id===effect.target)?.type==='Text'&&!buttonTextOwner(document,effect.target)?[[ 'text','替换文字' ]]:[])]} onChange={kind=>update({kind})}/>{effect.kind==='text'&&<Field label="联动文字"><textarea aria-label="联动文字" value={effect.value??''} onChange={e=>update({value:e.target.value})}/></Field>}<Remove label="删除联动" onClick={()=>patchRule(rule.id,{effects:rule.effects.filter((_,at)=>at!==index)})}/></div>;})}
           <button type="button" className="secondary" onClick={()=>patchRule(rule.id,{effects:[...rule.effects,{target:'',kind:'show'}]})}><Plus size={15}/>添加影响节点</button>
         </fieldset>)}<button type="button" className="secondary" onClick={()=>patchLogic({rules:[...rules,{id:uid(),name:`规则 ${rules.length+1}`,enabled:true,conditions:[{type:'sku',value:'',operator:'equals'}],effects:[{target:'',kind:'show'}]}]})}><Plus size={15}/>添加规则</button>
       </>}

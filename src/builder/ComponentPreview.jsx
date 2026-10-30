@@ -31,6 +31,7 @@ import { isExitOfferStep } from './exitOffers.js';
 import { screenChromeLayout } from './screenLayout.js';
 import { purchaseTarget } from './purchaseTarget.js';
 import {componentBadgeProps} from './propertyModel.js';
+import {buttonTextResolution} from './buttonText.js';
 import {entryCountdownDeadline,countdownMode} from './countdownTiming.js';
 
 const PreviewContext = createContext(null);
@@ -158,6 +159,8 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
   const { document, selectedId, onSelect, editing, runtime, setRuntime, runAction } = context;
   const conditionalNode=comparisonRowProps(logicNode(node,document,runtime,context.selectedPackage),context.nodeIndex,source=>logicNode(source,document,runtime,context.selectedPackage));
   let baseProps = node.type==='Text'?textRuleProps(componentProps(conditionalNode),runtime.textRule):componentProps(conditionalNode);
+  const buttonLabel=node.type==='Text'?buttonTextResolution(node,document,runtime,{nodes:context.nodeIndex,parents:context.parentIndex},editing):null;
+  if(buttonLabel)baseProps={...baseProps,...buttonLabel.props};
   if(item)baseProps={...baseProps,text:interpolateItem(baseProps.text,item),runs:baseProps.runs?.map(run=>({...run,text:interpolateItem(run.text,item)})),src:interpolateItem(baseProps.src,item),action:baseProps.action?{...baseProps.action,actionUrl:interpolateItem(baseProps.action.actionUrl,item)}:undefined};
   const group = baseProps.group ?? node.id;
   const owner = selectionOwner(node, context.nodeIndex, context.parentIndex);
@@ -173,7 +176,7 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
   const props = componentProps(visualNode);
   if (props.hidden || (['overlay','sheet'].includes(props.presentation) && !floating)) return null;
   if (props.visibleWhen && Boolean(runtime[props.visibleWhen.id] ?? context.nodeIndex.get(props.visibleWhen.id)?.props.initial) !== props.visibleWhen.value) return null;
-  const currentPackage = node.type === 'Package' ? node : ['Button','PurchaseButton'].includes(node.type)&&props.action?.packageId ? purchaseTarget(document,node,packageNode??context.selectedPackage,runtime) : packageNode;
+  const currentPackage = buttonLabel?.packageNode??(node.type === 'Package' ? node : ['Button','PurchaseButton'].includes(node.type)&&props.action?.packageId ? purchaseTarget(document,node,packageNode??context.selectedPackage,runtime) : packageNode);
   if (props.productField && !(currentPackage?.props.productType ? productParameterPreview(parameterFromBinding(props.productField,currentPackage),currentPackage,stateSelected) : resolveComponentText({ props: { binding: { key: currentPackage?.props.dataKey, field: props.productField } } }, document, currentPackage, stateSelected))) return null;
   const variablePackage = currentPackage ?? context.selectedPackage;
   const entries=props.dataSource?businessList(document,props.dataSource,variablePackage):null;
