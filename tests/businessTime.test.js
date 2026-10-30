@@ -9,6 +9,10 @@ import {createCatalogComponent} from '../src/builder/componentCatalog.js';
 import {copyFragment,pasteFragment} from '../src/builder/componentOperations.js';
 import {logicMatches} from '../src/builder/paywallLogic.js';
 import {validWorkbenchConfiguration} from '../src/builder/workbenchModel.js';
+import {templates,createBuilderNodes} from '../src/templates/templateDefinitions.js';
+import {importComponentDocument} from '../src/builder/componentDocument.js';
+import {upgradeCanonicalComponents} from '../src/builder/componentCatalog.js';
+import {fieldPreviewDocument} from '../src/products/fieldPreview.js';
 
 let server,Preview,Settings,Properties;
 before(async()=>{globalThis.ResizeObserver=class{observe(){}disconnect(){}};server=await createServer({configFile:false,logLevel:'silent',server:{middlewareMode:true,hmr:false,watch:null}});Preview=(await server.ssrLoadModule('/src/builder/ComponentPreview.jsx')).default;Settings=(await server.ssrLoadModule('/src/builder/WorkbenchSettings.jsx')).default;Properties=(await server.ssrLoadModule('/src/builder/RevenueCatProperties.jsx')).default;});
@@ -146,4 +150,19 @@ test('property panel switches sources without losing manual settings or overwrit
     assert.equal(control('input','目标时间（UTC）').props.value,'2031-02-03T04:05:06');
     assert.equal(indexDocument(document).nodes.get('first').props.timeSourceId,'sale');
   }finally{if(renderer)await act(async()=>renderer.unmount());}
+});
+
+test('recovery expiry shows the ended message and retains the normal mock purchase action',async()=>{
+  let document=upgradeCanonicalComponents(importComponentDocument(createBuilderNodes('ht-payment-recovery'),templates.find(item=>item.id==='ht-payment-recovery')));
+  document=updateComponent(document,'timer',{props:{timingMode:'deadline',deadline:'2000-01-01T00:00:00Z'}});
+  let renderer,status='';
+  const node=id=>renderer.root.findAll(item=>typeof item.type==='string'&&item.props['data-component-id']===id)[0];
+  try {
+    await act(async()=>{renderer=Renderer.create(React.createElement(Preview,{document:fieldPreviewDocument(document),editing:false,onSelect(){},onStatus:value=>status=value}));});
+    assert.equal(node('timer/ended-text').children.join(''),'优惠已结束');
+    assert.equal(node('timer/active'),undefined);
+    assert.equal(node('purchase').props['aria-disabled'],undefined);
+    await act(async()=>node('purchase').props.onClick({stopPropagation(){},preventDefault(){}}));
+    assert.equal(status,'购买预览：未发起真实交易');
+  } finally {if(renderer)await act(async()=>renderer.unmount());}
 });
