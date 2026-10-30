@@ -8,6 +8,7 @@ import {buildBlueVipColumn} from './htVipColumn.js';
 import {upgradeTimerTextVariables,consolidateCountdownText} from './textVariableTokens.js';
 import {upgradePagePresentation} from './pagePresentation.js';
 import {upgradeTrialButtonText} from './buttonText.js';
+import {consolidateTrialPurchase} from './purchaseSelection.js';
 
 // Public picker entries are building blocks or transparent Stack compositions.
 // Structural children are offered only by their owning container.
@@ -104,7 +105,7 @@ export function createCatalogComponent(type, id = crypto.randomUUID(), context =
 }
 
 export function upgradeCanonicalComponents(document) {
-  document=upgradeTrialButtonText(document);
+  document=consolidateTrialPurchase(upgradeTrialButtonText(document));
   let changed=false;
   const ids = new Set(indexDocument(document).nodes.keys());
   const visit=(node)=>{

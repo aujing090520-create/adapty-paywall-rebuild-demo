@@ -53,6 +53,14 @@ export function structureIssues(document) {
     if (node.type === 'Package' && !document.products[node.props.dataKey ?? node.id]) issues.push(`${node.id}: missing product record`);
     const action = node.props.action;
     if(action?.packageId&&nodes.get(action.packageId)?.type!=='Package')issues.push(`${node.id}: unresolved purchase package target`);
+    if(action?.pagePackages&&action.pagePackages.enabled!==false){
+      const sequence=nodes.get(action.pagePackages.source);
+      if(!['Carousel','Tabs'].includes(sequence?.type))issues.push(`${node.id}: unresolved purchase sequence`);
+      for(const mapping of action.pagePackages.pages??[]){
+        if(!sequence?.children.some(page=>page.id===mapping.pageId))issues.push(`${node.id}: unresolved purchase page`);
+        if(mapping.packageId&&nodes.get(mapping.packageId)?.type!=='Package')issues.push(`${node.id}: unresolved page purchase package`);
+      }
+    }
     if (action?.actionPage && ['OpenSheet', 'NextScreen', 'OpenPage'].includes(action.action)) {
       const type = nodes.get(action.actionPage)?.type;
       if (type !== (action.action === 'OpenSheet' ? 'BottomSheet' : 'Screen')) issues.push(`${node.id}: unresolved ${action.action} target`);

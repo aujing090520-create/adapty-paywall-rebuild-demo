@@ -88,15 +88,15 @@ for(const type of ['Button','PurchaseButton'])test(`${type} owns editable packag
   try{assert.equal(text.renderer.root.findAll(node=>typeof node.type==='function'&&node.props['aria-label']==='文字内容').length,0);await text.click('配置按钮文案');assert.equal(text.status(),'sample');}finally{await text.close();}
 });
 
-test('free trial composes three carousel pages, explicit trial purchase, selected-package purchase and a button-owned retention sheet',async()=>{
+test('free trial uses one purchase button across three carousel pages and keeps a button-owned retention sheet',async()=>{
   const template=templates.find(t=>t.id==='ht-free-trial'),source=upgradeCanonicalComponents(importComponentDocument(createBuilderNodes(template.id),template));
-  const h=await mount(indexDocument(source).nodes.get('trial/confirm'),{source,editing:false});
+  const h=await mount(indexDocument(source).nodes.get('trial/purchase'),{source,editing:false});
   const page=index=>h.renderer.root.findAll(node=>node.type==='button'&&node.props['aria-label']===`第 ${index+1} 页`)[0];
   try{
-    assert.ok(h.node('trial/confirm'));assert.equal(h.node('trial/purchase'),undefined);
-    await act(async()=>h.node('trial/confirm').props.onClick(event()));assert.match(h.status(),/购买预览/);
-    await act(async()=>page(1).props.onClick(event()));assert.ok(h.node('trial/confirm'));assert.equal(h.node('trial/purchase'),undefined);
-    await act(async()=>h.node('trial/confirm').props.onClick(event()));assert.match(h.status(),/购买预览/);
+    assert.equal(h.node('trial/confirm'),undefined);assert.ok(h.node('trial/purchase'));
+    await act(async()=>h.node('trial/purchase').props.onClick(event()));assert.match(h.status(),/购买预览/);
+    await act(async()=>page(1).props.onClick(event()));assert.equal(h.node('trial/confirm'),undefined);assert.ok(h.node('trial/purchase'));
+    await act(async()=>h.node('trial/purchase').props.onClick(event()));assert.match(h.status(),/购买预览/);
     await act(async()=>page(2).props.onClick(event()));assert.equal(h.node('trial/confirm'),undefined);assert.ok(h.node('trial/purchase'));
     assert.deepEqual(h.node('trial/purchase/text').children,['0元领取3天VIP体验']);
     await act(async()=>h.node('trial/monthly').props.onClick(event()));assert.deepEqual(h.node('trial/purchase/text').children,['继续']);
@@ -106,8 +106,23 @@ test('free trial composes three carousel pages, explicit trial purchase, selecte
     await act(async()=>h.node('trial/purchase').props.onClick(event()));assert.match(h.status(),/购买预览/);
     await act(async()=>h.node('trial/close').props.onClick(event()));await act(async()=>h.node('trial/retention/leave').props.onClick(event()));assert.equal(h.status(),'关闭预览');
     await act(async()=>h.node('trial/retention/keep').props.onClick(event()));await act(async()=>page(0).props.onClick(event()));
-    assert.ok(h.node('trial/confirm'));await act(async()=>h.node('trial/confirm').props.onClick(event()));assert.match(h.status(),/购买预览/);
+    assert.equal(h.node('trial/confirm'),undefined);assert.ok(h.node('trial/purchase'));assert.deepEqual(h.node('trial/purchase/text').children,['0元领取3天VIP体验']);await act(async()=>h.node('trial/purchase').props.onClick(event()));assert.match(h.status(),/购买预览/);
     assert.deepEqual(h.document(),source);
+  }finally{await h.close();}
+});
+
+test('one purchase button configures page-specific targets in its own properties and preserves mappings across mode changes',async()=>{
+  const template=templates.find(t=>t.id==='ht-free-trial'),source=upgradeCanonicalComponents(importComponentDocument(createBuilderNodes(template.id),template));
+  const h=await mount(indexDocument(source).nodes.get('trial/purchase'),{source});
+  try{
+    await h.select('配置购买页面','trial/benefits');await h.select('当前页购买商品','trial/monthly');
+    let action=indexDocument(h.document()).nodes.get('trial/purchase').props.action;
+    assert.equal(action.pagePackages.pages.find(item=>item.pageId==='trial/benefits').packageId,'trial/monthly');
+    await h.select('购买商品','');assert.equal(indexDocument(h.document()).nodes.get('trial/purchase').props.action.pagePackages.enabled,false);
+    await h.select('购买商品','@page');action=indexDocument(h.document()).nodes.get('trial/purchase').props.action;
+    assert.equal(action.pagePackages.enabled,true);assert.equal(action.pagePackages.pages.find(item=>item.pageId==='trial/benefits').packageId,'trial/monthly');
+    await h.select('配置购买页面','trial/benefits');await h.select('当前页购买商品','@default');
+    assert.equal(indexDocument(h.document()).nodes.get('trial/purchase').props.action.pagePackages.pages.some(item=>item.pageId==='trial/benefits'),false);
   }finally{await h.close();}
 });
 

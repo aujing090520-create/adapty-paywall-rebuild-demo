@@ -134,6 +134,10 @@ add(['Button','PurchaseButton'],'按钮文案','配置套餐文案','buttonText.
 add(['Button','PurchaseButton'],'按钮文案','当前文案来源','buttonText.variants','只读显示单独配置或沿用默认，不是第二份业务字段','正在配置某个套餐');
 add(['Button','PurchaseButton'],'按钮文案','按钮文案内容','buttonText.default / buttonText.variants','组件持有正文及变量，文字样式仍由其Text子层控制','改变套餐不会改写保存值；未配置回退默认，主动清空允许空文案');
 add(['Button','PurchaseButton'],'按钮文案','恢复默认文案','buttonText.variants','删除当前套餐的专属覆盖，重新沿用默认内容','该套餐已单独配置；固定模式保留套餐文案以便切回');
+add(['PurchaseButton'],'动作属性','默认购买商品','action.packageId','按组件页面配置时，未单独覆盖的页面购买此套餐或跟随选择','购买商品为按组件页面配置；只配置一个按钮，不复制按钮节点');
+add(['PurchaseButton'],'动作属性','购买关联分页组件','action.pagePackages.source','选择同屏同弹窗中的轮播或标签页作为购买目标切换依据','购买商品为按组件页面配置；分页组件删除后阻止购买并要求重新选择');
+add(['PurchaseButton'],'动作属性','配置购买页面','action.pagePackages.pages[].pageId','按页面身份选择对应页，不依赖固定数组位置','已选择分页组件');
+add(['PurchaseButton'],'动作属性','当前页购买商品','action.pagePackages.pages[].packageId','当前页可指定套餐、跟随当前选择，或沿用默认购买商品','按钮文案随实际购买的套餐联动，避免第一页误显示月套餐文案');
 for(const [label,key,meaning] of [['粗体','bold','切换选区粗体'],['斜体','italic','切换选区斜体'],['删除线','strikethrough','给选区加删除线'],['下划线','underline','给选区加下划线'],['行内代码','code','给选区使用等宽代码格式，不是HTML编辑'],['链接','link','为选区设置安全链接或移除链接'],['撤销/重做','history','撤销或恢复文字编辑']])add(['Text'],'文字工具',label,`runs.${key}`,meaning,'文字有选区时只改变选区；链接不接受脚本协议');
 add(['Text'],'旧版兼容','内容来源','binding','仅旧版未升级文档的兼容入口；当前构建器普通文字与商品参数已经分离','升级时商品绑定文字自动迁移为商品参数；当前文字面板不提供来源切换',[['custom','自定义文字','旧版独立文字'],['product','商品字段','旧版绑定，升级后改用商品参数']]);
 add(['Text'],'旧版兼容','商品字段','binding.field','旧字段映射，在当前构建器迁移为ProductParameter.parameter','仅未升级的兼容文档；不是当前新增配置入口',Object.entries({name:'商品周期名称',price:'售卖价',reference:'划线价',monthlyPrice:'月均售卖价',referencePrice:'SKU 原价',productInfo:'商品信息',supportingCopy:'辅助文案',savingCopy:'节省比例（兼容字段）',saveCopy:'商品信息（兼容字段）',badgeText:'商品标签'}).map(([key,label])=>[key,label,`旧绑定${label}`]));
@@ -195,7 +199,7 @@ add(['Screen'],'画布选择','组件悬停框','editor.hoveredId','仅当前选
 add(['Screen'],'步骤编排','复制屏幕 / 排序 / 删除','workflow.manage','在Screen更多菜单操作真实步骤，保留原屏幕名称与所有组件；复制在原屏幕后创建独立ID和商品记录','至少保留1个步骤；排序保持初始与按钮目标身份，删除目标后显示失效绑定，不擅自改绑');
 add(['Button','PurchaseButton'],'动作属性','目标弹窗','action.actionPage','绑定真实BottomSheet子树','导航目标为弹窗；与页面之间的步骤跳转分开');
 add(['PurchaseButton'],'动作属性','打开方式','action.action','选择结账展示流程，不在Demo中发起真实付款','真实Billing/恢复/钱包交易仍排除',[['Purchase','标准结账','显示标准结账演示'],['WebCheckout','网页结账（浏览器）','显示网页结账演示'],['WebPaywall','网页付费墙','显示网页付费墙演示'],['CustomCheckout','自定义结账','组装自定义URL并按所选浏览方式打开']]);
-add(['PurchaseButton'],'动作属性','购买商品','action.packageId','跟随当前选中套餐，或指定同一页面和弹窗作用域内的套餐；允许购买其他轮播页中配置的试用套餐','仅购买用途；目标已删除或不在同一作用域时不可购买，不回退购买其他商品',[['','跟随当前选中套餐','沿用现有选择行为'],['<Package ID>','指定套餐','绑定可编辑商品套餐的节点ID，不绑定实际SKU']]);
+add(['PurchaseButton'],'动作属性','购买商品','action.packageId / action.pagePackages','跟随当前选中套餐、指定套餐，或按同屏分页组件的页面配置购买目标；始终只需一个按钮','目标已删除或不在同一作用域时不可购买；切换方式保留分页配置',[['','跟随当前选中套餐','沿用现有选择行为'],['<Package ID>','指定套餐','绑定可编辑商品套餐的节点ID，不绑定实际SKU'],['@page','按组件页面配置','未覆盖页面沿用默认购买商品，指定页面可改为跟随选择']]);
 add(['PurchaseButton'],'动作属性','结账链接','action.actionUrl','自定义结账的基础URL','打开方式为自定义结账');
 add(['PurchaseButton'],'动作属性','链接打开方式','action.openMethod','自定义结账链接的打开方式','自定义结账',[['external_browser','外部浏览器','另开URL'],['deep_link','深链','使用应用协议URL']]);
 for(const [key,name,meaning] of [['attachPackageId','附带商品套餐 ID','把选中商品ID附加到URL'],['attachAppUserId','附带应用用户 ID','附加示例用户demo-preview，不读取真实用户'],['attachEnvironment','附带环境','附加sandbox示例环境']])add(['PurchaseButton'],'动作属性',name,`action.${key}`,meaning,'仅自定义结账；默认勾选',bool);

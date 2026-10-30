@@ -1,6 +1,7 @@
 import {indexDocument} from './componentDocument.js';
 import {owningScreen,owningModal} from './workflow.js';
 import {logicNode} from './paywallLogic.js';
+import {purchaseSelection} from './purchaseSelection.js';
 
 export function purchaseTargets(document,button,runtime={},selected){
   const screen=owningScreen(document,button.id),modal=owningModal(document,button.id);
@@ -19,6 +20,6 @@ export function purchaseTargets(document,button,runtime={},selected){
   return [...nodes.values()].filter(node=>node.type==='Package'&&available(node)&&owningScreen(document,node.id)?.id===screen?.id&&owningModal(document,node.id)?.id===modal?.id);
 }
 export function purchaseTarget(document,button,selected,runtime={}){
-  const id=button.props.action?.packageId;
-  return id?purchaseTargets(document,button,runtime,selected).find(node=>node.id===id)??null:selected;
+  const choice=purchaseSelection(button,document,runtime);
+  return choice.invalid?null:choice.fixed?purchaseTargets(document,button,runtime,selected).find(node=>node.id===choice.packageId)??null:selected;
 }

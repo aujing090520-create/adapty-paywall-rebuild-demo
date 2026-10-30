@@ -176,7 +176,7 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
   const props = componentProps(visualNode);
   if (props.hidden || (['overlay','sheet'].includes(props.presentation) && !floating)) return null;
   if (props.visibleWhen && Boolean(runtime[props.visibleWhen.id] ?? context.nodeIndex.get(props.visibleWhen.id)?.props.initial) !== props.visibleWhen.value) return null;
-  const currentPackage = buttonLabel?.packageNode??(node.type === 'Package' ? node : ['Button','PurchaseButton'].includes(node.type)&&props.action?.packageId ? purchaseTarget(document,node,packageNode??context.selectedPackage,runtime) : packageNode);
+  const currentPackage = buttonLabel?.packageNode??(node.type === 'Package' ? node : ['Button','PurchaseButton'].includes(node.type)&&(props.action?.packageId||props.action?.pagePackages) ? purchaseTarget(document,node,packageNode??context.selectedPackage,runtime) : packageNode);
   if (props.productField && !(currentPackage?.props.productType ? productParameterPreview(parameterFromBinding(props.productField,currentPackage),currentPackage,stateSelected) : resolveComponentText({ props: { binding: { key: currentPackage?.props.dataKey, field: props.productField } } }, document, currentPackage, stateSelected))) return null;
   const variablePackage = currentPackage ?? context.selectedPackage;
   const entries=props.dataSource?businessList(document,props.dataSource,variablePackage):null;

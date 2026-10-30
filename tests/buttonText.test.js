@@ -6,7 +6,7 @@ import {buildFreeTrialTemplate} from '../src/builder/freeTrialTemplate.js';
 
 test('button label selection is confined to its group and screen and tolerates deleted packages',()=>{
   const document=buildFreeTrialTemplate(),button=indexDocument(document).nodes.get('trial/purchase'),label=indexDocument(document).nodes.get(button.props.buttonText.target);
-  assert.equal(buttonTextResolution(label,document,{'package:trial/packages':'trial/monthly'}).props.text,'继续');
+  assert.equal(buttonTextResolution(label,document,{'trial/pages':2,'package:trial/packages':'trial/monthly'}).props.text,'继续');
   assert.match(buttonTextResolution(label,document,{selectedPackage:'foreign','package:other':'foreign'}).props.text,/0元领取/);
   const without=removeComponent(document,'trial/monthly');assert.match(buttonTextResolution(label,without,{'package:trial/packages':'trial/monthly'}).props.text,/0元领取/);
   const modal=document.root.children[0].children[0].children.at(-1).children.at(-1);
@@ -17,10 +17,10 @@ test('button label selection is confined to its group and screen and tolerates d
 test('component-owned label translations fall back and selecting a hidden page button reveals its page',()=>{
   const document=buildFreeTrialTemplate(),button=indexDocument(document).nodes.get('trial/purchase'),label=indexDocument(document).nodes.get(button.props.buttonText.target);
   button.props.buttonText.variants[0].translations={en:{text:'Continue',runs:null}};
-  document.previewContentLocale='en';assert.equal(buttonTextResolution(label,document,{'package:trial/packages':'trial/monthly'}).props.text,'Continue');
-  document.previewContentLocale='ar';assert.equal(buttonTextResolution(label,document,{'package:trial/packages':'trial/monthly'}).props.text,'继续');
+  document.previewContentLocale='en';assert.equal(buttonTextResolution(label,document,{'trial/pages':2,'package:trial/packages':'trial/monthly'}).props.text,'Continue');
+  document.previewContentLocale='ar';assert.equal(buttonTextResolution(label,document,{'trial/pages':2,'package:trial/packages':'trial/monthly'}).props.text,'继续');
   assert.deepEqual(buttonTextPreviewNavigation(document,button),{'trial/pages':2});
-  assert.deepEqual(buttonTextPreviewNavigation(document,indexDocument(document).nodes.get('trial/confirm')),{});
+  assert.deepEqual(buttonTextPreviewNavigation(document,{props:{}}),{});
 });
 
 test('old free trial label rules migrate once into button content while retaining legal text and customization',()=>{

@@ -14,7 +14,8 @@ test('trial template uses only existing components with owned navigation, footer
   assert.equal(nodes.get('trial/pages').children.filter(node=>node.type==='Slide').length,3);
   assert.equal(parents.get('trial/header'),'trial/screen');assert.equal(parents.get('trial/footer'),'trial/screen');
   assert.equal(parents.get('trial/retention'),'trial/close');assert.equal(nodes.get('trial/close').props.action.actionPage,'trial/retention');
-  assert.equal(nodes.get('trial/confirm').props.action.packageId,'trial/annual');assert.equal(nodes.get('trial/purchase').props.action.packageId,undefined);
+  assert.equal(nodes.get('trial/confirm'),undefined);assert.equal(nodes.get('trial/purchase').props.action.packageId,'trial/annual');
+  assert.equal([...nodes.values()].filter(node=>node.type==='PurchaseButton').length,1);
   assert.equal(nodes.get('trial/pages').props.autoPlay,false);
   assert.equal(nodes.get('trial/annual/price').type,'ProductParameter');assert.equal(nodes.get('trial/annual/price').props.parameter,'monthlyPrice');
   assert.equal(nodes.get('trial/purchase').props.buttonText.mode,'package');
@@ -27,7 +28,7 @@ test('component page conditions use identities, preserve older tab conditions an
   assert.equal(logicMatches({conditions:[{type:'package',value:'trial/monthly'}]},doc,{},indexDocument(doc).nodes.get('trial/monthly')),true);
 });
 test('explicit package purchase cannot bind a deleted package or a different screen or modal scope',()=>{
-  const doc=buildFreeTrialTemplate(),{nodes}=indexDocument(doc),button=nodes.get('trial/confirm');
+  const doc=buildFreeTrialTemplate(),{nodes}=indexDocument(doc),button=nodes.get('trial/purchase');
   assert.equal(purchaseTarget(doc,button,null)?.id,'trial/annual');assert.equal(purchaseTargets(doc,button).length,2);
   assert.equal(purchaseTarget(removeComponent(doc,'trial/annual'),button,nodes.get('trial/monthly')),null);
   assert.equal(purchaseTarget(updateComponent(doc,'trial/packages',{props:{hidden:true}}),button,null),null);
@@ -50,7 +51,9 @@ test('trial configuration roundtrips and copied subtrees remap package targets a
   assert.ok(nodes.has(nodes.get(button.props.action.packageId).props.group));
   const linked=[...nodes.values()].find(node=>node.props.buttonText),config=linked.props.buttonText;
   assert.equal(nodes.get(config.target).type,'Text');assert.ok(nodes.has(config.group));assert.equal(nodes.get(config.variants[0].packageId).type,'Package');
-  assert.equal(buttonTextResolution(nodes.get(config.target),result,{[`package:${config.group}`]:config.variants[0].packageId}).props.text,'继续');
+  const owner=[...nodes.values()].find(node=>node.props.buttonText),pages=owner.props.action.pagePackages;
+  assert.equal(nodes.get(pages.source)?.type,'Carousel');assert.equal(nodes.get(pages.pages[0].pageId)?.type,'Slide');
+  assert.equal(buttonTextResolution(nodes.get(config.target),result,{[pages.source]:2,[`package:${config.group}`]:config.variants[0].packageId}).props.text,'继续');
   for(const rule of result.logic.rules)for(const condition of rule.conditions){if(condition.type==='page')assert.equal(nodes.get(condition.source)?.type,'Carousel');assert.ok(nodes.has(condition.value));}
   assert.deepEqual(structureIssues(result),[]);
 });

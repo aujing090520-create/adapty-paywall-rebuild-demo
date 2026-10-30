@@ -1,3 +1,4 @@
+import {purchaseSelection} from './purchaseSelection.js';
 const buttonTypes=new Set(['Button','PurchaseButton']);
 function tree(document){
   const nodes=new Map(),parents=new Map();
@@ -26,6 +27,8 @@ export function localizedButtonText(content,document,locale=document.previewCont
 export function buttonTextPreviewNavigation(document,button){
   if(!button.props.buttonText)return {};
   const index=tree(document);
+  const pageConfig=button.props.action?.pagePackages?.enabled===false?null:button.props.action?.pagePackages;
+  if(pageConfig){const sequence=index.nodes.get(pageConfig.source),pageId=pageConfig.pages?.find(item=>!item.packageId)?.pageId,pages=sequence?.children.filter(node=>node.type===(sequence.type==='Carousel'?'Slide':'Tab'))??[],at=pages.findIndex(node=>node.id===pageId);if(at>=0)return {[sequence.id]:at};}
   for(const rule of document.logic?.rules??[]){
     const condition=rule.conditions?.[0];
     if(rule.enabled===false||rule.conditions?.length!==1||condition.type!=='page'||condition.operator==='notEquals'||!rule.effects.some(effect=>effect.target===button.id&&effect.kind==='show'))continue;
@@ -44,7 +47,8 @@ export function buttonTextResolution(node,document,runtime={},index=tree(documen
   const button=buttonTextOwner(document,node.id,index);if(!button)return null;
   const config=buttonTextConfig(button,document),packages=buttonPackages(document,button,index).filter(item=>(item.props.group??item.id)===config.group);
   const choice=editing?runtime[`button-text:${button.id}`]:undefined;
-  const selected=packages.find(item=>item.id===(choice||runtime[`package:${config.group}`]))??packages.find(item=>item.props.defaultSelected);
+  const purchase=['Purchase','WebCheckout','WebPaywall','CustomCheckout'].includes(button.props.action?.action)?purchaseSelection(button,document,runtime):{};
+  const selected=packages.find(item=>item.id===(choice||(purchase.fixed?purchase.packageId:runtime[`package:${config.group}`])))??(!purchase.fixed?packages.find(item=>item.props.defaultSelected):undefined);
   const variant=config.mode==='package'&&choice!==''?config.variants.find(item=>item.packageId===selected?.id):null;
   const content=localizedButtonText(variant??config.default,document);
   return {packageNode:selected,props:{text:content.text??'',runs:content.runs??null,binding:null,productField:null}};
