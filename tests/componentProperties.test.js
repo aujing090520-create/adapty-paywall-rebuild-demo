@@ -7,7 +7,7 @@ import { component, componentProps, indexDocument, updateComponent, saveComponen
 import { DEMO_SKUS } from '../src/productPricing.js';
 import { copyStyles, pasteStyles, patchComponentProperties, patchCountdownContent, togglePageControl } from '../src/builder/componentOperations.js';
 import { createCatalogComponent, upgradeCanonicalComponents } from '../src/builder/componentCatalog.js';
-import { countdownSeconds, defaultPackagePatch, BADGE_COMPONENT_TYPES } from '../src/builder/propertyModel.js';
+import { countdownSeconds, defaultPackagePatch, BADGE_COMPONENT_TYPES, BUTTON_BADGE_TYPES, BUTTON_BADGE_TEXT } from '../src/builder/propertyModel.js';
 import { templates, createBuilderNodes } from '../src/templates/templateDefinitions.js';
 import { importComponentDocument, validDocument } from '../src/builder/componentDocument.js';
 import {workflowEdges} from '../src/builder/workflow.js';
@@ -36,7 +36,7 @@ test('reference audit: native Switch control exposes only actual thumb/track set
 for(const type of BADGE_COMPONENT_TYPES)test(`reference audit: ${type} owns a real optional badge and preserves child content`,async()=>{
   const node=component('sample',type,'父容器',{},[component('copy','Text','文字',{text:'原始内容'})]);
   const h=await mount(node);
-  try{await h.optional('徽标');await h.change('徽标文字','限时');const badge=h.renderer.root.findAll(n=>n.type==='span'&&n.props['data-badge-owner']==='sample');assert.equal(badge.length,1);assert.equal(indexDocument(h.document()).nodes.get('copy').props.text,'原始内容');await h.optional('徽标');assert.equal(h.renderer.root.findAll(n=>n.type==='span'&&n.props['data-badge-owner']==='sample').length,0);assert.equal(indexDocument(h.document()).nodes.get('sample').props.badge.text,'限时');}finally{await h.close();}
+  try{await h.optional('徽标');if(!BUTTON_BADGE_TYPES.includes(type))await h.change('徽标文字','限时');else assert.equal(h.renderer.root.findByProps({'aria-label':'徽标文字',readOnly:true}).props.value,BUTTON_BADGE_TEXT);const badge=h.renderer.root.findAll(n=>n.type==='span'&&n.props['data-badge-owner']==='sample');assert.equal(badge.length,1);assert.equal(indexDocument(h.document()).nodes.get('copy').props.text,'原始内容');await h.optional('徽标');assert.equal(h.renderer.root.findAll(n=>n.type==='span'&&n.props['data-badge-owner']==='sample').length,0);if(!BUTTON_BADGE_TYPES.includes(type))assert.equal(indexDocument(h.document()).nodes.get('sample').props.badge.text,'限时');}finally{await h.close();}
 });
 
 test('reference audit: timeline connectors begin and end at icon centers under canvas scaling',async()=>{
@@ -1453,7 +1453,7 @@ test('badge rich text, text background and frame fill each have one independent 
   assert.equal(h.document().root.children[0].props.badge.textBackground,'#ffffff');assert.equal(h.renderer.root.findAll(item=>item.type==='textarea'&&item.props['aria-label']==='徽标文字').length,0);await h.close();
 });
 
-test('blue purchase badge belongs to the button and accepts business variables, product variables and fixed copy',async()=>{
+test('blue purchase badge has fixed read-only content and editable styles without adding a business variable',async()=>{
   const template=templates.find(t=>t.id==='ht-blue-privilege');
   const source=upgradeCanonicalComponents(importComponentDocument(createBuilderNodes(template.id),template)),purchase=indexDocument(source).nodes.get('purchase');
   source.productFieldPreview=true;
@@ -1462,14 +1462,13 @@ test('blue purchase badge belongs to the button and accepts business variables, 
   const badge=()=>h.renderer.root.findAll(node=>node.type==='span'&&node.props['data-badge-owner']==='purchase')[0];
   const copy=()=>badge()?.findAllByType('span').flatMap(node=>node.children.filter(child=>typeof child==='string')).join('');
   try{
-    assert.equal(copy(),'节省{节省金额}');assert.equal(badge().props.style.right,0);assert.equal(badge().props.style.transform,'translate(0,-50%)');
-    const editor=h.renderer.root.findAll(node=>typeof node.type==='function'&&node.props['aria-label']==='徽标文字'&&node.props.onChange)[0];
-    assert.ok(editor.props.variables.some(([key])=>key==='business.savings_amount'));
-    await h.editText({text:'限时优惠',runs:null},'徽标文字');assert.equal(copy(),'限时优惠');
-    await h.editText({text:'仅需{{ product.price }}',runs:null},'徽标文字');assert.equal(copy(),'仅需¥{总价}');
-    await h.editText({text:'节省{{ business.savings_amount }}',runs:[{text:'节省',bold:true},{text:'{{ business.savings_amount }}'}]},'徽标文字');assert.equal(copy(),'节省{节省金额}');
-    await h.optional('徽标');assert.equal(badge(),undefined);await h.optional('徽标');assert.equal(copy(),'节省{节省金额}');
-    await h.editText({text:'{{ business.missing }}',runs:null},'徽标文字');assert.equal(badge(),undefined);
+    assert.equal(copy(),BUTTON_BADGE_TEXT);assert.equal(badge().props.style.right,0);assert.equal(badge().props.style.transform,'translate(0,-50%)');
+    assert.equal(h.renderer.root.findAll(node=>typeof node.type==='function'&&node.props['aria-label']==='徽标文字'&&node.props.onChange).length,0);
+    assert.equal(h.renderer.root.findByProps({'aria-label':'徽标文字',readOnly:true}).props.value,BUTTON_BADGE_TEXT);
+    assert.equal(source.logic?.variables?.some(variable=>variable.key==='savings_amount')??false,false);
+    await h.change('徽标字号','16');await h.change('徽标背景颜色值','#dd1122');
+    assert.equal(badge().props.style.fontSize,16);assert.equal(badge().props.style.background,'#dd1122');assert.equal(copy(),BUTTON_BADGE_TEXT);
+    await h.optional('徽标');assert.equal(badge(),undefined);await h.optional('徽标');assert.equal(copy(),BUTTON_BADGE_TEXT);
     assert.deepEqual(indexDocument(h.document()).nodes.get('purchase').children,before);assert.deepEqual(h.document().products,source.products);
   }finally{await h.close();}
   for(const id of ['ht-membership-plans','ht-payment-recovery','ht-sku-sheet']){
@@ -1478,12 +1477,28 @@ test('blue purchase badge belongs to the button and accepts business variables, 
   }
 });
 
-test('purchase badge product variables follow package selection without changing button text or click action',async()=>{
-  const purchase=component('sample','PurchaseButton','购买',{badgeEnabled:true,badge:{text:'{{ product.price }}',position:'top-right'}},[component('label','Text','文字',{text:'立即购买'})]);
+for(const type of BUTTON_BADGE_TYPES)test(`${type} legacy badge text and runs cannot override its field placeholder`,async()=>{
+  const purchase=component('sample',type,'购买',{badgeEnabled:true,badge:{text:'{{ product.price }}',runs:[{text:'旧文案',color:'#ff0000'}],position:'top-right',fontSize:17,background:'#ff9900'}},[component('label','Text','文字',{text:'立即购买'})]);
   const source=fixture(component('row','Stack','',{},[component('p1','Package','年付',{dataKey:'sample',group:'plans',defaultSelected:true}),component('p2','Package','终身',{dataKey:'lifetime',group:'plans'}),purchase]));
   source.products.lifetime={name:'终身',price:'¥200',billingMonths:0};
   const h=await mount(purchase,{source,editing:false}),badge=()=>h.renderer.root.findAll(node=>node.type==='span'&&node.props['data-badge-owner']==='sample')[0].children[0].children.join('');
-  try{assert.equal(badge(),'¥100');await act(async()=>h.node('p2').props.onClick(event()));assert.equal(badge(),'¥200');assert.deepEqual(h.node('label').children,['立即购买']);}finally{await h.close();}
+  try{assert.equal(badge(),BUTTON_BADGE_TEXT);await act(async()=>h.node('p2').props.onClick(event()));assert.equal(badge(),BUTTON_BADGE_TEXT);assert.deepEqual(h.node('label').children,['立即购买']);const rendered=h.renderer.root.findAll(node=>node.type==='span'&&node.props['data-badge-owner']==='sample')[0];assert.equal(rendered.props.style.fontSize,17);assert.equal(rendered.props.style.background,'#ff9900');assert.deepEqual(indexDocument(h.document()).nodes.get('sample').props.badge,purchase.props.badge);}finally{await h.close();}
+});
+
+test('package conditions globally switch Button and PurchaseButton visibility, labels and enabled state without SKU bindings',async()=>{
+  const annual=component('annual','Package','试用',{group:'plans',productType:'subscription',defaultSelected:true}),monthly=component('monthly','Package','月付',{group:'plans',productType:'subscription'});
+  const purchase=component('sample','PurchaseButton','试用购买',{},[component('buy-label','Text','文字',{text:'领取试用'})]);
+  const direct=component('direct','Button','直接购买',{hidden:true,action:{action:'Purchase'}},[component('direct-label','Text','文字',{text:'继续'})]);
+  const secondary=component('secondary','Button','辅助按钮',{},[component('secondary-label','Text','文字',{text:'年度方案'})]);
+  const source=fixture(component('row','Stack','',{},[annual,monthly,purchase,direct,secondary]));source.productFieldPreview=true;
+  source.logic={rules:[{id:'monthly-button',enabled:true,conditions:[{type:'package',value:'monthly',operator:'equals'}],effects:[{target:'sample',kind:'hide'},{target:'direct',kind:'show'},{target:'secondary',kind:'disable'},{target:'secondary-label',kind:'text',value:'月度方案'}]}]};
+  const before=structuredClone(source),h=await mount(purchase,{source,editing:false});
+  try{
+    assert.ok(h.node('sample'));assert.equal(h.node('direct'),undefined);assert.deepEqual(h.node('secondary-label').children,['年度方案']);
+    await act(async()=>h.node('monthly').props.onClick(event()));assert.equal(h.node('sample'),undefined);assert.ok(h.node('direct'));assert.deepEqual(h.node('direct-label').children,['继续']);assert.equal(h.node('secondary').props['aria-disabled'],true);assert.deepEqual(h.node('secondary-label').children,['月度方案']);
+    await act(async()=>h.node('direct').props.onClick(event()));assert.match(h.status(),/购买预览/);
+    await act(async()=>h.node('annual').props.onClick(event()));assert.ok(h.node('sample'));assert.equal(h.node('direct'),undefined);assert.equal(Boolean(h.node('secondary').props['aria-disabled']),false);assert.deepEqual(h.node('secondary-label').children,['年度方案']);assert.deepEqual(h.document(),before);
+  }finally{await h.close();}
 });
 
 test('product variables refer to the owning package inside and the selected package outside', async () => {

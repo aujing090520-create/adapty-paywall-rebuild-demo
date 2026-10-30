@@ -1,6 +1,6 @@
 import {COMPONENT_TYPES,COMPONENT_NAMES,CONTAINER_TYPES,componentProps,indexDocument} from '../src/builder/componentDocument.js';
 import {createCatalogComponent} from '../src/builder/componentCatalog.js';
-import {BADGE_DEFAULTS,BADGE_COMPONENT_TYPES} from '../src/builder/propertyModel.js';
+import {BADGE_DEFAULTS,BADGE_COMPONENT_TYPES,BUTTON_BADGE_TYPES} from '../src/builder/propertyModel.js';
 import {PRODUCT_TEXT_VARIABLES,TIMER_TEXT_VARIABLES} from '../src/builder/textVariables.js';
 import {iconLabel} from '../src/builder/iconLabels.js';
 import {PRODUCT_PARAMETER_OPTIONS} from '../src/products/productParameters.js';
@@ -242,10 +242,12 @@ add(['Custom'],'兼容','HTML（旧配置）','html','编辑原有隔离HTML内�
 add(['Custom'],'自定义组件','下载示例','example.zip','下载示例资源，不修改当前组件','示例仅用于功能验证，不作为正式模板数据');
 
 const badgeOwners=BADGE_COMPONENT_TYPES;
+const buttonBadgeOwners=BUTTON_BADGE_TYPES,editableBadgeOwners=badgeOwners.filter(type=>!buttonBadgeOwners.includes(type));
 add(badgeOwners,'徽标','徽标启用','badgeEnabled','启用父组件独立徽标，不插入影响其他子项顺序的文字节点','徽标位置相对所属框体',bool);
-add(badgeOwners,'徽标 / 文字','徽标文字','badge.text / badge.runs','徽标正文及真实选区格式；不覆盖父框体正文','徽标启用；支持固定文字、商品变量和工作区业务变量混排；空内容不绘制徽标');
-for(const [label,key,meaning] of [['粗体','bold','选区粗体'],['斜体','italic','选区斜体'],['删除线','strikethrough','选区删除线'],['下划线','underline','选区下划线'],['行内代码','code','选区等宽代码格式'],['链接','link','选区安全链接']])add(badgeOwners,'徽标 / 文字工具',`徽标${label}`,`badge.runs.${key}`,meaning,'徽标启用且存在文字选区，不修改父级或子组件文字');
-for(const [key,label] of PRODUCT_TEXT_VARIABLES)add(badgeOwners,'徽标 / 文字变量',label,`badge.{{ ${key} }}`,'从所属或当前选中商品读取变量','徽标启用且存在对应商品数据');
+add(buttonBadgeOwners,'徽标 / 文字','徽标文字','badge.text','只读，固定展示{按钮标签类型}；实际文案由外部业务配置提供','徽标启用；仅编辑样式，不提供文案、富文本选区或变量插入入口');
+add(editableBadgeOwners,'徽标 / 文字','徽标文字','badge.text / badge.runs','徽标正文及真实选区格式；不覆盖父框体正文','徽标启用；支持固定文字、商品变量和工作区业务变量混排；空内容不绘制徽标');
+for(const [label,key,meaning] of [['粗体','bold','选区粗体'],['斜体','italic','选区斜体'],['删除线','strikethrough','选区删除线'],['下划线','underline','选区下划线'],['行内代码','code','选区等宽代码格式'],['链接','link','选区安全链接']])add(editableBadgeOwners,'徽标 / 文字工具',`徽标${label}`,`badge.runs.${key}`,meaning,'徽标启用且存在文字选区，不修改父级或子组件文字');
+for(const [key,label] of PRODUCT_TEXT_VARIABLES)add(editableBadgeOwners,'徽标 / 文字变量',label,`badge.{{ ${key} }}`,'从所属或当前选中商品读取变量','徽标启用且存在对应商品数据');
 typography(badgeOwners,'徽标');
 add(badgeOwners,'徽标位置','徽标样式','badge.positionStyle','决定徽标是否跨越所属框体边缘','徽标启用',[['overlay','覆盖边框','一半越出边框，可能覆盖邻近内容，需由模板安排空间'],['nested','内嵌边框','在所属框体边缘内侧']]);
 add(badgeOwners,'徽标位置','徽标对齐','badge.position','将徽标锚定在所属框体六个边缘位置','仅移动徽标，不改变父组件内子项对齐',[['top-left','左上','左上边缘'],['top-center','上方居中','上边缘中心'],['top-right','右上','右上边缘'],['bottom-left','左下','左下边缘'],['bottom-center','下方居中','下边缘中心'],['bottom-right','右下','右下边缘']]);

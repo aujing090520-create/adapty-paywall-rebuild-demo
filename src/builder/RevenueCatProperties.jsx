@@ -9,6 +9,7 @@ import {timeSources,TIME_SCOPES} from './businessTime.js';
 import {COUNTDOWN_MODES,countdownMode} from './countdownTiming.js';
 import {screenChromeLayout} from './screenLayout.js';
 import {purchaseTargets} from './purchaseTarget.js';
+import {BUTTON_BADGE_TYPES,componentBadgeProps} from './propertyModel.js';
 import {packageSelectionGroups} from './componentOperations.js';
 import {COMPARISON_ORDER_RULES} from './comparisonOrdering.js';
 import {flowInitialIndex} from './componentTree.js';
@@ -379,10 +380,10 @@ function CountdownContentFields({selected,document,nodes,parents,navigation,setN
 
 function BadgeSection({selected,p,patch,document}){
   if(!BADGE_COMPONENT_TYPES.includes(selected.type))return null;
-  const enabled=p.badgeEnabled??Boolean(p.badge),badge={...BADGE_DEFAULTS,...p.badge};
+  const enabled=p.badgeEnabled??Boolean(p.badge),badge=componentBadgeProps({...selected,props:p}),fixedContent=BUTTON_BADGE_TYPES.includes(selected.type);
   const update=(values)=>{const {background,...typography}=values;patch({badge:{...badge,...textPropertyPatch({type:'Text',props:badge},typography),...('background' in values?{background}: {})},badgeEnabled:true});};
   return <PropertySection title="徽标" optional><OptionalToggle enabled={enabled} onChange={(badgeEnabled)=>patch({badgeEnabled,...(badgeEnabled&&!p.badge?{badge:{...BADGE_DEFAULTS}}:{})})}/>{enabled&&<div className="rc-badge-properties">
-    <React.Suspense fallback={<div className="rc-rich-loading">加载文字编辑器</div>}><RichTextEditor aria-label="徽标文字" p={badge} value={badge.text} onChange={update} variables={availableTextVariables(document)}/></React.Suspense>
+    {fixedContent?<Field label="徽标文字"><input aria-label="徽标文字" readOnly value={badge.text}/></Field>:<React.Suspense fallback={<div className="rc-rich-loading">加载文字编辑器</div>}><RichTextEditor aria-label="徽标文字" p={badge} value={badge.text} onChange={update} variables={availableTextVariables(document)}/></React.Suspense>}
     <TypographyFields p={badge} patch={update} badge/>
     <PropertySection title="徽标位置"><Select label="徽标样式" value={badge.positionStyle} options={[[ 'overlay','覆盖边框' ],[ 'nested','内嵌边框' ]]} onChange={(positionStyle)=>update({positionStyle})}/><Select label="徽标对齐" value={badge.position} options={[[ 'top-left','左上' ],[ 'top-center','上方居中' ],[ 'top-right','右上' ],[ 'bottom-left','左下' ],[ 'bottom-center','下方居中' ],[ 'bottom-right','右下' ]]} onChange={(position)=>update({position})}/></PropertySection>
     <PropertySection title="徽标间距"><SpacingField title="内边距" prefix="padding" p={badge} patch={update}/><SpacingField title="外边距" prefix="margin" p={badge} patch={update}/></PropertySection>

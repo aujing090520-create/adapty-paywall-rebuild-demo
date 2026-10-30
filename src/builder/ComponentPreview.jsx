@@ -9,7 +9,7 @@ import { stepDestination, owningModal } from './workflow.js';
 import { openSheetNavigation, closeSheetNavigation } from './buttonModals.js';
 import { overlayAlignmentStyle } from './propertyModel.js';
 import { canvasSelectionTarget } from './canvasSelection.js';
-import { stateStyleProps, countdownSeconds, checkedControl, activeComponents, previewCommerceContexts, countdownValues, countdownDeadline, imageMask, paintColor, cornerRadius, selectionOwner, sequencePages, BADGE_DEFAULTS, mainAxisFillStyle, hasBoundedHeight } from './propertyModel.js';
+import { stateStyleProps, countdownSeconds, checkedControl, activeComponents, previewCommerceContexts, countdownValues, countdownDeadline, imageMask, paintColor, cornerRadius, selectionOwner, sequencePages, mainAxisFillStyle, hasBoundedHeight } from './propertyModel.js';
 import {productPriceFields} from '../productPricing.js';
 import { interpolateVariables, variableIssues } from './textVariables.js';
 import { TimelinePreview, TimelineItemPreview } from './TimelinePreview.jsx';
@@ -30,6 +30,7 @@ import {fontStyles} from './fontStyles.js';
 import { isExitOfferStep } from './exitOffers.js';
 import { screenChromeLayout } from './screenLayout.js';
 import { purchaseTarget } from './purchaseTarget.js';
+import {componentBadgeProps} from './propertyModel.js';
 import {entryCountdownDeadline,countdownMode} from './countdownTiming.js';
 
 const PreviewContext = createContext(null);
@@ -75,7 +76,7 @@ function ComponentBadge({node,document,packageNode,timer}){
   const {runtime}=useContext(PreviewContext);
   const p=node.props;
   if(!(p.badgeEnabled??Boolean(p.badge)))return null;
-  const badge={...BADGE_DEFAULTS,...p.badge},bottom=badge.position.startsWith('bottom'),side=badge.position.split('-')[1];
+  const badge=componentBadgeProps(node),bottom=badge.position.startsWith('bottom'),side=badge.position.split('-')[1];
   const content=interpolateVariables(badge.text,document,packageNode,timer,runtime);
   if(!content.trim())return null;
   const rich=richTextContent({p:badge,value:content,document,packageNode,timer,runtime,editing:true});

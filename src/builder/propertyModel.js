@@ -24,6 +24,12 @@ export function utcDateTimeInput(value) {
 }
 export const BADGE_DEFAULTS={text:'徽标',positionStyle:'overlay',position:'top-center',widthMode:'fit',heightMode:'fit',paddingMode:'axis',paddingVertical:4,paddingHorizontal:8,marginMode:'axis',marginVertical:0,marginHorizontal:0,fontSize:14,fontWeight:400,color:'#000000',textAlign:'center',background:'#11d483',shape:'pill',radius:0,borderWidth:0,borderColor:'#cccccc',shadowBlur:0,shadowColor:'#000000',backgroundOpacity:100,colorOpacity:100};
 export const BADGE_COMPONENT_TYPES=['Stack','Package','Slide','PurchaseButton','Button','Header','Footer','BottomSheet','Tab','TabControl','TabButton','PageControl','CheckoutState','SwitchCase','CountdownState'];
+export const BUTTON_BADGE_TYPES=['Button','PurchaseButton'];
+export const BUTTON_BADGE_TEXT='{按钮标签类型}';
+export function componentBadgeProps(node){
+  const badge={...BADGE_DEFAULTS,...node.props.badge};
+  return BUTTON_BADGE_TYPES.includes(node.type)?{...badge,text:BUTTON_BADGE_TEXT,runs:null}:badge;
+}
 
 export function selectionOwner(node, nodes, parents) {
   let current = node;

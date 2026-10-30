@@ -1,6 +1,6 @@
 <!doctype html><html lang="zh-CN"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>组件参数功能表</title><style>
 *{box-sizing:border-box}body{margin:0;background:#fff;color:#24262b;font:14px/1.6 system-ui,-apple-system,sans-serif;letter-spacing:0}main{padding:24px;max-width:1800px;margin:auto}h1{font-size:24px;margin:0 0 12px}p{max-width:1200px;color:#60646c;margin:8px 0}a{color:#375dc1}header{border-bottom:1px solid #dedfe3;padding-bottom:16px}.filters{position:sticky;top:0;z-index:2;display:flex;flex-wrap:wrap;align-items:end;gap:12px;background:#fff;padding:16px 0;border-bottom:1px solid #dedfe3}.filters label{display:grid;gap:4px;font-size:12px;color:#5f636b}.filters input,.filters select{border:1px solid #cdd0d7;border-radius:4px;height:36px;padding:6px 10px;font:14px system-ui;color:#24262b;background:#fff}.filters input{width:320px;max-width:80vw}.filters span{margin-left:auto;color:#2b745c;font-size:13px}.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:1100px;font-size:12px;table-layout:fixed}th,td{border-bottom:1px solid #e4e6e9;padding:10px 12px;text-align:left;vertical-align:top;overflow-wrap:anywhere}th{background:#f4f5f7;font-weight:600}th:nth-child(1){width:100px}th:nth-child(2){width:130px}th:nth-child(3){width:150px}th:nth-child(4){width:170px}th:nth-child(5){width:140px}th:nth-child(8){width:150px}.key{font-family:ui-monospace,monospace;color:#67617c}tr:nth-child(even){background:#fcfcfd}tr[hidden]{display:none}h2{font-size:17px;margin:20px 0 6px}.notes{font-size:13px}code{font-family:ui-monospace,monospace} @media(max-width:600px){main{padding:16px}.filters span{margin-left:0}}
-</style><main><header><h1>组件参数功能表</h1><p>本表覆盖当前Demo的33种基础/结构组件，共4748条参数字段或选项记录。按实际中文面板和当前源码整理，不把它当作RevenueCat全部能力等价证明。新建值不是四张HT手动模板的默认值；模板和已存记录始终以自身配置为准。</p><p>更新：2026-10-26 · <a href="./component-parameters.csv">CSV表格</a> · <a href="https://adapty-paywall-rebuild-demo.vercel.app/">线上Demo</a></p></header>
+</style><main><header><h1>组件参数功能表</h1><p>本表覆盖当前Demo的33种基础/结构组件，共4714条参数字段或选项记录。按实际中文面板和当前源码整理，不把它当作RevenueCat全部能力等价证明。新建值不是四张HT手动模板的默认值；模板和已存记录始终以自身配置为准。</p><p>更新：2026-10-26 · <a href="./component-parameters.csv">CSV表格</a> · <a href="https://adapty-paywall-rebuild-demo.vercel.app/">线上Demo</a></p></header>
 <section class="notes"><h2>先分清三个不同概念</h2><p>轴向决定横向/纵向/叠放；对齐控制交叉轴位置；分布沿主轴分配剩余空间。按内容适应的容器没有多余空间时，分布可能同形；不能通过悄悄放大框体来伪造效果。子项间距是额外基础间隔，和外边距不是同一参数。</p><p>已修复：标准对齐始终三项，旧拉伸值只读保留；有界纵向容器的填满高度分配剩余空间，不再让每个子项各占100%。</p><h2>验收范围</h2><p>真实SKU后端、Billing交易、恢复/兑换/钱包交易和真实关闭不做。源端凹凸遮罩、完整媒体库/主题及跨标签组结构等未闭环项仍见审计台账；本表中的限制列明确区分演示与真实能力。</p><p>布局语义来源：<a href="https://www.revenuecat.com/docs/tools/paywalls/creating-paywalls/component-properties">RevenueCat官方组件属性</a>。其余字段按本地当前面板和真实渲染实现列出；没有重新核对全部原端隐藏字段的项目不宣称一致。</p></section>
 <div class="filters"><label>组件<select id="component"><option value="">全部组件</option><option>页面</option><option>布局容器</option><option>页头</option><option>文字</option><option>商品参数</option><option>图片</option><option>视频</option><option>图标</option><option>自定义组件</option><option>页脚</option><option>商品套餐</option><option>购买按钮</option><option>弹窗</option><option>快捷结账</option><option>结账状态内容</option><option>钱包按钮</option><option>按钮</option><option>标签页</option><option>标签页面</option><option>标签按钮组</option><option>标签按钮</option><option>轮播</option><option>轮播页</option><option>分页控件</option><option>分页指示器</option><option>时间线</option><option>时间节点</option><option>开关</option><option>开关状态内容</option><option>开关控件</option><option>倒计时</option><option>倒计时状态内容</option><option>多页面流程</option></select></label><label>参数 / 功能搜索<input id="query" type="search" placeholder="搜索参数、字段或功能"></label><span id="count"></span></div><div class="table-wrap"><table><thead><tr><th>组件</th><th>配置模块</th><th>参数</th><th>内部字段</th><th>字段选项/范围</th><th>功能</th><th>生效条件/限制</th><th>新建默认值来源</th></tr></thead><tbody><tr data-component="页面"><td>页面</td><td>页面展示</td><td>展示方式</td><td class="key">pagePresentation</td><td>全屏页面</td><td>整个Paywall页面的呈现形态，不属于内部布局容器；多步骤逐屏配置；使用设备视口，保留窗口参数便于切回</td><td>选中页面根容器或画布工具栏页面展示；不改变按钮与弹窗绑定</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页面"><td>页面</td><td>页面展示</td><td>展示方式</td><td class="key">pagePresentation</td><td>底部半窗</td><td>整个Paywall页面的呈现形态，不属于内部布局容器；多步骤逐屏配置；固定到底部，内容在窗口内滚动</td><td>选中页面根容器或画布工具栏页面展示；不改变按钮与弹窗绑定</td><td>依当前模板/条件继承</td></tr>
@@ -2994,11 +2994,11 @@
 <tr data-component="开关状态内容"><td>开关状态内容</td><td>徽标</td><td>徽标启用</td><td class="key">badgeEnabled</td><td>关闭</td><td>启用父组件独立徽标，不插入影响其他子项顺序的文字节点；禁用此能力或不使用该状态</td><td>徽标位置相对所属框体</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="倒计时状态内容"><td>倒计时状态内容</td><td>徽标</td><td>徽标启用</td><td class="key">badgeEnabled</td><td>开启</td><td>启用父组件独立徽标，不插入影响其他子项顺序的文字节点；启用此能力或使用该状态</td><td>徽标位置相对所属框体</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="倒计时状态内容"><td>倒计时状态内容</td><td>徽标</td><td>徽标启用</td><td class="key">badgeEnabled</td><td>关闭</td><td>启用父组件独立徽标，不插入影响其他子项顺序的文字节点；禁用此能力或不使用该状态</td><td>徽标位置相对所属框体</td><td>依当前模板/条件继承</td></tr>
+<tr data-component="按钮"><td>按钮</td><td>徽标 / 文字</td><td>徽标文字</td><td class="key">badge.text</td><td>当前值</td><td>只读，固定展示{按钮标签类型}；实际文案由外部业务配置提供</td><td>徽标启用；仅编辑样式，不提供文案、富文本选区或变量插入入口</td><td>徽标</td></tr>
+<tr data-component="购买按钮"><td>购买按钮</td><td>徽标 / 文字</td><td>徽标文字</td><td class="key">badge.text</td><td>当前值</td><td>只读，固定展示{按钮标签类型}；实际文案由外部业务配置提供</td><td>徽标启用；仅编辑样式，不提供文案、富文本选区或变量插入入口</td><td>徽标</td></tr>
 <tr data-component="布局容器"><td>布局容器</td><td>徽标 / 文字</td><td>徽标文字</td><td class="key">badge.text / badge.runs</td><td>当前值</td><td>徽标正文及真实选区格式；不覆盖父框体正文</td><td>徽标启用；支持固定文字、商品变量和工作区业务变量混排；空内容不绘制徽标</td><td>徽标</td></tr>
 <tr data-component="商品套餐"><td>商品套餐</td><td>徽标 / 文字</td><td>徽标文字</td><td class="key">badge.text / badge.runs</td><td>当前值</td><td>徽标正文及真实选区格式；不覆盖父框体正文</td><td>徽标启用；支持固定文字、商品变量和工作区业务变量混排；空内容不绘制徽标</td><td>徽标</td></tr>
 <tr data-component="轮播页"><td>轮播页</td><td>徽标 / 文字</td><td>徽标文字</td><td class="key">badge.text / badge.runs</td><td>当前值</td><td>徽标正文及真实选区格式；不覆盖父框体正文</td><td>徽标启用；支持固定文字、商品变量和工作区业务变量混排；空内容不绘制徽标</td><td>徽标</td></tr>
-<tr data-component="购买按钮"><td>购买按钮</td><td>徽标 / 文字</td><td>徽标文字</td><td class="key">badge.text / badge.runs</td><td>当前值</td><td>徽标正文及真实选区格式；不覆盖父框体正文</td><td>徽标启用；支持固定文字、商品变量和工作区业务变量混排；空内容不绘制徽标</td><td>徽标</td></tr>
-<tr data-component="按钮"><td>按钮</td><td>徽标 / 文字</td><td>徽标文字</td><td class="key">badge.text / badge.runs</td><td>当前值</td><td>徽标正文及真实选区格式；不覆盖父框体正文</td><td>徽标启用；支持固定文字、商品变量和工作区业务变量混排；空内容不绘制徽标</td><td>徽标</td></tr>
 <tr data-component="页头"><td>页头</td><td>徽标 / 文字</td><td>徽标文字</td><td class="key">badge.text / badge.runs</td><td>当前值</td><td>徽标正文及真实选区格式；不覆盖父框体正文</td><td>徽标启用；支持固定文字、商品变量和工作区业务变量混排；空内容不绘制徽标</td><td>徽标</td></tr>
 <tr data-component="页脚"><td>页脚</td><td>徽标 / 文字</td><td>徽标文字</td><td class="key">badge.text / badge.runs</td><td>当前值</td><td>徽标正文及真实选区格式；不覆盖父框体正文</td><td>徽标启用；支持固定文字、商品变量和工作区业务变量混排；空内容不绘制徽标</td><td>徽标</td></tr>
 <tr data-component="弹窗"><td>弹窗</td><td>徽标 / 文字</td><td>徽标文字</td><td class="key">badge.text / badge.runs</td><td>当前值</td><td>徽标正文及真实选区格式；不覆盖父框体正文</td><td>徽标启用；支持固定文字、商品变量和工作区业务变量混排；空内容不绘制徽标</td><td>徽标</td></tr>
@@ -3012,8 +3012,6 @@
 <tr data-component="布局容器"><td>布局容器</td><td>徽标 / 文字工具</td><td>徽标粗体</td><td class="key">badge.runs.bold</td><td>当前值</td><td>选区粗体</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品套餐"><td>商品套餐</td><td>徽标 / 文字工具</td><td>徽标粗体</td><td class="key">badge.runs.bold</td><td>当前值</td><td>选区粗体</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="轮播页"><td>轮播页</td><td>徽标 / 文字工具</td><td>徽标粗体</td><td class="key">badge.runs.bold</td><td>当前值</td><td>选区粗体</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="购买按钮"><td>购买按钮</td><td>徽标 / 文字工具</td><td>徽标粗体</td><td class="key">badge.runs.bold</td><td>当前值</td><td>选区粗体</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="按钮"><td>按钮</td><td>徽标 / 文字工具</td><td>徽标粗体</td><td class="key">badge.runs.bold</td><td>当前值</td><td>选区粗体</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页头"><td>页头</td><td>徽标 / 文字工具</td><td>徽标粗体</td><td class="key">badge.runs.bold</td><td>当前值</td><td>选区粗体</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页脚"><td>页脚</td><td>徽标 / 文字工具</td><td>徽标粗体</td><td class="key">badge.runs.bold</td><td>当前值</td><td>选区粗体</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="弹窗"><td>弹窗</td><td>徽标 / 文字工具</td><td>徽标粗体</td><td class="key">badge.runs.bold</td><td>当前值</td><td>选区粗体</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
@@ -3027,8 +3025,6 @@
 <tr data-component="布局容器"><td>布局容器</td><td>徽标 / 文字工具</td><td>徽标斜体</td><td class="key">badge.runs.italic</td><td>当前值</td><td>选区斜体</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品套餐"><td>商品套餐</td><td>徽标 / 文字工具</td><td>徽标斜体</td><td class="key">badge.runs.italic</td><td>当前值</td><td>选区斜体</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="轮播页"><td>轮播页</td><td>徽标 / 文字工具</td><td>徽标斜体</td><td class="key">badge.runs.italic</td><td>当前值</td><td>选区斜体</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="购买按钮"><td>购买按钮</td><td>徽标 / 文字工具</td><td>徽标斜体</td><td class="key">badge.runs.italic</td><td>当前值</td><td>选区斜体</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="按钮"><td>按钮</td><td>徽标 / 文字工具</td><td>徽标斜体</td><td class="key">badge.runs.italic</td><td>当前值</td><td>选区斜体</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页头"><td>页头</td><td>徽标 / 文字工具</td><td>徽标斜体</td><td class="key">badge.runs.italic</td><td>当前值</td><td>选区斜体</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页脚"><td>页脚</td><td>徽标 / 文字工具</td><td>徽标斜体</td><td class="key">badge.runs.italic</td><td>当前值</td><td>选区斜体</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="弹窗"><td>弹窗</td><td>徽标 / 文字工具</td><td>徽标斜体</td><td class="key">badge.runs.italic</td><td>当前值</td><td>选区斜体</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
@@ -3042,8 +3038,6 @@
 <tr data-component="布局容器"><td>布局容器</td><td>徽标 / 文字工具</td><td>徽标删除线</td><td class="key">badge.runs.strikethrough</td><td>当前值</td><td>选区删除线</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品套餐"><td>商品套餐</td><td>徽标 / 文字工具</td><td>徽标删除线</td><td class="key">badge.runs.strikethrough</td><td>当前值</td><td>选区删除线</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="轮播页"><td>轮播页</td><td>徽标 / 文字工具</td><td>徽标删除线</td><td class="key">badge.runs.strikethrough</td><td>当前值</td><td>选区删除线</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="购买按钮"><td>购买按钮</td><td>徽标 / 文字工具</td><td>徽标删除线</td><td class="key">badge.runs.strikethrough</td><td>当前值</td><td>选区删除线</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="按钮"><td>按钮</td><td>徽标 / 文字工具</td><td>徽标删除线</td><td class="key">badge.runs.strikethrough</td><td>当前值</td><td>选区删除线</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页头"><td>页头</td><td>徽标 / 文字工具</td><td>徽标删除线</td><td class="key">badge.runs.strikethrough</td><td>当前值</td><td>选区删除线</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页脚"><td>页脚</td><td>徽标 / 文字工具</td><td>徽标删除线</td><td class="key">badge.runs.strikethrough</td><td>当前值</td><td>选区删除线</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="弹窗"><td>弹窗</td><td>徽标 / 文字工具</td><td>徽标删除线</td><td class="key">badge.runs.strikethrough</td><td>当前值</td><td>选区删除线</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
@@ -3057,8 +3051,6 @@
 <tr data-component="布局容器"><td>布局容器</td><td>徽标 / 文字工具</td><td>徽标下划线</td><td class="key">badge.runs.underline</td><td>当前值</td><td>选区下划线</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品套餐"><td>商品套餐</td><td>徽标 / 文字工具</td><td>徽标下划线</td><td class="key">badge.runs.underline</td><td>当前值</td><td>选区下划线</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="轮播页"><td>轮播页</td><td>徽标 / 文字工具</td><td>徽标下划线</td><td class="key">badge.runs.underline</td><td>当前值</td><td>选区下划线</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="购买按钮"><td>购买按钮</td><td>徽标 / 文字工具</td><td>徽标下划线</td><td class="key">badge.runs.underline</td><td>当前值</td><td>选区下划线</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="按钮"><td>按钮</td><td>徽标 / 文字工具</td><td>徽标下划线</td><td class="key">badge.runs.underline</td><td>当前值</td><td>选区下划线</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页头"><td>页头</td><td>徽标 / 文字工具</td><td>徽标下划线</td><td class="key">badge.runs.underline</td><td>当前值</td><td>选区下划线</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页脚"><td>页脚</td><td>徽标 / 文字工具</td><td>徽标下划线</td><td class="key">badge.runs.underline</td><td>当前值</td><td>选区下划线</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="弹窗"><td>弹窗</td><td>徽标 / 文字工具</td><td>徽标下划线</td><td class="key">badge.runs.underline</td><td>当前值</td><td>选区下划线</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
@@ -3072,8 +3064,6 @@
 <tr data-component="布局容器"><td>布局容器</td><td>徽标 / 文字工具</td><td>徽标行内代码</td><td class="key">badge.runs.code</td><td>当前值</td><td>选区等宽代码格式</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品套餐"><td>商品套餐</td><td>徽标 / 文字工具</td><td>徽标行内代码</td><td class="key">badge.runs.code</td><td>当前值</td><td>选区等宽代码格式</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="轮播页"><td>轮播页</td><td>徽标 / 文字工具</td><td>徽标行内代码</td><td class="key">badge.runs.code</td><td>当前值</td><td>选区等宽代码格式</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="购买按钮"><td>购买按钮</td><td>徽标 / 文字工具</td><td>徽标行内代码</td><td class="key">badge.runs.code</td><td>当前值</td><td>选区等宽代码格式</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="按钮"><td>按钮</td><td>徽标 / 文字工具</td><td>徽标行内代码</td><td class="key">badge.runs.code</td><td>当前值</td><td>选区等宽代码格式</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页头"><td>页头</td><td>徽标 / 文字工具</td><td>徽标行内代码</td><td class="key">badge.runs.code</td><td>当前值</td><td>选区等宽代码格式</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页脚"><td>页脚</td><td>徽标 / 文字工具</td><td>徽标行内代码</td><td class="key">badge.runs.code</td><td>当前值</td><td>选区等宽代码格式</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="弹窗"><td>弹窗</td><td>徽标 / 文字工具</td><td>徽标行内代码</td><td class="key">badge.runs.code</td><td>当前值</td><td>选区等宽代码格式</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
@@ -3087,8 +3077,6 @@
 <tr data-component="布局容器"><td>布局容器</td><td>徽标 / 文字工具</td><td>徽标链接</td><td class="key">badge.runs.link</td><td>当前值</td><td>选区安全链接</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品套餐"><td>商品套餐</td><td>徽标 / 文字工具</td><td>徽标链接</td><td class="key">badge.runs.link</td><td>当前值</td><td>选区安全链接</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="轮播页"><td>轮播页</td><td>徽标 / 文字工具</td><td>徽标链接</td><td class="key">badge.runs.link</td><td>当前值</td><td>选区安全链接</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="购买按钮"><td>购买按钮</td><td>徽标 / 文字工具</td><td>徽标链接</td><td class="key">badge.runs.link</td><td>当前值</td><td>选区安全链接</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="按钮"><td>按钮</td><td>徽标 / 文字工具</td><td>徽标链接</td><td class="key">badge.runs.link</td><td>当前值</td><td>选区安全链接</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页头"><td>页头</td><td>徽标 / 文字工具</td><td>徽标链接</td><td class="key">badge.runs.link</td><td>当前值</td><td>选区安全链接</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页脚"><td>页脚</td><td>徽标 / 文字工具</td><td>徽标链接</td><td class="key">badge.runs.link</td><td>当前值</td><td>选区安全链接</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="弹窗"><td>弹窗</td><td>徽标 / 文字工具</td><td>徽标链接</td><td class="key">badge.runs.link</td><td>当前值</td><td>选区安全链接</td><td>徽标启用且存在文字选区，不修改父级或子组件文字</td><td>依当前模板/条件继承</td></tr>
@@ -3102,8 +3090,6 @@
 <tr data-component="布局容器"><td>布局容器</td><td>徽标 / 文字变量</td><td>商品总价</td><td class="key">badge.{{ product.price }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品套餐"><td>商品套餐</td><td>徽标 / 文字变量</td><td>商品总价</td><td class="key">badge.{{ product.price }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="轮播页"><td>轮播页</td><td>徽标 / 文字变量</td><td>商品总价</td><td class="key">badge.{{ product.price }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="购买按钮"><td>购买按钮</td><td>徽标 / 文字变量</td><td>商品总价</td><td class="key">badge.{{ product.price }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="按钮"><td>按钮</td><td>徽标 / 文字变量</td><td>商品总价</td><td class="key">badge.{{ product.price }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页头"><td>页头</td><td>徽标 / 文字变量</td><td>商品总价</td><td class="key">badge.{{ product.price }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页脚"><td>页脚</td><td>徽标 / 文字变量</td><td>商品总价</td><td class="key">badge.{{ product.price }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="弹窗"><td>弹窗</td><td>徽标 / 文字变量</td><td>商品总价</td><td class="key">badge.{{ product.price }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
@@ -3117,8 +3103,6 @@
 <tr data-component="布局容器"><td>布局容器</td><td>徽标 / 文字变量</td><td>商品月均价</td><td class="key">badge.{{ product.price_per_month }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品套餐"><td>商品套餐</td><td>徽标 / 文字变量</td><td>商品月均价</td><td class="key">badge.{{ product.price_per_month }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="轮播页"><td>轮播页</td><td>徽标 / 文字变量</td><td>商品月均价</td><td class="key">badge.{{ product.price_per_month }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="购买按钮"><td>购买按钮</td><td>徽标 / 文字变量</td><td>商品月均价</td><td class="key">badge.{{ product.price_per_month }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="按钮"><td>按钮</td><td>徽标 / 文字变量</td><td>商品月均价</td><td class="key">badge.{{ product.price_per_month }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页头"><td>页头</td><td>徽标 / 文字变量</td><td>商品月均价</td><td class="key">badge.{{ product.price_per_month }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页脚"><td>页脚</td><td>徽标 / 文字变量</td><td>商品月均价</td><td class="key">badge.{{ product.price_per_month }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="弹窗"><td>弹窗</td><td>徽标 / 文字变量</td><td>商品月均价</td><td class="key">badge.{{ product.price_per_month }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
@@ -3132,8 +3116,6 @@
 <tr data-component="布局容器"><td>布局容器</td><td>徽标 / 文字变量</td><td>商品价格与周期</td><td class="key">badge.{{ product.price_per_period }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品套餐"><td>商品套餐</td><td>徽标 / 文字变量</td><td>商品价格与周期</td><td class="key">badge.{{ product.price_per_period }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="轮播页"><td>轮播页</td><td>徽标 / 文字变量</td><td>商品价格与周期</td><td class="key">badge.{{ product.price_per_period }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="购买按钮"><td>购买按钮</td><td>徽标 / 文字变量</td><td>商品价格与周期</td><td class="key">badge.{{ product.price_per_period }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="按钮"><td>按钮</td><td>徽标 / 文字变量</td><td>商品价格与周期</td><td class="key">badge.{{ product.price_per_period }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页头"><td>页头</td><td>徽标 / 文字变量</td><td>商品价格与周期</td><td class="key">badge.{{ product.price_per_period }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页脚"><td>页脚</td><td>徽标 / 文字变量</td><td>商品价格与周期</td><td class="key">badge.{{ product.price_per_period }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="弹窗"><td>弹窗</td><td>徽标 / 文字变量</td><td>商品价格与周期</td><td class="key">badge.{{ product.price_per_period }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
@@ -3147,8 +3129,6 @@
 <tr data-component="布局容器"><td>布局容器</td><td>徽标 / 文字变量</td><td>订阅月数</td><td class="key">badge.{{ product.period_in_months }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品套餐"><td>商品套餐</td><td>徽标 / 文字变量</td><td>订阅月数</td><td class="key">badge.{{ product.period_in_months }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="轮播页"><td>轮播页</td><td>徽标 / 文字变量</td><td>订阅月数</td><td class="key">badge.{{ product.period_in_months }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="购买按钮"><td>购买按钮</td><td>徽标 / 文字变量</td><td>订阅月数</td><td class="key">badge.{{ product.period_in_months }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="按钮"><td>按钮</td><td>徽标 / 文字变量</td><td>订阅月数</td><td class="key">badge.{{ product.period_in_months }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页头"><td>页头</td><td>徽标 / 文字变量</td><td>订阅月数</td><td class="key">badge.{{ product.period_in_months }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页脚"><td>页脚</td><td>徽标 / 文字变量</td><td>订阅月数</td><td class="key">badge.{{ product.period_in_months }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="弹窗"><td>弹窗</td><td>徽标 / 文字变量</td><td>订阅月数</td><td class="key">badge.{{ product.period_in_months }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
@@ -3162,8 +3142,6 @@
 <tr data-component="布局容器"><td>布局容器</td><td>徽标 / 文字变量</td><td>商品周期</td><td class="key">badge.{{ product.period }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品套餐"><td>商品套餐</td><td>徽标 / 文字变量</td><td>商品周期</td><td class="key">badge.{{ product.period }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="轮播页"><td>轮播页</td><td>徽标 / 文字变量</td><td>商品周期</td><td class="key">badge.{{ product.period }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="购买按钮"><td>购买按钮</td><td>徽标 / 文字变量</td><td>商品周期</td><td class="key">badge.{{ product.period }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="按钮"><td>按钮</td><td>徽标 / 文字变量</td><td>商品周期</td><td class="key">badge.{{ product.period }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页头"><td>页头</td><td>徽标 / 文字变量</td><td>商品周期</td><td class="key">badge.{{ product.period }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页脚"><td>页脚</td><td>徽标 / 文字变量</td><td>商品周期</td><td class="key">badge.{{ product.period }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="弹窗"><td>弹窗</td><td>徽标 / 文字变量</td><td>商品周期</td><td class="key">badge.{{ product.period }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
@@ -3177,8 +3155,6 @@
 <tr data-component="布局容器"><td>布局容器</td><td>徽标 / 文字变量</td><td>商品名称</td><td class="key">badge.{{ product.name }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品套餐"><td>商品套餐</td><td>徽标 / 文字变量</td><td>商品名称</td><td class="key">badge.{{ product.name }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="轮播页"><td>轮播页</td><td>徽标 / 文字变量</td><td>商品名称</td><td class="key">badge.{{ product.name }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="购买按钮"><td>购买按钮</td><td>徽标 / 文字变量</td><td>商品名称</td><td class="key">badge.{{ product.name }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="按钮"><td>按钮</td><td>徽标 / 文字变量</td><td>商品名称</td><td class="key">badge.{{ product.name }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页头"><td>页头</td><td>徽标 / 文字变量</td><td>商品名称</td><td class="key">badge.{{ product.name }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页脚"><td>页脚</td><td>徽标 / 文字变量</td><td>商品名称</td><td class="key">badge.{{ product.name }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="弹窗"><td>弹窗</td><td>徽标 / 文字变量</td><td>商品名称</td><td class="key">badge.{{ product.name }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
@@ -3192,8 +3168,6 @@
 <tr data-component="布局容器"><td>布局容器</td><td>徽标 / 文字变量</td><td>商品原价</td><td class="key">badge.{{ product.original_price }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品套餐"><td>商品套餐</td><td>徽标 / 文字变量</td><td>商品原价</td><td class="key">badge.{{ product.original_price }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="轮播页"><td>轮播页</td><td>徽标 / 文字变量</td><td>商品原价</td><td class="key">badge.{{ product.original_price }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="购买按钮"><td>购买按钮</td><td>徽标 / 文字变量</td><td>商品原价</td><td class="key">badge.{{ product.original_price }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="按钮"><td>按钮</td><td>徽标 / 文字变量</td><td>商品原价</td><td class="key">badge.{{ product.original_price }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页头"><td>页头</td><td>徽标 / 文字变量</td><td>商品原价</td><td class="key">badge.{{ product.original_price }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页脚"><td>页脚</td><td>徽标 / 文字变量</td><td>商品原价</td><td class="key">badge.{{ product.original_price }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="弹窗"><td>弹窗</td><td>徽标 / 文字变量</td><td>商品原价</td><td class="key">badge.{{ product.original_price }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
@@ -3207,8 +3181,6 @@
 <tr data-component="布局容器"><td>布局容器</td><td>徽标 / 文字变量</td><td>配置商品标签</td><td class="key">badge.{{ product.label }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品套餐"><td>商品套餐</td><td>徽标 / 文字变量</td><td>配置商品标签</td><td class="key">badge.{{ product.label }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="轮播页"><td>轮播页</td><td>徽标 / 文字变量</td><td>配置商品标签</td><td class="key">badge.{{ product.label }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="购买按钮"><td>购买按钮</td><td>徽标 / 文字变量</td><td>配置商品标签</td><td class="key">badge.{{ product.label }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="按钮"><td>按钮</td><td>徽标 / 文字变量</td><td>配置商品标签</td><td class="key">badge.{{ product.label }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页头"><td>页头</td><td>徽标 / 文字变量</td><td>配置商品标签</td><td class="key">badge.{{ product.label }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页脚"><td>页脚</td><td>徽标 / 文字变量</td><td>配置商品标签</td><td class="key">badge.{{ product.label }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="弹窗"><td>弹窗</td><td>徽标 / 文字变量</td><td>配置商品标签</td><td class="key">badge.{{ product.label }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
@@ -3222,8 +3194,6 @@
 <tr data-component="布局容器"><td>布局容器</td><td>徽标 / 文字变量</td><td>商品信息</td><td class="key">badge.{{ product.info }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品套餐"><td>商品套餐</td><td>徽标 / 文字变量</td><td>商品信息</td><td class="key">badge.{{ product.info }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="轮播页"><td>轮播页</td><td>徽标 / 文字变量</td><td>商品信息</td><td class="key">badge.{{ product.info }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="购买按钮"><td>购买按钮</td><td>徽标 / 文字变量</td><td>商品信息</td><td class="key">badge.{{ product.info }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="按钮"><td>按钮</td><td>徽标 / 文字变量</td><td>商品信息</td><td class="key">badge.{{ product.info }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页头"><td>页头</td><td>徽标 / 文字变量</td><td>商品信息</td><td class="key">badge.{{ product.info }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页脚"><td>页脚</td><td>徽标 / 文字变量</td><td>商品信息</td><td class="key">badge.{{ product.info }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="弹窗"><td>弹窗</td><td>徽标 / 文字变量</td><td>商品信息</td><td class="key">badge.{{ product.info }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
@@ -3237,8 +3207,6 @@
 <tr data-component="布局容器"><td>布局容器</td><td>徽标 / 文字变量</td><td>节省比例</td><td class="key">badge.{{ product.savings }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品套餐"><td>商品套餐</td><td>徽标 / 文字变量</td><td>节省比例</td><td class="key">badge.{{ product.savings }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="轮播页"><td>轮播页</td><td>徽标 / 文字变量</td><td>节省比例</td><td class="key">badge.{{ product.savings }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="购买按钮"><td>购买按钮</td><td>徽标 / 文字变量</td><td>节省比例</td><td class="key">badge.{{ product.savings }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="按钮"><td>按钮</td><td>徽标 / 文字变量</td><td>节省比例</td><td class="key">badge.{{ product.savings }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页头"><td>页头</td><td>徽标 / 文字变量</td><td>节省比例</td><td class="key">badge.{{ product.savings }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页脚"><td>页脚</td><td>徽标 / 文字变量</td><td>节省比例</td><td class="key">badge.{{ product.savings }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="弹窗"><td>弹窗</td><td>徽标 / 文字变量</td><td>节省比例</td><td class="key">badge.{{ product.savings }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
@@ -3252,8 +3220,6 @@
 <tr data-component="布局容器"><td>布局容器</td><td>徽标 / 文字变量</td><td>礼包数量</td><td class="key">badge.{{ product.gift_count }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="商品套餐"><td>商品套餐</td><td>徽标 / 文字变量</td><td>礼包数量</td><td class="key">badge.{{ product.gift_count }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="轮播页"><td>轮播页</td><td>徽标 / 文字变量</td><td>礼包数量</td><td class="key">badge.{{ product.gift_count }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="购买按钮"><td>购买按钮</td><td>徽标 / 文字变量</td><td>礼包数量</td><td class="key">badge.{{ product.gift_count }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
-<tr data-component="按钮"><td>按钮</td><td>徽标 / 文字变量</td><td>礼包数量</td><td class="key">badge.{{ product.gift_count }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页头"><td>页头</td><td>徽标 / 文字变量</td><td>礼包数量</td><td class="key">badge.{{ product.gift_count }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="页脚"><td>页脚</td><td>徽标 / 文字变量</td><td>礼包数量</td><td class="key">badge.{{ product.gift_count }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
 <tr data-component="弹窗"><td>弹窗</td><td>徽标 / 文字变量</td><td>礼包数量</td><td class="key">badge.{{ product.gift_count }}</td><td>当前值</td><td>从所属或当前选中商品读取变量</td><td>徽标启用且存在对应商品数据</td><td>依当前模板/条件继承</td></tr>
