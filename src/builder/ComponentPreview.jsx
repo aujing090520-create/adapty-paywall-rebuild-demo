@@ -29,6 +29,7 @@ import {businessList,interpolateItem} from './businessData.js';
 import {fontStyles} from './fontStyles.js';
 import { isExitOfferStep } from './exitOffers.js';
 import { screenChromeLayout } from './screenLayout.js';
+import { purchaseTarget } from './purchaseTarget.js';
 import {entryCountdownDeadline,countdownMode} from './countdownTiming.js';
 
 const PreviewContext = createContext(null);
@@ -139,7 +140,7 @@ function PageSequence({ node, context, props, attributes, style, children }) {
   const pagination=control?children([control],false):!props.pageControlVersion && count>1?<div className="nc-pagination">{pages.map((child,index)=><button type="button" key={child.id} aria-label={`第 ${index+1} 页`} aria-current={chosen===index?'true':undefined} style={{color:chosen===index?props.activeDotColor??props.dotColor:props.dotColor}} onClick={(event)=>{event.stopPropagation();context.setRuntime((current)=>({...current,[node.id]:index}));}}>●</button>)}</div>:null;
   const bounded = props.heightMode !== 'fit';
   attributes.onPointerDown=pointerDown;attributes.onPointerUp=pointerUp;attributes.onPointerCancel=pointerUp;
-  return <CarouselContext.Provider value={{id:node.id,pages,chosen}}><div {...attributes} style={{...style,display:'flex',flexDirection:'column',gap:0}}><BackgroundVideo props={props}/>{props.pageControlPosition === 'top' && pagination}<div ref={carouselRef} className="nc-carousel-viewport" style={{overflow:'hidden',minWidth:0,width:'100%',...(bounded?{flex:'1 1 0%',minHeight:0}:{})}}><div className="nc-carousel-track" style={{display:'flex',...(bounded?{height:'100%'}:{}),gap:spacing,alignItems:({top:'flex-start',center:'center',bottom:'flex-end'}[props.pageAlignment??'top']),touchAction:'pan-y pinch-zoom',...(!carousel ? {transform:`translateX(calc(${peek}px - ${chosen} * (100% - ${peek*2}px + ${spacing}px)))`} : {})}}>{pages.map((child,index)=><div key={child.id} data-carousel-page={index} aria-hidden={index!==chosen} style={{flex:`0 0 calc(100% - ${peek*2}px)`,minWidth:0,...(bounded?{height:'100%'}:{})}}>{children([child],false)}</div>)}</div></div>{props.pageControlPosition !== 'top' && pagination}</div></CarouselContext.Provider>;
+  return <CarouselContext.Provider value={{id:node.id,pages,chosen}}><div {...attributes} style={{...style,display:'flex',flexDirection:'column',gap:0}}><BackgroundVideo props={props}/>{props.pageControlPosition === 'top' && pagination}<div ref={carouselRef} className="nc-carousel-viewport" style={{overflow:'hidden',minWidth:0,width:'100%',...(bounded?{flex:'1 1 0%',minHeight:0}:{})}}><div className="nc-carousel-track" style={{display:'flex',...(bounded?{height:'100%'}:{}),gap:spacing,alignItems:({top:'flex-start',center:'center',bottom:'flex-end'}[props.pageAlignment??'top']),touchAction:'pan-y pinch-zoom',...(!carousel ? {transform:`translateX(calc(${peek}px - ${chosen} * (100% - ${peek*2}px + ${spacing}px)))`} : {})}}>{pages.map((child,index)=><div key={child.id} data-carousel-page={index} aria-hidden={index!==chosen} style={{flex:`0 0 calc(100% - ${peek*2}px)`,minWidth:0,...(bounded?{height:'100%',display:'flex',flexDirection:'column',minHeight:0}:{})}}>{children([child],false)}</div>)}</div></div>{props.pageControlPosition !== 'top' && pagination}</div></CarouselContext.Provider>;
 }
 function Disclosure({label,delay,scope,editing,children}) {
   const [open,setOpen]=useState(editing);
@@ -171,7 +172,7 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
   const props = componentProps(visualNode);
   if (props.hidden || (['overlay','sheet'].includes(props.presentation) && !floating)) return null;
   if (props.visibleWhen && Boolean(runtime[props.visibleWhen.id] ?? context.nodeIndex.get(props.visibleWhen.id)?.props.initial) !== props.visibleWhen.value) return null;
-  const currentPackage = node.type === 'Package' ? node : packageNode;
+  const currentPackage = node.type === 'Package' ? node : ['Button','PurchaseButton'].includes(node.type)&&props.action?.packageId ? purchaseTarget(document,node,packageNode??context.selectedPackage,runtime) : packageNode;
   if (props.productField && !(currentPackage?.props.productType ? productParameterPreview(parameterFromBinding(props.productField,currentPackage),currentPackage,stateSelected) : resolveComponentText({ props: { binding: { key: currentPackage?.props.dataKey, field: props.productField } } }, document, currentPackage, stateSelected))) return null;
   const variablePackage = currentPackage ?? context.selectedPackage;
   const entries=props.dataSource?businessList(document,props.dataSource,variablePackage):null;
@@ -365,7 +366,7 @@ export default function ComponentPreview({ document: sourceDocument, businessTim
       let owner=nodeIndex.get(parentIndex.get(node.id));
       while(owner&&!['Package','BottomSheet','Screen'].includes(owner.type))owner=nodeIndex.get(parentIndex.get(owner.id));
       const scope=owningModal(document,node.id)?commerce.floating:commerce.background;
-      const target=owner?.type==='Package'?owner:scope.selectedPackage;
+      const target=purchaseTarget(document,node,owner?.type==='Package'?owner:scope.selectedPackage,runtime);
       const row=document.products[target?.props.dataKey??target?.id];
       if(document.productFieldPreview?!target:!row||!productPriceFields(row).total){onStatus('请先选择有效的商品套餐');return;}
     }
@@ -417,7 +418,7 @@ export default function ComponentPreview({ document: sourceDocument, businessTim
     } else if (action.action === 'CustomCheckout') {
       const {nodes,parents}=indexDocument(document);let owner=nodes.get(parents.get(node.id));
       while(owner&&owner.type!=='Package')owner=nodes.get(parents.get(owner.id));
-      const packageNode=owner??(owningModal(document,node.id)?commerce.floating:commerce.background).selectedPackage;
+      const packageNode=purchaseTarget(document,node,owner??(owningModal(document,node.id)?commerce.floating:commerce.background).selectedPackage,runtime);
       if(action.attachPackageId!==false&&!packageNode){onStatus('请先选择商品套餐');return;}
       const link=customCheckoutLink(action,{packageId:packageNode?.props.dataKey??packageNode?.id,appUserId:'demo-preview',environment:'sandbox'});
       if(!link)onStatus('请填写有效结账链接；仅深链方式支持应用协议');

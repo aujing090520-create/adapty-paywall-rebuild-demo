@@ -187,6 +187,7 @@ add(['Screen'],'画布选择','组件悬停框','editor.hoveredId','仅当前选
 add(['Screen'],'步骤编排','复制屏幕 / 排序 / 删除','workflow.manage','在Screen更多菜单操作真实步骤，保留原屏幕名称与所有组件；复制在原屏幕后创建独立ID和商品记录','至少保留1个步骤；排序保持初始与按钮目标身份，删除目标后显示失效绑定，不擅自改绑');
 add(['Button','PurchaseButton'],'动作属性','目标弹窗','action.actionPage','绑定真实BottomSheet子树','导航目标为弹窗；与页面之间的步骤跳转分开');
 add(['PurchaseButton'],'动作属性','打开方式','action.action','选择结账展示流程，不在Demo中发起真实付款','真实Billing/恢复/钱包交易仍排除',[['Purchase','标准结账','显示标准结账演示'],['WebCheckout','网页结账（浏览器）','显示网页结账演示'],['WebPaywall','网页付费墙','显示网页付费墙演示'],['CustomCheckout','自定义结账','组装自定义URL并按所选浏览方式打开']]);
+add(['PurchaseButton'],'动作属性','购买商品','action.packageId','跟随当前选中套餐，或指定同一页面和弹窗作用域内的套餐；允许购买其他轮播页中配置的试用套餐','仅购买用途；目标已删除或不在同一作用域时不可购买，不回退购买其他商品',[['','跟随当前选中套餐','沿用现有选择行为'],['<Package ID>','指定套餐','绑定可编辑商品套餐的节点ID，不绑定实际SKU']]);
 add(['PurchaseButton'],'动作属性','结账链接','action.actionUrl','自定义结账的基础URL','打开方式为自定义结账');
 add(['PurchaseButton'],'动作属性','链接打开方式','action.openMethod','自定义结账链接的打开方式','自定义结账',[['external_browser','外部浏览器','另开URL'],['deep_link','深链','使用应用协议URL']]);
 for(const [key,name,meaning] of [['attachPackageId','附带商品套餐 ID','把选中商品ID附加到URL'],['attachAppUserId','附带应用用户 ID','附加示例用户demo-preview，不读取真实用户'],['attachEnvironment','附带环境','附加sandbox示例环境']])add(['PurchaseButton'],'动作属性',name,`action.${key}`,meaning,'仅自定义结账；默认勾选',bool);

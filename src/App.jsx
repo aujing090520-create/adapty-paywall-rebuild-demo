@@ -1,4 +1,5 @@
 import ComponentEditor from './builder/ComponentEditor.jsx';
+import ComponentPreview from './builder/ComponentPreview.jsx';
 import CreatePaywall from './CreatePaywall.jsx';
 import { freshPaywallDraft, paywallMetadata, paywallMetadataError } from './paywallMetadata.js';
 import { Field } from './builder/BuilderProperties.jsx';
@@ -171,7 +172,7 @@ const missingItems = [
 const componentCatalog = ["Text", "Header", "Image", "Page Background", "Video", "Icon", "Card", "Stack", "Screen Flow", "Web Paywall Button", "Button", "List", "Feature Table", "Timeline", "Social Proof", "Award", "Tabs", "Toggle", "Links", "Agreement", "Timer", "Carousel", "Products", "Footer"];
 
 const sourceTreeObserved = new Set(["knowledge", "trial", "connection", "family", "premium-access", "document", "yoga", "black-friday", "black-friday-timer", "christmas", "halloween", "new-year", "report", "avatar", "mindfulness", "trial-white", "trial-blue", "fitness-trial", "access", "weather", "workout", "audiobooks", "herbs", "video-access", "design-life", "full-app", "item-placeholder", "item-placeholder-dark", "fantasy-access", "editing-plan", "training"]);
-const documentStyleTemplateIds = new Set(["ht-blue-privilege", "ht-membership-plans", "ht-payment-recovery", "ht-sku-sheet"]);
+const documentStyleTemplateIds = new Set(templates.filter(template=>template.documentTemplate).map(template=>template.id));
 const curatedSourceTemplateIds = new Set(["knowledge", "trial", "family", "document", "mindfulness", "editing-plan", "black-friday-timer", "halloween"]);
 const catalogTemplates = templates.filter((template) => template.documentTemplate || template.isGallery);
 const isEditableTemplate = (template) => template.isNew || sourceTreeObserved.has(template.id) || documentStyleTemplateIds.has(template.id);
@@ -1167,11 +1168,11 @@ function TemplatesModal({ selected, setSelected, onClose, onOpenBuilder }) {
   const tagLabels = { "1 product": "1 个商品", "2 products": "2 个商品", "3 products": "3 个商品", "4 products": "4 个商品", "5 products": "5 个商品", "Multi-step": "多步骤", Credits: "点数商品", "Web purchase": "网页购买", "Feature table": "权益表格", Reviews: "评价", Award: "奖项", Timer:'倒计时', Carousel:'轮播', Toggle:'普通开关', Tabs:'标签页', 'Trial timeline':'试用时间线', 'Offer code':'优惠码', 'Social Proof':'口碑展示' };
   const displayTags = (template) => isEditableTemplate(template) ? template.tags.map((tag) => tagLabels[tag] ?? tag) : ["Source preview", "Structure pending"];
   const countBy = (matches) => catalogTemplates.filter(matches).length;
-  const componentOptions = [["Free trial toggle", "免费试用开关"], ["Trial timeline", "试用时间线"], ["Reviews", "评价"], ["Timer", "倒计时"], ["Toggle", "普通开关"], ["Social Proof", "口碑展示"], ["Award", "奖项展示"], ["Tabs", "标签页"], ["Offer code", "优惠码"], ["Multi-step", "多步骤"], ["Credits", "点数商品"], ["Web purchase", "网页购买"], ["Feature table", "权益表格"]];
+  const componentOptions = [["Free trial toggle", "免费试用开关"], ["Trial timeline", "试用时间线"], ["Carousel", "轮播"], ["Reviews", "评价"], ["Timer", "倒计时"], ["Toggle", "普通开关"], ["Social Proof", "口碑展示"], ["Award", "奖项展示"], ["Tabs", "标签页"], ["Offer code", "优惠码"], ["Multi-step", "多步骤"], ["Credits", "点数商品"], ["Web purchase", "网页购买"], ["Feature table", "权益表格"]];
   const filteredTemplates = catalogTemplates.filter((template) => {
     const productMatch = !filters.products.length || filters.products.some((item) => item === "1 product" ? template.productCount === 1 : template.productCount > 1);
     const mediaMatch = filters.media === "All" || (filters.media === "With Image or Video" ? ["image", "video"].includes(template.media) : template.media === "none");
-    const componentMatch = filters.components.every((item) => (template.isNew ? template.components : sourceVerifiedTemplateComponents[template.id])?.includes(item));
+    const componentMatch = filters.components.every((item) => (template.isNew || template.documentTemplate ? template.components : sourceVerifiedTemplateComponents[template.id])?.includes(item));
     const lengthMatch = filters.length === "All" || (filters.length === "Short" ? template.title.length < 28 : template.title.length >= 28);
     const backgroundMatch = filters.background === "All" || (filters.background === "Dark" ? ["night", "black", "midnight", "ocean", "halloween"].includes(template.theme) : !["night", "black", "midnight", "ocean", "halloween"].includes(template.theme));
     const categoryMatch = filters.category === "All" || template.category === filters.category;
@@ -1190,7 +1191,7 @@ function TemplatesModal({ selected, setSelected, onClose, onOpenBuilder }) {
       <Filter group="media" value="With Image or Video">{`With Image or Video (${countBy((item) => item.media !== "none")})`}</Filter>
       <Filter group="media" value="No media">{`No media (${countBy((item) => item.media === "none")})`}</Filter>
       <p>Components</p>
-      {componentOptions.map(([value, label]) => <Filter key={value} group="components" value={value} list>{label} ({countBy((item) => (item.isNew ? item.components : sourceVerifiedTemplateComponents[item.id])?.includes(value))})</Filter>)}
+      {componentOptions.map(([value, label]) => <Filter key={value} group="components" value={value} list>{label} ({countBy((item) => (item.isNew || item.documentTemplate ? item.components : sourceVerifiedTemplateComponents[item.id])?.includes(value))})</Filter>)}
       <p>Length</p><Filter group="length" value="All">All</Filter><Filter group="length" value="Short">Short</Filter><Filter group="length" value="Long">Long</Filter>
       <p>Background theme</p><Filter group="background" value="All">All</Filter><Filter group="background" value="Light">Light</Filter><Filter group="background" value="Dark">Dark</Filter>
       <p>Category</p><Filter group="category" value="All">All paywalls</Filter><Filter group="category" value="Popular">Popular</Filter><Filter group="category" value="Seasonal">Seasonal</Filter>
@@ -1287,6 +1288,7 @@ function DeferredTemplateMedia({ template }) {
 }
 
 function SourceTemplateMedia({ template }) {
+  if(template.nativeDocument)return <NativeTemplateMedia template={template}/>;
   if (template.isGallery) return <GalleryTemplateMedia template={template} />;
   if (template.isNew) return <IntegratedTemplateMedia template={template} />;
   if (template.prdScreenshot) return <img className="prd-template-screenshot" src={template.prdScreenshot} alt={`${template.title} PRD screenshot`} />;
@@ -1294,6 +1296,11 @@ function SourceTemplateMedia({ template }) {
   const assets = template.assetParts ?? [template.asset];
   if (assets.length === 1) return <img src={assets[0]} alt={`Adapty template: ${template.title}`} />;
   return <div className="source-template-stack">{assets.map((asset) => <img src={asset} alt="" key={asset} />)}</div>;
+}
+
+function NativeTemplateMedia({template}){
+  const document=useMemo(()=>importComponentDocument([],template),[template]);
+  return <div className="rc-gallery-live" aria-hidden="true"><div className="rc-gallery-live-scale"><ComponentPreview document={document} editing onSelect={()=>{}}/></div></div>;
 }
 
 function GalleryTemplateMedia({ template }) {

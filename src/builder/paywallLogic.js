@@ -1,5 +1,6 @@
 import {selectedBusinessData,businessList} from './businessData.js';
 import {resolveBusinessTime} from './businessTime.js';
+import {componentPages,findComponent} from './componentPages.js';
 const comparable = value => String(value ?? '');
 export const LOGIC_TARGET_TYPES = new Set(['Stack','Text','Image','Video','Icon','Button','PurchaseButton','Countdown','Carousel']);
 
@@ -13,10 +14,14 @@ export function logicMatches(rule, document, runtime, selectedPackage) {
   const variables=businessValues(document,runtime);
   return rule.conditions.every(condition=>{
     if(condition.value===undefined || condition.value===null || condition.value==='')return false;
-    if(['tab','variable','timeSource'].includes(condition.type)&&!condition.source)return false;
+    if(['tab','page','variable','timeSource'].includes(condition.type)&&!condition.source)return false;
     let actual;
     if(condition.type==='sku') { if(!row?.skuId)return false; actual=row.skuId; }
-    else if(condition.type==='tab') {
+    else if(condition.type==='package')actual=selectedPackage?.id;
+    else if(condition.type==='page') {
+      const owner=findComponent(document.root,condition.source),pages=componentPages(owner);
+      actual=pages[runtime[owner?.id]??owner?.props.defaultIndex??0]?.id;
+    } else if(condition.type==='tab') {
       const find=node=>node.id===condition.source?node:node.children.map(find).find(Boolean);
       const tab=find(document.root);
       if(tab?.type!=='Tabs')return false;

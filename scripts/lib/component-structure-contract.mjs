@@ -52,6 +52,7 @@ export function structureIssues(document) {
     }
     if (node.type === 'Package' && !document.products[node.props.dataKey ?? node.id]) issues.push(`${node.id}: missing product record`);
     const action = node.props.action;
+    if(action?.packageId&&nodes.get(action.packageId)?.type!=='Package')issues.push(`${node.id}: unresolved purchase package target`);
     if (action?.actionPage && ['OpenSheet', 'NextScreen', 'OpenPage'].includes(action.action)) {
       const type = nodes.get(action.actionPage)?.type;
       if (type !== (action.action === 'OpenSheet' ? 'BottomSheet' : 'Screen')) issues.push(`${node.id}: unresolved ${action.action} target`);

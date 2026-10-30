@@ -59,6 +59,7 @@ export const templates = [
   { id: "ht-membership-plans", title: "HelloTalk 会员套餐页", subtitle: "会员订阅方案与访客示例轮播", tags: ["3 products", "Carousel"], productCount: 3, media: "image", components: ["Carousel"], category: "Popular", theme: "ht-plans", visual: "ht-plans", documentTemplate: "membership-plans", prdScreenshot: "/ht-prd-screenshots/membership-plans.jpg" },
   { id: "ht-payment-recovery", title: "HelloTalk 支付未完成页", subtitle: "支付恢复与倒计时优惠", tags: ["2 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-recovery", visual: "ht-recovery", documentTemplate: "payment-recovery", prdScreenshot: "/ht-prd-screenshots/payment-recovery.png" },
   { id: "ht-sku-sheet", title: "HelloTalk SKU 半窗", subtitle: "横版促销视觉与套餐选择", tags: ["2 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-sku", visual: "ht-sku", documentTemplate: "sku-sheet", prdScreenshot: "/ht-prd-screenshots/sku-sheet.jpg" },
+  { id: "ht-free-trial", title: "HelloTalk 免费试用页", subtitle: "权益、到期提醒与试用套餐轮播", tags: ["2 products", "Carousel", "Trial timeline"], productCount: 2, media: "image", components: ["Carousel", "Trial timeline"], category: "Popular", theme: "ht-trial", visual: "ht-trial", documentTemplate: "free-trial", nativeDocument: true },
 ];
 
 export const node = (id, type, content = "", depth = 0, extra = {}) => ({ id, type, label: "", content, depth, ...extra });
@@ -77,6 +78,7 @@ export function createBuilderNodes(templateId = "knowledge") {
   const template = templates.find((item) => item.id === templateId) ?? templates[0];
   const hero = (depth = 0) => node("hero-image", "Hero Image", template.visual, depth, { theme: template.theme });
   const pending = (id, type, depth = 0) => node(id, type, "", depth, { sourcePending: true });
+  if(template.nativeDocument)return [];
 
   if (template.isGallery) return createSourceTemplateNodes(template, node);
 

@@ -6,6 +6,7 @@ import {CONTENT_LANGUAGES,resourceFields,RESOURCE_FIELD_LABELS} from './contentL
 import {renameBusinessVariable,variableKeyError} from './workbenchModel.js';
 import TimeSourceSettings from './TimeSourceSettings.jsx';
 import {timeSources,TIME_STATES} from './businessTime.js';
+import {componentPages} from './componentPages.js';
 
 const uid=()=>crypto.randomUUID();
 const Field=({label,children})=><label className="rc-field"><span>{label}</span>{children}</label>;
@@ -45,13 +46,17 @@ export default function WorkbenchSettings({document,onChange,onClose,onPreview,i
           {rule.conditions.map((condition,index)=>{
             const update=patch=>patchRule(rule.id,{conditions:rule.conditions.map((item,at)=>at===index?{...item,...patch}:item)});
             const tabs=nodes.filter(node=>node.type==='Tabs'),selectedTab=tabs.find(node=>node.id===condition.source);
+            const sequences=nodes.filter(node=>componentPages(node).length),selectedSequence=sequences.find(node=>node.id===condition.source);
             return <div className="ne-settings-row" key={index}>
-              <Select label="条件类型" value={condition.type} options={[[ 'sku','选中 SKU' ],['tab','选中等级 Tab'],['hasGift','有无礼包'],['variable','业务变量'],['timeSource','业务时间源状态']]} onChange={type=>update({type,source:'',value:type==='hasGift'?true:''})}/>
+              <Select label="条件类型" value={condition.type} options={[[ 'sku','选中 SKU' ],['package','选中商品套餐'],['page','当前组件页面'],['tab','选中等级 Tab'],['hasGift','有无礼包'],['variable','业务变量'],['timeSource','业务时间源状态']]} onChange={type=>update({type,source:'',value:type==='hasGift'?true:''})}/>
+              {condition.type==='page'&&<Select label="条件组件" value={condition.source} options={[[ '', '选择轮播或标签页' ],...sequences.map(node=>[node.id,`${node.type==='Carousel'?'轮播':'标签页'} · ${node.id}`])]} onChange={source=>update({source,value:''})}/>}
+              {condition.type==='page'&&<Select label="条件页面" value={condition.value} options={[[ '', '选择组件页面' ],...componentPages(selectedSequence).map((page,index)=>[page.id,`${index+1}. ${page.name}`])]} onChange={value=>update({value})}/>}
+              {condition.type==='package'&&<Select label="条件套餐" value={condition.value} options={[[ '', '选择商品套餐' ],...nodes.filter(node=>node.type==='Package').map((node,index)=>[node.id,`套餐 ${index+1} · ${node.id}`])]} onChange={value=>update({value})}/>}
               {condition.type==='tab'&&<Select label="等级组件" value={condition.source} options={[[ '', '选择等级组件' ],...tabs.map(node=>[node.id,node.name])]} onChange={source=>update({source,value:''})}/>}
               {condition.type==='variable'&&<Select label="业务变量" value={condition.source} options={[[ '', '选择变量' ],...variables.map(item=>[item.key,item.key])]} onChange={source=>update({source,value:''})}/>}
               {condition.type==='timeSource'&&<Select label="条件时间源" value={condition.source} options={[[ '', '选择时间源' ],...timeSources(document).map(source=>[source.id,source.name])]} onChange={source=>update({source,value:''})}/>}
               <Select label="比较方式" value={condition.operator??'equals'} options={[[ 'equals','等于' ],['notEquals','不等于']]} onChange={operator=>update({operator})}/>
-              {condition.type==='timeSource'?<Select label="条件值" value={condition.value} options={[[ '', '选择状态' ],...TIME_STATES]} onChange={value=>update({value})}/>:condition.type==='sku'?<Select label="条件值" value={condition.value} options={[[ '', '选择 SKU' ],...skus.map(id=>[id,id])]} onChange={value=>update({value})}/>:condition.type==='tab'?<Select label="条件值" value={condition.value} options={[[ '', '选择等级' ],...(selectedTab?.children??[]).map((node,index)=>[String(index),node.name])]} onChange={value=>update({value})}/>:condition.type==='hasGift'||variables.find(item=>item.key===condition.source)?.type==='boolean'?<Select label="条件值" value={String(condition.value)} options={[[ 'true','是' ],['false','否']]} onChange={value=>update({value:value==='true'})}/>:<Field label="条件值"><input aria-label="条件值" value={condition.value} onChange={e=>update({value:e.target.value})}/></Field>}
+              {!['page','package'].includes(condition.type)&&(condition.type==='timeSource'?<Select label="条件值" value={condition.value} options={[[ '', '选择状态' ],...TIME_STATES]} onChange={value=>update({value})}/>:condition.type==='sku'?<Select label="条件值" value={condition.value} options={[[ '', '选择 SKU' ],...skus.map(id=>[id,id])]} onChange={value=>update({value})}/>:condition.type==='tab'?<Select label="条件值" value={condition.value} options={[[ '', '选择等级' ],...(selectedTab?.children??[]).map((node,index)=>[String(index),node.name])]} onChange={value=>update({value})}/>:condition.type==='hasGift'||variables.find(item=>item.key===condition.source)?.type==='boolean'?<Select label="条件值" value={String(condition.value)} options={[[ 'true','是' ],['false','否']]} onChange={value=>update({value:value==='true'})}/>:<Field label="条件值"><input aria-label="条件值" value={condition.value} onChange={e=>update({value:e.target.value})}/></Field>)}
               <Remove label="删除条件" onClick={()=>patchRule(rule.id,{conditions:rule.conditions.filter((_,at)=>at!==index)})}/>
             </div>;
           })}

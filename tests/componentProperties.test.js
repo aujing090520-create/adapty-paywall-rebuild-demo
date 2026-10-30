@@ -64,6 +64,29 @@ after(async () => { for (const renderer of mounted) await act(async () => render
 const event = (value) => ({ target: { value }, stopPropagation() {}, preventDefault() {} });
 const fixture = (node) => ({ version: 3, templateId: 'audit', products: { sample: { name: '年度', price: '¥100', billingMonths: 12 } }, root: component('page', 'Screen', '页面', {}, [node]) });
 
+test('free trial composes three carousel pages, explicit trial purchase, selected-package purchase and a button-owned retention sheet',async()=>{
+  const template=templates.find(t=>t.id==='ht-free-trial'),source=upgradeCanonicalComponents(importComponentDocument(createBuilderNodes(template.id),template));
+  const h=await mount(indexDocument(source).nodes.get('trial/confirm'),{source,editing:false});
+  const page=index=>h.renderer.root.findAll(node=>node.type==='button'&&node.props['aria-label']===`第 ${index+1} 页`)[0];
+  try{
+    assert.ok(h.node('trial/confirm'));assert.equal(h.node('trial/purchase'),undefined);
+    await act(async()=>h.node('trial/confirm').props.onClick(event()));assert.match(h.status(),/购买预览/);
+    await act(async()=>page(1).props.onClick(event()));assert.ok(h.node('trial/confirm'));assert.equal(h.node('trial/purchase'),undefined);
+    await act(async()=>h.node('trial/confirm').props.onClick(event()));assert.match(h.status(),/购买预览/);
+    await act(async()=>page(2).props.onClick(event()));assert.equal(h.node('trial/confirm'),undefined);assert.ok(h.node('trial/purchase'));
+    assert.deepEqual(h.node('trial/purchase/text').children,['0元领取3天VIP体验']);
+    await act(async()=>h.node('trial/monthly').props.onClick(event()));assert.deepEqual(h.node('trial/purchase/text').children,['继续']);
+    assert.match(h.node('trial/legal').children.join(''),/当前缴费期/);
+    await act(async()=>h.node('trial/close').props.onClick(event()));assert.ok(h.node('trial/retention'));
+    await act(async()=>h.node('trial/retention/keep').props.onClick(event()));assert.equal(h.node('trial/retention'),undefined);assert.equal(h.node('trial/monthly').props['aria-pressed'],true);
+    await act(async()=>h.node('trial/purchase').props.onClick(event()));assert.match(h.status(),/购买预览/);
+    await act(async()=>h.node('trial/close').props.onClick(event()));await act(async()=>h.node('trial/retention/leave').props.onClick(event()));assert.equal(h.status(),'关闭预览');
+    await act(async()=>h.node('trial/retention/keep').props.onClick(event()));await act(async()=>page(0).props.onClick(event()));
+    assert.ok(h.node('trial/confirm'));await act(async()=>h.node('trial/confirm').props.onClick(event()));assert.match(h.status(),/购买预览/);
+    assert.deepEqual(h.document(),source);
+  }finally{await h.close();}
+});
+
 test('Header overlap configuration visibly switches between a reserved top row and composite-hero overlay',async()=>{
   const header=component('sample','Header','页头',{overlapContent:false},[component('header-copy','Text','文字',{text:'导航'})]);
   const source=fixture(header);source.root.props.pagePresentation='fullscreen';source.root.children.push(component('hero','Stack','主视觉',{},[component('art','Image')]));

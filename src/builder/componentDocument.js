@@ -10,6 +10,7 @@ import { packageDisplayFields } from '../products/packageFields.js';
 import {validWorkbenchConfiguration} from './workbenchModel.js';
 import { PRODUCT_PARAMETERS, productParameterPreview } from '../products/productParameters.js';
 import {pruneGeneratedEmptyLayouts,normalizeHtLabelSlots} from './layoutContainers.js';
+import {buildFreeTrialTemplate} from './freeTrialTemplate.js';
 
 export const DOCUMENT_VERSION = 3;
 export const COMPONENT_TYPES = ['Screen', 'Stack', 'Text', 'ProductParameter', 'Image', 'Video', 'Icon', 'Custom', 'Header', 'Footer', 'Package', 'PurchaseButton', 'BottomSheet', 'ExpressCheckout', 'CheckoutState', 'Wallet', 'Button', 'Tabs', 'Tab', 'TabControl', 'TabButton', 'Carousel', 'Slide', 'PageControl', 'Indicators', 'Timeline', 'TimelineItem', 'Switch', 'SwitchCase', 'Toggle', 'Countdown', 'CountdownState', 'Flow'];
@@ -151,6 +152,7 @@ export function resolveComponentText(node, document, packageNode, selected = fal
 
 // Legacy configuration is consumed once. Runtime edits never compile back to it.
 export function importComponentDocument(nodes, template = {}, calibrate = true) {
+  if(template.id==='ht-free-trial')return buildFreeTrialTemplate();
   const products = {};
   const detailScreens = [];
   const byParent = new Map(), latest = [], byId = new Map(nodes.map((node) => [node.id, node]));
@@ -311,7 +313,8 @@ export function saveComponentDocument(storage, document) {
 export function cloneComponent(node, idMap) {
   const ids=idMap instanceof Map?idMap:new Map();
   const collect = (entry) => { ids.set(entry.id, crypto.randomUUID()); entry.children.forEach(collect); }; collect(node);
-  const visit = (entry) => ({ ...entry, id: ids.get(entry.id), props: { ...entry.props, ...(entry.props.comparisonRowId ? {comparisonRowId:ids.get(entry.props.comparisonRowId)} : {}), ...(ids.has(entry.props.target) ? { target: ids.get(entry.props.target) } : {}), ...(ids.has(entry.props.initialStepId)?{initialStepId:ids.get(entry.props.initialStepId)}:{}), ...(ids.has(entry.props.switchTarget) ? { switchTarget: ids.get(entry.props.switchTarget) } : {}), ...(ids.has(entry.props.action?.actionPage) ? { action: { ...entry.props.action, actionPage: ids.get(entry.props.action.actionPage) } } : {}), ...(ids.has(entry.props.group) ? { group: ids.get(entry.props.group) } : {}), ...(entry.type === 'Package' && !ids.has(entry.props.group) ? { defaultSelected: false } : {}), ...(entry.props.visibleWhen && ids.has(entry.props.visibleWhen.id) ? { visibleWhen: { ...entry.props.visibleWhen, id: ids.get(entry.props.visibleWhen.id) } } : {}) }, children: entry.children.map(visit) });
+  const actionRefs=action=>{const patch=Object.fromEntries(['actionPage','packageId'].filter(key=>ids.has(action?.[key])).map(key=>[key,ids.get(action[key])]));return Object.keys(patch).length?{action:{...action,...patch}}:{};};
+  const visit = (entry) => ({ ...entry, id: ids.get(entry.id), props: { ...entry.props, ...(entry.props.comparisonRowId ? {comparisonRowId:ids.get(entry.props.comparisonRowId)} : {}), ...(ids.has(entry.props.target) ? { target: ids.get(entry.props.target) } : {}), ...(ids.has(entry.props.initialStepId)?{initialStepId:ids.get(entry.props.initialStepId)}:{}), ...(ids.has(entry.props.switchTarget) ? { switchTarget: ids.get(entry.props.switchTarget) } : {}), ...actionRefs(entry.props.action), ...(ids.has(entry.props.group) ? { group: ids.get(entry.props.group) } : {}), ...(entry.type === 'Package' && !ids.has(entry.props.group) ? { defaultSelected: false } : {}), ...(entry.props.visibleWhen && ids.has(entry.props.visibleWhen.id) ? { visibleWhen: { ...entry.props.visibleWhen, id: ids.get(entry.props.visibleWhen.id) } } : {}) }, children: entry.children.map(visit) });
   return visit(node);
 }
 
