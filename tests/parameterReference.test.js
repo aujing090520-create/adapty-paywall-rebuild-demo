@@ -45,4 +45,5 @@ test('action branches and bound text fields have explicit reference rows rather 
   assert.equal(rows.filter(row=>row.component==='Stack'&&row.label==='分布').length,6);
   assert.ok(rows.every(row=>row.meaning&&row.condition&&row.key));
   assert.ok(rows.some(row=>row.label==='徽标链接'));assert.ok(rows.some(row=>row.key==='action.attachEnvironment'));
+  for(const type of ['Button','PurchaseButton']){assert.equal(rows.find(row=>row.component===type&&row.label==='徽标文字').initial,'{按钮标签类型}');assert.equal(rows.some(row=>row.component===type&&row.group==='徽标 / 文字变量'),false);}
 });

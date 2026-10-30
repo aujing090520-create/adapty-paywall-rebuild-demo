@@ -1,6 +1,6 @@
 import {COMPONENT_TYPES,COMPONENT_NAMES,CONTAINER_TYPES,componentProps,indexDocument} from '../src/builder/componentDocument.js';
 import {createCatalogComponent} from '../src/builder/componentCatalog.js';
-import {BADGE_DEFAULTS,BADGE_COMPONENT_TYPES,BUTTON_BADGE_TYPES} from '../src/builder/propertyModel.js';
+import {BADGE_DEFAULTS,BADGE_COMPONENT_TYPES,BUTTON_BADGE_TYPES,BUTTON_BADGE_TEXT} from '../src/builder/propertyModel.js';
 import {PRODUCT_TEXT_VARIABLES,TIMER_TEXT_VARIABLES} from '../src/builder/textVariables.js';
 import {iconLabel} from '../src/builder/iconLabels.js';
 import {PRODUCT_PARAMETER_OPTIONS} from '../src/products/productParameters.js';
@@ -277,7 +277,7 @@ export function parameterRows(){
     const root=createCatalogComponent(type,`reference-${type}`),node=[...indexDocument({root}).nodes.values()].find(item=>item.type===type);
     const p=componentProps(node);
     const key=definition.key,raw=key.startsWith('badge.')?key.slice(6).split(' / ')[0]:key;
-    const value=key==='name'?COMPONENT_NAMES[type]:key.startsWith('badge.')?BADGE_DEFAULTS[raw]:key.split('.').reduce((current,part)=>current?.[part],p);
+    const value=key==='name'?COMPONENT_NAMES[type]:key==='badge.text'&&BUTTON_BADGE_TYPES.includes(type)?BUTTON_BADGE_TEXT:key.startsWith('badge.')?BADGE_DEFAULTS[raw]:key.split('.').reduce((current,part)=>current?.[part],p);
     const optionValue=definition.options.find(option=>String(option[0])===String(value));
     const initial=key==='deadline'&&value?'新建时当前UTC时间 + 3天':optionValue?optionValue[1]:key==='icon'?iconLabel(value):value==='stretch'?'拉伸（旧配置）':key==='mask'&&value==='none'?'矩形（默认）':key==='group'&&value===node.id?'组件自身ID':raw==='fontFamily'&&!value?'系统字体':raw.endsWith('Opacity')&&value===undefined?'100':value==='transparent'?'透明':value===undefined?'依当前模板/条件继承':typeof value==='object'?JSON.stringify(value):String(value);
     const condition=type==='Screen'&&definition.group==='布局'?`页面有固定页头/页脚时，仅滚动内容参与排列，页头/页脚不参与分布。${definition.condition}`:type==='Screen'&&['minWidth','maxWidth'].includes(key)?`页面宽度不提供新增约束入口，仅兼容旧记录已有值。${definition.condition}`:type==='Toggle'&&!['开关填充','图层管理','编辑器工具','预览'].includes(definition.group)?`旧HT协议控件分支；系统滑块不显示此项。${definition.condition}`:definition.condition;
