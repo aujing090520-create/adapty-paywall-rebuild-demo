@@ -242,7 +242,7 @@ add(['Custom'],'自定义组件','下载示例','example.zip','下载示例资�
 
 const badgeOwners=BADGE_COMPONENT_TYPES;
 add(badgeOwners,'徽标','徽标启用','badgeEnabled','启用父组件独立徽标，不插入影响其他子项顺序的文字节点','徽标位置相对所属框体',bool);
-add(badgeOwners,'徽标 / 文字','徽标文字','badge.text / badge.runs','徽标正文及真实选区格式；不覆盖父框体正文','徽标启用；支持与文字组件相同的六项选区工具与商品变量');
+add(badgeOwners,'徽标 / 文字','徽标文字','badge.text / badge.runs','徽标正文及真实选区格式；不覆盖父框体正文','徽标启用；支持固定文字、商品变量和工作区业务变量混排；空内容不绘制徽标');
 for(const [label,key,meaning] of [['粗体','bold','选区粗体'],['斜体','italic','选区斜体'],['删除线','strikethrough','选区删除线'],['下划线','underline','选区下划线'],['行内代码','code','选区等宽代码格式'],['链接','link','选区安全链接']])add(badgeOwners,'徽标 / 文字工具',`徽标${label}`,`badge.runs.${key}`,meaning,'徽标启用且存在文字选区，不修改父级或子组件文字');
 for(const [key,label] of PRODUCT_TEXT_VARIABLES)add(badgeOwners,'徽标 / 文字变量',label,`badge.{{ ${key} }}`,'从所属或当前选中商品读取变量','徽标启用且存在对应商品数据');
 typography(badgeOwners,'徽标');

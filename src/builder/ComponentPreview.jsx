@@ -76,6 +76,7 @@ function ComponentBadge({node,document,packageNode,timer}){
   if(!(p.badgeEnabled??Boolean(p.badge)))return null;
   const badge={...BADGE_DEFAULTS,...p.badge},bottom=badge.position.startsWith('bottom'),side=badge.position.split('-')[1];
   const content=interpolateVariables(badge.text,document,packageNode,timer,runtime);
+  if(!content.trim())return null;
   const rich=richTextContent({p:badge,value:content,document,packageNode,timer,runtime,editing:true});
   return <span className="nc-badge" data-badge-owner={node.id} style={{...componentStyle({type:'Text',props:{...badge,textBackground:'transparent'},children:[]}),position:'absolute',zIndex:3,...(bottom?{bottom:0}:{top:0}),...(side==='center'?{left:'50%'}:side==='right'?{right:0}:{left:0}),transform:`translate(${side==='center'?'-50%':'0'},${badge.positionStyle==='overlay'?(bottom?'50%':'-50%'):'0'})`,maxWidth:'100%',whiteSpace:'pre-wrap',overflowWrap:'anywhere',pointerEvents:'none'}}><span style={{background:paintColor(badge.textBackground,badge.textBackgroundOpacity),textDecoration:badge.runs?.length?undefined:textDecoration(badge.strike,badge.underline)}}>{isGradient(badge.color)?<span style={textPaintStyle(badge.color,badge.colorOpacity)}>{rich}</span>:rich}</span></span>;
 }

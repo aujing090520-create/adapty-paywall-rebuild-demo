@@ -90,10 +90,11 @@ export function calibrateTemplateVisuals(document, template, sources) {
   set('agreement', { gap: 3, ...edges('margin', 4, 18) });
   const purchase = configs.get('purchase') ?? {};
   set('purchase', { ...edges('padding', 14, 18), ...edges('margin', 8, blue || member ? 18 : 0), background: purchase.backgroundColor ?? `linear-gradient(90deg, ${(productConfig.purchaseBackgroundGradient ?? ['#ff860a', '#ffb000', '#ffd10b']).join(', ')})`, radius: purchase.radius ?? 32 });
+  if(blue)set('purchase',{badgeEnabled:true,badge:{text:'节省{{ business.savings_amount }}',position:'top-right',positionStyle:'overlay',shape:'pill',fontSize:12,fontWeight:700,lineHeight:1.2,color:'#ffffff',background:'#ff9500',borderEnabled:true,borderWidth:1,borderColor:'#ff7900',paddingMode:'axis',paddingVertical:3,paddingHorizontal:8,marginMode:'individual',marginTop:0,marginRight:0,marginBottom:0,marginLeft:0}});
   set('purchase/label', { fontSize: purchase.fontSize ?? 22, lineHeight: 1.2, fontWeight: 700 });
   set('legal', { color: (configs.get('legal') ?? {}).color ?? '#aaaaaa', textAlign: 'left', fontSize: (configs.get('legal') ?? {}).fontSize ?? 11, lineHeight: 1.32, ...edges('margin', 10, blue || member ? 18 : 0) });
   const apply = (node) => ({ ...node, props: { ...node.props, ...patch.get(node.id) }, children: node.children.map(apply) });
-  const calibrated = rebuildHtTemplateScene({ ...document, visualDefaultsVersion: TEMPLATE_VISUAL_VERSION, root: apply(document.root) }, template);
+  const calibrated = rebuildHtTemplateScene({ ...document, ...(blue?{logic:{...document.logic,variables:[...document.logic?.variables??[],{id:'blue-purchase-savings',key:'savings_amount',type:'string',value:'{节省金额}'}]}}:{}), visualDefaultsVersion: TEMPLATE_VISUAL_VERSION, root: apply(document.root) }, template);
   return buildHtPackageFields(buildHtTemplateFooter(blue ? buildBlueVipColumn(upgradeNavigationRows(calibrated)) : calibrated, variant), variant);
 }
 

@@ -3,7 +3,7 @@ import { ArrowRight, ArrowDown, Layers3, AlignLeft, AlignCenter, AlignRight, Ali
 import { CONTAINER_TYPES, componentProps, componentLayerLabel } from './componentDocument.js';
 import { workflowContext, stepDestination, owningScreen } from './workflow.js';
 import { selectedStyleKey, stateStyleProps, spacingModePatch, dimensionModePatch, imageMask, cornerModePatch, CORNER_KEYS, selectionOwner, sequencePages, BADGE_DEFAULTS, BADGE_COMPONENT_TYPES, utcDateTimeInput, textPropertyPatch } from './propertyModel.js';
-import { availableTextVariables, PRODUCT_TEXT_VARIABLES, variableIssues } from './textVariables.js';
+import { availableTextVariables, variableIssues } from './textVariables.js';
 import {timerTextProps,TIMER_VARIABLE_DEFINITIONS} from './textVariableTokens.js';
 import {timeSources,TIME_SCOPES} from './businessTime.js';
 import {COUNTDOWN_MODES,countdownMode} from './countdownTiming.js';
@@ -375,12 +375,12 @@ function CountdownContentFields({selected,document,nodes,parents,navigation,setN
   </PropertySection>;
 }
 
-function BadgeSection({selected,p,patch}){
+function BadgeSection({selected,p,patch,document}){
   if(!BADGE_COMPONENT_TYPES.includes(selected.type))return null;
   const enabled=p.badgeEnabled??Boolean(p.badge),badge={...BADGE_DEFAULTS,...p.badge};
   const update=(values)=>{const {background,...typography}=values;patch({badge:{...badge,...textPropertyPatch({type:'Text',props:badge},typography),...('background' in values?{background}: {})},badgeEnabled:true});};
   return <PropertySection title="徽标" optional><OptionalToggle enabled={enabled} onChange={(badgeEnabled)=>patch({badgeEnabled,...(badgeEnabled&&!p.badge?{badge:{...BADGE_DEFAULTS}}:{})})}/>{enabled&&<div className="rc-badge-properties">
-    <React.Suspense fallback={<div className="rc-rich-loading">加载文字编辑器</div>}><RichTextEditor aria-label="徽标文字" p={badge} value={badge.text} onChange={update} variables={PRODUCT_TEXT_VARIABLES}/></React.Suspense>
+    <React.Suspense fallback={<div className="rc-rich-loading">加载文字编辑器</div>}><RichTextEditor aria-label="徽标文字" p={badge} value={badge.text} onChange={update} variables={availableTextVariables(document)}/></React.Suspense>
     <TypographyFields p={badge} patch={update} badge/>
     <PropertySection title="徽标位置"><Select label="徽标样式" value={badge.positionStyle} options={[[ 'overlay','覆盖边框' ],[ 'nested','内嵌边框' ]]} onChange={(positionStyle)=>update({positionStyle})}/><Select label="徽标对齐" value={badge.position} options={[[ 'top-left','左上' ],[ 'top-center','上方居中' ],[ 'top-right','右上' ],[ 'bottom-left','左下' ],[ 'bottom-center','下方居中' ],[ 'bottom-right','右下' ]]} onChange={(position)=>update({position})}/></PropertySection>
     <PropertySection title="徽标间距"><SpacingField title="内边距" prefix="padding" p={badge} patch={update}/><SpacingField title="外边距" prefix="margin" p={badge} patch={update}/></PropertySection>
@@ -415,6 +415,6 @@ export default function RevenueCatProperties({ selected, p, patch, document, nod
     {selected.type === 'Countdown' && !selected.children.length && <PropertySection title="文字样式"><div className="rc-two-columns"><NumberField label="字号" value={p.fontSize} min={8} max={160} onChange={(fontSize) => patch({ fontSize })} /><ColorField label="颜色" value={p.color} onChange={(color) => patch({ color })} /></div></PropertySection>}
     {rule==='default'&&<LayoutSection selected={selected} p={styleP} patch={stylePatch} parent={nodes.get(parents.get(selected.id))}/>}
     <AppearanceSection selected={selected} p={styleP} patch={stylePatch} onStatus={onStatus} />
-    <BadgeSection selected={selected} p={p} patch={patch}/>
+    <BadgeSection selected={selected} p={p} patch={patch} document={document}/>
   </div></FontContext.Provider>;
 }

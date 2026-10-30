@@ -1430,6 +1430,39 @@ test('badge rich text, text background and frame fill each have one independent 
   assert.equal(h.document().root.children[0].props.badge.textBackground,'#ffffff');assert.equal(h.renderer.root.findAll(item=>item.type==='textarea'&&item.props['aria-label']==='徽标文字').length,0);await h.close();
 });
 
+test('blue purchase badge belongs to the button and accepts business variables, product variables and fixed copy',async()=>{
+  const template=templates.find(t=>t.id==='ht-blue-privilege');
+  const source=upgradeCanonicalComponents(importComponentDocument(createBuilderNodes(template.id),template)),purchase=indexDocument(source).nodes.get('purchase');
+  source.productFieldPreview=true;
+  assert.equal(purchase.props.badge.position,'top-right');assert.equal(purchase.props.badge.positionStyle,'overlay');
+  const before=structuredClone(purchase.children),h=await mount(purchase,{source});
+  const badge=()=>h.renderer.root.findAll(node=>node.type==='span'&&node.props['data-badge-owner']==='purchase')[0];
+  const copy=()=>badge()?.findAllByType('span').flatMap(node=>node.children.filter(child=>typeof child==='string')).join('');
+  try{
+    assert.equal(copy(),'节省{节省金额}');assert.equal(badge().props.style.right,0);assert.equal(badge().props.style.transform,'translate(0,-50%)');
+    const editor=h.renderer.root.findAll(node=>typeof node.type==='function'&&node.props['aria-label']==='徽标文字'&&node.props.onChange)[0];
+    assert.ok(editor.props.variables.some(([key])=>key==='business.savings_amount'));
+    await h.editText({text:'限时优惠',runs:null},'徽标文字');assert.equal(copy(),'限时优惠');
+    await h.editText({text:'仅需{{ product.price }}',runs:null},'徽标文字');assert.equal(copy(),'仅需¥{总价}');
+    await h.editText({text:'节省{{ business.savings_amount }}',runs:[{text:'节省',bold:true},{text:'{{ business.savings_amount }}'}]},'徽标文字');assert.equal(copy(),'节省{节省金额}');
+    await h.optional('徽标');assert.equal(badge(),undefined);await h.optional('徽标');assert.equal(copy(),'节省{节省金额}');
+    await h.editText({text:'{{ business.missing }}',runs:null},'徽标文字');assert.equal(badge(),undefined);
+    assert.deepEqual(indexDocument(h.document()).nodes.get('purchase').children,before);assert.deepEqual(h.document().products,source.products);
+  }finally{await h.close();}
+  for(const id of ['ht-membership-plans','ht-payment-recovery','ht-sku-sheet']){
+    const other=templates.find(t=>t.id===id);assert.ok(other,id);
+    assert.equal(indexDocument(upgradeCanonicalComponents(importComponentDocument(createBuilderNodes(id),other))).nodes.get('purchase').props.badgeEnabled,undefined,id);
+  }
+});
+
+test('purchase badge product variables follow package selection without changing button text or click action',async()=>{
+  const purchase=component('sample','PurchaseButton','购买',{badgeEnabled:true,badge:{text:'{{ product.price }}',position:'top-right'}},[component('label','Text','文字',{text:'立即购买'})]);
+  const source=fixture(component('row','Stack','',{},[component('p1','Package','年付',{dataKey:'sample',group:'plans',defaultSelected:true}),component('p2','Package','终身',{dataKey:'lifetime',group:'plans'}),purchase]));
+  source.products.lifetime={name:'终身',price:'¥200',billingMonths:0};
+  const h=await mount(purchase,{source,editing:false}),badge=()=>h.renderer.root.findAll(node=>node.type==='span'&&node.props['data-badge-owner']==='sample')[0].children[0].children.join('');
+  try{assert.equal(badge(),'¥100');await act(async()=>h.node('p2').props.onClick(event()));assert.equal(badge(),'¥200');assert.deepEqual(h.node('label').children,['立即购买']);}finally{await h.close();}
+});
+
 test('product variables refer to the owning package inside and the selected package outside', async () => {
   const variable=component('sample','Text','价格',{text:'{{ product.price }} · {{ product.price_per_month }}'});
   const first=component('p1','Package','年付',{dataKey:'sample',group:'plans',defaultSelected:true},[component('inside','Text','价格',{text:'{{ product.price }}'})]);
