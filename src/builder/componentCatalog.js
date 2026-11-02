@@ -29,7 +29,7 @@ export function catalogFor(parent) {
   const groups = COMPONENT_CATALOG.map((group) => ({ ...group, items: group.items.filter(([type]) => canContain(parent, { type: CATALOG_NODE_TYPE[type] ?? type })) })).filter((group) => group.items.length);
   if (parent?.type === 'CheckoutState' && parent.props.state === 'available' && !parent.children.some((child) => child.type === 'Wallet')) groups.unshift({ name: '结账控件', items: [['Wallet', '钱包按钮']] });
   if (parent?.type === 'SwitchCase' && ![...indexDocument({ root: parent }).nodes.values()].some((child) => child.type === 'Toggle' && child.props.switchControl)) groups.unshift({ name: '开关控件', items: [['Toggle', '开关控件']] });
-  if(parent?.type==='Tab')groups.unshift({name:'标签控件',items:[['TabControl','标签按钮组']]});
+  if(['Tab','Header'].includes(parent?.type))groups.unshift({name:'标签控件',items:[['TabControl','标签按钮组']]});
   if(parent?.type==='Switch'&&parent.children.filter((child)=>child.type==='SwitchCase').length<2)groups.unshift({name:'开关内容',items:[['SwitchCase','状态内容']]});
   return groups;
 }

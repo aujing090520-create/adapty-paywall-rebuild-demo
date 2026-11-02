@@ -5,7 +5,8 @@ import { Check, LockKeyhole, Star, Bell, Moon, Heart, Users, Clock3, Gift, Chevr
 import { componentProps, resolveComponentText, indexDocument } from './componentDocument.js';
 import { parameterFromBinding, productParameterPreview } from '../products/productParameters.js';
 import { isUnconfiguredDetailPage, flowInitialIndex } from './componentTree.js';
-import { stepDestination, owningModal } from './workflow.js';
+import { stepDestination, owningModal, owningScreen, workflowContext } from './workflow.js';
+import {tabButtonTarget} from './componentPages.js';
 import { openSheetNavigation, closeSheetNavigation } from './buttonModals.js';
 import { overlayAlignmentStyle } from './propertyModel.js';
 import { canvasSelectionTarget } from './canvasSelection.js';
@@ -167,7 +168,8 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
   const ownerProps = owner ? componentProps(owner) : {};
   const selectedOwner = selectionOwner(context.nodeIndex.get(selectedId), context.nodeIndex, context.parentIndex);
   const selectedGroup = ownerProps.group ?? owner?.id;
-  const ownerSelected = owner?.type === 'TabButton' ? (runtime[ownerProps.target] ?? context.nodeIndex.get(ownerProps.target)?.props.defaultIndex ?? 0) === ownerProps.index : runtime[`package:${selectedGroup}`] !== undefined ? runtime[`package:${selectedGroup}`] === owner?.id : Boolean(ownerProps.defaultSelected);
+  const tabTarget=owner?.type==='TabButton'?tabButtonTarget(ownerProps,context.nodeIndex):null;
+  const ownerSelected = owner?.type === 'TabButton' ? Boolean(tabTarget&&(runtime[ownerProps.target] ?? (tabTarget.sequence.type==='Flow'?flowInitialIndex(tabTarget.sequence):tabTarget.sequence.props.defaultIndex??0)) === tabTarget.index) : runtime[`package:${selectedGroup}`] !== undefined ? runtime[`package:${selectedGroup}`] === owner?.id : Boolean(ownerProps.defaultSelected);
   const previewState = editing && selectedOwner?.id === owner?.id ? runtime[`package-style:${owner?.id}`] : null;
   const inspectedGroup = selectedOwner?.props.group ?? selectedOwner?.id;
   const peerPreview = editing && owner?.type === 'Package' && selectedOwner?.type === 'Package' && selectedGroup === inspectedGroup && runtime[`package-style:${selectedOwner.id}`];
@@ -268,8 +270,14 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
     const buttonContent = node.children.filter((child) => child.type !== 'BottomSheet' && !['overlay','sheet'].includes(child.props.presentation));
     if (buttonContent.length && buttonContent.every((child) => child.type === 'Icon')) { attributes['aria-label'] = node.name; attributes.title = node.name; }
     const blocked = props.action?.action === 'OpenPage' && isUnconfiguredDetailPage(context.nodeIndex.get(props.action.actionPage));
-    const disabled=!editing&&Boolean(props.disabled);
-    return <div {...attributes} role="button" tabIndex={disabled?-1:0} aria-disabled={!editing && (blocked||disabled) || undefined} style={{ ...style, ...containerStyle(visualNode), ...(!editing&&(blocked||disabled)?{cursor:'default'}:{}),...(disabled?{opacity:(style.opacity??1)*.5}:{}) }} onClick={(event) => { select(event); if(disabled){event.stopPropagation();return;}if (node.type === 'TabButton') setRuntime((current) => ({ ...current, [props.target]: props.index })); else if (!editing) { event.stopPropagation(); runAction({...node,props},item); } }} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); if(disabled)return;if (editing) onSelect(node.id); else if (node.type === 'TabButton') setRuntime((current) => ({ ...current, [props.target]: props.index })); else runAction({...node,props},item); } }}>{children()}</div>;
+    const disabled=!editing&&Boolean(props.disabled||node.type==='TabButton'&&!tabTarget);
+    const activateTab=()=>{
+      if(!tabTarget)return;
+      if(tabTarget.sequence.type==='Flow'){
+        if(!editing&&owningScreen(document,node.id)?.id!==tabTarget.page.id)runAction({...node,props:{...props,action:{action:'OpenPage',actionPage:tabTarget.page.id}}});
+      }else setRuntime(current=>({...current,[props.target]:tabTarget.index}));
+    };
+    return <div {...attributes} role="button" tabIndex={disabled?-1:0} aria-disabled={!editing && (blocked||disabled) || undefined} style={{ ...style, ...containerStyle(visualNode), ...(!editing&&(blocked||disabled)?{cursor:'default'}:{}),...(disabled?{opacity:(style.opacity??1)*.5}:{}) }} onClick={(event) => { select(event); if(disabled){event.stopPropagation();return;}if (node.type === 'TabButton') activateTab(); else if (!editing) { event.stopPropagation(); runAction({...node,props},item); } }} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); if(disabled)return;if (editing) onSelect(node.id); else if (node.type === 'TabButton') activateTab(); else runAction({...node,props},item); } }}>{children()}</div>;
   }
   if (node.type === 'Screen' && !node.children.some(child => child.type === 'Flow') && (props.pagePresentation || node.children.some(child=>['Header','Footer'].includes(child.type)))) {
     const chrome = screenChromeLayout(node, runtime, context.nodeIndex);
@@ -364,7 +372,7 @@ export default function ComponentPreview({ document: sourceDocument, businessTim
     const action = node.props.action ?? {};
     if (!action.action || action.action === 'None') return;
     if(['Purchase','WebCheckout','WebPaywall','CustomCheckout'].includes(action.action)) {
-      if(!isExitOfferStep(document,runtime)&&!(document.settings?.buttonModalVersion&&indexDocument(document).nodes.get(runtime.overlay)?.type==='BottomSheet')){onStatus('商品选择和购买只能在最终步骤进行');return;}
+      if(!workflowContext(document).parallel&&!isExitOfferStep(document,runtime)&&!(document.settings?.buttonModalVersion&&indexDocument(document).nodes.get(runtime.overlay)?.type==='BottomSheet')){onStatus('商品选择和购买只能在最终步骤进行');return;}
       const required=activeComponents(document,runtime).find((item)=>item.type==='Toggle'&&item.props.required&&!checkedControl(item.props,item.id,runtime,indexDocument(document).nodes));
       if(required){onStatus('请先勾选同意协议');return;}
       let owner=nodeIndex.get(parentIndex.get(node.id));
@@ -408,7 +416,7 @@ export default function ComponentPreview({ document: sourceDocument, businessTim
     } else if (action.action === 'OpenPage') {
       const { nodes, parents } = indexDocument(document), target = stepDestination(document, node), owner = nodes.get(parents.get(target?.id));
       if (isUnconfiguredDetailPage(target)) { onStatus('该权益详情内容待补充，暂不开放跳转'); return; }
-      if (owner?.type === 'Flow') { const currentId=owner.children[runtime[owner.id]??flowInitialIndex(owner)]?.id; const next = { [owner.id]: owner.children.findIndex((item) => item.id === target.id), overlay: owningModal(document,target.id)?.id ?? null, [`history:${owner.id}`]: [...runtime[`history:${owner.id}`]??[],currentId] }; setRuntime((current) => ({ ...current, ...next })); onNavigate?.(next); if (viewport.current) viewport.current.scrollTop = 0; }
+      if (owner?.type === 'Flow') { const currentId=owner.children[runtime[owner.id]??flowInitialIndex(owner)]?.id; const next = { [owner.id]: owner.children.findIndex((item) => item.id === target.id), overlay: owningModal(document,target.id)?.id ?? null, [`history:${owner.id}`]: owner.props.navigationMode==='tabs'?[]:[...runtime[`history:${owner.id}`]??[],currentId] }; setRuntime((current) => ({ ...current, ...next })); onNavigate?.(next); if (viewport.current) viewport.current.scrollTop = 0; }
       else onStatus('尚未配置有效的目标页面');
     } else if (action.action === 'NextScreen') {
       const {nodes,parents}=indexDocument(document);

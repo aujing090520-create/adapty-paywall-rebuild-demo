@@ -5,6 +5,7 @@ import { upgradeButtonModals } from '../../src/builder/buttonModals.js';
 import { importComponentDocument } from '../../src/builder/componentDocument.js';
 import { templates, createBuilderNodes } from '../../src/templates/templateDefinitions.js';
 import { readFileSync } from 'node:fs';
+import {tabButtonTarget} from '../../src/builder/componentPages.js';
 
 // External inventory is deliberately independent of the implementation's catalog.
 export const REFERENCE_COMPONENTS = [
@@ -47,8 +48,8 @@ export function structureIssues(document) {
     if (STRUCTURAL_OWNERS[node.type] && parent?.type !== STRUCTURAL_OWNERS[node.type]) issues.push(`${node.id}: structural owner must be ${STRUCTURAL_OWNERS[node.type]}`);
     if (node.type === 'TabButton') {
       let owner = parent;
-      while (owner && owner.type !== 'Tabs') owner = nodes.get(parents.get(owner.id));
-      if (!owner || node.props.target !== owner.id || !owner.children[node.props.index]) issues.push(`${node.id}: stale tab target`);
+      while (owner && !['Tabs','Carousel','Flow'].includes(owner.type)) owner = nodes.get(parents.get(owner.id));
+      if (!owner || node.props.target !== owner.id || !tabButtonTarget(node.props,nodes) || owner.type==='Flow'&&owner.props.navigationMode!=='tabs') issues.push(`${node.id}: stale tab target`);
     }
     if (node.type === 'Package' && !document.products[node.props.dataKey ?? node.id]) issues.push(`${node.id}: missing product record`);
     const action = node.props.action;

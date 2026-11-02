@@ -205,6 +205,9 @@ add(['PurchaseButton'],'动作属性','链接打开方式','action.openMethod','
 for(const [key,name,meaning] of [['attachPackageId','附带商品套餐 ID','把选中商品ID附加到URL'],['attachAppUserId','附带应用用户 ID','附加示例用户demo-preview，不读取真实用户'],['attachEnvironment','附带环境','附加sandbox示例环境']])add(['PurchaseButton'],'动作属性',name,`action.${key}`,meaning,'仅自定义结账；默认勾选',bool);
 
 for(const type of ['Tabs','Carousel','Flow'])add([type],'页面属性','默认页面',type==='Flow'?'defaultIndex / initialStepId':'defaultIndex','设置初次展示页，并同步当前编辑预览页；流程同步保存初始步骤ID，避免旧ID覆盖新选择','页面使用真实子节点顺序；不复制正文，不修改其他页面');
+add(['Flow'],'页面属性','页面关系','navigationMode','区分顺序步骤与并列页面切换','并列切换各屏可独立选择商品和购买；原顺序步骤仍仅最终页购买',[['steps','顺序步骤','保留原购买终点限制'],['tabs','并列切换','每屏为独立购买场景']]);
+add(['TabButton'],'切页属性','关联分页组件','target','绑定标签页、轮播或并列切换的多页面流程','不新建页面，不修改目标内容');
+add(['TabButton'],'切页属性','切换到页面','index / pageId','绑定现有目标页；多屏切换按稳定页面ID关联','页面排序不会改变绑定，目标删除后不可触发');
 add(['Carousel'],'页面属性','页面纵向对齐','pageAlignment','高度不同时控制轮播页在轨道内的位置','实际轨道比该页高时可见',[['top','顶部','页顶对齐'],['center','居中','页垂直居中'],['bottom','底部','页底对齐']]);
 add(['Carousel'],'页面属性','页面间距','pageSpacing','相邻轮播页面之间的间隔','至少两个轮播页',[],'0–200 px');
 add(['Carousel'],'页面属性','邻页露出','pagePeek','让两侧相邻页面各露出指定宽度','轨道需有足够宽度；不是页面内边距',[],'0–100 px');

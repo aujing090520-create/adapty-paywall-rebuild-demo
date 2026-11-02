@@ -64,6 +64,13 @@ after(async () => { for (const renderer of mounted) await act(async () => render
 const event = (value) => ({ target: { value }, stopPropagation() {}, preventDefault() {} });
 const fixture = (node) => ({ version: 3, templateId: 'audit', products: { sample: { name: '年度', price: '¥100', billingMonths: 12 } }, root: component('page', 'Screen', '页面', {}, [node]) });
 
+test('tab buttons expose configurable complete-screen destinations and parallel mode is owned by Flow',async()=>{
+  const template=templates.find(item=>item.id==='ht-vip-tiers'),source=importComponentDocument([],template),index=indexDocument(source);
+  const h=await mount(index.nodes.get('tiers/vip/tab-1'),{source});
+  try{await h.select('切换到页面','tiers/vip');assert.equal(indexDocument(h.document()).nodes.get('tiers/vip/tab-1').props.pageId,'tiers/vip');await h.select('切换到页面','tiers/plus');assert.equal(indexDocument(h.document()).nodes.get('tiers/vip/tab-1').props.pageId,'tiers/plus');}finally{await h.close();}
+  const flow=await mount(index.nodes.get('tiers/flow'),{source});try{await flow.select('页面关系','steps');assert.equal(indexDocument(flow.document()).nodes.get('tiers/flow').props.navigationMode,'steps');await flow.select('页面关系','tabs');assert.equal(indexDocument(flow.document()).nodes.get('tiers/flow').props.navigationMode,'tabs');}finally{await flow.close();}
+});
+
 for(const type of ['Button','PurchaseButton'])test(`${type} owns editable package labels, editor preview, fallback and saved runtime behavior`,async()=>{
   const button=component('sample',type,'购买',{action:{action:'Purchase'}},[component('label','Text','文字',{text:'原默认',fontSize:18})]);
   const source=fixture(component('plans','Stack','套餐',{},[component('annual','Package','年付',{group:'plans',defaultSelected:true}),component('monthly','Package','月付',{group:'plans'}),button]));source.productFieldPreview=true;

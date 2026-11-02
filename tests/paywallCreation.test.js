@@ -12,8 +12,8 @@ before(async () => {
 });
 after(async () => server?.close());
 
-test('creation metadata has exactly the eight supplied types and no legacy product configuration', () => {
-  assert.deepEqual(PAYWALL_STYLE_TYPES, ['会员套餐页', '入门价格页', '注册引导免费试用页', '免费试用页', '蓝色特权页', '支付未完成页', 'SKU半窗', '赠送礼物页']);
+test('creation metadata preserves the original types plus VIP tiers and has no legacy product configuration', () => {
+  assert.deepEqual(PAYWALL_STYLE_TYPES, ['会员套餐页', '入门价格页', '注册引导免费试用页', '免费试用页', '蓝色特权页', '支付未完成页', 'SKU半窗', '赠送礼物页', 'VIP分级页面']);
   assert.deepEqual(freshPaywallDraft(), { styleType: '会员套餐页', name: '', enabled: false });
   assert.deepEqual(paywallMetadata(null), freshPaywallDraft());
   const legacy = { name: ' 保留名称 ', styleType: '蓝色特权页', enabled: true, businessType: '旧业务', offerRows: [{ id: 'obsolete' }], defaultProductId: 'obsolete', products: ['obsolete'] };

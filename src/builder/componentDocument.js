@@ -11,6 +11,7 @@ import {validWorkbenchConfiguration} from './workbenchModel.js';
 import { PRODUCT_PARAMETERS, productParameterPreview } from '../products/productParameters.js';
 import {pruneGeneratedEmptyLayouts,normalizeHtLabelSlots} from './layoutContainers.js';
 import {buildFreeTrialTemplate} from './freeTrialTemplate.js';
+import {buildVipTierTemplate} from './vipTierTemplate.js';
 import {remapButtonText} from './buttonText.js';
 import {remapPurchasePages} from './purchaseSelection.js';
 
@@ -113,7 +114,7 @@ export function removeComponent(document, id) {
 export function canContain(parent, child) {
   if (!parent || !CONTAINER_TYPES.has(parent.type)) return false;
   if (['Header', 'Footer'].includes(child.type)) return parent.type === 'Screen' && !parent.children?.some((entry) => entry.type === child.type && entry.id !== child.id);
-  if (parent.type === 'Header' && !['Stack', 'Text', 'Image', 'Button', 'Icon'].includes(child.type)) return false;
+  if (parent.type === 'Header' && !['Stack', 'Text', 'Image', 'Button', 'Icon', 'TabControl'].includes(child.type)) return false;
   if (parent.type === 'ExpressCheckout') return child.type === 'CheckoutState' && (parent.children?.filter((entry)=>entry.id!==child.id).length??0)<3 && (!child.props?.state || !parent.children?.some((entry)=>entry.id!==child.id&&entry.props.state===child.props.state));
   if (parent.type === 'Switch') {
     const states = parent.children?.filter((entry) => entry.type === 'SwitchCase' && entry.id !== child.id) ?? [];
@@ -155,6 +156,7 @@ export function resolveComponentText(node, document, packageNode, selected = fal
 // Legacy configuration is consumed once. Runtime edits never compile back to it.
 export function importComponentDocument(nodes, template = {}, calibrate = true) {
   if(template.id==='ht-free-trial')return buildFreeTrialTemplate();
+  if(template.id==='ht-vip-tiers')return buildVipTierTemplate();
   const products = {};
   const detailScreens = [];
   const byParent = new Map(), latest = [], byId = new Map(nodes.map((node) => [node.id, node]));
@@ -316,7 +318,7 @@ export function cloneComponent(node, idMap) {
   const ids=idMap instanceof Map?idMap:new Map();
   const collect = (entry) => { ids.set(entry.id, crypto.randomUUID()); entry.children.forEach(collect); }; collect(node);
   const actionRefs=action=>{const patch={...Object.fromEntries(['actionPage','packageId'].filter(key=>ids.has(action?.[key])).map(key=>[key,ids.get(action[key])])),...(action?.pagePackages?{pagePackages:remapPurchasePages(action.pagePackages,ids)}:{})};return Object.keys(patch).length?{action:{...action,...patch}}:{};};
-  const visit = (entry) => ({ ...entry, id: ids.get(entry.id), props: { ...entry.props, ...remapButtonText(entry.props.buttonText,ids), ...(entry.props.comparisonRowId ? {comparisonRowId:ids.get(entry.props.comparisonRowId)} : {}), ...(ids.has(entry.props.target) ? { target: ids.get(entry.props.target) } : {}), ...(ids.has(entry.props.initialStepId)?{initialStepId:ids.get(entry.props.initialStepId)}:{}), ...(ids.has(entry.props.switchTarget) ? { switchTarget: ids.get(entry.props.switchTarget) } : {}), ...actionRefs(entry.props.action), ...(ids.has(entry.props.group) ? { group: ids.get(entry.props.group) } : {}), ...(entry.type === 'Package' && !ids.has(entry.props.group) ? { defaultSelected: false } : {}), ...(entry.props.visibleWhen && ids.has(entry.props.visibleWhen.id) ? { visibleWhen: { ...entry.props.visibleWhen, id: ids.get(entry.props.visibleWhen.id) } } : {}) }, children: entry.children.map(visit) });
+  const visit = (entry) => ({ ...entry, id: ids.get(entry.id), props: { ...entry.props, ...remapButtonText(entry.props.buttonText,ids), ...(entry.props.comparisonRowId ? {comparisonRowId:ids.get(entry.props.comparisonRowId)} : {}), ...(ids.has(entry.props.target) ? { target: ids.get(entry.props.target) } : {}), ...(ids.has(entry.props.pageId)?{pageId:ids.get(entry.props.pageId)}:{}), ...(ids.has(entry.props.initialStepId)?{initialStepId:ids.get(entry.props.initialStepId)}:{}), ...(ids.has(entry.props.switchTarget) ? { switchTarget: ids.get(entry.props.switchTarget) } : {}), ...actionRefs(entry.props.action), ...(ids.has(entry.props.group) ? { group: ids.get(entry.props.group) } : {}), ...(entry.type === 'Package' && !ids.has(entry.props.group) ? { defaultSelected: false } : {}), ...(entry.props.visibleWhen && ids.has(entry.props.visibleWhen.id) ? { visibleWhen: { ...entry.props.visibleWhen, id: ids.get(entry.props.visibleWhen.id) } } : {}) }, children: entry.children.map(visit) });
   return visit(node);
 }
 

@@ -10,7 +10,7 @@ import {COUNTDOWN_MODES,countdownMode} from './countdownTiming.js';
 import {screenChromeLayout} from './screenLayout.js';
 import {purchaseTargets} from './purchaseTarget.js';
 import {purchasePageSequences} from './purchaseSelection.js';
-import {componentPages} from './componentPages.js';
+import {componentPages,tabButtonTarget} from './componentPages.js';
 import {BUTTON_BADGE_TYPES,componentBadgeProps} from './propertyModel.js';
 import {buttonLabelTexts,buttonPackages,buttonTextConfig,buttonTextOwner,localizedButtonText,buttonTextPreviewNavigation} from './buttonText.js';
 import {packageSelectionGroups} from './componentOperations.js';
@@ -186,7 +186,14 @@ function ContentSection({ selected, p, patch, styleP=p, stylePatch=patch, docume
   if(type==='Toggle' && p.switchControl)return <PropertySection title="开关填充"><PaintField label="滑块颜色" property="thumbColor" p={p} patch={patch}/><PaintField label="轨道颜色" property="trackColor" p={p} patch={patch}/></PropertySection>;
   if(type==='Indicators')return null;
   if(type==='PageControl')return <PropertySection title="分页控件属性"><NumberField label="指示器间距" value={p.gap} max={200} onChange={(gap)=>patch({gap})}/></PropertySection>;
-  if (type === 'TabButton') return null;
+  if (type === 'TabButton') {
+    const sequences=[...nodes.values()].filter(node=>['Tabs','Carousel'].includes(node.type)||node.type==='Flow'&&node.props.navigationMode==='tabs');
+    const target=nodes.get(p.target),pages=componentPages(target),selection=tabButtonTarget(p,nodes);
+    return <PropertySection title="切页属性">
+      <Select label="关联分页组件" value={p.target??''} options={[[ '', '请选择分页组件' ],...sequences.map(node=>[node.id,node.name])]} onChange={target=>{const sequence=nodes.get(target),page=componentPages(sequence)[0];patch({target,index:0,pageId:sequence?.type==='Flow'?page?.id:undefined});}}/>
+      <Select label="切换到页面" value={selection?.page.id??p.pageId??''} options={[[ '', '请选择页面' ],...(p.pageId&&!pages.some(page=>page.id===p.pageId)?[[p.pageId,'原页面不可用，请重新选择']]:[]),...pages.map(page=>[page.id,page.name])]} onChange={pageId=>patch({index:pages.findIndex(page=>page.id===pageId),pageId:target?.type==='Flow'?pageId:undefined})}/>
+    </PropertySection>;
+  }
   if (type === 'Timeline') return <>
     <PropertySection title="时间线属性"><Select label="图标对齐" value={p.iconAlignment ?? 'title'} options={[[ 'title', '标题' ], [ 'content', '标题和描述' ]]} onChange={(iconAlignment) => patch({ iconAlignment })} /></PropertySection>
     <PropertySection title="间距"><NumberField label="节点间距" value={p.itemSpacing ?? p.gap} max={200} onChange={(itemSpacing) => patch({ itemSpacing })}/><NumberField label="标题与描述" value={p.textSpacing ?? 4} max={200} onChange={(textSpacing) => patch({ textSpacing })}/><NumberField label="列间距" value={p.columnGutter ?? 16} max={200} onChange={(columnGutter) => patch({ columnGutter })}/></PropertySection>
@@ -261,6 +268,7 @@ function ContentSection({ selected, p, patch, styleP=p, stylePatch=patch, docume
   }
   if (type === 'Button' || type === 'PurchaseButton') return <PropertySection title="动作属性"><ActionFields p={p} patch={patch} nodes={nodes} parents={parents} type={type} document={document} selected={selected} onModalCreate={onModalCreate} onModalEdit={onModalEdit}/></PropertySection>;
   if (['Tabs','Carousel','Flow'].includes(type)) return <><PropertySection title="页面属性">{type==='Carousel'&&<><Select label="页面纵向对齐" value={p.pageAlignment??'top'} options={[[ 'top','顶部' ],[ 'center','居中' ],[ 'bottom','底部' ]]} onChange={(pageAlignment)=>patch({pageAlignment})}/><NumberField label="页面间距" value={p.pageSpacing??0} max={200} onChange={(pageSpacing)=>patch({pageSpacing})}/><NumberField label="邻页露出" value={p.pagePeek??0} max={100} onChange={(pagePeek)=>patch({pagePeek})}/></>}
+    {type==='Flow'&&<Select label="页面关系" value={p.navigationMode??'steps'} options={[[ 'steps','顺序步骤' ],[ 'tabs','并列切换' ]]} onChange={navigationMode=>patch({navigationMode})}/>}
     <Select label="默认页面" value={type==='Flow'?flowInitialIndex(selected):p.defaultIndex??0} options={sequencePages(selected).map((node,index)=>[index,node.name])} onChange={(value)=>{const index=Number(value);patch({defaultIndex:index,...(type==='Flow'?{initialStepId:sequencePages(selected)[index]?.id}: {})});setNavigation({[selected.id]:index});}}/>
     {type==='Carousel'&&<><CheckboxField label="循环播放" checked={Boolean(p.loop)} onChange={(loop)=>patch({loop})}/><CheckboxField label="自动切换" checked={Boolean(p.autoPlay)} onChange={(autoPlay)=>patch({autoPlay})}/>{p.autoPlay&&<NumberField label="每页停留时间" value={p.autoPlayInterval??2500} min={250} max={60000} unit="ms" onChange={(autoPlayInterval)=>patch({autoPlayInterval})}/>}<NumberField label="过渡时间" value={p.transitionTime??500} max={10000} unit="ms" onChange={(transitionTime)=>patch({transitionTime})}/><Select label="过渡动画" value={p.transitionAnimation??'slide'} options={[[ 'slide','滑动' ],[ 'fade','淡入淡出' ]]} onChange={(transitionAnimation)=>patch({transitionAnimation})}/></>}
   </PropertySection>{type==='Carousel'&&<PropertySection title="分页控件" optional><OptionalToggle enabled={selected.children.some((child)=>child.type==='PageControl')} onChange={onPageControl}/>{selected.children.some((child)=>child.type==='PageControl')&&<Select label="分页器位置" value={p.pageControlPosition??'bottom'} options={[[ 'top','顶部' ],[ 'bottom','底部' ]]} onChange={(pageControlPosition)=>patch({pageControlPosition})}/>}</PropertySection>}</>;

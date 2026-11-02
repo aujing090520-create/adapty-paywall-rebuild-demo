@@ -60,6 +60,7 @@ export const templates = [
   { id: "ht-payment-recovery", title: "HelloTalk 支付未完成页", subtitle: "支付恢复与倒计时优惠", tags: ["2 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-recovery", visual: "ht-recovery", documentTemplate: "payment-recovery", prdScreenshot: "/ht-prd-screenshots/payment-recovery.png" },
   { id: "ht-sku-sheet", title: "HelloTalk SKU 半窗", subtitle: "横版促销视觉与套餐选择", tags: ["2 products", "Timer"], productCount: 2, media: "image", components: ["Timer"], category: "Popular", theme: "ht-sku", visual: "ht-sku", documentTemplate: "sku-sheet", prdScreenshot: "/ht-prd-screenshots/sku-sheet.jpg" },
   { id: "ht-free-trial", title: "HelloTalk 免费试用页", subtitle: "权益、到期提醒与试用套餐轮播", tags: ["2 products", "Carousel", "Trial timeline"], productCount: 2, media: "image", components: ["Carousel", "Trial timeline"], category: "Popular", theme: "ht-trial", visual: "ht-trial", documentTemplate: "free-trial", nativeDocument: true },
+  { id: "ht-vip-tiers", title: "VIP分级页面", subtitle: "VIP 与 VIP+ 双页面切换，各自独立权益与套餐", tags: ["5 products", "Tabs"], productCount: 5, media: "image", components: ["Tabs"], category: "Popular", theme: "ht-tiers", visual: "ht-tiers", documentTemplate: "vip-tiers", nativeDocument: true },
 ];
 
 export const node = (id, type, content = "", depth = 0, extra = {}) => ({ id, type, label: "", content, depth, ...extra });

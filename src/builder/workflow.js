@@ -9,7 +9,7 @@ export function workflowContext(document) {
   const { flow, pages } = pageContext(document);
   const steps = pages.filter((page) => !auxiliaryScreen(page));
   const initial = flow ? flow.children[flowInitialIndex(flow)] : document.root;
-  return { flow, steps, initial: steps.find((page) => page.id === initial?.id) ?? steps[0], final: steps.at(-1) };
+  return { flow, steps, initial: steps.find((page) => page.id === initial?.id) ?? steps[0], final: steps.at(-1), parallel: flow?.props.navigationMode==='tabs' };
 }
 export function owningScreen(document, id) {
   const { nodes, parents } = indexDocument(document);
@@ -50,14 +50,14 @@ export function workflowEdges(document) {
   });
 }
 export function workflowIssues(document) {
-  const { steps, initial, final } = workflowContext(document);
+  const { steps, initial, final, parallel } = workflowContext(document);
   const issues = [];
   if (steps.length > MAX_STEPS) issues.push('步骤数量超过10个');
   for (const node of indexDocument(document).nodes.values()) {
     if (node.props.action?.action === 'NextScreen' && !stepDestination(document, node)) issues.push(`${node.name}：请选择有效的目标步骤`);
-    if (['Package', 'PurchaseButton'].includes(node.type) && !(document.settings?.buttonModalVersion && owningModal(document,node.id)) && steps.some((page) => page.id === owningScreen(document, node.id)?.id && page.id !== final?.id)) issues.push(`${owningScreen(document, node.id).name}：商品和购买按钮只能位于最终步骤`);
+    if (!parallel && ['Package', 'PurchaseButton'].includes(node.type) && !(document.settings?.buttonModalVersion && owningModal(document,node.id)) && steps.some((page) => page.id === owningScreen(document, node.id)?.id && page.id !== final?.id)) issues.push(`${owningScreen(document, node.id).name}：商品和购买按钮只能位于最终步骤`);
   }
-  if (steps.length > 1) {
+  if (steps.length > 1 && !parallel) {
     const edges = workflowEdges(document), reached = new Set([initial?.id]);
     for (let count = 0; count < steps.length; count++) for (const edge of edges) if (reached.has(edge.source)) reached.add(edge.target);
     if (!reached.has(final?.id)) issues.push('初始步骤尚未连接到最终购买步骤，请配置按钮的目标步骤');

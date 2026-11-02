@@ -148,7 +148,7 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
     if (bounds.top < top) tree.scrollTop += (bounds.top - top) / scale;
     else if (bounds.bottom > bottom) tree.scrollTop += Math.min(bounds.top - top, bounds.bottom - bottom) / scale;
   });
-  const commerceAllowed = Boolean(pickerParent && owningModal(document,pickerParent.id)) || !workflowContext(document).steps.some((page)=>page.id===owningScreen(document,pickerParent?.id)?.id&&page.id!==workflowContext(document).final?.id);
+  const commerceAllowed = workflowContext(document).parallel || Boolean(pickerParent && owningModal(document,pickerParent.id)) || !workflowContext(document).steps.some((page)=>page.id===owningScreen(document,pickerParent?.id)?.id&&page.id!==workflowContext(document).final?.id);
   const menuNode = nodes.get(layerMenu?.id);
   latest.current = document;
   const saveFonts=(fonts)=>{
