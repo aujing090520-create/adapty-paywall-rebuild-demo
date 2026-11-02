@@ -6,6 +6,7 @@ import {captureFragmentConfiguration,restoreFragmentConfiguration} from './fragm
 import {applyPackagePriceMode,packagePriceMode} from '../products/productParameters.js';
 import {COMPARISON_ROW_KEYS} from './htVipColumn.js';
 import {removeButtonTextEffects} from './buttonText.js';
+import {componentPages,pageSequencesFor} from './componentPages.js';
 
 const STYLE_KEYS = new Set(['axis','gap','align','justify','wrap','widthMode','width','minWidth','maxWidth','heightMode','height','minHeight','maxHeight','paddingMode','paddingTop','paddingRight','paddingBottom','paddingLeft','paddingVertical','paddingHorizontal','marginMode','marginTop','marginRight','marginBottom','marginLeft','marginVertical','marginHorizontal','background','backgroundImage','backgroundFit','backgroundVideo','fillType','color','radius','shape','borderWidth','borderColor','fontSize','fontWeight','fontFamily','fontStyle','textAlign','objectFit','opacity','alignSelf','strike','bold','italic','underline','textBackground','iconSize','iconBackground','iconRadius','selectedBorder','selectedBackground','selectedColor','shadowX','shadowY','shadowBlur','shadowColor']);
 for (const key of [...STATE_STYLE_KEYS, ...STATE_STYLE_KEYS.map(selectedStyleKey), 'lineHeight', 'flexGrow', 'mask', 'overlayColor', 'overlayEnabled', 'pageSpacing', 'pagePeek', 'pageControlPosition', 'dotColor', 'activeDotColor', 'itemSpacing', 'textSpacing', 'columnGutter', 'iconAlignment', 'connectorEnabled', 'connectorWidth', 'connectorColor', 'connectorOpacity', 'connectorMarginMode', 'connectorMarginVertical', 'connectorMarginTop', 'connectorMarginBottom']) STYLE_KEYS.add(key);
@@ -68,7 +69,7 @@ export function reconcileTabStructure(before, after) {
       if(!changed && !transferred && !unbound)continue;
       const buttons=owner.children.map((tab,index)=>{
         const oldIndex=transferred || !previous ? index : oldIds.indexOf(tab.id),existing=owned.find((button)=>button.props.index===oldIndex);
-        return existing?{...existing,props:{...existing.props,target:owner.id,index}}:createTabSelectorButton(crypto.randomUUID(),owner.id,index);
+        return existing?{...existing,props:{...existing.props,target:owner.id,index,...(Object.hasOwn(existing.props,'pageId')?{pageId:tab.id}:{})}}:createTabSelectorButton(crypto.randomUUID(),owner.id,index);
       });
       let inserted=false;
       const children=control.children.flatMap((child)=>{
@@ -252,7 +253,17 @@ export function patchCountdownContent(document, timerId, stateId, textId, values
 export function patchComponentProperties(document, id, values) {
   const node = indexDocument(document).nodes.get(id);
   if (!node) return document;
+  if(node.type==='TabControl'&&values.target&&!pageSequencesFor(id,indexDocument(document).nodes,indexDocument(document).parents).some(sequence=>sequence.id===values.target))return document;
   let next = updateComponent(document, id, { props: textPropertyPatch(node, values) });
+  if(node.type==='TabControl' && Object.hasOwn(values,'target')) {
+    const sequence=indexDocument(document).nodes.get(values.target),pages=componentPages(sequence);
+    if(sequence?.type==='Flow')next=updateComponent(next,sequence.id,{props:{navigationMode:'tabs'}});
+    for(const [index,button] of node.children.filter(child=>child.type==='TabButton').entries()) {
+      const current=pages.findIndex(page=>page.id===button.props.pageId);
+      const at=current>=0?current:pages[index]?index:-1;
+      next=updateComponent(next,button.id,{props:{target:sequence?.id??'',index:at,pageId:sequence?pages[at]?.id??'':undefined}});
+    }
+  }
   if(values.buttonText?.target)next=removeButtonTextEffects(next,values.buttonText.target);
   if (node.props.comparisonRowId) {
     const rowValues = Object.fromEntries(Object.entries(values).filter(([key])=>COMPARISON_ROW_KEYS.includes(key)));

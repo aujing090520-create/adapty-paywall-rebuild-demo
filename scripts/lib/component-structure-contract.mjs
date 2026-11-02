@@ -5,7 +5,7 @@ import { upgradeButtonModals } from '../../src/builder/buttonModals.js';
 import { importComponentDocument } from '../../src/builder/componentDocument.js';
 import { templates, createBuilderNodes } from '../../src/templates/templateDefinitions.js';
 import { readFileSync } from 'node:fs';
-import {tabButtonTarget} from '../../src/builder/componentPages.js';
+import {tabButtonTarget,pageSequencesFor} from '../../src/builder/componentPages.js';
 
 // External inventory is deliberately independent of the implementation's catalog.
 export const REFERENCE_COMPONENTS = [
@@ -21,8 +21,8 @@ export const STRUCTURAL_OWNERS = {
   Header: 'Screen', Footer: 'Screen',
 };
 export const PRESETS = ['BottomSheet', 'CloseButton', 'BackButton','GiftList','BenefitsStrip','GiftEntry'];
-// Demo-specific field reference, not a claimed RevenueCat native component.
-export const DEMO_COMPONENTS = ['ProductParameter'];
+// Independently addable Demo controls, not extra claims about the reference catalog.
+export const DEMO_COMPONENTS = ['ProductParameter','TabControl'];
 const OBSERVED_NATIVE_TYPES = { header: 'Header', footer: 'Footer', icon: 'Icon', image: 'Image', package: 'Package', purchase_button: 'PurchaseButton', button: 'Button', carousel: 'Carousel', timeline: 'Timeline', timeline_item: 'TimelineItem', tabs: 'Tabs', tab: 'Tab', tab_control: 'TabControl', tab_control_button: 'TabButton', stack: 'Stack', text: 'Text' };
 
 export function observedNativeType(row, rows) {
@@ -47,9 +47,7 @@ export function structureIssues(document) {
     if (parent && !canContain(parent, node)) issues.push(`${node.id}: invalid parent ${parent.type}/${node.type}`);
     if (STRUCTURAL_OWNERS[node.type] && parent?.type !== STRUCTURAL_OWNERS[node.type]) issues.push(`${node.id}: structural owner must be ${STRUCTURAL_OWNERS[node.type]}`);
     if (node.type === 'TabButton') {
-      let owner = parent;
-      while (owner && !['Tabs','Carousel','Flow'].includes(owner.type)) owner = nodes.get(parents.get(owner.id));
-      if (!owner || node.props.target !== owner.id || !tabButtonTarget(node.props,nodes) || owner.type==='Flow'&&owner.props.navigationMode!=='tabs') issues.push(`${node.id}: stale tab target`);
+      if (!pageSequencesFor(node.id,nodes,parents).some(owner=>owner.id===node.props.target) || !tabButtonTarget(node.props,nodes)) issues.push(`${node.id}: stale tab target`);
     }
     if (node.type === 'Package' && !document.products[node.props.dataKey ?? node.id]) issues.push(`${node.id}: missing product record`);
     const action = node.props.action;

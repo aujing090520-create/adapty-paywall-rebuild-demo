@@ -9,13 +9,14 @@ import {upgradeTimerTextVariables,consolidateCountdownText} from './textVariable
 import {upgradePagePresentation} from './pagePresentation.js';
 import {upgradeTrialButtonText} from './buttonText.js';
 import {consolidateTrialPurchase} from './purchaseSelection.js';
+import {componentPages,tabControlTarget} from './componentPages.js';
 
 // Public picker entries are building blocks or transparent Stack compositions.
 // Structural children are offered only by their owning container.
 export const COMPONENT_CATALOG = [
   { name: '基础', items: [ ['Text','文字'], ['Image','图片'], ['Video','视频'], ['Icon','图标'], ['Stack','布局容器'], ['Header','页头'], ['Footer','页脚'], ['Custom','自定义组件'] ] },
   { name: '付费墙', items: [ ['Package','商品套餐'], ['ProductParameter','商品参数'], ['BottomSheet','按钮打开的弹窗'], ['PurchaseButton','购买按钮'], ['ExpressCheckout','快捷结账'] ] },
-  { name: '交互', items: [ ['Tabs','标签页'], ['Switch','开关'], ['Button','按钮'], ['CloseButton','关闭按钮'], ['BackButton','返回按钮'], ['Carousel','轮播'] ] },
+  { name: '交互', items: [ ['Tabs','标签页'], ['TabControl','标签按钮组'], ['Switch','开关'], ['Button','按钮'], ['CloseButton','关闭按钮'], ['BackButton','返回按钮'], ['Carousel','轮播'] ] },
   { name: '内容', items: [ ['Countdown','倒计时'], ['Timeline','时间线'], ['SocialProof','口碑展示'], ['FeatureList','权益列表'], ['Award','奖项展示'] ] },
   { name: '业务组合', items: [['GiftList','礼包组合'],['BenefitsStrip','福利组合'],['GiftEntry','赠送入口']] },
 ];
@@ -24,12 +25,11 @@ export function catalogFor(parent) {
   if (parent?.type === 'Switch' && (!parent.children.length || parent.children.some((child) => child.type === 'SwitchCase'))) {
     return canContain(parent, { type: 'SwitchCase' }) ? [{ name: '开关内容', items: [['SwitchCase', '状态内容']] }] : [];
   }
-  const structural = { Tabs: [['Tab','标签页面']], TabControl: [], Carousel: [['Slide','轮播页'],['PageControl','分页控件']], PageControl: [['Indicators','分页指示器']], Timeline: [['TimelineItem','时间节点']], Flow: [['Screen','页面']], ExpressCheckout: [['CheckoutState','状态内容']], Countdown: [['CountdownState','状态内容']] }[parent?.type];
+  const structural = { Tabs: [['Tab','标签页面']], TabControl: [['TabButton','标签按钮']], Carousel: [['Slide','轮播页'],['PageControl','分页控件']], PageControl: [['Indicators','分页指示器']], Timeline: [['TimelineItem','时间节点']], Flow: [['Screen','页面']], ExpressCheckout: [['CheckoutState','状态内容']], Countdown: [['CountdownState','状态内容']] }[parent?.type];
   if (structural) return [{ name: '子层', items: structural.filter(([type])=>canContain(parent,{type})) }].filter((group)=>group.items.length);
   const groups = COMPONENT_CATALOG.map((group) => ({ ...group, items: group.items.filter(([type]) => canContain(parent, { type: CATALOG_NODE_TYPE[type] ?? type })) })).filter((group) => group.items.length);
   if (parent?.type === 'CheckoutState' && parent.props.state === 'available' && !parent.children.some((child) => child.type === 'Wallet')) groups.unshift({ name: '结账控件', items: [['Wallet', '钱包按钮']] });
   if (parent?.type === 'SwitchCase' && ![...indexDocument({ root: parent }).nodes.values()].some((child) => child.type === 'Toggle' && child.props.switchControl)) groups.unshift({ name: '开关控件', items: [['Toggle', '开关控件']] });
-  if(['Tab','Header'].includes(parent?.type))groups.unshift({name:'标签控件',items:[['TabControl','标签按钮组']]});
   if(parent?.type==='Switch'&&parent.children.filter((child)=>child.type==='SwitchCase').length<2)groups.unshift({name:'开关内容',items:[['SwitchCase','状态内容']]});
   return groups;
 }
@@ -42,6 +42,26 @@ export function createTabSelectorButton(id,target,index,label='文字',textId=`$
 }
 export function createTabSelector(id,target,count=2) {
   return component(id,'TabControl','标签按钮组',{axis:'horizontal',align:'center',justify:'center',gap:0,widthMode:'fit',radius:9,background:'#f2f2f3',...pad(2),marginBottom:16},Array.from({length:count},(_,index)=>createTabSelectorButton(`${id}/button-${index}`,target,index)));
+}
+export function createContextualTabComponent(type,id,document,parent) {
+  const {nodes,parents}=indexDocument(document);
+  let sequence=nodes.get(tabControlTarget(parent));
+  let ancestor=parent;
+  while(!sequence&&ancestor){
+    if(['Tabs','Carousel'].includes(ancestor.type)||ancestor.type==='Flow'&&ancestor.props.navigationMode==='tabs')sequence=ancestor;
+    ancestor=nodes.get(parents.get(ancestor.id));
+  }
+  const pages=componentPages(sequence);
+  if(type==='TabControl'){
+    const control=createTabSelector(id,sequence?.id??'',pages.length||2);
+    control.children=control.children.map((button,index)=>({...button,props:{...button.props,...(sequence?{pageId:pages[index]?.id}: {})},children:[t(`${button.id}/text`,pages[index]?.name??`标签 ${index+1}`,{widthMode:'fit',fontSize:14})]}));
+    return control;
+  }
+  const used=new Set(parent.children.filter(child=>child.type==='TabButton').map(child=>child.props.pageId??pages[child.props.index]?.id));
+  const index=pages.findIndex(page=>!used.has(page.id));
+  const button=createTabSelectorButton(id,sequence?.id??'',index,pages[index]?.name??`标签 ${parent.children.length+1}`);
+  if(sequence)button.props.pageId=pages[index]?.id??'';
+  return button;
 }
 export function createPageControl(id) {
   return component(id,'PageControl','分页控件',{gap:8,...pad(8),marginTop:8,appearanceEnabled:false},[createCatalogComponent('Indicators',`${id}/indicators`)]);

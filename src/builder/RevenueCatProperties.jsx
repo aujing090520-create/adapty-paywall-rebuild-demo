@@ -10,7 +10,7 @@ import {COUNTDOWN_MODES,countdownMode} from './countdownTiming.js';
 import {screenChromeLayout} from './screenLayout.js';
 import {purchaseTargets} from './purchaseTarget.js';
 import {purchasePageSequences} from './purchaseSelection.js';
-import {componentPages,tabButtonTarget} from './componentPages.js';
+import {componentPages,tabButtonTarget,tabControlTarget,pageSequenceLabel,pageSequencesFor} from './componentPages.js';
 import {BUTTON_BADGE_TYPES,componentBadgeProps} from './propertyModel.js';
 import {buttonLabelTexts,buttonPackages,buttonTextConfig,buttonTextOwner,localizedButtonText,buttonTextPreviewNavigation} from './buttonText.js';
 import {packageSelectionGroups} from './componentOperations.js';
@@ -186,12 +186,24 @@ function ContentSection({ selected, p, patch, styleP=p, stylePatch=patch, docume
   if(type==='Toggle' && p.switchControl)return <PropertySection title="开关填充"><PaintField label="滑块颜色" property="thumbColor" p={p} patch={patch}/><PaintField label="轨道颜色" property="trackColor" p={p} patch={patch}/></PropertySection>;
   if(type==='Indicators')return null;
   if(type==='PageControl')return <PropertySection title="分页控件属性"><NumberField label="指示器间距" value={p.gap} max={200} onChange={(gap)=>patch({gap})}/></PropertySection>;
+  if(type==='TabControl') {
+    const sequences=pageSequencesFor(selected.id,nodes,parents);
+    const target=tabControlTarget(selected),sequence=nodes.get(target);
+    return <PropertySection title="切页设置">
+      <Select label="关联分页组件" value={target} options={[[ '', '暂不关联' ],...(target&&!sequence?[[target,'原分页组件不可用']]:[]),...sequences.map(node=>[node.id,pageSequenceLabel(node)])]} onChange={target=>patch({target})}/>
+      {sequence?.type==='Flow'&&<Field label="页面关系"><output>{sequence.props.navigationMode==='tabs'?'并列切换':'顺序步骤'}</output></Field>}
+      <Field label="标签与目标页面"><div className="rc-prop-body">{selected.children.filter(child=>child.type==='TabButton').map((button,index)=>{
+        const destination=tabButtonTarget(button.props,nodes),label=button.children.find(child=>child.type==='Text')?.props.text??`标签 ${index+1}`;
+        return <button type="button" className="rc-secondary" key={button.id} onClick={()=>onSelectComponent?.(button.id)}>{label} → {destination?.page.name??'未关联页面'}</button>;
+      })}</div></Field>
+    </PropertySection>;
+  }
   if (type === 'TabButton') {
-    const sequences=[...nodes.values()].filter(node=>['Tabs','Carousel'].includes(node.type)||node.type==='Flow'&&node.props.navigationMode==='tabs');
+    const sequences=pageSequencesFor(selected.id,nodes,parents).filter(node=>node.type!=='Flow'||node.props.navigationMode==='tabs');
     const target=nodes.get(p.target),pages=componentPages(target),selection=tabButtonTarget(p,nodes);
     return <PropertySection title="切页属性">
-      <Select label="关联分页组件" value={p.target??''} options={[[ '', '请选择分页组件' ],...sequences.map(node=>[node.id,node.name])]} onChange={target=>{const sequence=nodes.get(target),page=componentPages(sequence)[0];patch({target,index:0,pageId:sequence?.type==='Flow'?page?.id:undefined});}}/>
-      <Select label="切换到页面" value={selection?.page.id??p.pageId??''} options={[[ '', '请选择页面' ],...(p.pageId&&!pages.some(page=>page.id===p.pageId)?[[p.pageId,'原页面不可用，请重新选择']]:[]),...pages.map(page=>[page.id,page.name])]} onChange={pageId=>patch({index:pages.findIndex(page=>page.id===pageId),pageId:target?.type==='Flow'?pageId:undefined})}/>
+      <Select label="关联分页组件" value={p.target??''} options={[[ '', '请选择分页组件' ],...(p.target&&!sequences.some(node=>node.id===p.target)?[[p.target,'原分页组件不可用']]:[]),...sequences.map(node=>[node.id,pageSequenceLabel(node)])]} onChange={target=>{const page=componentPages(nodes.get(target))[0];patch({target,index:0,pageId:page?.id});}}/>
+      <Select label="切换到页面" value={selection?.page.id??p.pageId??''} options={[[ '', '请选择页面' ],...(p.pageId&&!pages.some(page=>page.id===p.pageId)?[[p.pageId,'原页面不可用，请重新选择']]:[]),...pages.map(page=>[page.id,page.name])]} onChange={pageId=>patch({index:pages.findIndex(page=>page.id===pageId),pageId})}/>
     </PropertySection>;
   }
   if (type === 'Timeline') return <>

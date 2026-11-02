@@ -1,8 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { COMPONENT_CATALOG, CATALOG_NODE_TYPE, catalogFor, createCatalogComponent, upgradeCanonicalComponents } from './componentCatalog.js';
-import { component, validDocument, indexDocument, canContain, updateComponent, insertComponent } from './componentDocument.js';
+import { COMPONENT_CATALOG, CATALOG_NODE_TYPE, catalogFor, createCatalogComponent, createContextualTabComponent, upgradeCanonicalComponents } from './componentCatalog.js';
+import { component, validDocument, indexDocument, canContain, updateComponent, insertComponent, cloneComponent } from './componentDocument.js';
 import { copyFragment, pasteFragment, copyStyles, pasteStyles, wrapInStack } from './componentOperations.js';
+import {patchComponentProperties} from './componentOperations.js';
+import {tabButtonTarget,tabControlTarget,pageSequencesFor} from './componentPages.js';
 const doc = (children=[]) => ({version:3,templateId:'test',products:{},root:component('root','Screen','页面',{},children)});
 
 test('source catalog categories create real valid trees, not opaque template modules',()=>{
@@ -37,6 +39,53 @@ test('canonical Switch exposes only missing state slots, not generic children ou
   assert.ok(canContain(single, toggle.children[1]));
   const legacy = component('agreement', 'Switch', '', {}, [component('copy', 'Text')]);
   assert.ok(canContain(legacy, component('control', 'Toggle')), 'legacy HT agreement controls remain compatible');
+});
+
+test('generic selectors can be added to any ordinary container and accept more labels',()=>{
+  for(const type of ['Screen','Stack','Header','Footer','Tab','Slide']){
+    const parent=component(`owner-${type}`,type,'');
+    assert.equal(catalogFor(parent).flatMap(group=>group.items).filter(([type])=>type==='TabControl').length,1,type);
+  }
+  assert.deepEqual(catalogFor(createCatalogComponent('TabControl','control'))[0].items,[['TabButton','标签按钮']]);
+});
+
+test('generic page switch configuration binds complete screens, preserves labels and style, and supports extra unbound labels',()=>{
+  let source=doc([component('flow','Flow','任意页面集合',{},[component('a','Screen','个人版'),component('b','Screen','团队版'),component('c','Screen','企业版')])]);
+  const control=createContextualTabComponent('TabControl','selector',source,indexDocument(source).nodes.get('a'));
+  source=insertComponent(source,'a',control);
+  const original=structuredClone(source);
+  source=patchComponentProperties(source,control.id,{target:'flow'});
+  let nodes=indexDocument(source).nodes;
+  assert.equal(nodes.get('flow').props.navigationMode,'tabs');assert.equal(tabControlTarget(nodes.get(control.id)),'flow');
+  assert.deepEqual(nodes.get(control.id).children.map(child=>tabButtonTarget(child.props,nodes).page.name),['个人版','团队版']);
+  assert.deepEqual(nodes.get(control.id).children.map(child=>child.children),control.children.map(child=>child.children));
+  assert.deepEqual(original.root.children[0].props,{});
+  const third=createContextualTabComponent('TabButton','third',source,nodes.get(control.id));
+  source=insertComponent(source,control.id,third);nodes=indexDocument(source).nodes;
+  assert.equal(tabButtonTarget(third.props,nodes).page.id,'c');assert.equal(third.children[0].props.text,'企业版');
+  const extra=createContextualTabComponent('TabButton','extra',source,nodes.get(control.id));
+  assert.equal(tabButtonTarget(extra.props,nodes),null,'an extra label must not unexpectedly point at page 1');
+  const clone=indexDocument({root:cloneComponent(source.root)}).nodes;
+  for(const button of clone.values())if(button.type==='TabButton')assert.ok(tabButtonTarget(button.props,clone));
+  source=patchComponentProperties(source,control.id,{target:''});nodes=indexDocument(source).nodes;
+  assert.ok(nodes.get(control.id).children.every(child=>tabButtonTarget(child.props,nodes)===null));
+  assert.equal(nodes.get('flow').props.navigationMode,'tabs','unlinking a selector must not change other screen behavior');
+});
+
+test('generic selector also binds local Tabs and Carousel and excludes unrelated screen collections',()=>{
+  const tabs=createCatalogComponent('Tabs','local-tabs'),carousel=createCatalogComponent('Carousel','local-carousel'),control=createCatalogComponent('TabControl','selector');
+  let source=doc([component('outer','Flow','外层',{},[component('a','Screen','A',{},[tabs,carousel,control]),component('b','Screen','B',{},[component('inner','Flow','内层',{},[component('x','Screen','X')])])])]);
+  assert.deepEqual(pageSequencesFor(control.id,indexDocument(source).nodes,indexDocument(source).parents).map(node=>node.id),['outer','local-tabs','local-carousel']);
+  assert.equal(patchComponentProperties(source,control.id,{target:'inner'}),source);
+  for(const sequence of [tabs,carousel]){
+    source=patchComponentProperties(source,control.id,{target:sequence.id});const nodes=indexDocument(source).nodes;
+    const button=nodes.get(control.id).children[0];
+    assert.equal(tabButtonTarget(button.props,nodes).sequence.id,sequence.id);
+    const reversed=updateComponent(source,sequence.id,{children:[...sequence.children].reverse()});
+    assert.equal(tabButtonTarget(button.props,indexDocument(reversed).nodes).page.id,button.props.pageId);
+    const deleted=updateComponent(source,sequence.id,{children:sequence.children.filter(page=>page.id!==button.props.pageId)});
+    assert.equal(tabButtonTarget(button.props,indexDocument(deleted).nodes),null);
+  }
 });
 
 test('deleted wallet and switch controls can be recreated only from their contextual picker', () => {

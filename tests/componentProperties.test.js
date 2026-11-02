@@ -6,7 +6,7 @@ import { createServer } from 'vite';
 import { component, componentProps, indexDocument, updateComponent, saveComponentDocument, readComponentDocument, COMPONENT_TYPES, cloneComponent, resolveComponentText } from '../src/builder/componentDocument.js';
 import { DEMO_SKUS } from '../src/productPricing.js';
 import { copyStyles, pasteStyles, patchComponentProperties, patchCountdownContent, togglePageControl } from '../src/builder/componentOperations.js';
-import { createCatalogComponent, upgradeCanonicalComponents } from '../src/builder/componentCatalog.js';
+import { createCatalogComponent, createContextualTabComponent, upgradeCanonicalComponents } from '../src/builder/componentCatalog.js';
 import { countdownSeconds, defaultPackagePatch, BADGE_COMPONENT_TYPES, BUTTON_BADGE_TYPES, BUTTON_BADGE_TEXT } from '../src/builder/propertyModel.js';
 import { templates, createBuilderNodes } from '../src/templates/templateDefinitions.js';
 import { importComponentDocument, validDocument } from '../src/builder/componentDocument.js';
@@ -69,6 +69,52 @@ test('tab buttons expose configurable complete-screen destinations and parallel 
   const h=await mount(index.nodes.get('tiers/vip/tab-1'),{source});
   try{await h.select('切换到页面','tiers/vip');assert.equal(indexDocument(h.document()).nodes.get('tiers/vip/tab-1').props.pageId,'tiers/vip');await h.select('切换到页面','tiers/plus');assert.equal(indexDocument(h.document()).nodes.get('tiers/vip/tab-1').props.pageId,'tiers/plus');}finally{await h.close();}
   const flow=await mount(index.nodes.get('tiers/flow'),{source});try{await flow.select('页面关系','steps');assert.equal(indexDocument(flow.document()).nodes.get('tiers/flow').props.navigationMode,'steps');await flow.select('页面关系','tabs');assert.equal(indexDocument(flow.document()).nodes.get('tiers/flow').props.navigationMode,'tabs');}finally{await flow.close();}
+});
+
+test('generic group properties configure ordinary complete pages and expose each editable destination',async()=>{
+  const selector=createCatalogComponent('TabControl','selector');
+  const source=fixture(component('flow','Flow','任意流程',{},[component('personal','Screen','个人版',{},[selector]),component('team','Screen','团队版')]));
+  const h=await mount(selector,{source});
+  try{
+    const select=h.renderer.root.findByProps({'aria-label':'关联分页组件'});
+    assert.ok(select.findAllByType('option').some(option=>option.children.join('')==='完整页面（2 个页面）'));
+    await h.select('关联分页组件','flow');
+    assert.equal(indexDocument(h.document()).nodes.get('flow').props.navigationMode,'tabs');
+    await h.click('文字 → 团队版');assert.equal(h.status(),'selector/button-1');
+    await h.select('关联分页组件','');
+    assert.ok(indexDocument(h.document()).nodes.get('selector').children.every(child=>child.props.target===''));
+  }finally{await h.close();}
+});
+
+test('real editor exposes parallel mode on ordinary Screen and creates a configured selector without template logic',async()=>{
+  const source=fixture(component('flow','Flow','任意流程',{},[component('first','Screen','个人版'),component('second','Screen','团队版')]));
+  let renderer,latest;
+  const click=async name=>{const button=renderer.root.findAll(item=>item.type==='button'&&(item.props['aria-label']===name||item.children.join('')===name||item.findAllByType('span').some(span=>span.children.join('')===name)))[0];assert.ok(button,name);await act(async()=>button.props.onClick(event()));};
+  const rowClick=async(id,kind)=>{const row=renderer.root.findAll(item=>item.type==='div'&&item.props['data-layer-id']===id)[0];assert.ok(row,id);const button=row.findAllByType('button').find(item=>kind==='add'?item.props.title==='添加子组件':item.props.className==='ne-tree-select');assert.ok(button,kind);await act(async()=>button.props.onClick(event()));};
+  try{
+    await act(async()=>{renderer=TestRenderer.create(React.createElement(Editor,{template:{id:'audit'},initialNodes:[],initialDocument:source,persistence:'session',onDocumentChange:value=>{latest=value;}}));});
+    await rowClick('first','select');
+    const mode=renderer.root.findByProps({'aria-label':'页面关系'});await act(async()=>mode.props.onChange(event('tabs')));
+    assert.equal(indexDocument(latest).nodes.get('flow').props.navigationMode,'tabs');
+    await rowClick('first','add');await click('标签按钮组');
+    let nodes=indexDocument(latest).nodes,control=[...nodes.values()].find(node=>node.type==='TabControl');
+    assert.ok(control);assert.deepEqual(control.children.map(child=>child.children[0].props.text),['个人版','团队版']);
+    assert.ok(control.children.every(child=>child.props.target==='flow'));
+    await rowClick(control.id,'add');await click('标签按钮');
+    nodes=indexDocument(latest).nodes;control=nodes.get(control.id);assert.equal(control.children.length,3);assert.equal(control.children[2].props.index,-1);
+  }finally{if(renderer)await act(async()=>renderer.unmount());}
+});
+
+test('ordinary three-screen selectors created from the catalog switch bidirectionally and survive document reload',async()=>{
+  let source=fixture(component('flow','Flow','业务页面',{navigationMode:'tabs',initialStepId:'a'},['个人版','团队版','企业版'].map((name,index)=>component(['a','b','c'][index],'Screen',name,{},[component(`copy-${index}`,'Text','文字',{text:name})]))));
+  for(const id of ['a','b','c'])source=updateComponent(source,id,{children:[createContextualTabComponent('TabControl',`selector-${id}`,source,indexDocument(source).nodes.get(id)),...indexDocument(source).nodes.get(id).children]});
+  const values=new Map(),store={getItem:key=>values.get(key),setItem:(key,value)=>values.set(key,value)};saveComponentDocument(store,source);source=readComponentDocument(store,'audit');
+  const h=await mount(indexDocument(source).nodes.get('selector-a'),{source,editing:false});
+  const click=async id=>{assert.ok(h.node(id),id);await act(async()=>h.node(id).props.onClick(event()));};
+  try{
+    assert.ok(h.node('a'));await click('selector-a/button-2');assert.ok(h.node('c'));assert.equal(h.node('a'),undefined);
+    await click('selector-c/button-1');assert.ok(h.node('b'));await click('selector-b/button-0');assert.ok(h.node('a'));
+  }finally{await h.close();}
 });
 
 for(const type of ['Button','PurchaseButton'])test(`${type} owns editable package labels, editor preview, fallback and saved runtime behavior`,async()=>{
