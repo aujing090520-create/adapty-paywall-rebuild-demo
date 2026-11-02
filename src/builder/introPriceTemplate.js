@@ -1,11 +1,37 @@
 const accent='#ffb441';
-const names={Screen:'入门价格页',Header:'页头',Footer:'页脚',Stack:'布局容器',Text:'文字',Icon:'图标',Button:'按钮',PurchaseButton:'购买按钮',Package:'商品套餐',ProductParameter:'商品参数'};
+const names={Screen:'入门价格页',Header:'页头',Footer:'页脚',Stack:'布局容器',Text:'文字',Icon:'图标',Button:'按钮',PurchaseButton:'购买按钮',Package:'商品套餐',ProductParameter:'商品参数',Countdown:'倒计时',CountdownState:'倒计时状态内容'};
 const n=(id,type,props={},children=[],name=names[type])=>({id,type,name,props,children});
 const box=(id,children,props={})=>n(id,'Stack',{gap:0,...props},children);
 const text=(id,value,props={})=>n(id,'Text',{text:value,fontSize:20,lineHeight:1.35,color:'#282828',...props});
 const icon=(id,value,size,color)=>n(id,'Icon',{icon:`tabler:${value}`,color,widthMode:'fixed',width:size,heightMode:'fixed',height:size});
 const parameter=(id,field,props={})=>n(id,'ProductParameter',{parameter:field,fontSize:20,widthMode:'fit',color:'#282828',selectedColor:'#282828',...props});
 const pad=(vertical,horizontal=vertical)=>({paddingMode:'axis',paddingVertical:vertical,paddingHorizontal:horizontal});
+
+function introCountdown(props={}){
+  const typography=Object.fromEntries(['fontSize','fontWeight','fontFamily','color','textAlign','lineHeight'].filter(key=>props[key]!==undefined).map(key=>[key,props[key]]));
+  return n('intro/cutoff','Countdown',{timeSource:'manual',timingMode:'everyEntry',start:'00:23:59',countFrom:'minutes',previewState:'auto',fallbackEnabled:false,linkProducts:false,heightMode:'fit',...props},[
+    n('intro/cutoff/active','CountdownState',{state:'active',gap:0,align:'center'},[text('intro/cutoff/text','优惠截止时间 {{ count_minutes_with_zero }}:{{ count_seconds_with_zero }}',{fontSize:17,textAlign:'center',widthMode:'fit',...typography})],'计时中'),
+    n('intro/cutoff/ended','CountdownState',{state:'ended',gap:0,align:'center'},[text('intro/cutoff/ended-text','优惠已结束',{fontSize:17,textAlign:'center',...typography})],'已结束'),
+    n('intro/cutoff/fallback','CountdownState',{state:'fallback',gap:0},[],'数据不可用'),
+  ]);
+}
+
+// Repair only the previously shipped static default; preserve edited content and node identity.
+export function upgradeIntroCountdown(document){
+  if(document.templateId!=='ht-intro-price')return document;
+  let changed=false;
+  const visit=node=>{
+    if(node.id==='intro/cutoff'&&node.type==='Text'&&node.props.text==='优惠截止时间 23:59'&&!node.props.runs?.length&&!node.props.binding&&!node.children.length){
+      changed=true;
+      const {text:oldText,runs,binding,...props}=node.props;
+      return introCountdown(props);
+    }
+    const children=node.children.map(visit);
+    return children.some((child,index)=>child!==node.children[index])?{...node,children}:node;
+  };
+  const root=visit(document.root);
+  return changed?{...document,root}:document;
+}
 
 export function buildIntroPriceTemplate(){
   const header=n('intro/header','Header',{background:'#ffffff',overlapContent:false,...pad(8,14)},[
@@ -22,7 +48,7 @@ export function buildIntroPriceTemplate(){
     card,benefits,
   ],{...pad(20,18)});
   const footer=n('intro/footer','Footer',{background:'#ffffff',shadowOpacity:0,gap:16,...pad(14,18)},[
-    text('intro/cutoff','优惠截止时间 23:59',{fontSize:17,textAlign:'center'}),
+    introCountdown(),
     n('intro/purchase','PurchaseButton',{action:{action:'Purchase',packageId:card.id},widthMode:'fill',heightMode:'fixed',height:50,background:accent,shape:'pill',align:'center',justify:'center'},[text('intro/purchase/text','继续',{fontSize:18,fontWeight:700,color:'#ffffff',textAlign:'center'})]),
     text('intro/cancel-note','随时取消',{fontSize:15,color:'#bdbdbd',textAlign:'center'}),
   ]);

@@ -9,6 +9,7 @@ import {upgradeTimerTextVariables,consolidateCountdownText} from './textVariable
 import {upgradePagePresentation} from './pagePresentation.js';
 import {upgradeTrialButtonText} from './buttonText.js';
 import {consolidateTrialPurchase} from './purchaseSelection.js';
+import {upgradeIntroCountdown} from './introPriceTemplate.js';
 import {componentPages,tabControlTarget} from './componentPages.js';
 
 // Public picker entries are building blocks or transparent Stack compositions.
@@ -125,6 +126,7 @@ export function createCatalogComponent(type, id = crypto.randomUUID(), context =
 }
 
 export function upgradeCanonicalComponents(document) {
+  document=upgradeIntroCountdown(document);
   document=consolidateTrialPurchase(upgradeTrialButtonText(document));
   let changed=false;
   const ids = new Set(indexDocument(document).nodes.keys());

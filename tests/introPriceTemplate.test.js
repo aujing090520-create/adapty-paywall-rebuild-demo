@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import React from 'react';
 import Renderer,{act} from 'react-test-renderer';
 import {createServer} from 'vite';
-import {buildIntroPriceTemplate} from '../src/builder/introPriceTemplate.js';
+import {buildIntroPriceTemplate,upgradeIntroCountdown} from '../src/builder/introPriceTemplate.js';
+import {upgradeCanonicalComponents} from '../src/builder/componentCatalog.js';
 import {templates,createBuilderNodes} from '../src/templates/templateDefinitions.js';
 import {COMPONENT_TYPES,component,indexDocument,validDocument,importComponentDocument,saveComponentDocument,readComponentDocument,updateComponent} from '../src/builder/componentDocument.js';
 import {copyFragment,pasteFragment} from '../src/builder/componentOperations.js';
@@ -24,13 +25,25 @@ test('intro price is registered, valid and composed exclusively of existing edit
   assert.equal([...nodes.values()].filter(node=>node.props.action?.action==='Dismiss').length,1);
   assert.equal(nodes.get('intro/purchase').props.action.packageId,'intro/package');
 });
-test('intro prices stay parameter-owned while reference copy, cutoff and benefits remain editable',()=>{
+test('intro prices stay parameter-owned and footer uses the configurable countdown',()=>{
   const doc=buildIntroPriceTemplate(),{nodes}=indexDocument(doc);
   assert.equal(doc.productFieldPreview,true);assert.equal(nodes.get('intro/package').props.priceMode,'0');
   assert.equal(nodes.get('intro/price').props.parameter,'monthlyPrice');assert.equal(nodes.get('intro/reference').props.parameter,'monthlyReferencePrice');assert.equal(nodes.get('intro/reference').props.strike,true);
-  assert.equal(nodes.get('intro/headline').props.text,'首月额外20%优惠！');assert.equal(nodes.get('intro/cutoff').props.text,'优惠截止时间 23:59');
-  assert.equal(nodes.get('intro/benefits').children.length,3);assert.ok(![...nodes.values()].some(node=>['Countdown','Image','Custom'].includes(node.type)));
+  assert.equal(nodes.get('intro/headline').props.text,'首月额外20%优惠！');
+  const timer=nodes.get('intro/cutoff');assert.equal(timer.type,'Countdown');assert.equal(timer.props.start,'00:23:59');assert.equal(timer.props.countFrom,'minutes');assert.equal(timer.props.linkProducts,false);assert.equal(timer.props.timingMode,'everyEntry');
+  assert.equal(timer.children[0].children.length,1);assert.match(nodes.get('intro/cutoff/text').props.text,/count_minutes_with_zero.*count_seconds_with_zero/);
+  assert.equal(nodes.get('intro/benefits').children.length,3);assert.ok(![...nodes.values()].some(node=>['Image','Custom'].includes(node.type)));
   assert.ok(iconCatalog.icons.some(([name,styles])=>name==='crown'&&(styles&2)));assert.ok(!JSON.stringify(doc).includes('¥28'));assert.ok(!JSON.stringify(doc).includes('¥58'));
+});
+test('old static cutoff upgrades narrowly, preserves style and identity and never restores deletions or overwrites custom copy',()=>{
+  const doc=buildIntroPriceTemplate(),footer=doc.root.children.find(node=>node.type==='Footer');
+  footer.children[0]=component('intro/cutoff','Text','文字',{text:'优惠截止时间 23:59',fontSize:19,color:'#123456',marginTop:3});
+  const before=structuredClone(doc),fixed=upgradeCanonicalComponents(doc),{nodes,parents}=indexDocument(fixed),timer=nodes.get('intro/cutoff');
+  assert.deepEqual(doc,before);assert.equal(timer.type,'Countdown');assert.equal(parents.get(timer.id),'intro/footer');assert.equal(timer.props.marginTop,3);assert.equal(nodes.get('intro/cutoff/text').props.fontSize,19);assert.equal(nodes.get('intro/cutoff/text').props.color,'#123456');
+  assert.deepEqual(fixed.root.children.slice(0,2),before.root.children.slice(0,2));assert.deepEqual(fixed.products,before.products);assert.deepEqual(structureIssues(fixed),[]);assert.equal(upgradeIntroCountdown(fixed),fixed);
+  const edited=structuredClone(before);edited.root.children.find(node=>node.type==='Footer').children[0].props.text='我的截止说明';assert.equal(upgradeIntroCountdown(edited),edited);
+  const deleted=structuredClone(before);deleted.root.children.find(node=>node.type==='Footer').children.shift();assert.equal(upgradeIntroCountdown(deleted),deleted);
+  assert.equal(upgradeIntroCountdown({...before,templateId:'custom'}).templateId,'custom');
 });
 test('intro retains generic price modes, presentation, persistence and cross-screen copying without mutating defaults',()=>{
   const doc=buildIntroPriceTemplate(),before=structuredClone(doc),card=indexDocument(doc).nodes.get('intro/package');
@@ -51,7 +64,17 @@ test('real intro preview keeps fixed chrome, selected package, crossed reference
   try{
     await act(async()=>{renderer=Renderer.create(React.createElement(Preview,{document:buildIntroPriceTemplate(),editing:false,onSelect(){},onStatus:value=>status=value,onDismiss(){dismissed++;}}));});
     assert.equal(node('intro/header').props.style.gridRow,1);assert.equal(node('intro/footer').props.style.gridRow,3);assert.equal(node('intro/package').props['aria-pressed'],true);assert.equal(node('intro/reference').props.style.textDecoration,'line-through');
+    assert.equal(node('intro/cutoff/text').children.join(''),'优惠截止时间 23:59');
     await act(async()=>node('intro/purchase').props.onClick({stopPropagation(){},preventDefault(){}}));assert.equal(status,'购买预览：未发起真实交易');
     await act(async()=>node('intro/close').props.onClick({stopPropagation(){},preventDefault(){}}));assert.equal(dismissed,1);
+  }finally{if(renderer)await act(async()=>renderer.unmount());}
+});
+test('ended intro countdown shows ended copy while keeping price fields and normal purchase',async()=>{
+  const doc=updateComponent(buildIntroPriceTemplate(),'intro/cutoff',{props:{timingMode:'deadline',deadline:'2000-01-01T00:00:00Z'}});let renderer,status='';
+  const node=id=>renderer.root.findAll(n=>typeof n.type==='string'&&n.props['data-component-id']===id)[0];
+  try{
+    await act(async()=>{renderer=Renderer.create(React.createElement(Preview,{document:doc,editing:false,onSelect(){},onStatus:value=>status=value}));});
+    assert.equal(node('intro/cutoff/ended-text').children.join(''),'优惠已结束');assert.equal(node('intro/cutoff/text'),undefined);assert.ok(node('intro/price'));
+    await act(async()=>node('intro/purchase').props.onClick({stopPropagation(){},preventDefault(){}}));assert.equal(status,'购买预览：未发起真实交易');
   }finally{if(renderer)await act(async()=>renderer.unmount());}
 });
