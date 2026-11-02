@@ -8,7 +8,7 @@ import { effectiveFillType } from './propertyModel.js';
 import { localSettingsResetting } from '../templateStorage.js';
 import { packageDisplayFields } from '../products/packageFields.js';
 import {validWorkbenchConfiguration} from './workbenchModel.js';
-import { PRODUCT_PARAMETERS, productParameterPreview,parameterFromBinding } from '../products/productParameters.js';
+import { PRODUCT_PARAMETERS, productParameterPreview } from '../products/productParameters.js';
 import {pruneGeneratedEmptyLayouts,normalizeHtLabelSlots} from './layoutContainers.js';
 import {buildFreeTrialTemplate} from './freeTrialTemplate.js';
 import {buildVipTierTemplate} from './vipTierTemplate.js';
@@ -98,6 +98,7 @@ export function validDocument(document) {
     if (depth > 40 || !node || typeof node.id !== 'string' || ids.has(node.id) || !COMPONENT_TYPES.includes(node.type) || !Array.isArray(node.children) || !node.props || typeof node.props !== 'object') return false;
     ids.add(node.id);
     if (node.type === 'ProductParameter' && !Object.hasOwn(PRODUCT_PARAMETERS, node.props.parameter)) return false;
+    if(node.type==='Countdown'&&node.props.linkProducts!==undefined&&typeof node.props.linkProducts!=='boolean')return false;
     if(node.type==='Countdown'&&node.props.promotion!==undefined){const value=node.props.promotion;if(!value||typeof value!=='object'||Array.isArray(value)||value.group!==undefined&&typeof value.group!=='string'||['enabled','hideLabel','hideReference','hideSavings'].some(key=>value[key]!==undefined&&typeof value[key]!=='boolean'))return false;}
     return (CONTAINER_TYPES.has(node.type) || !node.children.length) && node.children.every((child) => visit(child, depth + 1));
   };
@@ -147,11 +148,10 @@ export function moveComponent(document, id, parentId, at = Infinity) {
   if (descendants.has(parentId)) return document;
   return insertComponent(removeComponent(document, id), parentId, node, at);
 }
-export function resolveComponentText(node, document, packageNode, selected = false, pricing) {
-  if (node.type === 'ProductParameter') return productParameterPreview(node.props.parameter, packageNode, selected,pricing);
+export function resolveComponentText(node, document, packageNode, selected = false) {
+  if (node.type === 'ProductParameter') return productParameterPreview(node.props.parameter, packageNode, selected);
   const binding = node.props.binding;
   if (!binding) return node.props.runs?.length ? node.props.runs.map((run) => `${run.breakBefore ? '\n' : ''}${run.text ?? ''}`).join('') : node.props.text ?? '';
-  if(pricing&&parameterFromBinding(binding.field,packageNode))return productParameterPreview(parameterFromBinding(binding.field,packageNode),packageNode,selected,pricing);
   return String(packageDisplayFields(document, packageNode, selected, binding.key)[binding.field] ?? '');
 }
 

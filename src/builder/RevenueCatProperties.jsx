@@ -16,7 +16,7 @@ import {buttonLabelTexts,buttonPackages,buttonTextConfig,buttonTextOwner,localiz
 import {packageSelectionGroups} from './componentOperations.js';
 import {COMPARISON_ORDER_RULES} from './comparisonOrdering.js';
 import {flowInitialIndex} from './componentTree.js';
-import {promotionGroups,promotionWarnings} from './countdownPromotion.js';
+import {countdownLinksProducts} from './countdownProductLink.js';
 import {PAGE_PRESENTATIONS,pagePresentation} from './pagePresentation.js';
 import { Italic, Underline, Strikethrough } from 'lucide-react';
 import { PRODUCT_PARAMETERS, PRODUCT_PARAMETER_OPTIONS, PACKAGE_PRICE_MODES, packagePriceMode, effectiveProductParameter, productParameterPreview } from '../products/productParameters.js';
@@ -298,30 +298,12 @@ function ContentSection({ selected, p, patch, styleP=p, stylePatch=patch, docume
       </>:<><Select label="计时方式" value={countdownMode(p)} options={COUNTDOWN_MODES} onChange={timingMode=>patch({timingMode})}/>{countdownMode(p)==='deadline'?<Field label="目标时间（UTC）"><input type="datetime-local" step="1" aria-label="目标时间（UTC）" value={utcDateTimeInput(p.deadline)} onInput={updateDeadline} onChange={updateDeadline}/></Field>:<Field label="计时时长（时:分:秒）"><input aria-label="计时时长（时:分:秒）" value={p.start??'00:10:00'} onChange={(event)=>patch({start:event.target.value})}/></Field>}</>}
       <Select label="计时单位" value={p.countFrom ?? 'hours'} options={[[ 'days', '天' ], [ 'hours', '小时' ], [ 'minutes', '分钟' ]]} onChange={(countFrom) => patch({ countFrom })} />
       <CheckboxField label="自定义兜底内容" checked={p.fallbackEnabled!==false} onChange={(fallbackEnabled)=>{patch({fallbackEnabled});if(!fallbackEnabled)setNavigation({[selected.id]:undefined});}}/>
-    </PropertySection><CountdownPromotionFields selected={selected} document={document} patch={patch} navigation={navigation} setNavigation={setNavigation}/></>;
+    </PropertySection><PropertySection title="商品联动"><label className="switch-row"><strong>联动商品</strong><input type="checkbox" role="switch" aria-label="联动商品" aria-checked={countdownLinksProducts(p)} checked={countdownLinksProducts(p)} onChange={event=>patch({linkProducts:event.target.checked,promotion:undefined})}/><span>{countdownLinksProducts(p)?'开启':'关闭'}</span></label></PropertySection></>;
   }
   if (type === 'Switch') return <PropertySection title="开关属性"><Select label="默认状态" value={p.defaultIndex??0} options={[[0,'关闭'],[1,'开启']]} onChange={(value)=>{patch({defaultIndex:Number(value)});setNavigation({[selected.id]:Number(value)});}}/></PropertySection>;
   if (type === 'ExpressCheckout') return null;
   if (type === 'Custom') return <PropertySection title="自定义组件"><a className="rc-secondary" href="/custom-component/example.zip" download>下载示例</a><label className="rc-upload">{uploading?'正在校验 ZIP':p.customBundle?'替换 ZIP':'上传 ZIP'}<input type="file" accept=".zip,application/zip" disabled={uploading} onChange={async(event)=>{const file=event.target.files?.[0];event.target.value='';if(!file)return;setUploading(true);try{const {installCustomBundle}=await import('./customBundle.js');const customBundle=await installCustomBundle(file);patch({customBundle});}catch(error){onStatus(error.message);}finally{setUploading(false);}}}/></label>{p.customBundle&&<><div className="rc-custom-file">{p.customBundle.name}</div><button type="button" className="rc-secondary" onClick={()=>patch({customBundle:null})}>移除 ZIP</button></>}{p.html!==undefined&&!p.customBundle&&<Field label="HTML（旧配置）"><textarea className="ne-code-input" value={p.html} onChange={(event)=>patch({html:event.target.value})}/></Field>}</PropertySection>;
   return null;
-}
-
-function CountdownPromotionFields({selected,document,patch,setNavigation,navigation={}}) {
-  const config=selected.props.promotion??{},groups=promotionGroups(document,selected),warnings=promotionWarnings(document,selected);
-  const update=values=>patch({promotion:{...config,...values}});
-  return <PropertySection title="优惠联动" optional>
-    <OptionalToggle enabled={config.enabled===true} onChange={enabled=>update({enabled})}/>
-    {config.enabled&&<>
-      <Select label="影响套餐" value={config.group??'@all'} options={[[ '@all',`当前范围全部套餐（${groups.reduce((sum,group)=>sum+group.count,0)} 个）` ],...(config.group&&config.group!=='@all'&&!groups.some(group=>group.key===config.group)?[[config.group,'原套餐组不可用']]:[]),...groups.map((group,index)=>[group.key,`套餐选择组 ${index+1}（${group.count} 个套餐）`])]} onChange={group=>update({group})}/>
-      <Field label="计时中价格来源"><output>外部商品配置 · 优惠价格</output></Field>
-      <Field label="结束或异常时价格来源"><output>外部商品配置 · 正常价格</output></Field>
-      <CheckboxField label="恢复正常价格时隐藏商品标签" checked={config.hideLabel!==false} onChange={hideLabel=>update({hideLabel})}/>
-      <CheckboxField label="恢复正常价格时隐藏划线价" checked={config.hideReference!==false} onChange={hideReference=>update({hideReference})}/>
-      <CheckboxField label="恢复正常价格时隐藏节省比例" checked={config.hideSavings!==false} onChange={hideSavings=>update({hideSavings})}/>
-      <div className="rc-segmented" aria-label="优惠状态预览">{[['auto','实时'],['active','计时中'],['ended','已结束'],['fallback','数据不可用']].map(([state,label])=><button type="button" key={state} className={(navigation[selected.id]??'auto')===state?'active':''} aria-pressed={(navigation[selected.id]??'auto')===state} aria-label={`预览优惠${label}`} onClick={()=>setNavigation({[selected.id]:state==='auto'?undefined:state})}>{label}</button>)}</div>
-      {warnings.map(warning=><div key={warning} role="alert">{warning}</div>)}
-    </>}
-  </PropertySection>;
 }
 
 function ButtonTextSection({selected,p,patch,document,navigation,setNavigation}){

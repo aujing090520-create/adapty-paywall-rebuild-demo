@@ -4,7 +4,6 @@ import { ITEM_VARIABLES,businessList } from './businessData.js';
 import {businessValues} from './paywallLogic.js';
 import {PRODUCT_VARIABLE_PLACEHOLDERS} from '../products/fieldPreview.js';
 import {TIMER_VARIABLE_DEFINITIONS} from './textVariableTokens.js';
-import {promotionVariableValues} from '../products/promotionFields.js';
 
 export const PRODUCT_TEXT_VARIABLES = [
   ['product.price', '商品总价'],
@@ -35,7 +34,7 @@ export function variableValues(document, packageNode, timer, runtime={}) {
   const fields = row ? productPriceFields(row) : null;
   const display = row ? packageDisplayFields(document,packageNode) : {};
   const period = row ? productPeriod(row) : null;
-  const values = promotionVariableValues(document.productFieldPreview ? {...PRODUCT_VARIABLE_PLACEHOLDERS} : fields ? {
+  const values = document.productFieldPreview ? {...PRODUCT_VARIABLE_PLACEHOLDERS} : fields ? {
     'product.price': fields.total,
     'product.price_per_month': fields.months === 0 ? fields.total : fields.monthly.replace(/\/月$/, ''),
     'product.price_per_period': fields.total && fields.months > 0 ? `${fields.total}/${fields.months === 12 ? '年' : fields.months === 1 ? '月' : `${fields.months}个月`}` : fields.total,
@@ -47,7 +46,7 @@ export function variableValues(document, packageNode, timer, runtime={}) {
     'product.info': display.productInfo,
     'product.savings': display.savingCopy,
     'product.gift_count': String(businessList(document,'gifts',packageNode).length),
-  } : Object.fromEntries(PRODUCT_TEXT_VARIABLES.map(([key]) => [key, ''])),runtime.$pricing?.[packageNode?.id]);
+  } : Object.fromEntries(PRODUCT_TEXT_VARIABLES.map(([key]) => [key, '']));
   if (timer) for (const {key,field} of TIMER_VARIABLE_DEFINITIONS) values[key] = timer[field];
   for(const [key,value] of Object.entries(businessValues(document,runtime)))if(key)values[`business.${key}`]=String(value??'');
   return values;

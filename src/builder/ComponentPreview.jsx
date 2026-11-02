@@ -34,7 +34,7 @@ import { purchaseTarget } from './purchaseTarget.js';
 import {componentBadgeProps} from './propertyModel.js';
 import {buttonTextResolution} from './buttonText.js';
 import {countdownRuntime} from './countdownState.js';
-import {promotionRuntime,promotionHiddenNode} from './countdownPromotion.js';
+import {productLinkRuntime} from './countdownProductLink.js';
 
 const PreviewContext = createContext(null);
 const TimerContext = createContext(null);
@@ -180,9 +180,8 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
   if (props.hidden || (['overlay','sheet'].includes(props.presentation) && !floating)) return null;
   if (props.visibleWhen && Boolean(runtime[props.visibleWhen.id] ?? context.nodeIndex.get(props.visibleWhen.id)?.props.initial) !== props.visibleWhen.value) return null;
   const currentPackage = buttonLabel?.packageNode??(node.type === 'Package' ? node : ['Button','PurchaseButton'].includes(node.type)&&(props.action?.packageId||props.action?.pagePackages) ? purchaseTarget(document,node,packageNode??context.selectedPackage,runtime) : packageNode);
-  const pricing=runtime.$pricing?.[(currentPackage??context.selectedPackage)?.id];
-  if(promotionHiddenNode(node,pricing))return null;
-  if (props.productField && !(currentPackage?.props.productType ? productParameterPreview(parameterFromBinding(props.productField,currentPackage),currentPackage,stateSelected,pricing) : resolveComponentText({ props: { binding: { key: currentPackage?.props.dataKey, field: props.productField } } }, document, currentPackage, stateSelected,pricing))) return null;
+  const productLinks=runtime.$productLinks?.byPackage[(currentPackage??context.selectedPackage)?.id]??[];
+  if (props.productField && !(currentPackage?.props.productType ? productParameterPreview(parameterFromBinding(props.productField,currentPackage),currentPackage,stateSelected) : resolveComponentText({ props: { binding: { key: currentPackage?.props.dataKey, field: props.productField } } }, document, currentPackage, stateSelected))) return null;
   const variablePackage = currentPackage ?? context.selectedPackage;
   const entries=props.dataSource?businessList(document,props.dataSource,variablePackage):null;
   if(entries&&!entries.length)return null;
@@ -208,7 +207,7 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
     }
   }
   const attributes = { 'data-component-id': node.id, 'data-component-type': node.type, 'data-axis': props.axis, 'data-width': props.widthMode, 'data-height': props.heightMode, className: `nc-node nc-${node.type.toLowerCase()} ${floating ? 'nc-modal-surface' : ''} ${editing && selectedId === node.id ? 'nc-inspected' : ''} ${editing && context.hoveredId === node.id ? 'nc-hovered' : ''}`, style, onClick: select };
-  if(pricing&&['Package','PurchaseButton','ProductParameter'].includes(node.type))attributes['data-price-source']=pricing.phase;
+  if(productLinks.length&&['Package','PurchaseButton'].includes(node.type))attributes['data-product-link-state']=productLinks.some(link=>link.linked)?productLinks.filter(link=>link.linked).map(link=>link.state).join(','):'static';
   if(repeated&&repeated.index>0){attributes['data-component-id']=`${node.id}::${repeated.item.id}`;attributes['data-template-id']=node.id;}
   const children = (items = orderedComparisonCells(node,parentNode,context.businessOrdering), background = true) => <>{background && <BackgroundVideo props={props} />}{entries?entries.map((item,index)=><ItemContext.Provider key={item.id} value={{item,index}}>{items.filter(child=>child.type!=='BottomSheet').map(child=><NativeComponent key={child.id} node={child} packageNode={currentPackage}/>)}</ItemContext.Provider>):items.map((child) => <NativeComponent key={child.id} node={child} packageNode={currentPackage} />)}{background&&<ComponentBadge node={visualNode} document={document} packageNode={variablePackage} timer={timer}/>}</>;
   if(props.dataSource||props.collapsible||node.type==='Stack'&&props.horizontalScroll)return <div {...attributes} style={{...style,...(props.collapsible?{display:'flex',flexDirection:'column'}:containerStyle(visualNode)),...(props.horizontalScroll?{overflowX:'auto',overscrollBehaviorX:'contain'}:{})}}>{props.collapsible?<Disclosure label={props.collapseLabel??'展开内容'} delay={props.autoExpandDelay??1500} scope={`${variablePackage?.id??''}:${entries?.map(item=>item.id).join(',')??node.id}`} editing={editing}><div className="nc-disclosure-content" style={{...containerStyle(visualNode),flex:'1 1 auto',minWidth:0,minHeight:0}}>{children()}</div></Disclosure>:children()}</div>;
@@ -219,9 +218,9 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
     return <button {...attributes} key={page.id} type="button" data-indicator-index={index} title={`第 ${index+1} 页`} aria-label={`第 ${index+1} 页`} aria-current={index===sequence.chosen?'true':undefined} style={{...dotStyle,display:'block',padding:0,margin:0,borderRadius:'50%',cursor:'pointer'}} onClick={(event)=>{event.stopPropagation();if(editing)onSelect(node.id);else setRuntime((current)=>({...current,[sequence.id]:index}));}}/>;
   })}</>;
   if (['Text','ProductParameter'].includes(node.type)) {
-    const issues=variableIssues(resolveComponentText(visualNode,document,currentPackage,stateSelected,pricing),document,variablePackage,timer,runtime);
+    const issues=variableIssues(resolveComponentText(visualNode,document,currentPackage,stateSelected),document,variablePackage,timer,runtime);
     if(editing&&issues.length)attributes.title=issues.map(item=>`${item.key}：${item.reason}，预览以空值回退`).join('；');
-    const value = props.timerField && timer ? timer[props.timerField] ?? '' : interpolateVariables(resolveComponentText(visualNode, document, currentPackage, stateSelected,pricing), document, variablePackage, timer,runtime);
+    const value = props.timerField && timer ? timer[props.timerField] ?? '' : interpolateVariables(resolveComponentText(visualNode, document, currentPackage, stateSelected), document, variablePackage, timer,runtime);
     if ((node.props.binding || node.type==='ProductParameter') && !value) return null;
     const rich = Boolean(node.type==='Text' && props.runs?.length && !props.binding);
     const content=node.type==='ProductParameter'?value:richTextContent({p:props,value,document,packageNode:variablePackage,timer,editing,runtime});
@@ -312,7 +311,7 @@ function Countdown({ props,remaining }) {
   const parts = [Math.floor(remaining / 3600), Math.floor(remaining / 60) % 60, remaining % 60];
   return <span className="nc-countdown"><span style={{ color: props.prefixColor }}>{props.prefix}</span>{parts.map((part, index) => <React.Fragment key={index}>{index > 0 && <span>:</span>}<strong style={{ background: props.digitBackground, borderRadius: 4, padding: '0 3px' }}>{String(part).padStart(2, '0')}</strong></React.Fragment>)}<span>{props.suffix}</span></span>;
 }
-export default function ComponentPreview({ document: sourceDocument, businessTime, businessOrdering, countdownScope, persistCountdown = true, selectedId, highlightedId, onSelect, editing, inspectable = true, navigation, onNavigate, onStatus, onDismiss, onResume, onPurchasePreview, dismissRequest = 0, dismissOnBackdrop = false }) {
+export default function ComponentPreview({ document: sourceDocument, businessTime, businessOrdering, countdownScope, persistCountdown = true, selectedId, highlightedId, onSelect, editing, inspectable = true, navigation, onNavigate, onStatus, onDismiss, onResume, onPurchasePreview, onProductLinkChange, dismissRequest = 0, dismissOnBackdrop = false }) {
   const document=useMemo(()=>localizedDocument(sourceDocument,navigation),[sourceDocument,navigation?.contentLocale,navigation?.contentTheme,navigation?.contentPlatform]);
   const [localRuntime, setRuntime] = useState({});
   const clock=useMemo(()=>clockAnchor(businessTime),[businessTime]);
@@ -322,7 +321,11 @@ export default function ComponentPreview({ document: sourceDocument, businessTim
   const countdownClocks=useRef(new Map());
   let timerStorage;try{timerStorage=typeof window==='undefined'?undefined:window.localStorage;}catch{/* Storage failures use the timer's fallback state. */}
   const timerOptions={scope:countdownScope??document.templateId,storage:timerStorage,persist:persistCountdown,editing};
-  const runtime=promotionRuntime(document,countdownRuntime(document,{...localRuntime,$time:{now:clockNow(clock,tick),context:businessTime}},countdownClocks.current,timerOptions));
+  const runtime=productLinkRuntime(document,countdownRuntime(document,{...localRuntime,$time:{now:clockNow(clock,tick),context:businessTime}},countdownClocks.current,timerOptions));
+  const productLinkKey=JSON.stringify(runtime.$productLinks.events);
+  const productLinkCallback=useRef(onProductLinkChange);
+  productLinkCallback.current=onProductLinkChange;
+  useEffect(()=>{if(!editing)productLinkCallback.current?.(JSON.parse(productLinkKey));},[editing,productLinkKey]);
   const [hoveredId, setHoveredId] = useState(null);
   const previousDocument = useRef(document);
   const viewport = useRef(null), phone=useRef(null), [scale, setScale] = useState(0.82), [viewportHeight, setViewportHeight] = useState(844);
@@ -361,7 +364,7 @@ export default function ComponentPreview({ document: sourceDocument, businessTim
   }, [selectedId, navigationKey, editing]);
   const runAction = (node,item) => {
     setTick(performance.now());
-    const clickRuntime=promotionRuntime(document,countdownRuntime(document,{...runtime,$time:{...runtime.$time,now:clockNow(clock)}},countdownClocks.current,{...timerOptions,editing:false}));
+    const clickRuntime=productLinkRuntime(document,countdownRuntime(document,{...runtime,$time:{...runtime.$time,now:clockNow(clock)}},countdownClocks.current,{...timerOptions,editing:false}));
     const current=logicNode(node,document,clickRuntime,commerce.background.selectedPackage);
     if(current.props.disabled||current.props.hidden)return;
     const action = node.props.action ?? {};
@@ -376,11 +379,13 @@ export default function ComponentPreview({ document: sourceDocument, businessTim
       const target=purchaseTarget(document,node,owner?.type==='Package'?owner:scope.selectedPackage,clickRuntime);
       const row=document.products[target?.props.dataKey??target?.id];
       if(document.productFieldPreview?!target:!row||!productPriceFields(row).total){onStatus('请先选择有效的商品套餐');return;}
-      const pricing=clickRuntime.$pricing?.[target?.id];
-      if(pricing) {
-        const preview={packageId:target.id,priceSource:pricing.phase,countdownId:pricing.timerId,state:pricing.state,expiresAt:pricing.deadline?new Date(pricing.deadline).toISOString():null,checkout:action.action,simulated:true};
+      const countdowns=clickRuntime.$productLinks.byPackage[target?.id]??[];
+      if(countdowns.length&&(countdowns.some(link=>link.linked)||onPurchasePreview)) {
+        const linked=countdowns.some(link=>link.linked);
+        const preview={packageId:target.id,linkProducts:linked,countdowns,checkout:action.action,simulated:true};
         onPurchasePreview?.(preview);
-        onStatus(`购买预览：${pricing.phase==='discount'?'优惠价格':'正常价格'} · 未发起真实交易`);
+        const states={active:'计时中',ended:'已结束',unavailable:'数据不可用'};
+        onStatus(`购买预览：${linked?`跟随商品逻辑（${countdowns.filter(link=>link.linked).map(link=>states[link.state]??link.state).join('、')}）`:'未联动商品，保持计时中商品'} · 未发起真实交易`);
         return;
       }
     }
