@@ -12,6 +12,7 @@ import { PRODUCT_PARAMETERS, productParameterPreview } from '../products/product
 import {pruneGeneratedEmptyLayouts,normalizeHtLabelSlots} from './layoutContainers.js';
 import {buildFreeTrialTemplate} from './freeTrialTemplate.js';
 import {buildVipTierTemplate} from './vipTierTemplate.js';
+import {buildRenewalOfferTemplate} from './renewalOfferTemplate.js';
 import {remapButtonText} from './buttonText.js';
 import {remapPurchasePages} from './purchaseSelection.js';
 
@@ -159,6 +160,7 @@ export function resolveComponentText(node, document, packageNode, selected = fal
 export function importComponentDocument(nodes, template = {}, calibrate = true) {
   if(template.id==='ht-free-trial')return buildFreeTrialTemplate();
   if(template.id==='ht-vip-tiers')return buildVipTierTemplate();
+  if(template.id==='ht-renewal-offer')return buildRenewalOfferTemplate();
   const products = {};
   const detailScreens = [];
   const byParent = new Map(), latest = [], byId = new Map(nodes.map((node) => [node.id, node]));
