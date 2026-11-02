@@ -206,7 +206,7 @@ export function activeComponents(document, runtime, applyLogic=true) {
     }
     if (node.type === 'Switch') children = children.filter((child) => child.type !== 'SwitchCase' || child.props.index === (runtime[node.id] ?? node.props.defaultIndex ?? 0));
     if (node.type === 'ExpressCheckout') children = children.filter((child) => child.props.state === (runtime[node.id] ?? node.props.previewState ?? 'available'));
-    if (node.type === 'Countdown') children = children.filter((child) => child.props.state === (runtime[node.id] ?? (node.props.timeSource==='business'?resolveBusinessTime(document,node.props.timeSourceId,runtime).state:runtime[`countdown-state:${node.id}`] ?? (node.props.previewState !== 'auto' ? node.props.previewState : null) ?? (countdownSeconds(node.props.start ?? '00:10:00') === null ? 'fallback' : countdownSeconds(node.props.start ?? '00:10:00') > 0 ? 'active' : 'ended'))));
+    if (node.type === 'Countdown') children = children.filter((child) => child.props.state === (runtime.$countdowns?.[node.id]?.state ?? runtime[node.id] ?? (node.props.timeSource==='business'?resolveBusinessTime(document,node.props.timeSourceId,runtime).state:runtime[`countdown-state:${node.id}`] ?? (node.props.previewState !== 'auto' ? node.props.previewState : null) ?? (countdownSeconds(node.props.start ?? '00:10:00') === null ? 'fallback' : countdownSeconds(node.props.start ?? '00:10:00') > 0 ? 'active' : 'ended'))));
     if(node.type==='Countdown'&&node.props.fallbackEnabled===false)children=children.filter((child)=>child.props.state!=='fallback');
     children.forEach(visit);
   };

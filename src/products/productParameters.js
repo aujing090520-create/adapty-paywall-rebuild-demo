@@ -1,3 +1,5 @@
+import {promotionFieldPreview} from './promotionFields.js';
+
 export const PRODUCT_PARAMETERS = {
   skuDuration: { label: 'SKU时长', preview: '{SKU时长}' },
   totalPrice: { label: '总价', preview: '¥{总价}' },
@@ -57,10 +59,10 @@ export function effectiveProductParameter(parameter, packageNode) {
   if (definition.lifetime && packageNode.children?.some(hasTotal)) return null;
   return definition.lifetime;
 }
-export function productParameterPreview(parameter, packageNode, selected = false) {
+export function productParameterPreview(parameter, packageNode, selected = false, pricing) {
   const key = effectiveProductParameter(parameter, packageNode), definition = PRODUCT_PARAMETERS[key];
   if (!definition || key === 'productLabel' && packageNode?.props.productLabelEnabled === false) return '';
-  return selected && definition.selectedPreview ? definition.selectedPreview : definition.preview;
+  return promotionFieldPreview(key,selected && definition.selectedPreview ? definition.selectedPreview : definition.preview,pricing);
 }
 export function parameterFromBinding(field, packageNode) {
   const mode = String(packageNode?.props.priceMode ?? '1');

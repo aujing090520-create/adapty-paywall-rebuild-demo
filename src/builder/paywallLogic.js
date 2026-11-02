@@ -14,7 +14,7 @@ export function logicMatches(rule, document, runtime, selectedPackage) {
   const variables=businessValues(document,runtime);
   return rule.conditions.every(condition=>{
     if(condition.value===undefined || condition.value===null || condition.value==='')return false;
-    if(['tab','page','variable','timeSource'].includes(condition.type)&&!condition.source)return false;
+    if(['tab','page','variable','timeSource','countdown'].includes(condition.type)&&!condition.source)return false;
     let actual;
     if(condition.type==='sku') { if(!row?.skuId)return false; actual=row.skuId; }
     else if(condition.type==='package')actual=selectedPackage?.id;
@@ -29,6 +29,7 @@ export function logicMatches(rule, document, runtime, selectedPackage) {
     } else if(condition.type==='hasGift')actual=businessList(document,'gifts',selectedPackage).length>0;
     else if(condition.type==='variable')actual=variables[condition.source];
     else if(condition.type==='timeSource')actual=resolveBusinessTime(document,condition.source,runtime).status;
+    else if(condition.type==='countdown')actual=runtime.$countdowns?.[condition.source]?.status;
     else return false;
     if(actual===undefined)return false;
     const equal=comparable(actual)===comparable(condition.value);

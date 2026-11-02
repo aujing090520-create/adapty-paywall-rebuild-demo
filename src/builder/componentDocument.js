@@ -8,7 +8,7 @@ import { effectiveFillType } from './propertyModel.js';
 import { localSettingsResetting } from '../templateStorage.js';
 import { packageDisplayFields } from '../products/packageFields.js';
 import {validWorkbenchConfiguration} from './workbenchModel.js';
-import { PRODUCT_PARAMETERS, productParameterPreview } from '../products/productParameters.js';
+import { PRODUCT_PARAMETERS, productParameterPreview,parameterFromBinding } from '../products/productParameters.js';
 import {pruneGeneratedEmptyLayouts,normalizeHtLabelSlots} from './layoutContainers.js';
 import {buildFreeTrialTemplate} from './freeTrialTemplate.js';
 import {buildVipTierTemplate} from './vipTierTemplate.js';
@@ -98,6 +98,7 @@ export function validDocument(document) {
     if (depth > 40 || !node || typeof node.id !== 'string' || ids.has(node.id) || !COMPONENT_TYPES.includes(node.type) || !Array.isArray(node.children) || !node.props || typeof node.props !== 'object') return false;
     ids.add(node.id);
     if (node.type === 'ProductParameter' && !Object.hasOwn(PRODUCT_PARAMETERS, node.props.parameter)) return false;
+    if(node.type==='Countdown'&&node.props.promotion!==undefined){const value=node.props.promotion;if(!value||typeof value!=='object'||Array.isArray(value)||value.group!==undefined&&typeof value.group!=='string'||['enabled','hideLabel','hideReference','hideSavings'].some(key=>value[key]!==undefined&&typeof value[key]!=='boolean'))return false;}
     return (CONTAINER_TYPES.has(node.type) || !node.children.length) && node.children.every((child) => visit(child, depth + 1));
   };
   return visit(document.root) && (!document.settings?.presentationSurfaceId || indexDocument(document).nodes.get(document.settings.presentationSurfaceId)?.type === 'BottomSheet');
@@ -146,10 +147,11 @@ export function moveComponent(document, id, parentId, at = Infinity) {
   if (descendants.has(parentId)) return document;
   return insertComponent(removeComponent(document, id), parentId, node, at);
 }
-export function resolveComponentText(node, document, packageNode, selected = false) {
-  if (node.type === 'ProductParameter') return productParameterPreview(node.props.parameter, packageNode, selected);
+export function resolveComponentText(node, document, packageNode, selected = false, pricing) {
+  if (node.type === 'ProductParameter') return productParameterPreview(node.props.parameter, packageNode, selected,pricing);
   const binding = node.props.binding;
   if (!binding) return node.props.runs?.length ? node.props.runs.map((run) => `${run.breakBefore ? '\n' : ''}${run.text ?? ''}`).join('') : node.props.text ?? '';
+  if(pricing&&parameterFromBinding(binding.field,packageNode))return productParameterPreview(parameterFromBinding(binding.field,packageNode),packageNode,selected,pricing);
   return String(packageDisplayFields(document, packageNode, selected, binding.key)[binding.field] ?? '');
 }
 
@@ -318,7 +320,8 @@ export function cloneComponent(node, idMap) {
   const ids=idMap instanceof Map?idMap:new Map();
   const collect = (entry) => { ids.set(entry.id, crypto.randomUUID()); entry.children.forEach(collect); }; collect(node);
   const actionRefs=action=>{const patch={...Object.fromEntries(['actionPage','packageId'].filter(key=>ids.has(action?.[key])).map(key=>[key,ids.get(action[key])])),...(action?.pagePackages?{pagePackages:remapPurchasePages(action.pagePackages,ids)}:{})};return Object.keys(patch).length?{action:{...action,...patch}}:{};};
-  const visit = (entry) => ({ ...entry, id: ids.get(entry.id), props: { ...entry.props, ...remapButtonText(entry.props.buttonText,ids), ...(entry.props.comparisonRowId ? {comparisonRowId:ids.get(entry.props.comparisonRowId)} : {}), ...(ids.has(entry.props.target) ? { target: ids.get(entry.props.target) } : {}), ...(ids.has(entry.props.pageId)?{pageId:ids.get(entry.props.pageId)}:{}), ...(ids.has(entry.props.initialStepId)?{initialStepId:ids.get(entry.props.initialStepId)}:{}), ...(ids.has(entry.props.switchTarget) ? { switchTarget: ids.get(entry.props.switchTarget) } : {}), ...actionRefs(entry.props.action), ...(ids.has(entry.props.group) ? { group: ids.get(entry.props.group) } : {}), ...(entry.type === 'Package' && !ids.has(entry.props.group) ? { defaultSelected: false } : {}), ...(entry.props.visibleWhen && ids.has(entry.props.visibleWhen.id) ? { visibleWhen: { ...entry.props.visibleWhen, id: ids.get(entry.props.visibleWhen.id) } } : {}) }, children: entry.children.map(visit) });
+  const promotionRefs=props=>props.promotion?{promotion:{...props.promotion,group:ids.get(props.promotion.group)??props.promotion.group}}:{};
+  const visit = (entry) => ({ ...entry, id: ids.get(entry.id), props: { ...entry.props, ...promotionRefs(entry.props), ...remapButtonText(entry.props.buttonText,ids), ...(entry.props.comparisonRowId ? {comparisonRowId:ids.get(entry.props.comparisonRowId)} : {}), ...(ids.has(entry.props.target) ? { target: ids.get(entry.props.target) } : {}), ...(ids.has(entry.props.pageId)?{pageId:ids.get(entry.props.pageId)}:{}), ...(ids.has(entry.props.initialStepId)?{initialStepId:ids.get(entry.props.initialStepId)}:{}), ...(ids.has(entry.props.switchTarget) ? { switchTarget: ids.get(entry.props.switchTarget) } : {}), ...actionRefs(entry.props.action), ...(ids.has(entry.props.group) ? { group: ids.get(entry.props.group) } : {}), ...(entry.type === 'Package' && !ids.has(entry.props.group) ? { defaultSelected: false } : {}), ...(entry.props.visibleWhen && ids.has(entry.props.visibleWhen.id) ? { visibleWhen: { ...entry.props.visibleWhen, id: ids.get(entry.props.visibleWhen.id) } } : {}) }, children: entry.children.map(visit) });
   return visit(node);
 }
 
