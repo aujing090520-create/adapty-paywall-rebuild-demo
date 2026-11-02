@@ -62,6 +62,7 @@ export const templates = [
   { id: "ht-free-trial", title: "HelloTalk 免费试用页", subtitle: "权益、到期提醒与试用套餐轮播", tags: ["2 products", "Carousel", "Trial timeline"], productCount: 2, media: "image", components: ["Carousel", "Trial timeline"], category: "Popular", theme: "ht-trial", visual: "ht-trial", documentTemplate: "free-trial", nativeDocument: true },
   { id: "ht-vip-tiers", title: "VIP分级页面", subtitle: "VIP 与 VIP+ 双页面切换，各自独立权益与套餐", tags: ["5 products", "Tabs"], productCount: 5, media: "image", components: ["Tabs"], category: "Popular", theme: "ht-tiers", visual: "ht-tiers", documentTemplate: "vip-tiers", nativeDocument: true },
   { id: "ht-renewal-offer", title: "HelloTalk 续费折扣页", subtitle: "底部半窗、续订套餐与限时优惠", tags: ["1 product", "Timer"], productCount: 1, media: "image", components: ["Timer"], category: "Popular", theme: "ht-renewal", visual: "ht-renewal", documentTemplate: "renewal-offer", nativeDocument: true },
+  { id: "ht-intro-price", title: "HelloTalk 入门价格页", subtitle: "首月优惠、权益说明与月价展示", tags: ["1 product"], productCount: 1, media: "none", components: [], category: "Popular", theme: "ht-intro", visual: "ht-intro", documentTemplate: "intro-price", nativeDocument: true },
 ];
 
 export const node = (id, type, content = "", depth = 0, extra = {}) => ({ id, type, label: "", content, depth, ...extra });

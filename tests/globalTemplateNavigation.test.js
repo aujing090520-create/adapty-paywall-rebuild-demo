@@ -11,7 +11,7 @@ const catalog=templates.filter(template=>template.documentTemplate||template.isG
 const load=template=>upgradeCanonicalComponents(importComponentDocument(createBuilderNodes(template.id),template));
 const isNavigation=node=>node.type==='Button'&&node.children.some(child=>child.type==='Icon'&&['tabler:outline:x','tabler:outline:arrow-left','tabler:outline:chevron-left'].includes(child.props.icon));
 test('all catalog templates are valid; every existing page navigation is in fixed screen chrome',()=>{
-  assert.equal(catalog.length,48);
+  assert.equal(catalog.length,49);
   let navigation=0,headers=0;
   for(const template of catalog){
     const document=load(template),{nodes,parents}=indexDocument(document);
@@ -28,7 +28,7 @@ test('all catalog templates are valid; every existing page navigation is in fixe
     }
     assert.equal(buildTemplateNavigationHeaders(document),document,template.id);
   }
-  assert.equal(navigation,40);assert.equal(headers,40);
+  assert.equal(navigation,41);assert.equal(headers,41);
 });
 test('pinning preserves button IDs/actions/modal ownership and does not mutate its input',()=>{
   const button=component('close','Button','关闭',{action:{action:'OpenSheet',actionPage:'sheet'}},[component('icon','Icon','图标',{icon:'tabler:outline:x'}),component('sheet','BottomSheet','弹窗',{presentation:'overlay'})]);
