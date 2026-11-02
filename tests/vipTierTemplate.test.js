@@ -13,6 +13,20 @@ import {previewCommerceContexts} from '../src/builder/propertyModel.js';
 import {templates,createBuilderNodes} from '../src/templates/templateDefinitions.js';
 import {importComponentDocument} from '../src/builder/componentDocument.js';
 import {PAYWALL_STYLE_TYPES} from '../src/paywallMetadata.js';
+import {readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+
+test('VIP tier headers use the unchanged supplied full-width transparent originals without duplicate copy',()=>{
+  const doc=buildVipTierTemplate(),nodes=indexDocument(doc).nodes;
+  for(const [key,file,hash] of [['vip','vip-header.png','bc14ac77c97688ba5873dd32219bb571a8ca43c177a5708f1753e69f7f713fb5'],['plus','vip-plus-header.png','e1fcad09bdea4c3f424e01bef4c70d6794f1edefbb97bca2f818d61074c04545']]){
+    const hero=nodes.get(`tiers/${key}/hero`),art=hero.children[0],bytes=readFileSync(new URL(`../public/vip-tiers/${file}`,import.meta.url));
+    assert.equal(hero.children.length,1);assert.equal(art.type,'Image');assert.equal(art.props.src,`/vip-tiers/${file}`);
+    assert.equal(art.props.widthMode,'fill');assert.equal(art.props.heightMode,'fit');assert.equal(art.props.objectFit,'contain');
+    assert.equal(bytes.readUInt32BE(16),1170);assert.equal(bytes.readUInt32BE(20),384);
+    assert.equal(createHash('sha256').update(bytes).digest('hex'),hash);
+    assert.equal(nodes.has(`tiers/${key}/hero/copy`),false);
+  }
+});
 
 test('VIP tier template registers two complete editable screen scenes, five parameter-only packages and fixed footers',()=>{
   const template=templates.find(item=>item.id==='ht-vip-tiers'),doc=importComponentDocument(createBuilderNodes(template.id),template),{nodes,parents}=indexDocument(doc);
