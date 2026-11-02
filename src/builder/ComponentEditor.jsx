@@ -239,8 +239,24 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
     setSceneUndo({ before: mainDocument, after: next }); setMainDocument(next); setFocusedOfferingId(null); select(exitSource.id, next, null); setStatus('已移除弹窗及其关联');
   };
   const duplicateAt=(id)=>{const owner=nodes.get(parents.get(id));if(!owner)return;const result=pasteFragment(document,owner.id,copyFragment(document,id),owner.children.findIndex((node)=>node.id===id)+1);if(result.ids.length){const copyId=result.ids[0],copy=indexDocument(result.document).nodes.get(copyId);setDocument(['Screen','BottomSheet'].includes(copy.type)?updateComponent(result.document,copyId,{name:uniqueSceneName(result.document,copy.name,copyId)}):result.document);setSelectedId(copyId);}};
+  const copyLayer=(node)=>{editorClipboard.fragment=copyFragment(document,node.id,node.type==='Screen');setStatus('已复制图层');};
+  const pasteLayer=(node)=>{
+    const target=CONTAINER_TYPES.has(node.type)?node:nodes.get(parents.get(node.id));
+    if(!target)return;
+    const result=pasteFragment(document,target.id,editorClipboard.fragment);
+    if(!result.ids.length)return setStatus(editorClipboard.fragment?.roots.length?'此位置不能容纳已复制的组件':'请先复制组件');
+    setDocument(result.document);select(result.ids[0],result.document);setStatus(`已粘贴到「${target.type==='Screen'?target.name:COMPONENT_NAMES[target.type]}」`);
+  };
+  const clipboardKey=(event)=>{
+    if(!editing||event.defaultPrevented||!(event.metaKey||event.ctrlKey)||event.altKey||event.shiftKey||event.target.closest?.('input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="textbox"]'))return;
+    const key=event.key.toLowerCase();if(!['c','v'].includes(key))return;
+    if(key==='v'&&!editorClipboard.fragment)return;
+    event.preventDefault();if(key==='c')copyLayer(selected);else pasteLayer(selected);
+  };
   const menuAction=(action)=>{
     const node=nodes.get(layerMenu?.id);if(!node)return;const owner=nodes.get(parents.get(node.id));setLayerMenu(null);
+    if(action==='copy'){copyLayer(node);return;}
+    if(action==='paste'){pasteLayer(node);return;}
     if (layerMenu.scene && action === 'delete') { deleteScene(node.id); return; }
     if (layerMenu.scene && action === 'unlink') { unlink(); return; }
     if(layerMenu.step&&action!=='rename'){
@@ -251,8 +267,6 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
       setMainDocument(next);select(id,next,null);return;
     }
     if(action==='rename' && node.type === 'Screen'){select(node.id);setRenaming({id:node.id,before:node.name});}
-    if(action==='copy'){editorClipboard.fragment=copyFragment(document,node.id,node.id===document.root.id||node.id===pages.active.id);setStatus('已复制图层');}
-    if(action==='paste'){const target=CONTAINER_TYPES.has(node.type)?node:owner;if(!target)return;const result=pasteFragment(document,target.id,editorClipboard.fragment);if(result.ids.length){setDocument(result.document);setSelectedId(result.ids[0]);setCollapsed((old)=>new Set([...old].filter((id)=>id!==target.id)));}}
     if(action==='duplicate')duplicateAt(node.id);
     if(action==='wrap'){const result=wrapInStack(document,node.id);setDocument(result.document);setSelectedId(result.id);}
     if(action==='copyStyles'){editorClipboard.styles=copyStyles(node,document.fonts);setStatus('已复制样式');}
@@ -303,7 +317,7 @@ export default function ComponentEditor({ template, initialNodes, initialDocumen
   const previewDocument = previewMode === 'modal' ? activeExit?.document ?? modalPresentationDocument(mainDocument, surface?.id) ?? mainDocument : mainDocument;
   const interactiveNavigation=previewMode==='modal'&&previewDocument.settings?.presentationSurfaceId?{...previewNavigation,overlay:previewDocument.settings.presentationSurfaceId}:previewNavigation;
   const startPreview = (mode = 'flow') => { const flow=workflow.flow; setPreviewMode(mode); const content=Object.fromEntries(Object.entries(navigation).filter(([key])=>key.startsWith('content')||key.startsWith('business:')));setPreviewNavigation({...content,...(flow?{[flow.id]:mode==='close'?flow.children.findIndex((page)=>page.id===exitSource.id):flowInitialIndex(flow),[`history:${flow.id}`]:[],overlay:null}:{overlay:null})}); setEditing(false); workbench.current?.scrollIntoView?.({block:'start'}); };
-  return <div className="native-editor" data-no-translate="true">
+  return <div className="native-editor" data-no-translate="true" onKeyDown={clipboardKey}>
     {workbenchPanel&&<React.Suspense fallback={<div role="status">加载工作区配置</div>}><WorkbenchSettings document={document} onChange={setDocument} initialTab={workbenchPanel} onClose={()=>setWorkbenchPanel(null)} onPreview={updatePreviewContext}/></React.Suspense>}
     {saveError && <p className="ne-error" role="alert">{saveError}{blockedSave ? '。为保护原记录，本次未覆盖保存。' : ''}</p>}
     <div className="builder ne-builder" ref={workbench}>
