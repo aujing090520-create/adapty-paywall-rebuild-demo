@@ -1,4 +1,4 @@
-export const PAYWALL_STYLE_TYPES = ['会员套餐页', '入门价格页', '注册引导免费试用页', '免费试用页', '蓝色特权页', '支付未完成页', 'SKU半窗', '赠送礼物页', 'VIP分级页面', '续费折扣页'];
+export const PAYWALL_STYLE_TYPES = ['会员套餐页', '入门价格页', '注册引导免费试用页', '免费试用页', '蓝色特权页', '支付未完成页', 'SKU半窗', '赠送礼物页', 'VIP分级页面', '续费折扣页', '单独售卖-访客', '单独售卖-学习语言', '单独售卖-直播语聊'];
 
 export const freshPaywallDraft = () => ({ styleType: PAYWALL_STYLE_TYPES[0], name: '', enabled: false });
 

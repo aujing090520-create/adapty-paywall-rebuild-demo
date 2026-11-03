@@ -63,6 +63,9 @@ export const templates = [
   { id: "ht-vip-tiers", title: "VIP分级页面", subtitle: "VIP 与 VIP+ 双页面切换，各自独立权益与套餐", tags: ["5 products", "Tabs"], productCount: 5, media: "image", components: ["Tabs"], category: "Popular", theme: "ht-tiers", visual: "ht-tiers", documentTemplate: "vip-tiers", nativeDocument: true },
   { id: "ht-renewal-offer", title: "HelloTalk 续费折扣页", subtitle: "底部半窗、续订套餐与限时优惠", tags: ["1 product", "Timer"], productCount: 1, media: "image", components: ["Timer"], category: "Popular", theme: "ht-renewal", visual: "ht-renewal", documentTemplate: "renewal-offer", nativeDocument: true },
   { id: "ht-intro-price", title: "HelloTalk 入门价格页", subtitle: "首月优惠、权益说明与月价展示", tags: ["1 product", "Timer"], productCount: 1, media: "none", components: ["Timer"], category: "Popular", theme: "ht-intro", visual: "ht-intro", documentTemplate: "intro-price", nativeDocument: true },
+  { id: "ht-standalone-visitor", title: "单独售卖-访客", subtitle: "访客特权、独立套餐与访客示例", tags: ["3 products"], productCount: 3, media: "image", components: [], category: "Popular", theme: "ht-visitor", visual: "ht-visitor", documentTemplate: "standalone-visitor", nativeDocument: true },
+  { id: "ht-standalone-languages", title: "单独售卖-学习语言", subtitle: "额外学习语言与独立套餐", tags: ["3 products"], productCount: 3, media: "image", components: [], category: "Popular", theme: "ht-languages", visual: "ht-languages", documentTemplate: "standalone-languages", nativeDocument: true },
+  { id: "ht-standalone-live-voice", title: "单独售卖-直播语聊", subtitle: "直播语聊无限时长与独立套餐", tags: ["3 products"], productCount: 3, media: "image", components: [], category: "Popular", theme: "ht-live-voice", visual: "ht-live-voice", documentTemplate: "standalone-live-voice", nativeDocument: true },
 ];
 
 export const node = (id, type, content = "", depth = 0, extra = {}) => ({ id, type, label: "", content, depth, ...extra });

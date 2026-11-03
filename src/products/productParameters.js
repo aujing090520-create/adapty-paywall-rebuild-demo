@@ -2,6 +2,7 @@ export const PRODUCT_PARAMETERS = {
   skuDuration: { label: 'SKU时长', preview: '{SKU时长}' },
   totalPrice: { label: '总价', preview: '¥{总价}' },
   monthlyPrice: { label: '月价', preview: '¥{月价}/月', lifetime: 'totalPrice' },
+  weeklyPrice: { label: '周价', preview: '¥{周价}/周', lifetime: 'totalPrice' },
   totalReferencePrice: { label: '划线总价', preview: '{总价}', strike: true },
   monthlyReferencePrice: { label: '划线月价', preview: '{月价}/月', strike: true, lifetime: 'totalReferencePrice' },
   productLabel: { label: '商品标签', preview: '{商品标签}', selectedPreview: '{选中商品标签}' },
