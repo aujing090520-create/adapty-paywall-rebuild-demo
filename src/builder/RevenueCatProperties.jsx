@@ -18,6 +18,7 @@ import {COMPARISON_ORDER_RULES} from './comparisonOrdering.js';
 import {flowInitialIndex} from './componentTree.js';
 import {countdownLinksProducts} from './countdownProductLink.js';
 import {PAGE_PRESENTATIONS,pagePresentation} from './pagePresentation.js';
+import {giftPackages,packageGifts} from './productGifts.js';
 import { Italic, Underline, Strikethrough } from 'lucide-react';
 import { PRODUCT_PARAMETERS, PRODUCT_PARAMETER_OPTIONS, PACKAGE_PRICE_MODES, packagePriceMode, effectiveProductParameter, productParameterPreview } from '../products/productParameters.js';
 import {isGradient,pickerColor,pickerPaint} from './colorModel.js';
@@ -456,7 +457,46 @@ function BadgeSection({selected,p,patch,document}){
   </div>}</PropertySection>;
 }
 
-export default function RevenueCatProperties({ selected, p, patch, document, nodes, parents, findPackage, resolveText, changeProduct, fieldNames, demoSkus, navigation = {}, setNavigation, onStatus, setDefaultPackage, onPackageGroupChange, onMediaType, onPageControl, onFontsChange, onModalCreate, onModalEdit, onTimeSources, onCountdownContentChange, onSelectComponent }) {
+function ProductGiftsFields({selected,p,patch,document,nodes,parents,navigation,setNavigation,onChange,onStatus}) {
+  const all=giftPackages(document,{...selected,props:{...p,selectionGroup:''}},nodes,parents);
+  const groups=[...new Set(all.map(node=>node.props.group??node.id))];
+  const packages=all.filter(node=>!p.selectionGroup||(node.props.group??node.id)===p.selectionGroup);
+  const [editingPackage,setEditingPackage]=React.useState('');
+  const target=packages.find(node=>node.id===editingPackage)??packages.find(node=>node.id===navigation.selectedPackage)??packages.find(node=>node.props.defaultSelected)??packages[0];
+  const gifts=target?packageGifts(document,target):[];
+  const update=(index,key,value)=>onChange?.(target.id,gifts.map((item,at)=>at===index?{...item,[key]:value}:item));
+  return <>
+    <PropertySection title="礼包联动">
+      <Select label="关联套餐选择组" value={p.selectionGroup??''} options={[[ '', '当前页面选中套餐' ],...groups.map((key,index)=>[key,`套餐选择组 ${index+1}（${all.filter(node=>(node.props.group??node.id)===key).length} 个套餐）`]),...(p.selectionGroup&&!groups.includes(p.selectionGroup)?[[p.selectionGroup,'原选择组不可用，请重新选择']]:[])]} onChange={selectionGroup=>patch({selectionGroup})}/>
+      <Select label="配置礼包的套餐" value={target?.id??''} options={packages.length?packages.map((node,index)=>[node.id,`套餐 ${index+1}${node.props.productType==='lifetime'?' · 终身':''}${node.props.defaultSelected?'（默认选中）':''}`]):[[ '', '当前页面没有商品套餐' ]]} onChange={id=>{setEditingPackage(id);const node=packages.find(item=>item.id===id);if(node)setNavigation({selectedPackage:id,[`package:${node.props.group??id}`]:id});}}/>
+      <output>无礼包的套餐不显示此组件</output>
+    </PropertySection>
+    <PropertySection title="礼包内容">
+      <Field label="礼包标题"><input aria-label="礼包标题" value={p.title??''} onChange={event=>patch({title:event.target.value})}/></Field>
+      <Field label="礼包说明"><textarea aria-label="礼包说明" value={p.description??''} onChange={event=>patch({description:event.target.value})}/></Field>
+      <CheckboxField label="允许展开收起" checked={p.collapsible!==false} onChange={collapsible=>patch({collapsible})}/>
+      {p.collapsible!==false&&<CheckboxField label="初始展开" checked={p.initialExpanded!==false} onChange={initialExpanded=>patch({initialExpanded})}/>}
+      {gifts.map((item,index)=><fieldset key={item.id??index}><legend>{`礼包 ${index+1}`}</legend>
+        <Field label="礼包名称"><input aria-label="礼包名称" value={item.title??''} onChange={event=>update(index,'title',event.target.value)}/></Field>
+        <Field label="礼包详情"><textarea aria-label="礼包详情" value={item.description??''} onChange={event=>update(index,'description',event.target.value)}/></Field>
+        <MediaEditor value={item.image??''} type="Image" onChange={value=>update(index,'image',value)} onError={onStatus}/>
+        <Field label="礼包链接"><input aria-label="礼包链接" value={item.url??''} onChange={event=>update(index,'url',event.target.value)}/></Field>
+        <CheckboxField label="启用礼包" checked={item.enabled!==false} onChange={enabled=>update(index,'enabled',enabled)}/>
+        <button type="button" className="rc-secondary" onClick={()=>onChange?.(target.id,gifts.filter((_,at)=>at!==index))}>删除此礼包</button>
+      </fieldset>)}
+      <button type="button" className="rc-secondary" disabled={!target} onClick={()=>onChange?.(target.id,[...gifts,{id:crypto.randomUUID(),title:'新礼包',description:'',image:'',url:''}])}><Plus size={15}/>添加礼包</button>
+    </PropertySection>
+    <PropertySection title="礼包样式">
+      <NumberField label="标题字号" value={p.fontSize} min={8} max={80} onChange={fontSize=>patch({fontSize})}/>
+      <PaintField label="标题颜色" property="color" p={p} patch={patch}/>
+      {[['cardWidth','卡片宽度',190],['cardHeight','卡片最小高度',68],['imageSize','礼包图片尺寸',40],['cardGap','卡片间距',10],['cardRadius','卡片圆角',18],['cardFontSize','卡片字号',16]].map(([key,label,value])=><NumberField key={key} label={label} value={p[key]??value} min={key==='cardWidth'?80:key==='cardFontSize'?8:0} max={500} onChange={value=>patch({[key]:value})}/>)}
+      <ColorField label="卡片背景颜色" value={p.cardBackground??'#ffffff'} onChange={cardBackground=>patch({cardBackground})}/>
+      <ColorField label="卡片文字颜色" value={p.cardColor??'#171717'} onChange={cardColor=>patch({cardColor})}/>
+    </PropertySection>
+  </>;
+}
+
+export default function RevenueCatProperties({ selected, p, patch, document, nodes, parents, findPackage, resolveText, changeProduct, fieldNames, demoSkus, navigation = {}, setNavigation, onStatus, setDefaultPackage, onPackageGroupChange, onPackageGiftsChange, onMediaType, onPageControl, onFontsChange, onModalCreate, onModalEdit, onTimeSources, onCountdownContentChange, onSelectComponent }) {
   const rule=selected.type==='Text'?textRuleName(navigation.textRule):'default';
   const textP=textRuleProps(p,rule), textPatch=(values)=>patch(textRulePatch(p,rule,values));
   const owner = selected.type==='Indicators'?selected:selectionOwner(selected, nodes, parents);
@@ -466,6 +506,7 @@ export default function RevenueCatProperties({ selected, p, patch, document, nod
   const styleP = stateStyleProps(p, stateful && packageState === 'selected');
   const stylePatch = stateful && packageState === 'selected' ? (values) => patch(Object.fromEntries(Object.entries(values).map(([key, value]) => [selectedStyleKey(key), value]))) : patch;
   return <FontContext.Provider value={{fonts:document.fonts??[],onFontsChange}}><div className="rc-properties-body">
+    {selected.type==='ProductGifts'&&<ProductGiftsFields selected={selected} p={p} patch={patch} document={document} nodes={nodes} parents={parents} navigation={navigation} setNavigation={setNavigation} onChange={onPackageGiftsChange} onStatus={onStatus}/>}
     {selected.type==='Screen'&&!selected.children.some(child=>child.type==='Flow')&&<PropertySection title="页面展示">
       <Select label="展示方式" value={pagePresentation(p)} options={PAGE_PRESENTATIONS} onChange={pagePresentation=>patch({pagePresentation,...(pagePresentation==='window'&&p.windowInset===undefined?{windowInset:20}:{})})}/>
       {pagePresentation(p)!=='fullscreen'&&<><NumberField label="窗口高度" value={p.windowHeight??600} min={120} max={844} onChange={windowHeight=>patch({windowHeight})}/><NumberField label="窗口边距" value={p.windowInset??0} max={100} onChange={windowInset=>patch({windowInset})}/><NumberField label="窗口圆角" value={p.windowRadius??24} max={100} onChange={windowRadius=>patch({windowRadius})}/><ColorField label="窗口外背景" value={p.windowBackdrop??'#8f8f8f'} onChange={windowBackdrop=>patch({windowBackdrop})}/></>}

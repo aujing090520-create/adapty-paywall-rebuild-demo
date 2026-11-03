@@ -35,6 +35,8 @@ import {componentBadgeProps} from './propertyModel.js';
 import {buttonTextResolution} from './buttonText.js';
 import {countdownRuntime} from './countdownState.js';
 import {productLinkRuntime} from './countdownProductLink.js';
+import ProductGiftsPreview from './ProductGiftsPreview.jsx';
+import {giftPackages,giftPackage,visiblePackageGifts} from './productGifts.js';
 
 const PreviewContext = createContext(null);
 const TimerContext = createContext(null);
@@ -210,6 +212,11 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
   if(productLinks.length&&['Package','PurchaseButton'].includes(node.type))attributes['data-product-link-state']=productLinks.some(link=>link.linked)?productLinks.filter(link=>link.linked).map(link=>link.state).join(','):'static';
   if(repeated&&repeated.index>0){attributes['data-component-id']=`${node.id}::${repeated.item.id}`;attributes['data-template-id']=node.id;}
   const children = (items = orderedComparisonCells(node,parentNode,context.businessOrdering), background = true) => <>{background && <BackgroundVideo props={props} />}{entries?entries.map((item,index)=><ItemContext.Provider key={item.id} value={{item,index}}>{items.filter(child=>child.type!=='BottomSheet').map(child=><NativeComponent key={child.id} node={child} packageNode={currentPackage}/>)}</ItemContext.Provider>):items.map((child) => <NativeComponent key={child.id} node={child} packageNode={currentPackage} />)}{background&&<ComponentBadge node={visualNode} document={document} packageNode={variablePackage} timer={timer}/>}</>;
+  if(node.type==='ProductGifts'){
+    const candidates=giftPackages(document,node,context.nodeIndex,context.parentIndex).filter(entry=>context.packages.some(active=>active.id===entry.id));
+    const target=giftPackage(candidates,runtime,variablePackage),gifts=visiblePackageGifts(document,target);
+    return gifts.length?<ProductGiftsPreview attributes={attributes} props={props} items={gifts} packageId={target.id} editing={editing} safeMediaSource={safeMediaSource}/>:null;
+  }
   if(props.dataSource||props.collapsible||node.type==='Stack'&&props.horizontalScroll)return <div {...attributes} style={{...style,...(props.collapsible?{display:'flex',flexDirection:'column'}:containerStyle(visualNode)),...(props.horizontalScroll?{overflowX:'auto',overscrollBehaviorX:'contain'}:{})}}>{props.collapsible?<Disclosure label={props.collapseLabel??'展开内容'} delay={props.autoExpandDelay??1500} scope={`${variablePackage?.id??''}:${entries?.map(item=>item.id).join(',')??node.id}`} editing={editing}><div className="nc-disclosure-content" style={{...containerStyle(visualNode),flex:'1 1 auto',minWidth:0,minHeight:0}}>{children()}</div></Disclosure>:children()}</div>;
   if(node.type==='PageControl')return <div {...attributes} style={{...style,display:'flex',justifyContent:'center',alignItems:'center',gap:props.gap}}>{children()}</div>;
   if(node.type==='Indicators')return <>{sequence?.pages.map((page,index)=>{

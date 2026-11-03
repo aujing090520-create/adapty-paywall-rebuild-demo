@@ -17,10 +17,13 @@ import {buildIntroPriceTemplate} from './introPriceTemplate.js';
 import {buildStandaloneTemplate,STANDALONE_TEMPLATES} from './standaloneTemplates.js';
 import {remapButtonText} from './buttonText.js';
 import {remapPurchasePages} from './purchaseSelection.js';
+import {createProductGifts} from './productGifts.js';
 
 export const DOCUMENT_VERSION = 3;
 export const COMPONENT_TYPES = ['Screen', 'Stack', 'Text', 'ProductParameter', 'Image', 'Video', 'Icon', 'Custom', 'Header', 'Footer', 'Package', 'PurchaseButton', 'BottomSheet', 'ExpressCheckout', 'CheckoutState', 'Wallet', 'Button', 'Tabs', 'Tab', 'TabControl', 'TabButton', 'Carousel', 'Slide', 'PageControl', 'Indicators', 'Timeline', 'TimelineItem', 'Switch', 'SwitchCase', 'Toggle', 'Countdown', 'CountdownState', 'Flow'];
 export const COMPONENT_NAMES = { Screen: '页面', Stack: '布局容器', Text: '文字', Image: '图片', Video: '视频', Icon: '图标', Custom: '自定义网页', Header: '页头', Footer: '页脚', Package: '商品', PurchaseButton: '购买按钮', BottomSheet: '底部弹层', ExpressCheckout: '快捷结账', CheckoutState: '结账状态内容', Wallet: '钱包按钮', Button: '按钮', Tabs: '标签页', Tab: '标签页面', TabControl: '标签按钮组', TabButton: '标签按钮', Carousel: '轮播', Slide: '轮播页', Timeline: '时间线', TimelineItem: '时间节点', Switch: '开关', SwitchCase: '开关状态内容', Toggle: '开关控件', Countdown: '倒计时', CountdownState: '倒计时状态内容', Flow: '多页面流程' };
+COMPONENT_TYPES.push('ProductGifts');
+COMPONENT_NAMES.ProductGifts='商品礼包';
 Object.assign(COMPONENT_NAMES, { ProductParameter: '商品参数', PageControl: '分页控件', Indicators: '分页指示器',Custom:'自定义组件',BottomSheet:'弹窗',Package:'商品套餐' });
 export const CONTAINER_TYPES = new Set(['Screen', 'Stack', 'Header', 'Footer', 'Package', 'PurchaseButton', 'BottomSheet', 'ExpressCheckout', 'CheckoutState', 'Button', 'Tabs', 'Tab', 'TabControl', 'TabButton', 'Carousel', 'Slide', 'PageControl', 'Timeline', 'TimelineItem', 'Switch', 'SwitchCase', 'Countdown', 'CountdownState', 'Flow']);
 export const DEFAULT_PROPS = { axis: 'vertical', gap: 8, align: 'stretch', justify: 'start', widthMode: 'fill', width: 160, minWidth: 0, maxWidth: 0, heightMode: 'fit', height: 160, minHeight: 0, maxHeight: 0, paddingTop: 0, paddingRight: 0, paddingBottom: 0, paddingLeft: 0, paddingVertical: 0, paddingHorizontal: 0, paddingMode: 'axis', marginTop: 0, marginRight: 0, marginBottom: 0, marginLeft: 0, marginVertical: 0, marginHorizontal: 0, marginMode: 'axis', background: 'transparent', color: '#171717', radius: 0, borderWidth: 0, borderColor: '#dedee3', fontSize: 14, fontWeight: 400, textAlign: 'left', objectFit: 'contain', opacity: 100, alignSelf: 'auto', shadowX: 0, shadowY: 0, shadowBlur: 0, shadowColor: '#000000', shape: 'rectangle', fillType: 'color', mask: 'none', overlayColor: 'transparent', iconBackground: 'transparent', iconRadius: 0 };
@@ -301,6 +304,7 @@ function gradient(colors, fallback) { return Array.isArray(colors) && colors.len
 
 export function createNativeComponent(type, id = crypto.randomUUID()) {
   if (!COMPONENT_TYPES.includes(type)) throw new Error('Unknown component type');
+  if (type === 'ProductGifts') return createProductGifts(id);
   if (type === 'Text') return text(id, '文字');
   if (type === 'Image' || type === 'Video') return component(id, type, '', { src: '', heightMode: 'fixed', height: 180 });
   if (type === 'Button') return component(id, type, '', { background: '#167aff', radius: 8, ...insets(12), action: { action: 'None' } }, [text(`${id}/text`, '按钮', { color: '#ffffff', textAlign: 'center' })]);
@@ -327,7 +331,7 @@ export function cloneComponent(node, idMap) {
   const ids=idMap instanceof Map?idMap:new Map();
   const collect = (entry) => { ids.set(entry.id, crypto.randomUUID()); entry.children.forEach(collect); }; collect(node);
   const actionRefs=action=>{const patch={...Object.fromEntries(['actionPage','packageId'].filter(key=>ids.has(action?.[key])).map(key=>[key,ids.get(action[key])])),...(action?.pagePackages?{pagePackages:remapPurchasePages(action.pagePackages,ids)}:{})};return Object.keys(patch).length?{action:{...action,...patch}}:{};};
-  const promotionRefs=props=>props.promotion?{promotion:{...props.promotion,group:ids.get(props.promotion.group)??props.promotion.group}}:{};
+  const promotionRefs=props=>({...props.promotion?{promotion:{...props.promotion,group:ids.get(props.promotion.group)??props.promotion.group}}:{},...(ids.has(props.selectionGroup)?{selectionGroup:ids.get(props.selectionGroup)}:{})});
   const visit = (entry) => ({ ...entry, id: ids.get(entry.id), props: { ...entry.props, ...promotionRefs(entry.props), ...remapButtonText(entry.props.buttonText,ids), ...(entry.props.comparisonRowId ? {comparisonRowId:ids.get(entry.props.comparisonRowId)} : {}), ...(ids.has(entry.props.target) ? { target: ids.get(entry.props.target) } : {}), ...(ids.has(entry.props.pageId)?{pageId:ids.get(entry.props.pageId)}:{}), ...(ids.has(entry.props.initialStepId)?{initialStepId:ids.get(entry.props.initialStepId)}:{}), ...(ids.has(entry.props.switchTarget) ? { switchTarget: ids.get(entry.props.switchTarget) } : {}), ...actionRefs(entry.props.action), ...(ids.has(entry.props.group) ? { group: ids.get(entry.props.group) } : {}), ...(entry.type === 'Package' && !ids.has(entry.props.group) ? { defaultSelected: false } : {}), ...(entry.props.visibleWhen && ids.has(entry.props.visibleWhen.id) ? { visibleWhen: { ...entry.props.visibleWhen, id: ids.get(entry.props.visibleWhen.id) } } : {}) }, children: entry.children.map(visit) });
   return visit(node);
 }

@@ -9,7 +9,7 @@ test('every source catalog entry and every native structural type has an explici
   const catalog = COMPONENT_CATALOG.flatMap((group) => group.items.map(([type]) => type));
   assert.equal(REFERENCE_COMPONENTS.length, 20);
   assert.deepEqual(new Set(catalog), new Set([...REFERENCE_COMPONENTS.map(([entry]) => entry), ...PRESETS, ...DEMO_COMPONENTS]));
-  assert.deepEqual(new Set(COMPONENT_TYPES), new Set(['Screen', 'Flow', 'Stack', 'Text', 'ProductParameter', 'Image', 'Video', 'Icon', 'Custom', 'Header', 'Footer', 'Package', 'PurchaseButton', 'BottomSheet', 'ExpressCheckout', 'CheckoutState', 'Wallet', 'Button', 'Tabs', 'Tab', 'TabControl', 'TabButton', 'Carousel', 'Slide', 'PageControl', 'Indicators', 'Timeline', 'TimelineItem', 'Switch', 'SwitchCase', 'Toggle', 'Countdown', 'CountdownState']));
+  assert.deepEqual(new Set(COMPONENT_TYPES), new Set(['Screen', 'Flow', 'Stack', 'Text', 'ProductParameter', 'ProductGifts', 'Image', 'Video', 'Icon', 'Custom', 'Header', 'Footer', 'Package', 'PurchaseButton', 'BottomSheet', 'ExpressCheckout', 'CheckoutState', 'Wallet', 'Button', 'Tabs', 'Tab', 'TabControl', 'TabButton', 'Carousel', 'Slide', 'PageControl', 'Indicators', 'Timeline', 'TimelineItem', 'Switch', 'SwitchCase', 'Toggle', 'Countdown', 'CountdownState']));
 });
 
 for (const [type, rootType] of REFERENCE_COMPONENTS) {

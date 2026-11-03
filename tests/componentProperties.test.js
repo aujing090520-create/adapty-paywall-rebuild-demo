@@ -382,7 +382,7 @@ test('Package preview uses parameter references and switches lifetime semantics 
   } finally { await h.close(); }
 });
 
-for (const type of COMPONENT_TYPES.filter((type) => !['Timeline', 'TimelineItem', 'Carousel', 'PageControl', 'Indicators','Wallet','Countdown','Custom'].includes(type))) {
+for (const type of COMPONENT_TYPES.filter((type) => !['Timeline', 'TimelineItem', 'Carousel', 'PageControl', 'Indicators','Wallet','Countdown','Custom','ProductGifts'].includes(type))) {
   test(`${type}: configuration size, spacing, border and persistence map to the live component`, async () => {
     const node = type === 'BottomSheet' ? component('sample', 'BottomSheet', '底部弹层') : createCatalogComponent(type, 'sample');
     assert.equal(node.type, type);
