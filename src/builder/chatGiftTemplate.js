@@ -23,7 +23,7 @@ export function buildChatGiftTemplate(){
     const cards=periods.map((months,index)=>{
       const cardId=`${id}/package-${index}`,hasLabel=plus?index===1:index>0;products[cardId]={name:months===null?'终身':`${months}个月`,billingMonths:months};
       return n(cardId,'Package',{dataKey:cardId,group,productType:months===null?'lifetime':'subscription',defaultSelected:index===(plus?1:2),priceMode:'1',productLabelEnabled:hasLabel,widthMode:'fill',heightMode:'fixed',height:104,background:'#f7f7f7',selectedBackground:'#f7f7f7',borderWidth:1.5,borderColor:'transparent',selectedBorderColor:purple,radius:13,gap:0},[
-        box(`${cardId}/label`,[param(`${cardId}/label/text`,'productLabel',{fontSize:10,color:'#ffffff',selectedColor:'#ffffff'})],{hidden:!hasLabel,heightMode:'fixed',height:23,background:purple,align:'center',justify:'center',radiusMode:'individual',radiusTopLeft:11,radiusTopRight:11,radiusBottomLeft:0,radiusBottomRight:0}),
+        box(`${cardId}/label`,[param(`${cardId}/label/text`,'productLabel',{fontSize:10,color:'#ffffff',selectedColor:'#ffffff'})],{productField:'badgeText',heightMode:'fixed',height:23,background:purple,align:'center',justify:'center',radiusMode:'individual',radiusTopLeft:11,radiusTopRight:11,radiusBottomLeft:0,radiusBottomRight:0}),
         box(`${cardId}/body`,[
           param(`${cardId}/duration`,'skuDuration',{fontSize:13,lineHeight:1.2,color:'#111111',selectedColor:'#111111'}),
           param(`${cardId}/reference`,'totalReferencePrice',{priceRole:'reference',strike:true,fontSize:11,lineHeight:1.15,color:'#999999',selectedColor:'#999999'}),

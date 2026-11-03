@@ -51,6 +51,17 @@ test('every gift package exposes the same standard fields and four price modes, 
 let server,Preview;
 before(async()=>{globalThis.ResizeObserver=class{observe(){}disconnect(){}};server=await createServer({configFile:false,logLevel:'silent',server:{middlewareMode:true,hmr:false,watch:null}});Preview=(await server.ssrLoadModule('/src/builder/ComponentPreview.jsx')).default;});
 after(async()=>server?.close());
+test('gift package label visibility follows its package switch instead of a hard-hidden container',async()=>{
+  let renderer;const id='chat-gift/vip/package-0';
+  const label=()=>renderer.root.findAll(node=>typeof node.type==='string'&&node.props['data-component-id']===`${id}/label`);
+  const source=make(),props={editing:false,onSelect(){},onStatus(){}};
+  try{
+    await act(async()=>{renderer=Renderer.create(React.createElement(Preview,{...props,document:source}));});assert.equal(label().length,0);
+    const shown=patchComponentProperties(source,id,{productLabelEnabled:true});
+    await act(async()=>renderer.update(React.createElement(Preview,{...props,document:shown})));assert.equal(label().length,1);
+    await act(async()=>renderer.update(React.createElement(Preview,{...props,document:patchComponentProperties(shown,id,{productLabelEnabled:false})})));assert.equal(label().length,0);
+  }finally{await act(async()=>renderer?.unmount());}
+});
 test('real preview switches VIP and PLUS, isolates package selection, simulates purchase and bounds the editable surface',async()=>{
   let renderer,status;const event={stopPropagation(){},preventDefault(){}};
   const node=id=>renderer.root.findAll(entry=>typeof entry.type==='string'&&entry.props['data-component-id']===id)[0];
