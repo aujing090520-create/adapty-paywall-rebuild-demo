@@ -32,19 +32,32 @@ function packagePriceParameters(packageNode) {
 }
 export function packagePriceMode(packageNode) {
   const [primary, reference] = packagePriceParameters(packageNode);
+  if (primary && !reference) return primary.props.parameter === 'monthlyPrice' ? '0' : '1';
   const fallback = PRICE_MODE_PARAMETERS[packageNode.props.priceMode] ?? PRICE_MODE_PARAMETERS['1'];
   const main = primary?.props.parameter ?? fallback[0], struck = reference?.props.parameter ?? fallback[1];
   return Object.keys(PRICE_MODE_PARAMETERS).find(key => PRICE_MODE_PARAMETERS[key][0] === main && PRICE_MODE_PARAMETERS[key][1] === struck) ?? '1';
 }
-export function applyPackagePriceMode(packageNode, mode) {
+export function applyPackagePriceMode(packageNode, mode, usedIds) {
   const fields = PRICE_MODE_PARAMETERS[mode];
   if (!fields) return packageNode;
   const targets = packagePriceParameters(packageNode);
+  let addedReference;
+  if (targets[0] && !targets[1] && ['3','4'].includes(String(mode))) {
+    const collect = node => [node.id,...node.children.flatMap(collect)];
+    const ids = new Set(usedIds ?? collect(packageNode));
+    let id = `${packageNode.id}/reference`,suffix=1;
+    while(ids.has(id))id=`${packageNode.id}/reference-${suffix++}`;
+    // An explicit reference-price mode must work for older cards that only had a sale price.
+    addedReference={id,type:'ProductParameter',name:'商品参数',props:{parameter:fields[1],priceRole:'reference',strike:true,
+      widthMode:'fit',fontSize:12,lineHeight:1.1,fontWeight:400,textAlign:targets[0].props.textAlign??'center',color:'#999999',selectedColor:'#999999'},children:[]};
+  }
   const visit = node => {
     const index = targets.findIndex(target => target?.id === node.id);
     if (index >= 0) return {...node,props:{...node.props,parameter:fields[index],priceRole:index===0?'primary':'reference'}};
     if (node.type === 'Package' && node.id !== packageNode.id) return node;
-    return {...node,children:node.children.map(visit)};
+    return {...node,children:node.children.flatMap(child=>[
+      ...(addedReference&&child.id===targets[0].id?[addedReference]:[]),visit(child),
+    ])};
   };
   const next = visit(packageNode);
   return {...next,props:{...next.props,priceMode:String(mode)}};

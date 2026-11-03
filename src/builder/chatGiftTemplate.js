@@ -22,9 +22,14 @@ export function buildChatGiftTemplate(){
     const periods=plus?[1,3,12]:[3,12,null];
     const cards=periods.map((months,index)=>{
       const cardId=`${id}/package-${index}`,hasLabel=plus?index===1:index>0;products[cardId]={name:months===null?'终身':`${months}个月`,billingMonths:months};
-      return n(cardId,'Package',{dataKey:cardId,group,productType:months===null?'lifetime':'subscription',defaultSelected:index===(plus?1:2),priceMode:'0',productLabelEnabled:hasLabel,widthMode:'fill',heightMode:'fixed',height:104,background:'#f7f7f7',selectedBackground:'#f7f7f7',borderWidth:1.5,borderColor:'transparent',selectedBorderColor:purple,radius:13,gap:0},[
+      return n(cardId,'Package',{dataKey:cardId,group,productType:months===null?'lifetime':'subscription',defaultSelected:index===(plus?1:2),priceMode:'1',productLabelEnabled:hasLabel,widthMode:'fill',heightMode:'fixed',height:104,background:'#f7f7f7',selectedBackground:'#f7f7f7',borderWidth:1.5,borderColor:'transparent',selectedBorderColor:purple,radius:13,gap:0},[
         box(`${cardId}/label`,[param(`${cardId}/label/text`,'productLabel',{fontSize:10,color:'#ffffff',selectedColor:'#ffffff'})],{hidden:!hasLabel,heightMode:'fixed',height:23,background:purple,align:'center',justify:'center',radiusMode:'individual',radiusTopLeft:11,radiusTopRight:11,radiusBottomLeft:0,radiusBottomRight:0}),
-        box(`${cardId}/body`,[param(`${cardId}/duration`,'skuDuration',{fontSize:13,color:'#111111',selectedColor:'#111111'}),param(`${cardId}/price`,'totalPrice',{fontSize:16,fontWeight:700,color:purple,selectedColor:purple})],{gap:8,align:'center',justify:'center',heightMode:'fill',...pad(4,2)}),
+        box(`${cardId}/body`,[
+          param(`${cardId}/duration`,'skuDuration',{fontSize:13,lineHeight:1.2,color:'#111111',selectedColor:'#111111'}),
+          param(`${cardId}/reference`,'totalReferencePrice',{priceRole:'reference',strike:true,fontSize:11,lineHeight:1.15,color:'#999999',selectedColor:'#999999'}),
+          param(`${cardId}/price`,'totalPrice',{priceRole:'primary',fontSize:16,lineHeight:1.2,fontWeight:700,color:purple,selectedColor:purple}),
+          param(`${cardId}/info`,'productInfo',{fontSize:11,lineHeight:1.15,color:purple,selectedColor:purple}),
+        ],{gap:2,align:'center',justify:'center',heightMode:'fill',...pad(4,2)}),
       ]);
     });
     const footer=n(`${id}/footer`,'Footer',{background:'#ffffff',align:'end',gap:0,...pad(12,14),paddingMode:'individual',paddingTop:12,paddingRight:14,paddingBottom:24,paddingLeft:14},[

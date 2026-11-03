@@ -272,7 +272,8 @@ export function patchComponentProperties(document, id, values) {
     }
   }
   if (node.type === 'Package' && values.priceMode !== undefined) {
-    const configured = applyPackagePriceMode(indexDocument(next).nodes.get(id),values.priceMode);
+    const index = indexDocument(next);
+    const configured = applyPackagePriceMode(index.nodes.get(id),values.priceMode,index.nodes.keys());
     next = updateComponent(next,id,{props:configured.props,children:configured.children});
   }
   if (node.type === 'ProductParameter' && values.parameter !== undefined) {

@@ -8,6 +8,8 @@ import {templates,createBuilderNodes} from '../src/templates/templateDefinitions
 import {pageFrame} from '../src/builder/pagePresentation.js';
 import {workflowContext} from '../src/builder/workflow.js';
 import {PAYWALL_STYLE_TYPES} from '../src/paywallMetadata.js';
+import {patchComponentProperties} from '../src/builder/componentOperations.js';
+import {packagePriceMode,productParameterPreview} from '../src/products/productParameters.js';
 
 const template=templates.find(item=>item.id==='ht-chat-gift');
 const make=()=>importComponentDocument(createBuilderNodes(template.id),template);
@@ -29,6 +31,22 @@ test('embedded region is generic, clamps geometry and retains settings across pr
   let doc={version:3,products:{},root:component('custom','Screen','任意场景',props)};
   doc=updateComponent(doc,'custom',{props:{pagePresentation:'fullscreen'}});doc=updateComponent(doc,'custom',{props:{pagePresentation:'embedded'}});
   assert.deepEqual(pageFrame(JSON.parse(JSON.stringify(doc)).root.props,600),pageFrame(props,600));
+});
+test('every gift package exposes the same standard fields and four price modes, preserving lifetime adaptation and embedded bounds',()=>{
+  const document=make(),original=structuredClone(document),packages=[...indexDocument(document).nodes.values()].filter(node=>node.type==='Package');
+  for(const plan of packages){
+    const parameters=[...indexDocument({root:plan}).nodes.values()].filter(node=>node.type==='ProductParameter');
+    assert.deepEqual(parameters.map(node=>node.props.parameter),['productLabel','skuDuration','totalReferencePrice','totalPrice','productInfo']);
+    let next=document;
+    for(const [mode,primary,reference] of [['0','monthlyPrice','monthlyReferencePrice'],['3','totalPrice','monthlyReferencePrice'],['4','monthlyPrice','totalReferencePrice'],['1','totalPrice','totalReferencePrice']]){
+      next=patchComponentProperties(next,plan.id,{priceMode:mode});const {nodes}=indexDocument(next),current=nodes.get(plan.id);
+      assert.equal(packagePriceMode(current),mode);assert.equal(nodes.get(`${plan.id}/price`).props.parameter,primary);assert.equal(nodes.get(`${plan.id}/reference`).props.parameter,reference);assert.equal(nodes.get(`${plan.id}/reference`).props.strike,true);
+      if(plan.props.productType==='lifetime')assert.equal(productParameterPreview(primary,current),'¥{总价}');
+      assert.equal(current.props.height,104);assert.deepEqual(nodes.get('chat-gift/vip').props,original.root.children[0].children[0].props);
+    }
+    assert.deepEqual(next.products,document.products);
+  }
+  assert.deepEqual(document,original);
 });
 let server,Preview;
 before(async()=>{globalThis.ResizeObserver=class{observe(){}disconnect(){}};server=await createServer({configFile:false,logLevel:'silent',server:{middlewareMode:true,hmr:false,watch:null}});Preview=(await server.ssrLoadModule('/src/builder/ComponentPreview.jsx')).default;});

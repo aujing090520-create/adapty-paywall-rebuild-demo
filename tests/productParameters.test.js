@@ -74,6 +74,20 @@ test('individual price field changes synchronize the package mode and stale stor
   const stored=JSON.parse(JSON.stringify(source));stored.root.children[0].props.priceMode='0';
   assert.equal(packagePriceMode(stored.root.children[0]),'1');assert.equal(resolveComponentText(indexDocument(stored).nodes.get('plan/price'),stored,stored.root.children[0]),'¥{总价}');
 });
+test('explicit reference-price modes repair older price-only cards once, without touching siblings or colliding with document IDs',()=>{
+  const plan=c('plan','Package','商品',{productType:'subscription',priceMode:'0'},[c('body','Stack','布局容器',{},[parameter('duration','skuDuration'),parameter('price','totalPrice',{priceRole:'primary',fontSize:16})])]);
+  assert.equal(packagePriceMode(plan),'1','missing references must not make a stale stored mode look like an existing crossed-price layout');
+  const other=c('plan/reference','Text','外部文字',{text:'保留'});
+  const original=documentFor([plan,other]);let next=patchComponentProperties(original,'plan',{priceMode:'1'});
+  assert.equal(indexDocument(next).nodes.size,indexDocument(original).nodes.size,'a total-only choice must not invent a reference field');
+  next=patchComponentProperties(next,'plan',{priceMode:'4'});let nodes=indexDocument(next).nodes;
+  assert.equal(nodes.get('plan/reference-1').props.parameter,'totalReferencePrice');assert.equal(nodes.get('plan/reference-1').props.strike,true);
+  assert.deepEqual(nodes.get('body').children.map(node=>node.id),['duration','plan/reference-1','price']);assert.deepEqual(nodes.get(other.id),other);
+  assert.equal(nodes.get('price').props.fontSize,16);assert.equal(nodes.get('price').props.parameter,'monthlyPrice');
+  for(const mode of ['3','0','4','1'])next=patchComponentProperties(next,'plan',{priceMode:mode});
+  nodes=indexDocument(next).nodes;assert.equal(nodes.size,indexDocument(original).nodes.size+1);assert.equal(nodes.get('plan/reference-1').props.parameter,'totalReferencePrice');
+  assert.ok(validDocument(JSON.parse(JSON.stringify(next))));assert.equal(indexDocument(original).nodes.has('plan/reference-1'),false);
+});
 test('rendered default, selected and interactive states agree; editing selected preview is exclusive',async()=>{
   const plan=id=>c(id,'Package','商品',{group:'group',productType:'subscription',defaultSelected:id==='b'},[parameter(`${id}/label`,'productLabel')]);
   const source=fieldPreviewDocument(upgradeProductParameters(documentFor([plan('a'),plan('b')])));let renderer;
