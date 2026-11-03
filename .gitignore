@@ -4,3 +4,4 @@ dist/
 .vercel/
 /public/docs/component-parameters.html
 /public/docs/component-parameters.csv
+.env*

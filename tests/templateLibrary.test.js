@@ -9,6 +9,7 @@ import {buildChatGiftTemplate} from '../src/builder/chatGiftTemplate.js';
 import {importComponentDocument,indexDocument,updateComponent} from '../src/builder/componentDocument.js';
 import {clearLocalDemoSettings,beginLocalDemoReset} from '../src/templateStorage.js';
 import {templates} from '../src/templates/templateDefinitions.js';
+import {sharedDescriptor} from '../src/sharedTemplates.js';
 const store=()=>{const data=new Map();return {getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v),removeItem:k=>data.delete(k),key:i=>[...data.keys()][i]??null,get length(){return data.size;}};};
 
 test('custom template is an independent complete snapshot, imported by generic document path',()=>{
@@ -71,10 +72,22 @@ test('library has exactly three tabs, switches selection safely and exposes reve
     await act(async()=>card.props.onClick());
     const open=renderer.root.findAll(n=>n.type==='button'&&n.children.includes('Open in Builder'))[0];assert.equal(open.props.disabled,false);
     await act(async()=>open.props.onClick());assert.equal(catalog[opened].id,record.id);
-    await act(async()=>renderer.root.findByProps({'aria-label':'共享 自定义验收'}).props.onClick());assert.deepEqual(action,[record.id,'share',undefined]);
+    await act(async()=>renderer.root.findByProps({'aria-label':'共享 自定义验收'}).props.onClick());assert.deepEqual(action,[]);
+    await act(async()=>renderer.root.findAll(n=>n.type==='button'&&n.children.includes('确认公开共享'))[0].props.onClick());assert.deepEqual(action,[record.id,'share',undefined]);
     await act(async()=>tabs()[2].props.onClick());assert.equal(renderer.root.findAll(n=>n.props.role==='button'&&n.props.className?.includes('template-custom')).length,0);
     const openAfter=renderer.root.findAll(n=>n.type==='button'&&n.children.includes('Open in Builder'))[0];assert.equal(openAfter.props.disabled,true);
-    assert.ok(JSON.stringify(renderer.toJSON()).includes('共享为模拟状态'));
+    assert.ok(JSON.stringify(renderer.toJSON()).includes('共享模板对所有访问者公开'));
+  }finally{if(renderer)await act(async()=>renderer.unmount());}
+});
+
+test('real shared tab uses server records only and does not grant visitors owner controls',async()=>{
+  const own=createTemplateRecord(buildRenewalOfferTemplate(),{title:'旧模拟共享'});own.shared=true;
+  const record={id:'test-cloud',title:'云端模板',productCount:1,components:[],media:'none'},cloud=sharedDescriptor(record,false);
+  const catalog=[...templates,templateDescriptor(own),cloud];let renderer;
+  try{
+    await act(async()=>{renderer=Renderer.create(React.createElement(TemplatesModal,{selected:catalog.length-1,templateCatalog:catalog,libraryItems:[own],cloudState:{items:[record],loading:false,error:''},onClose(){}}));});
+    const tree=JSON.stringify(renderer.toJSON());assert.ok(tree.includes('云端模板'));assert.ok(!tree.includes('旧模拟共享'));assert.ok(!tree.includes('重命名 云端模板'));assert.ok(!tree.includes('取消共享 云端模板'));
+    assert.ok(renderer.root.findAll(n=>n.props.role==='tab'&&n.props['aria-selected']===true)[0].children.includes('共享模板'));
   }finally{if(renderer)await act(async()=>renderer.unmount());}
 });
 

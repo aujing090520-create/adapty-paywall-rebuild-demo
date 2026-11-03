@@ -19,6 +19,7 @@
     "@tiptap/pm": "^3.32.0",
     "@tiptap/react": "^3.32.0",
     "@tiptap/starter-kit": "^3.32.0",
+    "@vercel/blob": "^2.8.2",
     "embla-carousel-fade": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
     "es-module-lexer": "^3.0.4",
@@ -34,6 +35,9 @@
     "react-dom": "^18.3.1",
     "tinycolor2": "^1.4.2"
   },
+  "overrides": {
+    "zod": "^4.6.6"
+  },
   "devDependencies": {
     "@tabler/icons": "^3.49.0",
     "@tabler/icons-sprite": "^3.49.0",
@@ -41,6 +45,6 @@
     "jsdom": "^29.1.1",
     "linkedom": "^0.18.14",
     "react-test-renderer": "^18.3.1",
-    "vite": "^6.0.5"
+    "vite": "^6.4.5"
   }
 }

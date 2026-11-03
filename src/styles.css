@@ -2123,6 +2123,10 @@ textarea { min-height: 80px; resize: vertical; }
 .template-rename-form { display:flex; align-items:end; flex-wrap:wrap; gap:8px; padding:12px 0; }
 .template-rename-form label { flex:1; min-width:160px; }
 .template-library-error { color:#bc3048; font-size:12px; }
+.template-public-confirm { padding:14px 0; border-bottom:1px solid #e5e5eb; font-size:13px; }
+.template-public-confirm p { color:#696975; line-height:1.6; }
+.template-public-confirm button+button { margin-left:8px; }
+.template-cloud-placeholder { display:grid; height:100%; place-items:center; padding:20px; color:#777780; font-size:12px; text-align:center; }
 @media(max-width:520px) { .template-library-tabs { gap:12px; padding:0 14px; }.template-library-tabs button { font-size:13px;gap:4px; }.library-boundary { padding:8px 14px; } }
 .rich-template-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .rich-template-grid .template { min-width: 0; max-width: 100%; }

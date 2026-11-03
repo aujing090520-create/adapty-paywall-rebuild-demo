@@ -2,6 +2,8 @@ import ComponentEditor from './builder/ComponentEditor.jsx';
 import ComponentPreview from './builder/ComponentPreview.jsx';
 import CreatePaywall from './CreatePaywall.jsx';
 import {SaveTemplateDialog} from './TemplateLibraryDialogs.jsx';
+import SharedTemplateMedia from './SharedTemplateMedia.jsx';
+import {canManageShared,preparePublication,sharedRequest,loadSharedTemplate,sharedDescriptor,manageSharedTemplate} from './sharedTemplates.js';
 import {TEMPLATE_LIBRARY_KEY,readTemplateLibrary,writeTemplateLibrary,createTemplateRecord,changeTemplateRecord,templateDescriptor,templatesInTab} from './templateLibrary.js';
 import { freshPaywallDraft, paywallMetadata, paywallMetadataError } from './paywallMetadata.js';
 import { Field } from './builder/BuilderProperties.jsx';
@@ -324,14 +326,54 @@ export default function App() {
   const [rememberCompliance, setRememberCompliance] = useState(false);
   const [templateSelected, setTemplateSelected] = useState(null);
   const [libraryState,setLibraryState]=useState(()=>{try{return {items:readTemplateLibrary(window.localStorage),error:''};}catch(error){return {items:[],error:error.message};}});
-  const templateCatalog=useMemo(()=>[...templates,...libraryState.items.map(templateDescriptor)],[libraryState.items]);
+  const [cloudState,setCloudState]=useState({items:[],loading:false,error:''});
+  const [cloudDocuments,setCloudDocuments]=useState({});
+  const templatePool=useRef([...templates]);
+  const templateCatalog=useMemo(()=>{
+    const next=templatePool.current.slice();
+    for(const descriptor of [...libraryState.items.map(templateDescriptor),...cloudState.items.map(item=>sharedDescriptor(item,canManageShared(window.localStorage,item.id),cloudDocuments[item.id]))]){
+      const index=next.findIndex(item=>item.id===descriptor.id);if(index<0)next.push(descriptor);else next[index]=descriptor;
+    }
+    templatePool.current=next;return next;
+  },[libraryState.items,cloudState.items,cloudDocuments]);
+  const refreshCloud=React.useCallback(async()=>{
+    setCloudState(current=>({...current,loading:true,error:''}));
+    try{const response=await sharedRequest();setCloudState({items:response.items,loading:false,error:''});}
+    catch(error){setCloudState(current=>({...current,loading:false,error:error.message}));}
+  },[]);
+  useEffect(()=>{if(modal?.kind==='templates')refreshCloud();},[modal?.kind,refreshCloud]);
   const updateLibrary=updater=>{
     const next=updater(readTemplateLibrary(window.localStorage));
     writeTemplateLibrary(window.localStorage,next);
     setLibraryState({items:next,error:''});
   };
-  const changeLibrary=(id,action,value)=>{
-    try{updateLibrary(items=>changeTemplateRecord(items,id,action,value));notify({share:'已加入共享模板（本地模拟）。',unshare:'已取消共享。',archive:'已移入回收站。',restore:'已恢复到自定义模板。',rename:'模板已重命名。'}[action]);return '';}catch(error){return error.message;}
+  const changeLibrary=async(id,action,value)=>{
+    try{
+      if(id.startsWith('shared-template-')){
+        const cloudId=id.slice('shared-template-'.length);
+        await manageSharedTemplate(window.localStorage,cloudId,action,value);
+        updateLibrary(items=>items.map(item=>item.cloudId===cloudId?action==='rename'?{...item,title:value.trim()}:{...item,shared:false,cloudId:null,publicationId:null}:item));
+      }else{
+        const items=readTemplateLibrary(window.localStorage),record=items.find(item=>item.id===id);
+        if(!record)throw new Error('模板已不存在');
+        if(action==='share'){
+          const capability=preparePublication(window.localStorage,record.publicationId??record.cloudId);
+          updateLibrary(rows=>rows.map(item=>item.id===id?{...item,publicationId:capability.id}:item));
+          await sharedRequest({method:'POST',token:capability.token,body:{id:capability.id,title:record.title,styleType:record.styleType,document:record.document}});
+          updateLibrary(rows=>rows.map(item=>item.id===id?{...item,shared:true,cloudId:capability.id,publicationId:capability.id}:item));
+        }else{
+          changeTemplateRecord(items,id,action,value);
+          if(action==='rename'&&record.publicationId&&!record.cloudId)throw new Error('上次共享结果尚未确认，请先重试共享或撤回');
+          if(record.cloudId||record.publicationId){
+            if(action==='rename')await manageSharedTemplate(window.localStorage,record.cloudId,'rename',value);
+            if(['archive','unshare'].includes(action))await manageSharedTemplate(window.localStorage,record.cloudId??record.publicationId,'unshare');
+          }
+          updateLibrary(rows=>changeTemplateRecord(rows,id,action,value).map(item=>item.id===id&&['archive','unshare'].includes(action)?{...item,cloudId:null,publicationId:null}:item));
+        }
+      }
+      await refreshCloud();
+      notify({share:'模板已公开共享，其他访问者现在可以查看和套用。',unshare:'已从云端撤回，本地模板仍保留。',archive:'已移入回收站。',restore:'已恢复到自定义模板。',rename:'模板已重命名。'}[action]);return '';
+    }catch(error){return error.message;}
   };
   useEffect(()=>{
     const refresh=event=>{if(event.key!==TEMPLATE_LIBRARY_KEY&&event.key!==null)return;try{setLibraryState({items:readTemplateLibrary(window.localStorage),error:''});}catch(error){setLibraryState({items:[],error:error.message});}};
@@ -514,12 +556,12 @@ export default function App() {
     setBuilderNodes(remaining);
     setActiveNode((current) => removed.has(current) ? (remaining[0]?.id ?? null) : current);
   };
-  const applyTemplate = (templateIndex) => {
+  const applyTemplate = (templateIndex,source) => {
     if (builderOrigin === 'create') setCreationStyleConfirmed(false);
     setExitOfferDrafts({});
-    const template = templateCatalog[templateIndex];
+    const template = source??templateCatalog[templateIndex];
     const nextNodes = template.savedDocument ? [] : createBuilderNodes(template.id);
-    setBuilderDocument(null);
+    setBuilderDocument(template.savedDocument?structuredClone(template.savedDocument):null);
     setBuilderRevision((value) => value + 1);
     setTemplateSelected(templateIndex);
     setAppliedTemplate(templateIndex);
@@ -764,11 +806,15 @@ export default function App() {
           templateCatalog={templateCatalog}
           libraryItems={libraryState.items}
           libraryError={libraryState.error}
+          cloudState={cloudState}
+          onRefreshCloud={refreshCloud}
           onLibraryAction={changeLibrary}
           setSelected={setTemplateSelected}
           onClose={() => setModal(null)}
-          onOpenBuilder={(templateIndex) => {
-            const run = () => { applyTemplate(templateIndex); setModal(null); setViewNow('builder'); notify('已应用模板，尚未保存。'); };
+          onOpenBuilder={async(templateIndex) => {
+            let source=templateCatalog[templateIndex];
+            if(source.cloudRecord){const loaded=await loadSharedTemplate(source.cloudRecord.id,{fresh:true});setCloudDocuments(current=>({...current,[source.cloudRecord.id]:loaded.document}));source={...source,savedDocument:loaded.document};}
+            const run = () => { applyTemplate(templateIndex,source); setModal(null); setViewNow('builder'); notify('已应用模板，尚未保存。'); };
             if (workspaceDirty && builderDocument?.root.children.length) setPendingAction({ run, title: '替换当前画布？', replace: true }); else run();
           }}
         />
@@ -1173,10 +1219,11 @@ function ArchiveModal({ name, onClose, onArchive }) {
   return <Modal title="Archive paywall" onClose={onClose}><p className="modal-copy">This action cannot be undone. Type the complete paywall name to continue.</p><Field label={`Type "${name}"`}><input value={value} onChange={(event) => setValue(event.target.value)} /></Field><div className="modal-actions"><button className="secondary" onClick={onClose}>Cancel</button><button className="danger-button" disabled={value !== name} onClick={onArchive}>Archive paywall</button></div></Modal>;
 }
 
-export function TemplatesModal({ selected, setSelected, onClose, onOpenBuilder,templateCatalog=templates,libraryItems=[],libraryError='',onLibraryAction }) {
+export function TemplatesModal({ selected, setSelected, onClose, onOpenBuilder,templateCatalog=templates,libraryItems=[],libraryError='',onLibraryAction,cloudState={items:[],loading:false,error:''},onRefreshCloud }) {
   const [pendingSelected, setPendingSelected] = useState(selected);
-  const [tab,setTab]=useState(templateCatalog[selected]?.userRecord?'custom':'official');
+  const [tab,setTab]=useState(templateCatalog[selected]?.cloudRecord?'shared':templateCatalog[selected]?.userRecord?'custom':'official');
   const [trash,setTrash]=useState(false),[renaming,setRenaming]=useState(null),[actionError,setActionError]=useState('');
+  const [busy,setBusy]=useState(false),[publishing,setPublishing]=useState(null);
   const [filters, setFilters] = useState({
     // Start unfiltered so the HelloTalk document templates are discoverable on first open.
     products: [],
@@ -1194,14 +1241,14 @@ export function TemplatesModal({ selected, setSelected, onClose, onOpenBuilder,t
   };
   const pendingTemplate = pendingSelected === null ? null : templateCatalog[pendingSelected];
   const tagLabels = { "1 product": "1 个商品", "2 products": "2 个商品", "3 products": "3 个商品", "4 products": "4 个商品", "5 products": "5 个商品", "Multi-step": "多步骤", Credits: "点数商品", "Web purchase": "网页购买", "Feature table": "权益表格", Reviews: "评价", Award: "奖项", Timer:'倒计时', Carousel:'轮播', Toggle:'普通开关', Tabs:'标签页', 'Trial timeline':'试用时间线', 'Offer code':'优惠码', 'Social Proof':'口碑展示' };
-  const displayTags = (template) => template.userRecord||isEditableTemplate(template) ? template.tags.map((tag) => tagLabels[tag] ?? tag) : ["Source preview", "Structure pending"];
-  const tabTemplates=tab==='official'?catalogTemplates:templatesInTab(libraryItems,trash?'trash':tab).map(record=>templateCatalog.find(item=>item.id===record.id)).filter(Boolean);
+  const displayTags = (template) => template.userRecord||template.cloudRecord||isEditableTemplate(template) ? template.tags.map((tag) => tagLabels[tag] ?? tag) : ["Source preview", "Structure pending"];
+  const tabTemplates=tab==='official'?catalogTemplates:tab==='shared'?cloudState.items.map(record=>templateCatalog.find(item=>item.id===`shared-template-${record.id}`)).filter(Boolean):templatesInTab(libraryItems,trash?'trash':'custom').map(record=>templateCatalog.find(item=>item.id===record.id)).filter(Boolean);
   const countBy = (matches) => tabTemplates.filter(matches).length;
   const componentOptions = [["Free trial toggle", "免费试用开关"], ["Trial timeline", "试用时间线"], ["Carousel", "轮播"], ["Reviews", "评价"], ["Timer", "倒计时"], ["Toggle", "普通开关"], ["Social Proof", "口碑展示"], ["Award", "奖项展示"], ["Tabs", "标签页"], ["Offer code", "优惠码"], ["Multi-step", "多步骤"], ["Credits", "点数商品"], ["Web purchase", "网页购买"], ["Feature table", "权益表格"]];
   const filteredTemplates = tabTemplates.filter((template) => {
     const productMatch = !filters.products.length || filters.products.some((item) => item === "1 product" ? template.productCount === 1 : template.productCount > 1);
     const mediaMatch = filters.media === "All" || (filters.media === "With Image or Video" ? ["image", "video"].includes(template.media) : template.media === "none");
-    const componentMatch = filters.components.every((item) => (template.userRecord || template.isNew || template.documentTemplate ? template.components : sourceVerifiedTemplateComponents[template.id])?.includes(item));
+    const componentMatch = filters.components.every((item) => (template.cloudRecord || template.userRecord || template.isNew || template.documentTemplate ? template.components : sourceVerifiedTemplateComponents[template.id])?.includes(item));
     const lengthMatch = filters.length === "All" || (filters.length === "Short" ? template.title.length < 28 : template.title.length >= 28);
     const backgroundMatch = filters.background === "All" || (filters.background === "Dark" ? ["night", "black", "midnight", "ocean", "halloween"].includes(template.theme) : !["night", "black", "midnight", "ocean", "halloween"].includes(template.theme));
     const categoryMatch = filters.category === "All" || template.category === filters.category;
@@ -1209,11 +1256,12 @@ export function TemplatesModal({ selected, setSelected, onClose, onOpenBuilder,t
   });
   const documentTemplates = filteredTemplates.filter((template) => template.documentTemplate);
   const prioritizedTemplates = [...documentTemplates, ...filteredTemplates.filter((template) => template.isNew), ...filteredTemplates.filter((template) => !template.documentTemplate && !template.isNew)];
-  const chooseTab=next=>{setTab(next);setTrash(false);setPendingSelected(null);setRenaming(null);setActionError('');setFilters({products:[],media:'All',components:[],length:'All',background:'All',category:'All'});};
-  const action=(id,kind,value)=>{const error=onLibraryAction?.(id,kind,value)??'';setActionError(error);if(!error){setRenaming(null);if(kind==='archive'||kind==='unshare'&&tab==='shared')setPendingSelected(null);}return !error;};
+  const chooseTab=next=>{setTab(next);setTrash(false);setPendingSelected(null);setRenaming(null);setPublishing(null);setActionError('');setFilters({products:[],media:'All',components:[],length:'All',background:'All',category:'All'});};
+  const action=async(id,kind,value)=>{if(busy)return false;setBusy(true);setActionError('');try{const error=await onLibraryAction?.(id,kind,value)??'';setActionError(error);if(!error){setRenaming(null);setPublishing(null);if(kind==='archive'||kind==='unshare'&&tab==='shared')setPendingSelected(null);}return !error;}catch(error){setActionError(error.message);return false;}finally{setBusy(false);}};
+  const open=async()=>{setBusy(true);setActionError('');try{await onOpenBuilder(pendingSelected);}catch(error){setActionError(error.message);}finally{setBusy(false);}};
   return <Modal title="Choose a template" onClose={onClose} wide>
-    <div className="template-library-tabs" role="tablist" aria-label="模板来源">{[['official','官方模板',catalogTemplates.length],['custom','自定义模板',templatesInTab(libraryItems,'custom').length],['shared','共享模板',templatesInTab(libraryItems,'shared').length]].map(([id,label,count])=><button type="button" role="tab" aria-selected={tab===id} aria-controls="template-library-panel" key={id} onClick={()=>chooseTab(id)}>{label}<span>{count}</span></button>)}</div>
-    <p className="template-local-note library-boundary">本地演示：自定义模板仅保存在当前浏览器；共享为模拟状态，不会向其他用户发布。</p>
+    <div className="template-library-tabs" role="tablist" aria-label="模板来源">{[['official','官方模板',catalogTemplates.length],['custom','自定义模板',templatesInTab(libraryItems,'custom').length],['shared','共享模板',cloudState.items.length]].map(([id,label,count])=><button type="button" disabled={busy} role="tab" aria-selected={tab===id} aria-controls="template-library-panel" key={id} onClick={()=>chooseTab(id)}>{label}<span>{count}</span></button>)}</div>
+    <p className="template-local-note library-boundary">自定义模板仅存在当前浏览器；共享模板对所有访问者公开，无需账号。清除浏览器数据会失去已上传模板的管理凭证。</p>
     <div className="template-modal"><aside>
       <div className="filter-heading"><strong>Filters</strong><span className="filter-count">{filteredTemplates.length}</span></div>
       <p>Number of products</p>
@@ -1224,24 +1272,27 @@ export function TemplatesModal({ selected, setSelected, onClose, onOpenBuilder,t
       <Filter group="media" value="With Image or Video">{`With Image or Video (${countBy((item) => item.media !== "none")})`}</Filter>
       <Filter group="media" value="No media">{`No media (${countBy((item) => item.media === "none")})`}</Filter>
       <p>Components</p>
-      {componentOptions.map(([value, label]) => <Filter key={value} group="components" value={value} list>{label} ({countBy((item) => (item.userRecord || item.isNew || item.documentTemplate ? item.components : sourceVerifiedTemplateComponents[item.id])?.includes(value))})</Filter>)}
+      {componentOptions.map(([value, label]) => <Filter key={value} group="components" value={value} list>{label} ({countBy((item) => (item.cloudRecord || item.userRecord || item.isNew || item.documentTemplate ? item.components : sourceVerifiedTemplateComponents[item.id])?.includes(value))})</Filter>)}
       <p>Length</p><Filter group="length" value="All">All</Filter><Filter group="length" value="Short">Short</Filter><Filter group="length" value="Long">Long</Filter>
       <p>Background theme</p><Filter group="background" value="All">All</Filter><Filter group="background" value="Light">Light</Filter><Filter group="background" value="Dark">Dark</Filter>
       {tab==='official'&&<><p>Category</p><Filter group="category" value="All">All paywalls</Filter><Filter group="category" value="Popular">Popular</Filter><Filter group="category" value="Seasonal">Seasonal</Filter></>}
     </aside><div className="template-content" id="template-library-panel" role="tabpanel" aria-label={{official:'官方模板',custom:'自定义模板',shared:'共享模板'}[tab]}><div className="template-scroll-content">
       {tab==='custom'&&<div className="template-library-toolbar"><strong>{trash?'回收站':'我的模板'}</strong><button type="button" className="secondary" onClick={()=>{setTrash(!trash);setPendingSelected(null);setRenaming(null);setActionError('');}}>{trash?<Undo2 size={15}/>:<Trash2 size={15}/>} {trash?'返回自定义模板':`回收站（${templatesInTab(libraryItems,'trash').length}）`}</button></div>}
+      {tab==='shared'&&<div className="template-library-toolbar"><span role="status">{cloudState.loading?'正在读取云端模板…':`${cloudState.items.length} 个公开模板`}</span><button type="button" className="secondary" disabled={busy||cloudState.loading} onClick={onRefreshCloud}><RotateCw size={15}/>刷新共享模板</button></div>}
       {(libraryError||actionError)&&<p className="template-library-error" role="alert">{libraryError||actionError}</p>}
+      {tab==='shared'&&cloudState.error&&<p className="template-library-error" role="alert">{cloudState.error}</p>}
+      {publishing&&<section className="template-public-confirm" aria-label="公开共享确认"><strong>公开共享「{publishing.title}」？</strong><p>将上传完整模板配置和嵌入资源，所有访问者都能查看和套用。请勿包含个人资料、内部接口密钥或其他敏感内容。单份最大2MB，仅支持标准组件。</p><button type="button" className="primary" disabled={busy} onClick={()=>action(publishing.id,'share')}>{busy?'正在上传…':'确认公开共享'}</button><button type="button" className="secondary" disabled={busy} onClick={()=>setPublishing(null)}>取消共享上传</button></section>}
       {renaming&&<form className="template-rename-form" onSubmit={event=>{event.preventDefault();action(renaming.id,'rename',renaming.name);}}><label>模板名称<input autoFocus maxLength={60} value={renaming.name} onChange={event=>setRenaming({...renaming,name:event.target.value})}/></label><button type="submit" className="primary">保存名称</button><button type="button" className="secondary" onClick={()=>setRenaming(null)}>取消</button></form>}
       <div className="template-selection-summary">{pendingTemplate ? <><span>Selected template</span><strong>{pendingTemplate.title}</strong><small>{pendingTemplate.isGallery ? `${pendingTemplate.editorVerified ? "源编辑器 Layers 已核对" : "仅源预览"}：${pendingTemplate.observedComponents.join(" · ")}。SKU 和字段配置待核验。` : displayTags(pendingTemplate).join(" · ")}</small></> : <span>No template selected</span>}</div>
       <div className="template-grid rich-template-grid">{prioritizedTemplates.map((template) => {
-        const index = templateCatalog.findIndex(item=>item.id===template.id),record=template.userRecord;
+        const index = templateCatalog.findIndex(item=>item.id===template.id),record=template.userRecord,cloud=template.cloudRecord;
         const card=<div role="button" tabIndex={trash?-1:0} aria-disabled={trash} aria-pressed={pendingSelected === index} className={`template template-${template.theme} ${pendingSelected === index ? "selected" : ""}`} onClick={() => !trash&&setPendingSelected(index)} onKeyDown={(event) => { if (!trash&&(event.key === "Enter" || event.key === " ")) { event.preventDefault(); setPendingSelected(index); } }}>
           <div className="template-source-preview" inert=""><DeferredTemplateMedia template={template} /></div><strong>{template.title}</strong>{template.isGallery ? <small className="template-origin">RevenueCat · #{template.sourceOrder}</small> : template.sourceTemplate && <small className="template-origin">RevenueCat · {template.sourceTemplate}</small>}<small>{displayTags(template).join(" · ")}</small>
         </div>;
-        return <article className="template-library-item" key={template.id}>{card}{record&&<div className="template-record-actions"><span>{trash?'已移入回收站':record.shared?'已共享 · 本地模拟':'仅当前浏览器'}</span>{trash?<button type="button" className="icon" aria-label={`恢复 ${record.title}`} title="恢复模板" onClick={()=>action(record.id,'restore')}><Undo2 size={17}/></button>:<><button type="button" className="icon" aria-label={`重命名 ${record.title}`} title="重命名" onClick={()=>setRenaming({id:record.id,name:record.title})}><Pencil size={17}/></button><button type="button" className="icon" aria-label={`${record.shared?'取消共享':'共享'} ${record.title}`} title={record.shared?'取消共享':'共享模板（本地模拟）'} onClick={()=>action(record.id,record.shared?'unshare':'share')}><Share2 size={17}/></button><button type="button" className="icon" aria-label={`移入回收站 ${record.title}`} title="移入回收站" onClick={()=>action(record.id,'archive')}><Trash2 size={17}/></button></>}</div>}</article>;
+        return <article className="template-library-item" key={template.id}>{card}{record&&<div className="template-record-actions"><span>{trash?'已移入回收站':record.cloudId?'已公开共享':record.publicationId?'共享结果待确认':'仅当前浏览器'}</span>{trash?<button type="button" className="icon" disabled={busy} aria-label={`恢复 ${record.title}`} title="恢复模板" onClick={()=>action(record.id,'restore')}><Undo2 size={17}/></button>:<><button type="button" className="icon" disabled={busy} aria-label={`重命名 ${record.title}`} title="重命名" onClick={()=>setRenaming({id:record.id,name:record.title})}><Pencil size={17}/></button><button type="button" className="icon" disabled={busy} aria-label={`${record.cloudId?'取消共享':'共享'} ${record.title}`} title={record.cloudId?'从云端撤回':'公开共享模板'} onClick={()=>record.cloudId?action(record.id,'unshare'):setPublishing({id:record.id,title:record.title})}><Share2 size={17}/></button>{record.publicationId&&!record.cloudId&&<button type="button" className="icon" disabled={busy} title="撤回上次上传" aria-label={`撤回上次上传 ${record.title}`} onClick={()=>action(record.id,'unshare')}><Undo2 size={17}/></button>}<button type="button" className="icon" disabled={busy} aria-label={`移入回收站 ${record.title}`} title="移入回收站" onClick={()=>action(record.id,'archive')}><Trash2 size={17}/></button></>}</div>}{cloud&&<div className="template-record-actions"><span>{cloud.owned?'我上传的模板':'公开共享模板'}</span>{cloud.owned&&<><button type="button" className="icon" disabled={busy} title="重命名共享模板" aria-label={`重命名 ${cloud.title}`} onClick={()=>setRenaming({id:template.id,name:cloud.title})}><Pencil size={17}/></button><button type="button" className="icon" disabled={busy} title="从云端撤回" aria-label={`取消共享 ${cloud.title}`} onClick={()=>action(template.id,'unshare')}><Share2 size={17}/></button></>}</div>}</article>;
       })}</div>
-      {!filteredTemplates.length && <div className="template-empty">{tab==='official'||tabTemplates.length?'没有符合筛选条件的模板':trash?'回收站为空':tab==='shared'?'暂无共享模板':'暂无自定义模板'}</div>}
-    </div><div className="modal-actions template-modal-actions"><button className="secondary" onClick={onClose}>Cancel</button><button className="primary" disabled={trash||!prioritizedTemplates.some(item=>item.id===pendingTemplate?.id)} onClick={() => onOpenBuilder(pendingSelected)}>Open in Builder</button></div></div></div>
+      {!filteredTemplates.length && <div className="template-empty">{tab==='shared'&&cloudState.loading?'正在加载共享模板…':tab==='shared'&&cloudState.error?'暂时无法读取共享模板':tab==='official'||tabTemplates.length?'没有符合筛选条件的模板':trash?'回收站为空':tab==='shared'?'暂无共享模板':'暂无自定义模板'}</div>}
+    </div><div className="modal-actions template-modal-actions"><button className="secondary" disabled={busy} onClick={onClose}>Cancel</button><button className="primary" disabled={busy||trash||!prioritizedTemplates.some(item=>item.id===pendingTemplate?.id)} onClick={open}>{busy?'正在处理…':'Open in Builder'}</button></div></div></div>
   </Modal>;
 }
 
@@ -1325,6 +1376,7 @@ function DeferredTemplateMedia({ template }) {
 }
 
 function SourceTemplateMedia({ template }) {
+  if(template.cloudRecord&&!template.savedDocument)return <SharedTemplateMedia id={template.cloudRecord.id}/>;
   if(template.nativeDocument)return <NativeTemplateMedia template={template}/>;
   if (template.isGallery) return <GalleryTemplateMedia template={template} />;
   if (template.isNew) return <IntegratedTemplateMedia template={template} />;
