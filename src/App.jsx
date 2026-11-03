@@ -1,6 +1,8 @@
 import ComponentEditor from './builder/ComponentEditor.jsx';
 import ComponentPreview from './builder/ComponentPreview.jsx';
 import CreatePaywall from './CreatePaywall.jsx';
+import {SaveTemplateDialog} from './TemplateLibraryDialogs.jsx';
+import {TEMPLATE_LIBRARY_KEY,readTemplateLibrary,writeTemplateLibrary,createTemplateRecord,changeTemplateRecord,templateDescriptor,templatesInTab} from './templateLibrary.js';
 import { freshPaywallDraft, paywallMetadata, paywallMetadataError } from './paywallMetadata.js';
 import { Field } from './builder/BuilderProperties.jsx';
 import { isTextNodeType, productPackageRows, listRowsFor, privilegeRowsFor, agreementSegmentsFor, textRunsFor, validTextLink, helloTalkTemplateDefaults, heroTitleParts, privilegeColumnsFor, safeButtonUrl } from './builder/fieldModels.js';
@@ -61,6 +63,9 @@ import {
   FolderOpen,
   Gift,
   Save,
+  Share2,
+  Undo2,
+  Trash2,
   Eye,
   EyeOff,
   GripVertical,
@@ -318,6 +323,20 @@ export default function App() {
   const [compliance, setCompliance] = useState(false);
   const [rememberCompliance, setRememberCompliance] = useState(false);
   const [templateSelected, setTemplateSelected] = useState(null);
+  const [libraryState,setLibraryState]=useState(()=>{try{return {items:readTemplateLibrary(window.localStorage),error:''};}catch(error){return {items:[],error:error.message};}});
+  const templateCatalog=useMemo(()=>[...templates,...libraryState.items.map(templateDescriptor)],[libraryState.items]);
+  const updateLibrary=updater=>{
+    const next=updater(readTemplateLibrary(window.localStorage));
+    writeTemplateLibrary(window.localStorage,next);
+    setLibraryState({items:next,error:''});
+  };
+  const changeLibrary=(id,action,value)=>{
+    try{updateLibrary(items=>changeTemplateRecord(items,id,action,value));notify({share:'已加入共享模板（本地模拟）。',unshare:'已取消共享。',archive:'已移入回收站。',restore:'已恢复到自定义模板。',rename:'模板已重命名。'}[action]);return '';}catch(error){return error.message;}
+  };
+  useEffect(()=>{
+    const refresh=event=>{if(event.key!==TEMPLATE_LIBRARY_KEY&&event.key!==null)return;try{setLibraryState({items:readTemplateLibrary(window.localStorage),error:''});}catch(error){setLibraryState({items:[],error:error.message});}};
+    window.addEventListener('storage',refresh);return()=>window.removeEventListener('storage',refresh);
+  },[]);
   const [appliedTemplate, setAppliedTemplate] = useState(null);
   const [templateLinks, setTemplateLinks] = useState({ terms: "terms-link", privacy: "privacy-link" });
   const [builderNodes, setBuilderNodes] = useState(() => createBuilderNodes());
@@ -399,10 +418,10 @@ export default function App() {
   const restoreBuilder = (record = null) => {
     setGeneralName(null);
     setExitOfferDrafts({});
-    const index = record ? templates.findIndex((template) => template.id === record.templateId) : -1;
+    const index = record ? templateCatalog.findIndex((template) => template.id === record.templateId) : -1;
     setAppliedTemplate(index < 0 ? null : index);
     setTemplateSelected(index < 0 ? null : index);
-    setBuilderNodes(index < 0 ? [] : createBuilderNodes(record.templateId));
+    setBuilderNodes(index < 0 || templateCatalog[index].savedDocument ? [] : createBuilderNodes(record.templateId));
     setBuilderDocument(record?.document ?? null);
     setSavedDocument(record?.document ?? null);
     setBuilderRevision((value) => value + 1);
@@ -454,12 +473,12 @@ export default function App() {
         for (const page of workflowContext(content).steps) if (exitOfferId(content, page.id) === id) content = bindExitOffer(content, page.id, newId);
         if(content.settings?.retainedPopupIds?.includes(id))content={...content,settings:{...content.settings,retainedPopupIds:content.settings.retainedPopupIds.map((item)=>item===id?newId:item)}};
       }
-      const index = templates.findIndex((template) => template.id === content.templateId);
+      const index = templateCatalog.findIndex((template) => template.id === content.templateId);
       restoreBuilder(); setBuilderOrigin('create');
       setCreationStyleConfirmed(false);
       setDraft({ ...paywallMetadata(record?.paywall.config), name: `${record?.paywall.name ?? original.name} (Copy)` });
       setAppliedTemplate(index < 0 ? null : index); setTemplateSelected(index < 0 ? null : index);
-      setBuilderNodes(index < 0 ? [] : createBuilderNodes(content.templateId));
+      setBuilderNodes(index < 0 || templateCatalog[index].savedDocument ? [] : createBuilderNodes(content.templateId));
       setBuilderDocument(content); setSavedDocument(null); setViewNow('builder');
       setExitOfferDrafts(copies);
       notify('已复制画布，副本尚未保存。');
@@ -498,8 +517,8 @@ export default function App() {
   const applyTemplate = (templateIndex) => {
     if (builderOrigin === 'create') setCreationStyleConfirmed(false);
     setExitOfferDrafts({});
-    const template = templates[templateIndex];
-    const nextNodes = createBuilderNodes(template.id);
+    const template = templateCatalog[templateIndex];
+    const nextNodes = template.savedDocument ? [] : createBuilderNodes(template.id);
     setBuilderDocument(null);
     setBuilderRevision((value) => value + 1);
     setTemplateSelected(templateIndex);
@@ -543,7 +562,7 @@ export default function App() {
   const discardBuilder = () => {
     const record = builderOrigin === 'existing' ? readConfiguredPaywall(window.localStorage, selected.id) : null;
     if (record) restoreBuilder(record);
-    else { setGeneralName(null); setExitOfferDrafts({}); setBuilderDocument(null); setBuilderNodes(appliedTemplate === null ? [] : createBuilderNodes(templates[appliedTemplate].id)); setBuilderRevision((value) => value + 1); }
+    else { setGeneralName(null); setExitOfferDrafts({}); setBuilderDocument(null); setBuilderNodes(appliedTemplate === null || templateCatalog[appliedTemplate]?.savedDocument ? [] : createBuilderNodes(templateCatalog[appliedTemplate].id)); setBuilderRevision((value) => value + 1); }
     notify(record ? '已恢复上次保存的付费墙。' : '已恢复模板默认内容。');
   };
 
@@ -616,7 +635,7 @@ export default function App() {
               onStartBlank={startBlankBuilder}
               onCreate={() => { if (saveBuilder()) setViewNow('general'); }}
               onEditStyle={() => { setCreationStyleConfirmed(false); setViewNow('builder'); }}
-              styleTitle={builderDocument ? (appliedTemplate === null ? '空白页面' : templates[appliedTemplate].title) : null}
+              styleTitle={builderDocument ? (appliedTemplate === null ? '空白页面' : templateCatalog[appliedTemplate]?.title) : null}
               styleConfirmed={creationStyleConfirmed}
               markUnknown={markUnknown}
             />
@@ -653,6 +672,7 @@ export default function App() {
               templateSelected={templateSelected}
               setTemplateSelected={setTemplateSelected}
               appliedTemplate={appliedTemplate}
+              templateCatalog={templateCatalog}
               templateLinks={templateLinks}
               setTemplateLinks={setTemplateLinks}
               notify={notify}
@@ -688,6 +708,7 @@ export default function App() {
               templateSelected={templateSelected}
               setTemplateSelected={setTemplateSelected}
               appliedTemplate={appliedTemplate}
+              templateCatalog={templateCatalog}
               templateLinks={templateLinks}
               setTemplateLinks={setTemplateLinks}
               notify={notify}
@@ -717,7 +738,7 @@ export default function App() {
       </aside>
 
       {toast && <div className="toast"><Check size={17} /> {toast}</div>}
-      {modal?.kind === "local-reset" && <div className="modal-backdrop"><section className="modal local-reset-modal" role="dialog" aria-modal="true" aria-label="重置本地设定"><header><h2>重置本地设定</h2><button type="button" className="icon" aria-label="关闭" disabled={resetPending} onClick={() => setModal(null)}><X size={19} /></button></header><p>将清除当前浏览器保存的付费墙、模板修改、组件库和自定义 ZIP，并还原本 Demo 的默认页面。此操作无法撤销。</p><div className="modal-actions"><button type="button" className="secondary" disabled={resetPending} onClick={() => setModal(null)}>取消</button><button type="button" className="primary" disabled={resetPending} onClick={resetLocal}>{resetPending ? '正在重置…' : '确认重置'}</button></div></section></div>}
+      {modal?.kind === "local-reset" && <div className="modal-backdrop"><section className="modal local-reset-modal" role="dialog" aria-modal="true" aria-label="重置本地设定"><header><h2>重置本地设定</h2><button type="button" className="icon" aria-label="关闭" disabled={resetPending} onClick={() => setModal(null)}><X size={19} /></button></header><p>将清除当前浏览器保存的付费墙、模板修改、自定义及共享模板、组件库和自定义 ZIP，并还原本 Demo 的默认页面。此操作无法撤销。</p><div className="modal-actions"><button type="button" className="secondary" disabled={resetPending} onClick={() => setModal(null)}>取消</button><button type="button" className="primary" disabled={resetPending} onClick={resetLocal}>{resetPending ? '正在重置…' : '确认重置'}</button></div></section></div>}
       {modal?.kind === "builder-save" && (
         <ComplianceModal
           compliance={compliance}
@@ -740,6 +761,10 @@ export default function App() {
       {modal?.kind === "templates" && (
         <TemplatesModal
           selected={templateSelected}
+          templateCatalog={templateCatalog}
+          libraryItems={libraryState.items}
+          libraryError={libraryState.error}
+          onLibraryAction={changeLibrary}
           setSelected={setTemplateSelected}
           onClose={() => setModal(null)}
           onOpenBuilder={(templateIndex) => {
@@ -748,6 +773,7 @@ export default function App() {
           }}
         />
       )}
+      {modal?.kind==='save-template'&&<SaveTemplateDialog defaultName={builderOrigin==='create'?draft.name:selected.name} onClose={()=>setModal(null)} onSave={title=>{updateLibrary(items=>[...items,createTemplateRecord(builderDocument,{title,styleType:builderOrigin==='create'?draft.styleType:selected.config?.styleType,offerings},items)]);setModal(null);notify('已保存到自定义模板，仅当前浏览器可见。');}}/>}
       {modal?.kind === "ai" && <AiModal onClose={() => setModal(null)} markUnknown={markUnknown} />}
       {pendingAction && <div className="modal-backdrop workspace-confirm-backdrop"><section className="modal" role="dialog" aria-modal="true" aria-label={pendingAction.title}><header><h2>{pendingAction.title}</h2></header><p>{pendingAction.replace?'当前未保存的画布内容将被所选模板替换。':'离开后，尚未保存的修改不会保留。'}</p><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setPendingAction(null)}>{pendingAction.replace?'取消':'继续编辑'}</button><button type="button" className="secondary danger-outline" onClick={()=>{const next=pendingAction;setPendingAction(null);if(!next.replace)discardBuilder();next.run();}}>{pendingAction.replace?'替换画布':'放弃并继续'}</button>{!pendingAction.replace&&(builderDocument||view==='general')&&<button type="button" className="primary" onClick={()=>{if(builderOrigin==='create'){setPendingAction(null);setViewNow('create');}else if((builderDocument?saveBuilder:saveGeneral)()){const next=pendingAction;setPendingAction(null);next.run();}}}>{builderOrigin==='create'?'返回创建页':'保存并继续'}</button>}</div></section></div>}
       {modal?.kind === "migration" && (
@@ -845,14 +871,14 @@ function PaywallList({
 }
 
 
-function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setView, duplicate, setModal, markUnknown, builderNodes, setBuilderNodes, updateBuilderNode, removeBuilderNode, activeNode, setActiveNode, appliedTemplate, builderDocument, setBuilderDocument, builderRevision, builderDirty, saveBuilder, discardBuilder, offerings, prepareExitOffer, changeExitOffer, templateLinks, setTemplateLinks, notify, generalName, onGeneralNameChange, saveGeneral, discardGeneral, confirmCreationStyle }) {
+function PaywallWorkspace({ selected, isNew = false, draft, setDraft, view, setView, duplicate, setModal, markUnknown, builderNodes, setBuilderNodes, updateBuilderNode, removeBuilderNode, activeNode, setActiveNode, appliedTemplate, templateCatalog=templates, builderDocument, setBuilderDocument, builderRevision, builderDirty, saveBuilder, discardBuilder, offerings, prepareExitOffer, changeExitOffer, templateLinks, setTemplateLinks, notify, generalName, onGeneralNameChange, saveGeneral, discardGeneral, confirmCreationStyle }) {
   if (view === "builder") {
-    const template = appliedTemplate !== null ? templates[appliedTemplate] : { id: "blank", title: "空白页面" };
+    const template = appliedTemplate !== null && templateCatalog[appliedTemplate] || { id: builderDocument?.templateId??"blank", title: builderDocument?'已保存的页面样式':'空白页面' };
     const initialNodes = appliedTemplate !== null ? builderNodes : [];
     return <section className="builder-page">
       {isNew ? <><button className="back" onClick={() => setView("create")}><ArrowLeft size={18} /> 创建付费墙</button><div className="workspace-heading"><div><span className="eyebrow">新建付费墙</span><h1>{selected.name || '编辑样式'}</h1></div></div></> : <WorkspaceHeader selected={selected} setView={setView} duplicate={duplicate} setModal={setModal} markUnknown={markUnknown} />}
       <div className="detail-tabs"><button onClick={() => setView(isNew ? "create" : "general")}>General</button><button className="active">Builder & Generator</button></div>
-      <div className="template-context observed-tree"><span>模板</span><strong>{template.title}</strong><button className="secondary" onClick={() => setModal({ kind: "templates" })}><LayoutTemplate size={15} /> 更换模板</button><div className="builder-save-actions"><span role="status">{isNew ? '尚未创建' : builderDirty ? '未保存' : '已保存'}</span><button type="button" className="secondary" onClick={discardBuilder}>放弃修改</button><button type="button" className="primary" onClick={isNew ? confirmCreationStyle : saveBuilder}>{isNew ? <Check size={15}/> : <Save size={15}/>} {isNew ? '确认样式' : '保存'}</button></div></div>
+      <div className="template-context observed-tree"><span>模板</span><strong>{template.title}</strong><button className="secondary" onClick={() => setModal({ kind: "templates" })}><LayoutTemplate size={15} /> 更换模板</button><button className="secondary" disabled={!builderDocument} onClick={()=>setModal({kind:'save-template'})}><Save size={15}/>保存为模板</button><div className="builder-save-actions"><span role="status">{isNew ? '尚未创建' : builderDirty ? '未保存' : '已保存'}</span><button type="button" className="secondary" onClick={discardBuilder}>放弃修改</button><button type="button" className="primary" onClick={isNew ? confirmCreationStyle : saveBuilder}>{isNew ? <Check size={15}/> : <Save size={15}/>} {isNew ? '确认样式' : '保存'}</button></div></div>
       <ComponentEditor key={`${template.id}:${builderRevision}`} template={template} initialNodes={initialNodes} initialDocument={builderDocument} onDocumentChange={setBuilderDocument} persistence="session" offerings={offerings} currentPaywallId={isNew ? undefined : selected.id} onCreateExitOffer={prepareExitOffer} onExitOfferChange={changeExitOffer}/>
     </section>;
   }
@@ -1147,8 +1173,10 @@ function ArchiveModal({ name, onClose, onArchive }) {
   return <Modal title="Archive paywall" onClose={onClose}><p className="modal-copy">This action cannot be undone. Type the complete paywall name to continue.</p><Field label={`Type "${name}"`}><input value={value} onChange={(event) => setValue(event.target.value)} /></Field><div className="modal-actions"><button className="secondary" onClick={onClose}>Cancel</button><button className="danger-button" disabled={value !== name} onClick={onArchive}>Archive paywall</button></div></Modal>;
 }
 
-function TemplatesModal({ selected, setSelected, onClose, onOpenBuilder }) {
+export function TemplatesModal({ selected, setSelected, onClose, onOpenBuilder,templateCatalog=templates,libraryItems=[],libraryError='',onLibraryAction }) {
   const [pendingSelected, setPendingSelected] = useState(selected);
+  const [tab,setTab]=useState(templateCatalog[selected]?.userRecord?'custom':'official');
+  const [trash,setTrash]=useState(false),[renaming,setRenaming]=useState(null),[actionError,setActionError]=useState('');
   const [filters, setFilters] = useState({
     // Start unfiltered so the HelloTalk document templates are discoverable on first open.
     products: [],
@@ -1164,15 +1192,16 @@ function TemplatesModal({ selected, setSelected, onClose, onOpenBuilder }) {
     const checked = list ? filters[group].includes(value) : filters[group] === value;
     return <label className="filter-option"><input type={list ? "checkbox" : "radio"} name={list ? undefined : group} checked={checked} onChange={() => list ? toggleListFilter(group, value) : setSingleFilter(group, value)} /> {children}</label>;
   };
-  const pendingTemplate = pendingSelected === null ? null : templates[pendingSelected];
+  const pendingTemplate = pendingSelected === null ? null : templateCatalog[pendingSelected];
   const tagLabels = { "1 product": "1 个商品", "2 products": "2 个商品", "3 products": "3 个商品", "4 products": "4 个商品", "5 products": "5 个商品", "Multi-step": "多步骤", Credits: "点数商品", "Web purchase": "网页购买", "Feature table": "权益表格", Reviews: "评价", Award: "奖项", Timer:'倒计时', Carousel:'轮播', Toggle:'普通开关', Tabs:'标签页', 'Trial timeline':'试用时间线', 'Offer code':'优惠码', 'Social Proof':'口碑展示' };
-  const displayTags = (template) => isEditableTemplate(template) ? template.tags.map((tag) => tagLabels[tag] ?? tag) : ["Source preview", "Structure pending"];
-  const countBy = (matches) => catalogTemplates.filter(matches).length;
+  const displayTags = (template) => template.userRecord||isEditableTemplate(template) ? template.tags.map((tag) => tagLabels[tag] ?? tag) : ["Source preview", "Structure pending"];
+  const tabTemplates=tab==='official'?catalogTemplates:templatesInTab(libraryItems,trash?'trash':tab).map(record=>templateCatalog.find(item=>item.id===record.id)).filter(Boolean);
+  const countBy = (matches) => tabTemplates.filter(matches).length;
   const componentOptions = [["Free trial toggle", "免费试用开关"], ["Trial timeline", "试用时间线"], ["Carousel", "轮播"], ["Reviews", "评价"], ["Timer", "倒计时"], ["Toggle", "普通开关"], ["Social Proof", "口碑展示"], ["Award", "奖项展示"], ["Tabs", "标签页"], ["Offer code", "优惠码"], ["Multi-step", "多步骤"], ["Credits", "点数商品"], ["Web purchase", "网页购买"], ["Feature table", "权益表格"]];
-  const filteredTemplates = catalogTemplates.filter((template) => {
+  const filteredTemplates = tabTemplates.filter((template) => {
     const productMatch = !filters.products.length || filters.products.some((item) => item === "1 product" ? template.productCount === 1 : template.productCount > 1);
     const mediaMatch = filters.media === "All" || (filters.media === "With Image or Video" ? ["image", "video"].includes(template.media) : template.media === "none");
-    const componentMatch = filters.components.every((item) => (template.isNew || template.documentTemplate ? template.components : sourceVerifiedTemplateComponents[template.id])?.includes(item));
+    const componentMatch = filters.components.every((item) => (template.userRecord || template.isNew || template.documentTemplate ? template.components : sourceVerifiedTemplateComponents[template.id])?.includes(item));
     const lengthMatch = filters.length === "All" || (filters.length === "Short" ? template.title.length < 28 : template.title.length >= 28);
     const backgroundMatch = filters.background === "All" || (filters.background === "Dark" ? ["night", "black", "midnight", "ocean", "halloween"].includes(template.theme) : !["night", "black", "midnight", "ocean", "halloween"].includes(template.theme));
     const categoryMatch = filters.category === "All" || template.category === filters.category;
@@ -1180,7 +1209,11 @@ function TemplatesModal({ selected, setSelected, onClose, onOpenBuilder }) {
   });
   const documentTemplates = filteredTemplates.filter((template) => template.documentTemplate);
   const prioritizedTemplates = [...documentTemplates, ...filteredTemplates.filter((template) => template.isNew), ...filteredTemplates.filter((template) => !template.documentTemplate && !template.isNew)];
+  const chooseTab=next=>{setTab(next);setTrash(false);setPendingSelected(null);setRenaming(null);setActionError('');setFilters({products:[],media:'All',components:[],length:'All',background:'All',category:'All'});};
+  const action=(id,kind,value)=>{const error=onLibraryAction?.(id,kind,value)??'';setActionError(error);if(!error){setRenaming(null);if(kind==='archive'||kind==='unshare'&&tab==='shared')setPendingSelected(null);}return !error;};
   return <Modal title="Choose a template" onClose={onClose} wide>
+    <div className="template-library-tabs" role="tablist" aria-label="模板来源">{[['official','官方模板',catalogTemplates.length],['custom','自定义模板',templatesInTab(libraryItems,'custom').length],['shared','共享模板',templatesInTab(libraryItems,'shared').length]].map(([id,label,count])=><button type="button" role="tab" aria-selected={tab===id} aria-controls="template-library-panel" key={id} onClick={()=>chooseTab(id)}>{label}<span>{count}</span></button>)}</div>
+    <p className="template-local-note library-boundary">本地演示：自定义模板仅保存在当前浏览器；共享为模拟状态，不会向其他用户发布。</p>
     <div className="template-modal"><aside>
       <div className="filter-heading"><strong>Filters</strong><span className="filter-count">{filteredTemplates.length}</span></div>
       <p>Number of products</p>
@@ -1191,20 +1224,24 @@ function TemplatesModal({ selected, setSelected, onClose, onOpenBuilder }) {
       <Filter group="media" value="With Image or Video">{`With Image or Video (${countBy((item) => item.media !== "none")})`}</Filter>
       <Filter group="media" value="No media">{`No media (${countBy((item) => item.media === "none")})`}</Filter>
       <p>Components</p>
-      {componentOptions.map(([value, label]) => <Filter key={value} group="components" value={value} list>{label} ({countBy((item) => (item.isNew || item.documentTemplate ? item.components : sourceVerifiedTemplateComponents[item.id])?.includes(value))})</Filter>)}
+      {componentOptions.map(([value, label]) => <Filter key={value} group="components" value={value} list>{label} ({countBy((item) => (item.userRecord || item.isNew || item.documentTemplate ? item.components : sourceVerifiedTemplateComponents[item.id])?.includes(value))})</Filter>)}
       <p>Length</p><Filter group="length" value="All">All</Filter><Filter group="length" value="Short">Short</Filter><Filter group="length" value="Long">Long</Filter>
       <p>Background theme</p><Filter group="background" value="All">All</Filter><Filter group="background" value="Light">Light</Filter><Filter group="background" value="Dark">Dark</Filter>
-      <p>Category</p><Filter group="category" value="All">All paywalls</Filter><Filter group="category" value="Popular">Popular</Filter><Filter group="category" value="Seasonal">Seasonal</Filter>
-    </aside><div className="template-content"><div className="template-scroll-content">
+      {tab==='official'&&<><p>Category</p><Filter group="category" value="All">All paywalls</Filter><Filter group="category" value="Popular">Popular</Filter><Filter group="category" value="Seasonal">Seasonal</Filter></>}
+    </aside><div className="template-content" id="template-library-panel" role="tabpanel" aria-label={{official:'官方模板',custom:'自定义模板',shared:'共享模板'}[tab]}><div className="template-scroll-content">
+      {tab==='custom'&&<div className="template-library-toolbar"><strong>{trash?'回收站':'我的模板'}</strong><button type="button" className="secondary" onClick={()=>{setTrash(!trash);setPendingSelected(null);setRenaming(null);setActionError('');}}>{trash?<Undo2 size={15}/>:<Trash2 size={15}/>} {trash?'返回自定义模板':`回收站（${templatesInTab(libraryItems,'trash').length}）`}</button></div>}
+      {(libraryError||actionError)&&<p className="template-library-error" role="alert">{libraryError||actionError}</p>}
+      {renaming&&<form className="template-rename-form" onSubmit={event=>{event.preventDefault();action(renaming.id,'rename',renaming.name);}}><label>模板名称<input autoFocus maxLength={60} value={renaming.name} onChange={event=>setRenaming({...renaming,name:event.target.value})}/></label><button type="submit" className="primary">保存名称</button><button type="button" className="secondary" onClick={()=>setRenaming(null)}>取消</button></form>}
       <div className="template-selection-summary">{pendingTemplate ? <><span>Selected template</span><strong>{pendingTemplate.title}</strong><small>{pendingTemplate.isGallery ? `${pendingTemplate.editorVerified ? "源编辑器 Layers 已核对" : "仅源预览"}：${pendingTemplate.observedComponents.join(" · ")}。SKU 和字段配置待核验。` : displayTags(pendingTemplate).join(" · ")}</small></> : <span>No template selected</span>}</div>
       <div className="template-grid rich-template-grid">{prioritizedTemplates.map((template) => {
-        const index = templates.indexOf(template);
-        return <div role="button" tabIndex={0} aria-pressed={pendingSelected === index} className={`template template-${template.theme} ${pendingSelected === index ? "selected" : ""}`} onClick={() => setPendingSelected(index)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setPendingSelected(index); } }} key={template.id}>
+        const index = templateCatalog.findIndex(item=>item.id===template.id),record=template.userRecord;
+        const card=<div role="button" tabIndex={trash?-1:0} aria-disabled={trash} aria-pressed={pendingSelected === index} className={`template template-${template.theme} ${pendingSelected === index ? "selected" : ""}`} onClick={() => !trash&&setPendingSelected(index)} onKeyDown={(event) => { if (!trash&&(event.key === "Enter" || event.key === " ")) { event.preventDefault(); setPendingSelected(index); } }}>
           <div className="template-source-preview" inert=""><DeferredTemplateMedia template={template} /></div><strong>{template.title}</strong>{template.isGallery ? <small className="template-origin">RevenueCat · #{template.sourceOrder}</small> : template.sourceTemplate && <small className="template-origin">RevenueCat · {template.sourceTemplate}</small>}<small>{displayTags(template).join(" · ")}</small>
         </div>;
+        return <article className="template-library-item" key={template.id}>{card}{record&&<div className="template-record-actions"><span>{trash?'已移入回收站':record.shared?'已共享 · 本地模拟':'仅当前浏览器'}</span>{trash?<button type="button" className="icon" aria-label={`恢复 ${record.title}`} title="恢复模板" onClick={()=>action(record.id,'restore')}><Undo2 size={17}/></button>:<><button type="button" className="icon" aria-label={`重命名 ${record.title}`} title="重命名" onClick={()=>setRenaming({id:record.id,name:record.title})}><Pencil size={17}/></button><button type="button" className="icon" aria-label={`${record.shared?'取消共享':'共享'} ${record.title}`} title={record.shared?'取消共享':'共享模板（本地模拟）'} onClick={()=>action(record.id,record.shared?'unshare':'share')}><Share2 size={17}/></button><button type="button" className="icon" aria-label={`移入回收站 ${record.title}`} title="移入回收站" onClick={()=>action(record.id,'archive')}><Trash2 size={17}/></button></>}</div>}</article>;
       })}</div>
-      {!filteredTemplates.length && <div className="template-empty">没有符合筛选条件的模板</div>}
-    </div><div className="modal-actions template-modal-actions"><button className="secondary" onClick={onClose}>Cancel</button><button className="primary" disabled={pendingSelected === null} onClick={() => onOpenBuilder(pendingSelected)}>Open in Builder</button></div></div></div>
+      {!filteredTemplates.length && <div className="template-empty">{tab==='official'||tabTemplates.length?'没有符合筛选条件的模板':trash?'回收站为空':tab==='shared'?'暂无共享模板':'暂无自定义模板'}</div>}
+    </div><div className="modal-actions template-modal-actions"><button className="secondary" onClick={onClose}>Cancel</button><button className="primary" disabled={trash||!prioritizedTemplates.some(item=>item.id===pendingTemplate?.id)} onClick={() => onOpenBuilder(pendingSelected)}>Open in Builder</button></div></div></div>
   </Modal>;
 }
 

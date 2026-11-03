@@ -164,6 +164,7 @@ export function resolveComponentText(node, document, packageNode, selected = fal
 
 // Legacy configuration is consumed once. Runtime edits never compile back to it.
 export function importComponentDocument(nodes, template = {}, calibrate = true) {
+  if(template.savedDocument&&validDocument(template.savedDocument))return {...structuredClone(template.savedDocument),templateId:template.id};
   if(template.id==='ht-free-trial')return buildFreeTrialTemplate();
   if(template.id==='ht-vip-tiers')return buildVipTierTemplate();
   if(template.id==='ht-renewal-offer')return buildRenewalOfferTemplate();

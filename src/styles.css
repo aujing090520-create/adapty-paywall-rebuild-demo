@@ -2105,7 +2105,25 @@ textarea { min-height: 80px; resize: vertical; }
 .modal.wide:has(.template-modal) { width: min(1280px, calc(100vw - 32px)); height: min(860px, calc(100dvh - 24px)); max-height: calc(100dvh - 24px); }
 .template-modal { grid-template-columns: 190px minmax(0, 1fr); }
 .template-content, .template-scroll-content { min-width: 0; }
-.template-scroll-content { overflow-x: hidden; overflow-y: auto; }
+.template-scroll-content { flex:1 1 auto; overflow-x: hidden; overflow-y: auto; }
+.template-library-tabs { display:flex; flex:0 0 auto; gap:22px; padding:0 20px; border-bottom:1px solid #e5e5ea; }
+.template-library-tabs button { display:flex; align-items:center; gap:7px; padding:12px 2px; border:0; border-bottom:3px solid transparent; background:transparent; color:#676772; font-size:14px; white-space:nowrap; }
+.template-library-tabs button[aria-selected="true"] { color:#5927d5; border-bottom-color:#6b32eb; font-weight:600; }
+.template-library-tabs button span { font-size:11px; color:#787883; }
+.template-local-note { color:#767680; font-size:12px; line-height:1.5; }
+.library-boundary { flex:0 0 auto; margin:0; padding:10px 20px; background:#f7f8fa; border-bottom:1px solid #e7e8ed; }
+.template-library-item { min-width:0; display:flex; flex-direction:column; }
+.template-library-item > .template { flex:1; }
+.template-record-actions { display:flex; gap:3px; align-items:center; padding:8px 2px; min-height:45px; }
+.template-record-actions > span { flex:1; color:#777780; font-size:11px; }
+.template-record-actions .icon { width:30px; min-width:30px; height:30px; padding:5px; }
+.template-library-toolbar { display:flex; align-items:center; justify-content:space-between; gap:8px; padding-top:12px; }
+.template-name-field,.template-rename-form label { display:grid; gap:8px; color:#51515b; font-size:13px; }
+.template-name-field input { width:100%; }
+.template-rename-form { display:flex; align-items:end; flex-wrap:wrap; gap:8px; padding:12px 0; }
+.template-rename-form label { flex:1; min-width:160px; }
+.template-library-error { color:#bc3048; font-size:12px; }
+@media(max-width:520px) { .template-library-tabs { gap:12px; padding:0 14px; }.template-library-tabs button { font-size:13px;gap:4px; }.library-boundary { padding:8px 14px; } }
 .rich-template-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .rich-template-grid .template { min-width: 0; max-width: 100%; }
 @media (max-width: 1000px) { .rich-template-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
