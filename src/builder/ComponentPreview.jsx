@@ -37,6 +37,7 @@ import {countdownRuntime} from './countdownState.js';
 import {productLinkRuntime} from './countdownProductLink.js';
 import ProductGiftsPreview from './ProductGiftsPreview.jsx';
 import {giftPackages,giftPackage,visiblePackageGifts} from './productGifts.js';
+import {selectionScrollController} from './selectionScroll.js';
 
 const PreviewContext = createContext(null);
 const TimerContext = createContext(null);
@@ -266,7 +267,11 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
   }
   if (node.type === 'ExpressCheckout') return <div {...attributes} style={{...style,...containerStyle(visualNode)}}>{children(node.children.filter((child)=>child.props.state === (runtime[node.id] ?? props.previewState ?? 'available')))}</div>;
   if (node.type === 'Package') {
-    return <div {...attributes} role="button" tabIndex={0} aria-pressed={stateSelected} style={{ ...style, ...containerStyle(visualNode) }} onClick={(event) => { event.stopPropagation(); if(editing)select(event);else setRuntime((current) => ({ ...current, [`package:${group}`]: node.id, selectedPackage: node.id })); }} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault();event.stopPropagation();if(editing)onSelect(node.id);else setRuntime((current) => ({ ...current, [`package:${group}`]: node.id, selectedPackage: node.id })); } }}>{children()}</div>;
+    const choose = event => {
+      context.selectionScroll.capture(event.currentTarget);
+      setRuntime(current => ({ ...current, [`package:${group}`]: node.id, selectedPackage: node.id }));
+    };
+    return <div {...attributes} role="button" tabIndex={0} aria-pressed={stateSelected} style={{ ...style, ...containerStyle(visualNode) }} onClick={(event) => { event.stopPropagation(); if(editing)select(event);else choose(event); }} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault();event.stopPropagation();if(editing)onSelect(node.id);else choose(event); } }}>{children()}</div>;
   }
   if (['Tabs', 'Carousel', 'Flow'].includes(node.type)) {
     return <PageSequence node={visualNode} context={context} props={props} attributes={attributes} style={style} children={children} />;
@@ -321,6 +326,9 @@ function Countdown({ props,remaining }) {
 export default function ComponentPreview({ document: sourceDocument, businessTime, businessOrdering, countdownScope, persistCountdown = true, selectedId, highlightedId, onSelect, editing, inspectable = true, navigation, onNavigate, onStatus, onDismiss, onResume, onPurchasePreview, onProductLinkChange, dismissRequest = 0, dismissOnBackdrop = false }) {
   const document=useMemo(()=>localizedDocument(sourceDocument,navigation),[sourceDocument,navigation?.contentLocale,navigation?.contentTheme,navigation?.contentPlatform]);
   const [localRuntime, setRuntime] = useState({});
+  const selectionScroll = useMemo(selectionScrollController, []);
+  useLayoutEffect(() => selectionScroll.restore());
+  useEffect(() => () => selectionScroll.clear(), [selectionScroll]);
   const clock=useMemo(()=>clockAnchor(businessTime),[businessTime]);
   const [tick,setTick]=useState(()=>performance.now());
   const needsClock=useMemo(()=>[...indexDocument(document).nodes.values()].some(node=>node.type==='Countdown')||(document.logic?.rules??[]).some(rule=>rule.conditions.some(condition=>condition.type==='timeSource')),[document]);
@@ -470,7 +478,7 @@ export default function ComponentPreview({ document: sourceDocument, businessTim
     const element = event.target.closest?.('[data-component-id]');
     setHoveredId(canvasSelectionTarget(nodeIndex.get(element?.dataset.templateId??element?.dataset.componentId), selectedId, nodeIndex, parentIndex));
   };
-  const common={document,nodeIndex,parentIndex,viewportHeight,countdownScope,persistCountdown,selectedId,onSelect,editing,hoveredId:editing?highlightedId??(inspectable?hoveredId:null):null,runtime,setRuntime,runAction,onStatus,businessOrdering};
+  const common={document,nodeIndex,parentIndex,viewportHeight,countdownScope,persistCountdown,selectedId,onSelect,editing,hoveredId:editing?highlightedId??(inspectable?hoveredId:null):null,runtime,setRuntime,runAction,onStatus,businessOrdering,selectionScroll};
   const direction=document.previewContentLocale==='ar'?'rtl':'ltr';
   return <PreviewContext.Provider value={{...common,...commerce.background}}>
     <style>{fontStyles(document.fonts)}</style>

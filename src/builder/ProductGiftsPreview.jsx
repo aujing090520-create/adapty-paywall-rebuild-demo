@@ -1,6 +1,7 @@
 import React,{useEffect,useRef,useState} from 'react';
-import {ChevronDown,ChevronUp,Gift,Info,X} from 'lucide-react';
+import {ChevronDown,ChevronUp,Gift,X} from 'lucide-react';
 import {safeTextLink} from './richTextModel.js';
+import InfoPopover from './InfoPopover.jsx';
 
 export default function ProductGiftsPreview({attributes,props,items,packageId,editing,safeMediaSource}) {
   const [expanded,setExpanded]=useState(props.initialExpanded!==false),[detail,setDetail]=useState(null),list=useRef(null);
@@ -9,7 +10,7 @@ export default function ProductGiftsPreview({attributes,props,items,packageId,ed
   return <section {...attributes} data-gift-package={packageId} aria-label="商品礼包" style={{...attributes.style,display:'flex',flexDirection:'column',gap:10,overflow:'hidden'}}>
     <div className="nc-gifts-heading">
       <span className="nc-gifts-title">{props.title}</span>
-      {props.description&&<button type="button" aria-label="礼包说明" title="礼包说明" onClick={event=>{if(editing)return;event.stopPropagation();setDetail(detail?.id==='$info'?null:{id:'$info',title:props.title,description:props.description});}}><Info size={15}/></button>}
+      <InfoPopover label="礼包说明" text={props.description} scope={packageId} editing={editing}/>
       {props.collapsible&&<button type="button" className="nc-gifts-toggle" aria-label={open?'收起商品礼包':'展开商品礼包'} aria-expanded={open} onClick={event=>{if(editing)return;event.stopPropagation();setExpanded(!open);setDetail(null);}}>{open?<ChevronUp size={22}/>:<ChevronDown size={22}/>}</button>}
     </div>
     {open&&<div ref={list} className="nc-gifts-list" style={{gap:props.cardGap??10}}>

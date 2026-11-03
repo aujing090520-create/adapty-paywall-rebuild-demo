@@ -159,3 +159,7 @@ html:has(.native-editor),body:has(.native-editor){overscroll-behavior-x:none}
 .nc-gifts-detail p{margin:6px 0}
 .nc-gifts-detail a{color:#167aff}
 .nc-productgifts button:focus-visible{outline:2px solid #285cff;outline-offset:-2px}
+.nc-info-popover{position:absolute;z-index:30;box-sizing:border-box;background:#29292e;color:#fff;border-radius:6px;box-shadow:0 3px 12px #0003;font-weight:400;line-height:1.5;text-align:start;white-space:pre-wrap;overflow-wrap:anywhere}
+.nc-info-popover-content{box-sizing:border-box;max-height:inherit;overflow:auto;overscroll-behavior:contain}
+.nc-info-popover::before{content:"";position:absolute;left:var(--nc-popover-arrow);width:8px;height:8px;background:inherit;transform:translateX(-50%) rotate(45deg)}
+.nc-info-popover[data-side=bottom]::before{top:-4px}.nc-info-popover[data-side=top]::before{bottom:-4px}
