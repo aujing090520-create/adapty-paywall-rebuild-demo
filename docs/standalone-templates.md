@@ -1,31 +1,27 @@
 # 单独售卖模板
 
-三个独立模板及同名创建样式类型：单独售卖-访客、单独售卖-学习语言、单独售卖-直播语聊。创建付费墙后选择对应模板即可；不修改旧模板或用户记录。
+三个独立模板及同名创建样式类型：单独售卖-访客、单独售卖-学习语言、单独售卖-直播语聊。
 
 ## 组件边界
 
-- Screen 全屏，固定 Header 包含状态栏示意与返回/关闭按钮，正文含主视觉、三项 Package 与权益内容，Footer 固定购买范围说明和购买按钮。
-- Package 负责商品选择，默认选中第二项；内部使用通用 ProductParameter 展示时长、标签、节省比例和价格。购买按钮沿现有逻辑购买当前选择，返回/关闭也沿现有 Dismiss 行为，仅模拟交易。
-- 访客和直播语聊：上方周均价，下方总价；学习语言：上方总价，下方月均价。新增“周价”通用商品参数 ¥{周价}/周，未新增手工价格或 SKU 输入。原价格模式切换保持不变，不改辅助周价；终身商品自动隐藏与已有总价重复的周价，切回订阅可恢复。
-- 正文和素材为可编辑文字、图片、图标与布局容器，不是自定义整页组件。三款均提供中文、英文内容，默认中文；切 English 可看参考图英文文案，缺失语言回退中文。商品参数继续使用中文字段名占位。
-- 访客数量是示意字段占位，不接入真实访客数据；不显示实际用户的画像或隐私数据。三个范围说明明确不包含其他 VIP 权益。
+- Screen 全屏，固定 Header 放状态栏示意与返回/关闭按钮，正文放主视觉、三个 Package 和权益内容，Footer 放范围说明与购买按钮。
+- Package 负责商品选择，默认第二项；ProductParameter 显示时长、标签、节省比例、总价、周价或月价。购买沿用现有当前套餐逻辑，仅模拟交易；不改商品字段或其他模板。
+- 访客文案中原图的粉色模糊内容是 Image，不是人数或变量。三个头像组也都是原图 Image。周围文字用普通文字组件排版，图片和文字分别可配置。
+- 学习语言、直播语聊的主视觉与权益小图标也使用原图裁切；不重新生成插画，不用整页截图代替可配置界面。中文、英文与默认回退沿用内容语言管理。
 
-## 素材
+## 原图裁切
 
-独立 AI 生成素材，不裁剪、贴入或编辑用户整页截图：public/standalone-template/visitor.png、languages.png、live-voice.png。可以在图片组件内替换为原始业务素材；当前版本不冒称与原插画完全相同。
+用户在2026-11-03明确要求切原图、不再生成。本版移除三张生成素材，改用 public/standalone-template/original/ 中15张PNG：3张主视觉、6个权益图标、3组模糊头像和3张粉色马赛克。
 
-## 生成记录
+裁切只截取对应图片区域，保留源图像素和原有背景；不调整分辨率、不重绘、不做AI放大。manifest.json 记录来源文件名、原始尺寸、矩形坐标、源文件/裁切像素/输出文件哈希。原始整页截图不随公开构建上传。
 
-工具：内置 image_gen。最终提示词如下。
-### 访客人物
+使用用户原图所在目录复现或校验：
 
-Create a standalone portrait photograph asset for a mobile visitor-privilege paywall, not a UI screenshot. A friendly young adult East Asian woman in an ivory turtleneck and simple sleeveless knit vest, shoulder-length dark hair, outdoors in a sunlit green park, natural candid smile toward camera, waist-up framing. Clean realistic photography, bright soft daylight. Portrait aspect ratio approximately 3:4. Subject centered with a little space around shoulders. No text, no logo, no frame, no icons, no borders, no phone, no UI. This is a fictional adult person. Opaque photograph background.
+```sh
+python3 scripts/crop-standalone-assets.py --source-directory /absolute/source-directory
+python3 scripts/crop-standalone-assets.py --source-directory /absolute/source-directory --verify
+```
 
-### 学习语言
+## 已有记录
 
-Standalone soft 3D illustration asset for a mobile language-learning subscription page. Square composition. A white round speech bubble in the center contains an open book icon with two bright golden yellow/orange pages. Around it, at diagonal angles, large white speech bubbles partially extend beyond the canvas, containing pale golden greetings: "Hello", "Hola", "こんにちは", "안녕하세요". Very light cool-gray background (#f7f7f7), faint pale lavender shadows, cheerful yellow tones, no purple dominant palette. Center book at x50% y48%, edge bubbles spacious and softly fading. High-quality clean dimensional app illustration, not a page mockup. No phone, no status bar, no buttons, no prices, no headings, no watermark. The artwork must work at mobile width 390px and height250px; avoid dense details.
-
-### 直播语聊
-
-Create one isolated transparent-background 3D app illustration for a voice-room/live-chat paywall. Central large glossy purple round microphone medallion with a white microphone symbol. Around it a pale translucent lavender circular orbit, three small round avatars of diverse friendly fictional adult cartoon people wearing headphones, one purple speech bubble with a white sound waveform upper left, one blue-purple bubble with a white video camera right. Soft polished clay/3D style, clean white highlights, very light lavender translucent rings. Composition fills a square asset, all details legible at 180px. No text, no letters, no UI screenshot, no phone, no page background, no pricing, no buttons, no watermark. Transparent background.
-
+读取三模板旧默认版本时，按模板ID、节点ID和旧资源/文案指纹替换对应默认图片、头像组、马赛克文案与权益图标，移除旧默认多余眼睛叠层。保留套餐、商品选择、页面顺序和其他组件；用户改过的图片和文案、主动删除的内容不恢复。升级只执行一次，不自动保存记录。

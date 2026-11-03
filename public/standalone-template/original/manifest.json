@@ -1,0 +1,292 @@
+{
+  "method": "lossless-rectangular-crop",
+  "resized": false,
+  "generated": false,
+  "assets": [
+    {
+      "path": "/standalone-template/original/visitor-art.png",
+      "source": "codex-clipboard-b0470514-1e58-4add-9e35-f54004d63777.jpg",
+      "sourceSize": [
+        1080,
+        2341
+      ],
+      "sourceSha256": "cf05370a3ac7b0055b866422cc11015438e5b4bfb6900bea1f7bc77c1b6b8bd4",
+      "rect": [
+        674,
+        278,
+        1030,
+        698
+      ],
+      "width": 356,
+      "height": 420,
+      "pixelSha256": "ef4f9e43d0502838b76afcfc072d400617fdfab336494c436efe831bfa146276",
+      "sha256": "4bd6a706a948d000c75ced347f1d8c7312d732771a8b7b87877d94a293559043"
+    },
+    {
+      "path": "/standalone-template/original/visitor-avatars-0.png",
+      "source": "codex-clipboard-b0470514-1e58-4add-9e35-f54004d63777.jpg",
+      "sourceSize": [
+        1080,
+        2341
+      ],
+      "sourceSha256": "cf05370a3ac7b0055b866422cc11015438e5b4bfb6900bea1f7bc77c1b6b8bd4",
+      "rect": [
+        83,
+        1360,
+        290,
+        1456
+      ],
+      "width": 207,
+      "height": 96,
+      "pixelSha256": "c6bc3c9e6d5d8eb143efedbdcd4c7edba6e4dc471254e86bb836f868f3076c5e",
+      "sha256": "d171b498d8493e0da4a375bcfa4fdd996bcb9ce45ad1a56c9bf9ea4496b7774e"
+    },
+    {
+      "path": "/standalone-template/original/visitor-avatars-1.png",
+      "source": "codex-clipboard-b0470514-1e58-4add-9e35-f54004d63777.jpg",
+      "sourceSize": [
+        1080,
+        2341
+      ],
+      "sourceSha256": "cf05370a3ac7b0055b866422cc11015438e5b4bfb6900bea1f7bc77c1b6b8bd4",
+      "rect": [
+        83,
+        1540,
+        290,
+        1636
+      ],
+      "width": 207,
+      "height": 96,
+      "pixelSha256": "6a952315d699866562ddeb212e19ea523da22f5aa5a7d0d04c1aa4881cbf18e7",
+      "sha256": "e83f15504e5e6b07ce3cd58312f042a910cb8fc56b887c87d238a5215ea8d7e9"
+    },
+    {
+      "path": "/standalone-template/original/visitor-avatars-2.png",
+      "source": "codex-clipboard-b0470514-1e58-4add-9e35-f54004d63777.jpg",
+      "sourceSize": [
+        1080,
+        2341
+      ],
+      "sourceSha256": "cf05370a3ac7b0055b866422cc11015438e5b4bfb6900bea1f7bc77c1b6b8bd4",
+      "rect": [
+        83,
+        1720,
+        290,
+        1816
+      ],
+      "width": 207,
+      "height": 96,
+      "pixelSha256": "5fe1c83e821ae25aa5593201f9114d39b308b8aa8b64145a76f66b03ee687a89",
+      "sha256": "4e3f3f19212124865b2dd382442a44b82805a3205b25d1b886047d4c21d62eff"
+    },
+    {
+      "path": "/standalone-template/original/visitor-mosaic-0.png",
+      "source": "codex-clipboard-b0470514-1e58-4add-9e35-f54004d63777.jpg",
+      "sourceSize": [
+        1080,
+        2341
+      ],
+      "sourceSha256": "cf05370a3ac7b0055b866422cc11015438e5b4bfb6900bea1f7bc77c1b6b8bd4",
+      "rect": [
+        442,
+        1370,
+        482,
+        1410
+      ],
+      "width": 40,
+      "height": 40,
+      "pixelSha256": "ccf4791c25647a02ae42066d0d2ee4dfa26be078d4cc0ebc1273e51a037d00e0",
+      "sha256": "ec56f7fa8f55dd9d4475ae1b8a252453eba3ad960f5d188fe742009b19868e31"
+    },
+    {
+      "path": "/standalone-template/original/visitor-mosaic-1.png",
+      "source": "codex-clipboard-b0470514-1e58-4add-9e35-f54004d63777.jpg",
+      "sourceSize": [
+        1080,
+        2341
+      ],
+      "sourceSha256": "cf05370a3ac7b0055b866422cc11015438e5b4bfb6900bea1f7bc77c1b6b8bd4",
+      "rect": [
+        370,
+        1575,
+        405,
+        1616
+      ],
+      "width": 35,
+      "height": 41,
+      "pixelSha256": "a2fd247b1458a5110231220511480c837da51324f40e9fde3ad82363870e279d",
+      "sha256": "3c69517b37ee4f1f56225fe3304eaffb3511f65cfd83f7b9ae7ca8b4b648ee65"
+    },
+    {
+      "path": "/standalone-template/original/visitor-mosaic-2.png",
+      "source": "codex-clipboard-b0470514-1e58-4add-9e35-f54004d63777.jpg",
+      "sourceSize": [
+        1080,
+        2341
+      ],
+      "sourceSha256": "cf05370a3ac7b0055b866422cc11015438e5b4bfb6900bea1f7bc77c1b6b8bd4",
+      "rect": [
+        371,
+        1735,
+        406,
+        1776
+      ],
+      "width": 35,
+      "height": 41,
+      "pixelSha256": "b86b070879919312449b3d238339792aa83b7e7bcb86fe4519c0e2f2c2a53662",
+      "sha256": "d3d4fb93e852b3814ad0ebdc1d3c65bd37c39327a394dccd789ab7889609c27b"
+    },
+    {
+      "path": "/standalone-template/original/languages-art.png",
+      "source": "codex-clipboard-c448275b-a991-462f-b812-fb96dab103bf.jpg",
+      "sourceSize": [
+        1125,
+        2436
+      ],
+      "sourceSha256": "1bbfb7893a002f75c2aea225089f18b5b64634d61d3fa512eeafc176d9addaff",
+      "rect": [
+        0,
+        270,
+        1125,
+        765
+      ],
+      "width": 1125,
+      "height": 495,
+      "pixelSha256": "b7f1ffd774336f36c259e3ebb3ed5b73dccd79737140d23fb08146cebfbe2b25",
+      "sha256": "d7a0234590e164e3dcb109b7404086b969a6a45b917cc2b20866ca71ba332dfb"
+    },
+    {
+      "path": "/standalone-template/original/languages-icon-0.png",
+      "source": "codex-clipboard-c448275b-a991-462f-b812-fb96dab103bf.jpg",
+      "sourceSize": [
+        1125,
+        2436
+      ],
+      "sourceSha256": "1bbfb7893a002f75c2aea225089f18b5b64634d61d3fa512eeafc176d9addaff",
+      "rect": [
+        82,
+        1570,
+        148,
+        1640
+      ],
+      "width": 66,
+      "height": 70,
+      "pixelSha256": "5428be294d003e18aab1b9f35d629bda46220bf4526d88d401dfa74c2d7244b4",
+      "sha256": "b1baa35f5bd7ae8699db746e6f877a29e26d65f3ac549e05a79e9b694b44391f"
+    },
+    {
+      "path": "/standalone-template/original/languages-icon-1.png",
+      "source": "codex-clipboard-c448275b-a991-462f-b812-fb96dab103bf.jpg",
+      "sourceSize": [
+        1125,
+        2436
+      ],
+      "sourceSha256": "1bbfb7893a002f75c2aea225089f18b5b64634d61d3fa512eeafc176d9addaff",
+      "rect": [
+        80,
+        1712,
+        150,
+        1780
+      ],
+      "width": 70,
+      "height": 68,
+      "pixelSha256": "15c9c8cff06e280e58ff9887781e64b8599ea6beeca10b3cd91bbc24449279bc",
+      "sha256": "bb722f32a278e471cb610c4e3d11ec27ad59a4ffd7e5a2ad51d5dff071ba12e0"
+    },
+    {
+      "path": "/standalone-template/original/languages-icon-2.png",
+      "source": "codex-clipboard-c448275b-a991-462f-b812-fb96dab103bf.jpg",
+      "sourceSize": [
+        1125,
+        2436
+      ],
+      "sourceSha256": "1bbfb7893a002f75c2aea225089f18b5b64634d61d3fa512eeafc176d9addaff",
+      "rect": [
+        80,
+        1840,
+        150,
+        1910
+      ],
+      "width": 70,
+      "height": 70,
+      "pixelSha256": "b3c9ac8c80efbab96c7c827b6274dc7fee0c4792f976142b131db26736e78006",
+      "sha256": "4f0cf1e8fe7ab888de8806429bde2784209b95ac14bd0bd0f36bd79ae56eacfe"
+    },
+    {
+      "path": "/standalone-template/original/live-voice-art.png",
+      "source": "codex-clipboard-fad7b447-37ad-466a-b13e-15709fb604e4.jpg",
+      "sourceSize": [
+        1125,
+        2436
+      ],
+      "sourceSha256": "14dd38c68ca97562b112b3ea4b27af5edccaa335ace56f857f4bcfe58d4a77df",
+      "rect": [
+        570,
+        285,
+        1125,
+        795
+      ],
+      "width": 555,
+      "height": 510,
+      "pixelSha256": "3a16c598032f636b37f4bb5c4283b1f80724c2abb05b0d1fa4f459fd1f597955",
+      "sha256": "74ab6c1dbd97b9022ce0127687cb38802b67f0f1dbbbcd8109e6e209ac8b5d49"
+    },
+    {
+      "path": "/standalone-template/original/live-voice-icon-0.png",
+      "source": "codex-clipboard-fad7b447-37ad-466a-b13e-15709fb604e4.jpg",
+      "sourceSize": [
+        1125,
+        2436
+      ],
+      "sourceSha256": "14dd38c68ca97562b112b3ea4b27af5edccaa335ace56f857f4bcfe58d4a77df",
+      "rect": [
+        75,
+        1475,
+        177,
+        1580
+      ],
+      "width": 102,
+      "height": 105,
+      "pixelSha256": "7be7ed934705fb8ddc52c5585d086a9530cdebf81879e1210c9bb5512ed10945",
+      "sha256": "89bc34ecc2396d610b8c5418f660b48b3eeaa260d7fdadaf693f699065b0969c"
+    },
+    {
+      "path": "/standalone-template/original/live-voice-icon-1.png",
+      "source": "codex-clipboard-fad7b447-37ad-466a-b13e-15709fb604e4.jpg",
+      "sourceSize": [
+        1125,
+        2436
+      ],
+      "sourceSha256": "14dd38c68ca97562b112b3ea4b27af5edccaa335ace56f857f4bcfe58d4a77df",
+      "rect": [
+        75,
+        1620,
+        177,
+        1725
+      ],
+      "width": 102,
+      "height": 105,
+      "pixelSha256": "106c6357cfe87c737fdfe6c78eeecf05622e59022d14cbc944a9fafd094ad1dd",
+      "sha256": "1d7b38b6f354ae84e4a0609c05a2e788c391ee8e1fa721ce833414a5462b13f5"
+    },
+    {
+      "path": "/standalone-template/original/live-voice-icon-2.png",
+      "source": "codex-clipboard-fad7b447-37ad-466a-b13e-15709fb604e4.jpg",
+      "sourceSize": [
+        1125,
+        2436
+      ],
+      "sourceSha256": "14dd38c68ca97562b112b3ea4b27af5edccaa335ace56f857f4bcfe58d4a77df",
+      "rect": [
+        75,
+        1765,
+        177,
+        1875
+      ],
+      "width": 102,
+      "height": 110,
+      "pixelSha256": "b0a8183a916031b7659aa1721876d7e1225d9cdf65c70744cb52bec52f375abb",
+      "sha256": "1410ff0ac888dc267d9ee9df768441d475437110fa1c9c143536636559bf4089"
+    }
+  ]
+}

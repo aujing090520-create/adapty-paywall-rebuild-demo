@@ -1,10 +1,11 @@
 import test,{before,after} from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
+import {readFileSync,existsSync} from 'node:fs';
+import {createHash} from 'node:crypto';
 import React from 'react';
 import Renderer,{act} from 'react-test-renderer';
 import {createServer} from 'vite';
-import {buildStandaloneTemplate,STANDALONE_TEMPLATES} from '../src/builder/standaloneTemplates.js';
+import {buildStandaloneTemplate,upgradeStandaloneArt,STANDALONE_TEMPLATES} from '../src/builder/standaloneTemplates.js';
 import {templates,createBuilderNodes} from '../src/templates/templateDefinitions.js';
 import {component,indexDocument,validDocument,importComponentDocument,saveComponentDocument,readComponentDocument,cloneComponent} from '../src/builder/componentDocument.js';
 import {copyFragment,pasteFragment,patchComponentProperties} from '../src/builder/componentOperations.js';
@@ -47,8 +48,48 @@ test('weekly price is a generic selectable parameter, never replaces monthly mod
   assert.equal(productParameterPreview('weeklyPrice',plan),'¥{周价}/周');plan.props.productType='lifetime';assert.equal(productParameterPreview('weeklyPrice',plan),'');
   plan.children=plan.children.filter(()=>false);assert.equal(productParameterPreview('weeklyPrice',plan),'¥{总价}');
 });
-test('standalone illustrations are independent bitmaps, not supplied screenshot rasters',()=>{
-  for(const name of ['visitor','languages','live-voice']){const bytes=readFileSync(new URL(`../public/standalone-template/${name}.png`,import.meta.url));assert.equal(bytes.subarray(1,4).toString(),'PNG');assert.ok(bytes.readUInt32BE(16)>300);}
+test('all fifteen illustration regions are original crops with verified hashes, not generated replacements',()=>{
+  const manifest=JSON.parse(readFileSync(new URL('../public/standalone-template/original/manifest.json',import.meta.url),'utf8'));
+  assert.equal(manifest.method,'lossless-rectangular-crop');assert.equal(manifest.generated,false);assert.equal(manifest.resized,false);assert.equal(manifest.assets.length,15);
+  for(const asset of manifest.assets){const bytes=readFileSync(new URL(`../public${asset.path}`,import.meta.url));assert.equal(bytes.subarray(1,4).toString(),'PNG');assert.equal(bytes.readUInt32BE(16),asset.width);assert.equal(bytes.readUInt32BE(20),asset.height);assert.equal(createHash('sha256').update(bytes).digest('hex'),asset.sha256);assert.equal(asset.width,asset.rect[2]-asset.rect[0]);assert.equal(asset.height,asset.rect[3]-asset.rect[1]);assert.ok(asset.height<asset.sourceSize[1]/2);}
+  for(const name of ['visitor','languages','live-voice'])assert.equal(existsSync(new URL(`../public/standalone-template/${name}.png`,import.meta.url)),false);
+});
+test('visitor masks and avatar groups are editable Images and are not counts, variables or redrawn icons',()=>{
+  const doc=buildStandaloneTemplate('visitor'),{nodes}=indexDocument(doc);
+  for(let index=0;index<3;index++){
+    const prefix=`standalone/visitor/benefit-${index}`;
+    assert.equal(nodes.get(`${prefix}/text/mosaic`).type,'Image');assert.match(nodes.get(`${prefix}/text/mosaic`).props.src,/original\/visitor-mosaic-/);
+    assert.equal(nodes.get(`${prefix}/avatars`).type,'Image');assert.equal(nodes.get(`${prefix}/text`).type,'Stack');
+  }
+  assert.doesNotMatch(JSON.stringify(doc),/访客人数|附近人数|连续访问人数|visitor count|Nearby count/);
+});
+test('saved old default assets and count placeholders upgrade once without changing products or custom content',()=>{
+  const old=buildStandaloneTemplate('visitor');delete old.standaloneArtVersion;
+  const {nodes}=indexDocument(old),id='standalone/visitor';
+  nodes.get(`${id}/portrait/image`).props.src='/standalone-template/visitor.png';
+  nodes.get(`${id}/portrait`).children.push(component(`${id}/portrait/eye`,'Stack','布局容器',{background:'#e40fb1'},[component(`${id}/portrait/eye/icon`,'Icon','图标',{icon:'tabler:outline:eye'})]));
+  const labels=['最近有 {访客人数} 人打开了你的对话框想要联系你','有 {附近人数} 个离你很近的语伴想和你线下认识','有 {连续访问人数} 人连续3天一直查看你的主页，但还没和你打招呼'];
+  const english=['Recently, {visitor count} people opened your chat to contact you','{Nearby count} nearby partners would like to meet you','{Repeat visitor count} people viewed your profile for 3 days but have not said hello'];
+  for(let i=0;i<3;i++){
+    const row=nodes.get(`${id}/benefit-${i}`),key=`${id}/benefit-${i}`;
+    row.children[0]=component(`${key}/avatars`,'Stack','布局容器',{widthMode:'fixed',width:69},[0,1,2].map(j=>component(`${key}/avatars/${j}`,'Stack','布局容器',{},[component(`${key}/avatars/${j}/icon`,'Icon','图标',{icon:'tabler:filled:user'})])));
+    row.children[1]=component(`${key}/text`,'Text','文字',{text:labels[i],fontSize:14});old.localization.translations.en[`${key}/text`]={text:english[i]};
+  }
+  const before=structuredClone(old),fixed=upgradeCanonicalComponents(old),after=indexDocument(fixed).nodes;
+  assert.deepEqual(old,before);assert.deepEqual(fixed.products,before.products);assert.equal(fixed.standaloneArtVersion,1);assert.deepEqual(structureIssues(fixed),[]);assert.ok(validDocument(fixed));
+  assert.match(after.get(`${id}/portrait/image`).props.src,/original\/visitor-art/);assert.equal(after.has(`${id}/portrait/eye`),false);
+  for(let i=0;i<3;i++){assert.equal(after.get(`${id}/benefit-${i}/avatars`).type,'Image');assert.equal(after.get(`${id}/benefit-${i}/text/mosaic`).type,'Image');}
+  assert.doesNotMatch(JSON.stringify(fixed),/访客人数|visitor count/);assert.equal(upgradeStandaloneArt(fixed),fixed);
+  const custom=structuredClone(before);indexDocument(custom).nodes.get(`${id}/portrait/image`).props.src='/custom.jpg';indexDocument(custom).nodes.get(`${id}/benefit-0`).children[1].props.text='用户改写的内容';indexDocument(custom).nodes.get(`${id}/benefit-1`).children=[];
+  const kept=indexDocument(upgradeStandaloneArt(custom)).nodes;assert.equal(kept.get(`${id}/portrait/image`).props.src,'/custom.jpg');assert.equal(kept.get(`${id}/benefit-0/text`).props.text,'用户改写的内容');assert.equal(kept.get(`${id}/benefit-1`).children.length,0);
+  const customEnglish=structuredClone(before);customEnglish.localization.translations.en[`${id}/benefit-0/text`]={text:'My edited English copy'};const preserved=upgradeStandaloneArt(customEnglish);assert.equal(indexDocument(preserved).nodes.get(`${id}/benefit-0/text`).type,'Text');assert.equal(preserved.localization.translations.en[`${id}/benefit-0/text`].text,'My edited English copy');
+  assert.equal(upgradeStandaloneArt({...before,templateId:'custom'}).templateId,'custom');
+  for(const kind of ['languages','liveVoice']){
+    const record=buildStandaloneTemplate(kind);delete record.standaloneArtVersion;const originalNodes=indexDocument(record).nodes,key=`standalone/${kind}`;
+    originalNodes.get(`${key}/hero/image`).props.src=`/standalone-template/${kind==='languages'?'languages':'live-voice'}.png`;
+    originalNodes.get(`${key}/benefit-0`).children[0]=component(`${key}/benefit-0/icon`,'Icon','图标',{icon:kind==='languages'?'tabler:outline:world':'tabler:outline:clock',width:23,height:23});
+    const migrated=indexDocument(upgradeStandaloneArt(record)).nodes;assert.match(migrated.get(`${key}/hero/image`).props.src,/\/original\//);assert.equal(migrated.get(`${key}/benefit-0/icon`).type,'Image');
+  }
 });
 let server,Preview;const priorObserver=globalThis.ResizeObserver;
 before(async()=>{globalThis.ResizeObserver=class{observe(){}disconnect(){}};server=await createServer({configFile:false,logLevel:'silent',server:{middlewareMode:true,hmr:false,watch:null}});Preview=(await server.ssrLoadModule('/src/builder/ComponentPreview.jsx')).default;});
