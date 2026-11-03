@@ -1657,7 +1657,7 @@ test('all 45 templates preserve original copy, media and product data after fixe
 test('buttons expose one action selector while checkout modes remain conditional', async () => {
   const b=await mount(component('sample','Button','按钮',{action:{action:'None'}}),{editing:false});
   const select=b.renderer.root.findAll((item)=>item.type==='select'&&item.props['aria-label']==='点击动作')[0];
-  assert.deepEqual(select.findAllByType('option').map((option)=>option.props.value),['None','NavigateTo','NextScreen','NavigateBack','OpenSheet','RestorePurchases','Dismiss','Purchase']);
+  assert.deepEqual(select.findAllByType('option').map((option)=>option.props.value),['None','NavigateTo','NextScreen','NavigateBack','OpenSheet','ShowTooltip','RestorePurchases','Dismiss','Purchase']);
   await b.select('点击动作','OpenSheet');
   assert.equal(indexDocument(b.document()).nodes.get('sample').props.action.action,'OpenSheet');await b.close();
   const purchaseNode=createCatalogComponent('PurchaseButton','sample');

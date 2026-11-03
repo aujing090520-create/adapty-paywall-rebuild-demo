@@ -14,15 +14,15 @@ export function popoverPosition(anchor, bounds, size, gap = 8) {
     width, maxHeight, side, arrow: Math.max(10, Math.min(width - 10, anchor.left + anchor.width / 2 - left))};
 }
 
-export default function InfoPopover({label, text, scope, editing}) {
+export default function InfoPopover({label, text, scope, editing, triggerElement, onEmpty}) {
   const [open, setOpen] = useState(false), [position, setPosition] = useState(null);
   const trigger = useRef(null), bubble = useRef(null), id = useId();
-  const host = trigger.current?.closest('.native-phone');
+  const host = trigger.current?.closest('[data-embedded-surface],.native-phone');
   useEffect(() => {setOpen(false);}, [scope, editing]);
   useLayoutEffect(() => {
     if (!open || !host || !bubble.current) return;
     const root = host.getBoundingClientRect(), rect = trigger.current.getBoundingClientRect();
-    const scale = root.width / host.offsetWidth, unit = host.clientWidth / 390;
+    const scale = root.width / host.offsetWidth, unit = host.dataset.embeddedSurface ? 1 : host.clientWidth / 390;
     const anchor = {left:(rect.left-root.left)/scale-host.clientLeft, top:(rect.top-root.top)/scale-host.clientTop,
       bottom:(rect.bottom-root.top)/scale-host.clientTop, width:rect.width/scale};
     setPosition({...popoverPosition(anchor, {width:host.clientWidth,height:host.clientHeight},
@@ -48,11 +48,21 @@ export default function InfoPopover({label, text, scope, editing}) {
       doc.defaultView.removeEventListener('resize', close);
     };
   }, [open, host]);
-  if (!text) return null;
-  const unit = host ? host.clientWidth / 390 : 1;
+  const activate = event => {
+    if (editing) {triggerElement?.props.onClick?.(event);return;}
+    event.stopPropagation();
+    if (triggerElement?.props['aria-disabled']) return;
+    if (!text?.trim()) {onEmpty?.();return;}
+    setPosition(null);setOpen(value=>!value);
+  };
+  if (!text && !triggerElement) return null;
+  const unit = host && !host.dataset.embeddedSurface ? host.clientWidth / 390 : 1;
+  const accessibility = {ref:trigger,'aria-expanded':open,'aria-describedby':open?id:undefined};
   return <>
-    <button ref={trigger} type="button" aria-label={label} aria-expanded={open} aria-describedby={open?id:undefined}
-      onClick={event => {if(editing)return;event.stopPropagation();setPosition(null);setOpen(value=>!value);}}><Info size={15}/></button>
+    {triggerElement ? React.cloneElement(triggerElement, {...accessibility,onClick:activate,onKeyDown:event=>{
+      if (editing) {triggerElement.props.onKeyDown?.(event);return;}
+      if (event.key === 'Enter' || event.key === ' ') {event.preventDefault();activate(event);}
+    }}) : <button {...accessibility} type="button" aria-label={label} onClick={activate}><Info size={15}/></button>}
     {open && host && createPortal(<div ref={bubble} id={id} role="tooltip" className="nc-info-popover"
       data-side={position?.side} onClick={event=>event.stopPropagation()}
       style={{left:position?.left??8,top:position?.top??0,width:position?.width??260*unit,

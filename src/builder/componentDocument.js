@@ -14,6 +14,7 @@ import {buildFreeTrialTemplate} from './freeTrialTemplate.js';
 import {buildVipTierTemplate} from './vipTierTemplate.js';
 import {buildRenewalOfferTemplate} from './renewalOfferTemplate.js';
 import {buildIntroPriceTemplate} from './introPriceTemplate.js';
+import {buildChatGiftTemplate} from './chatGiftTemplate.js';
 import {buildStandaloneTemplate,STANDALONE_TEMPLATES} from './standaloneTemplates.js';
 import {remapButtonText} from './buttonText.js';
 import {remapPurchasePages} from './purchaseSelection.js';
@@ -167,6 +168,7 @@ export function importComponentDocument(nodes, template = {}, calibrate = true) 
   if(template.id==='ht-vip-tiers')return buildVipTierTemplate();
   if(template.id==='ht-renewal-offer')return buildRenewalOfferTemplate();
   if(template.id==='ht-intro-price')return buildIntroPriceTemplate();
+  if(template.id==='ht-chat-gift')return buildChatGiftTemplate();
   const standaloneKind=Object.keys(STANDALONE_TEMPLATES).find(key=>STANDALONE_TEMPLATES[key].templateId===template.id);
   if(standaloneKind)return buildStandaloneTemplate(standaloneKind);
   const products = {};

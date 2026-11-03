@@ -36,6 +36,8 @@ import {buttonTextResolution} from './buttonText.js';
 import {countdownRuntime} from './countdownState.js';
 import {productLinkRuntime} from './countdownProductLink.js';
 import ProductGiftsPreview from './ProductGiftsPreview.jsx';
+import InfoPopover from './InfoPopover.jsx';
+import EmbeddedHostPreview from './EmbeddedHostPreview.jsx';
 import {giftPackages,giftPackage,visiblePackageGifts} from './productGifts.js';
 import {selectionScrollController} from './selectionScroll.js';
 
@@ -292,7 +294,13 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
         if(!editing&&owningScreen(document,node.id)?.id!==tabTarget.page.id)runAction({...node,props:{...props,action:{action:'OpenPage',actionPage:tabTarget.page.id}}});
       }else setRuntime(current=>({...current,[props.target]:tabTarget.index}));
     };
-    return <div {...attributes} role="button" tabIndex={disabled?-1:0} aria-disabled={!editing && (blocked||disabled) || undefined} style={{ ...style, ...containerStyle(visualNode), ...(!editing&&(blocked||disabled)?{cursor:'default'}:{}),...(disabled?{opacity:(style.opacity??1)*.5}:{}) }} onClick={(event) => { select(event); if(disabled){event.stopPropagation();return;}if (node.type === 'TabButton') activateTab(); else if (!editing) { event.stopPropagation(); runAction({...node,props},item); } }} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); if(disabled)return;if (editing) onSelect(node.id); else if (node.type === 'TabButton') activateTab(); else runAction({...node,props},item); } }}>{children()}</div>;
+    const button = <div {...attributes} role="button" tabIndex={disabled?-1:0} aria-disabled={!editing && (blocked||disabled) || undefined} style={{ ...style, ...containerStyle(visualNode), ...(!editing&&(blocked||disabled)?{cursor:'default'}:{}),...(disabled?{opacity:(style.opacity??1)*.5}:{}) }} onClick={(event) => { select(event); if(disabled){event.stopPropagation();return;}if (node.type === 'TabButton') activateTab(); else if (!editing) { event.stopPropagation(); runAction({...node,props},item); } }} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); if(disabled)return;if (editing) onSelect(node.id); else if (node.type === 'TabButton') activateTab(); else runAction({...node,props},item); } }}>{children()}</div>;
+    if (node.type !== 'TabButton' && props.action?.action === 'ShowTooltip') {
+      const message = item ? interpolateItem(props.action.hintText,item) : props.action.hintText;
+      return <InfoPopover text={interpolateVariables(message??'',document,variablePackage,timer,runtime)}
+        scope={node.id} editing={editing} triggerElement={button} onEmpty={()=>context.onStatus?.('请填写提示文案')}/>;
+    }
+    return button;
   }
   if (node.type === 'Screen' && !node.children.some(child => child.type === 'Flow') && (props.pagePresentation || node.children.some(child=>['Header','Footer'].includes(child.type)))) {
     const chrome = screenChromeLayout(node, runtime, context.nodeIndex);
@@ -303,9 +311,10 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
     const frame = pageFrame(props, context.viewportHeight);
     // The presentation frame owns geometry; only content scrolls between fixed chrome rows.
     const backdrop = node.children.find(child=>child.props.pageBackdrop);
-    return <div className="nc-page-frame" data-page-presentation={frame.mode} style={{height:context.viewportHeight,padding:frame.inset,background:frame.mode==='fullscreen'?'transparent':props.windowBackdrop??'#8f8f8f'}} onClick={select}>
+    return <div className="nc-page-frame" data-page-presentation={frame.mode} style={{height:context.viewportHeight,padding:frame.inset,background:frame.mode==='fullscreen'?'transparent':frame.mode==='embedded'?'#ffffff':props.windowBackdrop??'#8f8f8f'}} onClick={select}>
+    {frame.mode==='embedded'&&<EmbeddedHostPreview kind={props.embedPreviewContext} slotTop={frame.top}/>}
     {frame.mode!=='fullscreen'&&backdrop&&<NativeComponent node={backdrop} layoutStyle={{position:'absolute',inset:0,width:'100%',height:'100%',zIndex:0}}/>}
-    <div {...attributes} data-axis="vertical" data-header-overlap={chrome.underHeader || undefined} style={{ ...style, width:'100%',maxWidth:'100%',height:frame.height,minHeight:0,maxHeight:'100%',margin:0,borderRadius:frame.radius,overflow:'hidden', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gridTemplateRows: `${chrome.header ? 'auto' : '0px'} minmax(0, 1fr) ${chrome.footer ? 'auto' : '0px'}` }}>
+    <div {...attributes} data-axis="vertical" data-embedded-surface={frame.mode==='embedded'||undefined} data-header-overlap={chrome.underHeader || undefined} style={{ ...style, width:frame.mode==='embedded'?frame.width:'100%',...(frame.mode==='embedded'?{position:'absolute',left:frame.left,top:frame.top}:{}),maxWidth:'100%',height:frame.height,minHeight:0,maxHeight:'100%',margin:0,borderRadius:frame.radius,overflow:'hidden', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gridTemplateRows: `${chrome.header ? 'auto' : '0px'} minmax(0, 1fr) ${chrome.footer ? 'auto' : '0px'}` }}>
       <BackgroundVideo props={props} />
       {chrome.header && <NativeComponent node={chrome.header} packageNode={currentPackage} layoutStyle={{ gridColumn: 1, gridRow: 1, alignSelf: 'start' }} />}
       <div className="nc-screen-content" role="region" aria-label={`${node.name}内容`} tabIndex={0} data-axis={props.axis} style={{ ...containerStyle(visualNode), gridColumn: 1, gridRow: chrome.underHeader ? '1 / 3' : 2, minWidth: 0,minHeight:0,overflowY:'auto',overflowX:'hidden',overscrollBehavior:'contain' }}>{children(chrome.content, false)}</div>

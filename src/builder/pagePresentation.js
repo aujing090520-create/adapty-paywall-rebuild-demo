@@ -1,11 +1,16 @@
-const modes = new Set(['fullscreen', 'sheet', 'window']);
-export const PAGE_PRESENTATIONS = [['fullscreen', '全屏页面'], ['sheet', '底部半窗'], ['window', '居中窗口']];
+const modes = new Set(['fullscreen', 'sheet', 'window', 'embedded']);
+export const PAGE_PRESENTATIONS = [['fullscreen', '全屏页面'], ['sheet', '底部半窗'], ['window', '居中窗口'], ['embedded', '嵌入区域']];
 
 export function pagePresentation(props = {}) {
   return modes.has(props.pagePresentation) ? props.pagePresentation : 'fullscreen';
 }
 
 export function pageFrame(props = {}, viewportHeight = 844) {
+  if (pagePresentation(props) === 'embedded') {
+    const bounded = (value, fallback, max, min=0) => Math.max(min, Math.min(max, Number.isFinite(Number(value)) ? Number(value) : fallback));
+    const width=bounded(props.embedWidth,390,390,1),height=bounded(props.embedHeight,314,viewportHeight,1);
+    return {mode:'embedded',width,height,left:bounded(props.embedLeft,0,390-width),top:bounded(props.embedTop,viewportHeight-height,viewportHeight-height),inset:0,radius:0};
+  }
   const mode = pagePresentation(props), windowed = mode !== 'fullscreen';
   const inset = windowed ? Math.max(0, Math.min(100, Number(props.windowInset) || 0)) : 0;
   const available = Math.max(1, viewportHeight - inset * 2);

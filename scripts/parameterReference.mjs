@@ -7,7 +7,9 @@ import {PRODUCT_PARAMETER_OPTIONS} from '../src/products/productParameters.js';
 
 export const definitions=[];
 const add=(types,group,label,key,meaning,condition='该组件显示且当前模块已启用',options=[],range='')=>definitions.push({types,group,label,key,meaning,condition,options,range});
-add(['Screen'],'页面展示','展示方式','pagePresentation','整个Paywall页面的呈现形态，不属于内部布局容器；多步骤逐屏配置','选中页面根容器或画布工具栏页面展示；不改变按钮与弹窗绑定',[['fullscreen','全屏页面','使用设备视口，保留窗口参数便于切回'],['sheet','底部半窗','固定到底部，内容在窗口内滚动'],['window','居中窗口','窗口居中，内容在窗口内滚动']]);
+add(['Screen'],'页面展示','展示方式','pagePresentation','整个Paywall页面的呈现形态，不属于内部布局容器；多步骤逐屏配置','选中页面根容器或画布工具栏页面展示；不改变按钮与弹窗绑定',[['fullscreen','全屏页面','使用设备视口，保留窗口参数便于切回'],['sheet','底部半窗','固定到底部，内容在窗口内滚动'],['window','居中窗口','窗口居中，内容在窗口内滚动'],['embedded','嵌入区域','在宿主提供的有限矩形内展示，宽高位置独立配置；内容不越过区域边界']]);
+for(const [label,key,meaning] of [['嵌入区域宽度','embedWidth','宿主提供的可用宽度，最多390设计像素'],['嵌入区域高度','embedHeight','宿主提供的可用高度，超出视口时限制'],['嵌入区域左距','embedLeft','相对宿主左侧的位置，自动限制在视口内'],['嵌入区域顶距','embedTop','相对宿主顶部的位置，自动限制在视口内']])add(['Screen'],'页面展示',label,key,meaning,'展示方式为嵌入区域；仅调整Paywall根区域，不改内部内容');
+add(['Screen'],'页面展示','宿主预览','embedPreviewContext','选择只用于画布上下文的外部宿主背景；不进入图层树或参与购买','展示方式为嵌入区域',[['none','无背景','独立使用通用嵌入区域'],['chat-gifts','聊天送礼面板','只读聊天送礼宿主预览，会员区域独立编辑']]);
 add(['Screen'],'页面展示','窗口高度','windowHeight','窗口外框高度，超出可用屏幕时自动限制；不通过内容容器留白模拟半窗','底部半窗或居中窗口；切回全屏不丢弃窗口尺寸',[],'120–844 px');
 add(['Screen'],'页面展示','窗口边距','windowInset','窗口与设备四边保留的最小距离','底部半窗或居中窗口；默认半窗0px、首次居中20px',[],'0–100 px');
 add(['Screen'],'页面展示','窗口圆角','windowRadius','窗口整体外框的圆角；全屏呈现不使用该圆角','底部半窗或居中窗口',[],'0–100 px');
@@ -195,9 +197,10 @@ add(['Package'],'商品属性','互斥选择组','group','按当前页面或弹�
 for(const [key,name] of Object.entries({name:'商品名称',price:'主价格',reference:'参考价',monthlyPrice:'月均价',referencePrice:'原价',supportingCopy:'辅助文案',savingCopy:'优惠说明',saveCopy:'SAVE 文案',badgeText:'标签文字'}))add(['Package'],'兼容存储',name,`products[dataKey].${key}`,'旧记录的示例数据保留；当前样式预览展示对应字段名','仅旧数据兼容，不是当前构建器新增配置入口；自定义文字仍可独立编辑');
 add(all,'状态样式','状态','navigation.package-style','切换正在编辑和预览的状态；不是第二个“默认选中”字段','仅商品、标签按钮、指示器或处于商品/标签按钮内的子组件；文字正文共用，字号、字重、颜色及排版可分别配置；未覆盖值继承默认',[['default','默认','编辑默认标准属性'],['selected','选中 / 当前','编辑选中或激活标准属性；未覆盖值继承默认']]);
 
-add(['Button','PurchaseButton'],'动作属性','点击动作','action.action','设置按钮用途及交互行为；购买按钮选择导航时保留ID、内容与实际样式并转为普通按钮，选择购买则转回购买按钮','编辑态优先选中图层；交互预览才执行动作；仅显式选择行为才转换类型，不改原模板',[['None','未配置','不执行动作'],['NavigateTo','跳转到','继续选择导航目标'],['NextScreen','跳转到下一步骤','按目标屏幕ID跳转并记录访问历史，自动显示步骤选择'],['NavigateBack','返回上一屏幕','返回当前流程历史或关闭当前弹层'],['RestorePurchases','恢复购买','仅显示恢复购买演示提示，不发起交易'],['Dismiss','关闭付费墙','仅演示关闭，真实关闭已排除'],['Purchase','购买','显示购买结账方式；不把跳转伪装成购买']]);
+add(['Button','PurchaseButton'],'动作属性','点击动作','action.action','设置按钮用途及交互行为；购买按钮选择导航时保留ID、内容与实际样式并转为普通按钮，选择购买则转回购买按钮','编辑态优先选中图层；交互预览才执行动作；仅显式选择行为才转换类型，不改原模板',[['None','未配置','不执行动作'],['NavigateTo','跳转到','继续选择导航目标'],['NextScreen','跳转到下一步骤','按目标屏幕ID跳转并记录访问历史，自动显示步骤选择'],['NavigateBack','返回上一屏幕','返回当前流程历史或关闭当前弹层'],['ShowTooltip','显示文本提示','显示锚定当前按钮的悬浮说明气泡，不打开弹窗或导航'],['RestorePurchases','恢复购买','仅显示恢复购买演示提示，不发起交易'],['Dismiss','关闭付费墙','仅演示关闭，真实关闭已排除'],['Purchase','购买','显示购买结账方式；不把跳转伪装成购买']]);
 add(['Button','PurchaseButton'],'动作属性','导航目标','action.action','选择具体目的地','点击动作是跳转到；购买用途改变后按普通按钮编辑',[['OpenPrivacy','隐私政策','打开单独配置的隐私链接'],['OpenTerms','服务条款','打开单独配置的条款链接'],['OpenURL','自定义链接','打开配置URL'],['WebCheckout','网页购买','演示网页购买，不发起交易'],['OfferCodeRedemption','优惠码兑换','演示兑换入口'],['OpenSheet','弹层','打开已绑定且未隐藏的弹层，包括旧模板挽留弹窗'],['OpenPage','详情屏幕','进入已绑定且内容可用的流程页面']]);
 add(['Button','PurchaseButton'],'动作属性','链接地址','action.actionUrl','设置隐私、条款或URL目标','导航目标为隐私政策/服务条款/自定义链接；购买按钮已显式切换为普通导航用途');
+add(['Button','PurchaseButton'],'动作属性','提示文案','action.hintText','点击按钮显示锚定按钮的悬浮文本气泡，不占布局高度；再次点击、点击外部、滚动或 Escape 关闭；可读取现有文本变量，空内容不显示气泡','点击动作为显示文本提示；编辑态只选中组件');
 add(['Button'],'动作属性','链接打开方式','action.openMethod','决定链接交给哪种浏览方式','目标链接有效；应用内浏览器为受限iframe，受目标站点嵌入策略限制',[['in_app_browser','应用内浏览器','在手机预览内嵌入页面'],['external_browser','外部浏览器','另开链接'],['deep_link','深链','使用应用协议链接；不接受脚本协议']]);
 add(['Button','PurchaseButton'],'动作属性','目标页面','action.actionPage','绑定真实详情Screen，不把页面名称当作目标ID','兼容详情页面导航；普通流程之间使用下一步骤');
 add(['Button','PurchaseButton'],'动作属性','步骤','action.actionPage','跳转到所选Screen步骤；属性、画布连线和运行预览使用同一目标ID','点击动作是跳转到下一步骤；不列出自己或辅助详情；删除目标后保留失效ID并提示重新选择');

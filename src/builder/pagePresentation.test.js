@@ -11,7 +11,7 @@ import {addWorkflowStep,workflowContext} from './workflow.js';
 for(const template of templates)test(`${template.id}: explicit presentation belongs to each screen, not layout children`,()=>{
   const raw=importComponentDocument(createBuilderNodes(template.id),template),before=structuredClone(raw),next=upgradeCanonicalComponents(raw),nodes=indexDocument(next).nodes;
   assert.ok(validDocument(next));
-  for(const screen of [...nodes.values()].filter(n=>n.type==='Screen'&&!n.children.some(c=>c.type==='Flow')))assert.ok(['fullscreen','sheet','window'].includes(pagePresentation(screen.props)),screen.id);
+  for(const screen of [...nodes.values()].filter(n=>n.type==='Screen'&&!n.children.some(c=>c.type==='Flow')))assert.ok(['fullscreen','sheet','window','embedded'].includes(pagePresentation(screen.props)),screen.id);
   assert.deepEqual(raw,before);
   assert.deepEqual(upgradePagePresentation(next),next);
   const main=[...nodes.values()].find(n=>n.type==='Screen'&&!n.children.some(c=>c.type==='Flow'));
