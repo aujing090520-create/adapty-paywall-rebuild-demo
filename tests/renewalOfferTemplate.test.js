@@ -50,12 +50,18 @@ test('presentation, price mode and copied package remain ordinary reusable confi
   assert.deepEqual(doc,before);assert.deepEqual(buildRenewalOfferTemplate(),before);
 });
 
-test('renewal illustration is a standalone transparent bitmap, not a screenshot-backed template',()=>{
-  const bytes=readFileSync(new URL('../public/renewal-template/mascot.png',import.meta.url));
-  assert.equal(bytes.subarray(1,4).toString(),'PNG');assert.ok(bytes.readUInt32BE(16)>=128);assert.ok([4,6].includes(bytes[25]));
-  const images=[...indexDocument(buildRenewalOfferTemplate()).nodes.values()].filter(node=>node.type==='Image');
-  assert.equal(images.length,1);assert.equal(images[0].props.src,'/renewal-template/mascot.png');
-  assert.equal(images[0].props.objectFit,'contain');
+test('renewal static decoration is one replaceable package background, not multiple editable fragments',()=>{
+  const bytes=readFileSync(new URL('../public/renewal-template/card-artwork.png',import.meta.url));
+  assert.equal(bytes.subarray(1,4).toString(),'PNG');assert.ok(bytes.readUInt32BE(16)>=700);
+  assert.ok(Math.abs(bytes.readUInt32BE(16)/bytes.readUInt32BE(20)-350/150)<0.02);
+  const {nodes}=indexDocument(buildRenewalOfferTemplate()),card=nodes.get('renewal/package');
+  assert.equal(card.props.fillType,'image');assert.equal(card.props.backgroundImage,'/renewal-template/card-artwork.png');assert.equal(card.props.backgroundFit,'fill');
+  assert.equal(card.children.length,1);assert.equal(card.children[0].id,'renewal/card-content');
+  assert.equal(nodes.has('renewal/card-cutout'),false);assert.equal(nodes.has('renewal/mascot'),false);
+  assert.equal([...nodes.values()].filter(node=>node.type==='Image').length,0);
+  const updated=updateComponent(buildRenewalOfferTemplate(),card.id,{props:{backgroundImage:'/replacement.png'}});
+  assert.equal(indexDocument(updated).nodes.get(card.id).props.backgroundImage,'/replacement.png');
+  for(const id of ['renewal/price','renewal/reference','renewal/countdown'])assert.deepEqual(indexDocument(updated).nodes.get(id),nodes.get(id));
 });
 
 let server,Preview;
@@ -70,6 +76,7 @@ test('real preview selects the annual package, keeps header/footer fixed, previe
     await act(async()=>{renderer=Renderer.create(React.createElement(Preview,{document:doc,editing:false,onSelect(){},onStatus:value=>status=value,onDismiss(){dismissed++;}}));});
     assert.equal(node('renewal/screen').props.style.height,440);assert.equal(node('renewal/header').props.style.gridRow,1);assert.equal(node('renewal/footer').props.style.gridRow,3);
     assert.equal(node('renewal/package').props['aria-pressed'],true);assert.equal(node('renewal/reference').props.style.textDecoration,'line-through');
+    assert.match(node('renewal/package').props.style.backgroundImage,/card-artwork\.png/);assert.equal(node('renewal/package').props.style.backgroundSize,'100% 100%');
     await click('renewal/purchase');assert.equal(status,'购买预览：未发起真实交易');
     await click('renewal/close');assert.equal(dismissed,1);
   }finally{if(renderer)await act(async()=>renderer.unmount());}

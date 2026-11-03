@@ -18,9 +18,7 @@ export function buildRenewalOfferTemplate(){
     box('renewal/title-row',[text('renewal/title','限时 VIP 优惠',{fontSize:20,fontWeight:800}),close],{axis:'horizontal',align:'center',gap:8}),
     text('renewal/subtitle','重新订阅即可继续使用 VIP 权益，并享受限时优惠',{fontSize:13,color:'#999999'}),
   ]);
-  const card=n('renewal/package','Package',{dataKey:'renewal/annual',group:'renewal/packages',productType:'subscription',priceMode:'1',defaultSelected:true,productLabelEnabled:true,axis:'overlay',overlayAlignment:'top-right',heightMode:'fixed',height:150,widthMode:'fill',background:gradient,selectedBackground:gradient,borderWidth:0,radius:20,gap:0},[
-    box('renewal/card-cutout',[],{widthMode:'fixed',width:137,heightMode:'fixed',height:62,background:'#ffffff',radiusMode:'individual',radiusTopLeft:0,radiusTopRight:0,radiusBottomRight:0,radiusBottomLeft:62}),
-    n('renewal/mascot','Image',{src:'/renewal-template/mascot.png',altText:'续订优惠吉祥物',widthMode:'fixed',width:112,heightMode:'fixed',height:92,objectFit:'contain',alignSelf:'start',marginMode:'individual',marginTop:-10,marginRight:3,marginBottom:0,marginLeft:0}),
+  const card=n('renewal/package','Package',{dataKey:'renewal/annual',group:'renewal/packages',productType:'subscription',priceMode:'1',defaultSelected:true,productLabelEnabled:true,axis:'vertical',heightMode:'fixed',height:150,widthMode:'fill',fillType:'image',backgroundImage:'/renewal-template/card-artwork.png',backgroundFit:'fill',background:'#ffffff',selectedBackground:'#ffffff',borderWidth:0,radius:20,gap:0},[
     box('renewal/card-content',[
       parameter('renewal/product-label','productLabel',{fontSize:14}),
       box('renewal/price-row',[parameter('renewal/price','totalPrice',{priceRole:'primary',fontSize:36,fontWeight:700}),text('renewal/price-separator','/',{fontSize:16,color:'#ffffff',widthMode:'fit'}),parameter('renewal/period','skuDuration',{fontSize:13})],{axis:'horizontal',widthMode:'fixed',width:231,align:'center',gap:2,heightMode:'fixed',height:45}),
