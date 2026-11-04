@@ -17,7 +17,7 @@ const label=node=>`${COMPONENT_NAMES[node.type]} · ${node.type==='Text'?(node.p
 function VariableKey({variable,variables,onChange}){
   const [draft,setDraft]=useState(variable.key);useEffect(()=>setDraft(variable.key),[variable.key]);
   const error=variableKeyError(variables,variable.id,draft);
-  return <Field label="变量键"><input aria-label="变量键" aria-invalid={Boolean(error)} value={draft} onChange={event=>setDraft(event.target.value)} onBlur={()=>{if(!error)onChange(draft);}}/>{error&&<small role="alert">{error}</small>}</Field>;
+  return <Field label={variable.label?`${variable.label} · 变量键`:'变量键'}><input aria-label="变量键" aria-invalid={Boolean(error)} value={draft} onChange={event=>setDraft(event.target.value)} onBlur={()=>{if(!error)onChange(draft);}}/>{error&&<small role="alert">{error}</small>}</Field>;
 }
 
 export default function WorkbenchSettings({document,onChange,onClose,onPreview,initialTab='logic'}) {

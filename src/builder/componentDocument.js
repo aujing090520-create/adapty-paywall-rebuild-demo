@@ -15,6 +15,7 @@ import {buildVipTierTemplate} from './vipTierTemplate.js';
 import {buildRenewalOfferTemplate} from './renewalOfferTemplate.js';
 import {buildIntroPriceTemplate} from './introPriceTemplate.js';
 import {buildChatGiftTemplate} from './chatGiftTemplate.js';
+import {buildVisitorConnectionTemplate} from './visitorConnectionTemplate.js';
 import {buildStandaloneTemplate,STANDALONE_TEMPLATES} from './standaloneTemplates.js';
 import {remapButtonText} from './buttonText.js';
 import {remapPurchasePages} from './purchaseSelection.js';
@@ -105,6 +106,7 @@ export function validDocument(document) {
     if (depth > 40 || !node || typeof node.id !== 'string' || ids.has(node.id) || !COMPONENT_TYPES.includes(node.type) || !Array.isArray(node.children) || !node.props || typeof node.props !== 'object') return false;
     ids.add(node.id);
     if (node.type === 'ProductParameter' && !Object.hasOwn(PRODUCT_PARAMETERS, node.props.parameter)) return false;
+    if(node.type==='Image'&&(node.props.imageSource!==undefined&&!['fixed','variable'].includes(node.props.imageSource)||node.props.imageVariable!==undefined&&typeof node.props.imageVariable!=='string'))return false;
     if(node.type==='Countdown'&&node.props.linkProducts!==undefined&&typeof node.props.linkProducts!=='boolean')return false;
     if(node.type==='Countdown'&&node.props.promotion!==undefined){const value=node.props.promotion;if(!value||typeof value!=='object'||Array.isArray(value)||value.group!==undefined&&typeof value.group!=='string'||['enabled','hideLabel','hideReference','hideSavings'].some(key=>value[key]!==undefined&&typeof value[key]!=='boolean'))return false;}
     return (CONTAINER_TYPES.has(node.type) || !node.children.length) && node.children.every((child) => visit(child, depth + 1));
@@ -170,6 +172,7 @@ export function importComponentDocument(nodes, template = {}, calibrate = true) 
   if(template.id==='ht-renewal-offer')return buildRenewalOfferTemplate();
   if(template.id==='ht-intro-price')return buildIntroPriceTemplate();
   if(template.id==='ht-chat-gift')return buildChatGiftTemplate();
+  if(template.id==='ht-visitor-connection')return buildVisitorConnectionTemplate();
   const standaloneKind=Object.keys(STANDALONE_TEMPLATES).find(key=>STANDALONE_TEMPLATES[key].templateId===template.id);
   if(standaloneKind)return buildStandaloneTemplate(standaloneKind);
   const products = {};

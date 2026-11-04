@@ -38,6 +38,9 @@ import {productLinkRuntime} from './countdownProductLink.js';
 import ProductGiftsPreview from './ProductGiftsPreview.jsx';
 import InfoPopover from './InfoPopover.jsx';
 import EmbeddedHostPreview from './EmbeddedHostPreview.jsx';
+import ImageMedia from './ImageMedia.jsx';
+import {imageSources} from './imageSources.js';
+import {businessParameterRuntime} from './paywallLogic.js';
 import {giftPackages,giftPackage,visiblePackageGifts} from './productGifts.js';
 import {selectionScrollController} from './selectionScroll.js';
 
@@ -237,10 +240,11 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
     return <div {...attributes} style={{ ...style, textDecoration: rich ? undefined : textDecoration(props.strike, props.underline), whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', lineHeight: props.lineHeight ?? 1.35 }}>{isGradient(props.color)?<span style={textPaintStyle(props.color,props.colorOpacity)}>{content}</span>:content}</div>;
   }
   if (node.type === 'Image' || node.type === 'Video') {
-    const src = safeMediaSource(props.src);
+    const media=node.type==='Image'?imageSources(props,document,variablePackage,timer,runtime):{src:safeMediaSource(props.src),fallback:''};
+    const {src}=media;
     const circle = imageMask(props) === 'circle';
     return <div {...attributes} style={{ ...style, ...(circle ? { borderRadius: '50%' } : {}), ...(circle || props.mask === 'rounded' || props.shape !== 'rectangle' || props.radius > 0 || props.radiusMode === 'individual' ? { overflow: 'hidden' } : {}) }}>
-      {node.type==='Image'&&props.mediaType==='pag'?<React.Suspense fallback={safeMediaSource(props.fallbackSrc)?<img alt={props.altText??'图片'} src={safeMediaSource(props.fallbackSrc)} style={{width:'100%',height:'100%',objectFit:props.objectFit}}/>:null}><PagMedia src={props.pagSrc} fallback={safeMediaSource(props.fallbackSrc)} loop={props.pagLoop!==false} autoPlay={props.pagAutoPlay!==false} objectFit={props.objectFit} alt={props.altText??'PAG动画'}/></React.Suspense>:src ? node.type === 'Video' ? <video src={src} autoPlay={props.autoPlay ?? false} loop={props.loop ?? false} muted={props.muted ?? true} playsInline controls={props.controls ?? true} style={{ width: '100%', height: '100%', objectFit: props.objectFit, borderRadius: 'inherit', display:'block' }} /> : <img src={src} alt={props.decorative ? '' : props.altText ?? node.name ?? '图片'} draggable={false} style={{ width: '100%', height: '100%', objectFit: props.objectFit, display: 'block', borderRadius: 'inherit' }} /> : <div className="nc-empty-media" />}
+      {node.type==='Image'&&props.mediaType==='pag'?<React.Suspense fallback={safeMediaSource(props.fallbackSrc)?<img alt={props.altText??'图片'} src={safeMediaSource(props.fallbackSrc)} style={{width:'100%',height:'100%',objectFit:props.objectFit}}/>:null}><PagMedia src={props.pagSrc} fallback={safeMediaSource(props.fallbackSrc)} loop={props.pagLoop!==false} autoPlay={props.pagAutoPlay!==false} objectFit={props.objectFit} alt={props.altText??'PAG动画'}/></React.Suspense>:node.type==='Image'?<ImageMedia key={`${media.src}\n${media.fallback}`} src={media.src} fallback={media.fallback} alt={props.decorative?'':props.altText??node.name??'图片'} style={{width:'100%',height:'100%',objectFit:props.objectFit,display:'block',borderRadius:'inherit'}}/>:src?<video src={src} autoPlay={props.autoPlay ?? false} loop={props.loop ?? false} muted={props.muted ?? true} playsInline controls={props.controls ?? true} style={{ width: '100%', height: '100%', objectFit: props.objectFit, borderRadius: 'inherit', display:'block' }} />:<div className="nc-empty-media" />}
       {(src || node.type==='Image'&&props.mediaType==='pag'&&(props.pagSrc||props.fallbackSrc)) && props.overlayEnabled !== false && props.overlayColor && props.overlayColor !== 'transparent' && <span aria-hidden="true" style={{ position: 'absolute', inset: 0, background: paintColor(props.overlayColor, props.overlayOpacity), borderRadius: 'inherit', pointerEvents: 'none' }} />}
     </div>;
   }
@@ -332,7 +336,7 @@ function Countdown({ props,remaining }) {
   const parts = [Math.floor(remaining / 3600), Math.floor(remaining / 60) % 60, remaining % 60];
   return <span className="nc-countdown"><span style={{ color: props.prefixColor }}>{props.prefix}</span>{parts.map((part, index) => <React.Fragment key={index}>{index > 0 && <span>:</span>}<strong style={{ background: props.digitBackground, borderRadius: 4, padding: '0 3px' }}>{String(part).padStart(2, '0')}</strong></React.Fragment>)}<span>{props.suffix}</span></span>;
 }
-export default function ComponentPreview({ document: sourceDocument, businessTime, businessOrdering, countdownScope, persistCountdown = true, selectedId, highlightedId, onSelect, editing, inspectable = true, navigation, onNavigate, onStatus, onDismiss, onResume, onPurchasePreview, onProductLinkChange, dismissRequest = 0, dismissOnBackdrop = false }) {
+export default function ComponentPreview({ document: sourceDocument, businessParameters, businessTime, businessOrdering, countdownScope, persistCountdown = true, selectedId, highlightedId, onSelect, editing, inspectable = true, navigation, onNavigate, onStatus, onDismiss, onResume, onPurchasePreview, onProductLinkChange, dismissRequest = 0, dismissOnBackdrop = false }) {
   const document=useMemo(()=>localizedDocument(sourceDocument,navigation),[sourceDocument,navigation?.contentLocale,navigation?.contentTheme,navigation?.contentPlatform]);
   const [localRuntime, setRuntime] = useState({});
   const selectionScroll = useMemo(selectionScrollController, []);
@@ -345,7 +349,7 @@ export default function ComponentPreview({ document: sourceDocument, businessTim
   const countdownClocks=useRef(new Map());
   let timerStorage;try{timerStorage=typeof window==='undefined'?undefined:window.localStorage;}catch{/* Storage failures use the timer's fallback state. */}
   const timerOptions={scope:countdownScope??document.templateId,storage:timerStorage,persist:persistCountdown,editing};
-  const runtime=productLinkRuntime(document,countdownRuntime(document,{...localRuntime,$time:{now:clockNow(clock,tick),context:businessTime}},countdownClocks.current,timerOptions));
+  const runtime=productLinkRuntime(document,countdownRuntime(document,{...localRuntime,...businessParameterRuntime(document,businessParameters),$time:{now:clockNow(clock,tick),context:businessTime}},countdownClocks.current,timerOptions));
   const productLinkKey=JSON.stringify(runtime.$productLinks.events);
   const productLinkCallback=useRef(onProductLinkChange);
   productLinkCallback.current=onProductLinkChange;

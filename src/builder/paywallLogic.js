@@ -5,7 +5,11 @@ const comparable = value => String(value ?? '');
 export const LOGIC_TARGET_TYPES = new Set(['Stack','Text','Image','Video','Icon','Button','PurchaseButton','Countdown','Carousel']);
 
 export function businessValues(document, runtime = {}) {
-  return Object.fromEntries((document.logic?.variables??[]).map(item=>[item.key,runtime[`business:${item.key}`]??item.value]));
+  return Object.fromEntries((document.logic?.variables??[]).map(item=>[item.key,Object.hasOwn(runtime,`business:${item.key}`)?runtime[`business:${item.key}`]:item.value]));
+}
+
+export function businessParameterRuntime(document,parameters){
+  return Object.fromEntries((document.logic?.variables??[]).filter(item=>parameters&&Object.hasOwn(parameters,item.key)).map(item=>[`business:${item.key}`,parameters[item.key]]));
 }
 
 export function logicMatches(rule, document, runtime, selectedPackage) {

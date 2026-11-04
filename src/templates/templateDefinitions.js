@@ -67,6 +67,7 @@ export const templates = [
   { id: "ht-standalone-visitor", title: "单独售卖-访客", subtitle: "访客特权、独立套餐与访客示例", tags: ["3 products"], productCount: 3, media: "image", components: [], category: "Popular", theme: "ht-visitor", visual: "ht-visitor", documentTemplate: "standalone-visitor", nativeDocument: true },
   { id: "ht-standalone-languages", title: "单独售卖-学习语言", subtitle: "额外学习语言与独立套餐", tags: ["3 products"], productCount: 3, media: "image", components: [], category: "Popular", theme: "ht-languages", visual: "ht-languages", documentTemplate: "standalone-languages", nativeDocument: true },
   { id: "ht-standalone-live-voice", title: "单独售卖-直播语聊", subtitle: "直播语聊无限时长与独立套餐", tags: ["3 products"], productCount: 3, media: "image", components: [], category: "Popular", theme: "ht-live-voice", visual: "ht-live-voice", documentTemplate: "standalone-live-voice", nativeDocument: true },
+  { id: "ht-visitor-connection", title: "孙铭阳定制模版1", subtitle: "动态语伴头像、昵称与交流说明", tags: ["2 products"], productCount: 2, media: "image", components: [], category: "Popular", theme: "ht-visitor-connection", visual: "ht-visitor-connection", documentTemplate: "visitor-connection", nativeDocument: true },
 ];
 
 export const node = (id, type, content = "", depth = 0, extra = {}) => ({ id, type, label: "", content, depth, ...extra });

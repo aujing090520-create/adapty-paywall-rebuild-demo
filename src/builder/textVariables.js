@@ -24,7 +24,7 @@ export function availableTextVariables(document, { countdown=false, list=false }
   return [
     ...(countdown ? TIMER_TEXT_VARIABLES.map(item=>[...item,'倒计时']) : []),
     ...PRODUCT_TEXT_VARIABLES.map(item=>[...item,'商品']),
-    ...(document.logic?.variables??[]).filter(item=>item.key).map(item=>[`business.${item.key}`,item.key,'业务']),
+    ...(document.logic?.variables??[]).filter(item=>item.key).map(item=>[`business.${item.key}`,item.label??item.key,'业务']),
     ...(list ? ITEM_VARIABLES.map(item=>[...item,'列表条目']) : []),
   ];
 }
