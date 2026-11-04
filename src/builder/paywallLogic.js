@@ -9,7 +9,7 @@ export function businessValues(document, runtime = {}) {
 }
 
 export function businessParameterRuntime(document,parameters){
-  return Object.fromEntries((document.logic?.variables??[]).filter(item=>parameters&&Object.hasOwn(parameters,item.key)).map(item=>[`business:${item.key}`,parameters[item.key]]));
+  return Object.fromEntries(Object.entries(parameters??{}).map(([key,value])=>[`business:${key}`,value]));
 }
 
 export function logicMatches(rule, document, runtime, selectedPackage) {

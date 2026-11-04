@@ -1,5 +1,12 @@
 import {interpolateVariables} from './textVariables.js';
 
+export function imageVariableName(value){
+  return String(value??'').trim().replace(/^\{+\s*|\s*\}+$/g,'').trim().replace(/^business\./,'');
+}
+export function imageVariableToken(value){
+  const key=imageVariableName(value);return key?`{{ business.${key} }}`:'';
+}
+
 export function safeImageSource(value){
   if(typeof value!=='string')return '';
   const url=value.trim();
@@ -10,9 +17,9 @@ export function safeImageSource(value){
 export function imageSources(props,document,packageNode,timer,runtime){
   const resolve=value=>safeImageSource(interpolateVariables(value,document,packageNode,timer,runtime));
   const fallback=resolve(props.src);
-  return props.imageSource==='variable'?{src:resolve(props.imageVariable)||fallback,fallback}:{src:fallback,fallback:''};
-}
-
-export function imageVariableOptions(document){
-  return (document.logic?.variables??[]).filter(item=>item.key&&(!item.type||item.type==='string')).map(item=>[`{{ business.${item.key} }}`,item.label?`${item.label}（${item.key}）`:item.key]);
+  if(props.imageSource!=='variable')return {src:fallback,fallback:''};
+  const key=imageVariableName(props.imageVariable);
+  if(runtime?.$parameterPreview)return {src:'',fallback:'',parameter:key?`{${key}}`:'{图片参数}'};
+  const src=runtime&&Object.hasOwn(runtime,`business:${key}`)?safeImageSource(runtime[`business:${key}`]):resolve(imageVariableToken(key));
+  return {src:src||fallback,fallback};
 }

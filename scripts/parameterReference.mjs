@@ -161,7 +161,7 @@ add(['Text'],'字体资源','配置字体族','document.fonts','上传TTF/OTF并
 
 add(['Image','Video'],'素材','素材地址','src','设置当前素材；上传可在图片和视频类型间切换','本Demo上传PNG/JPG/WebP/GIF/MP4，上限10MB；安全URL或本地Data URL');
 add(['Image'],'素材','图片来源','imageSource','选择固定素材或规则下发的图片地址','静态图片；不影响PAG设置',[['fixed','固定图片','使用素材地址'],['variable','变量图片','使用业务变量，缺失或加载失败时回退默认图片']]);
-add(['Image'],'素材','图片地址变量','imageVariable','绑定同一业务变量机制中的文字型URL参数','图片来源为变量图片；运行时由宿主businessParameters注入，模板只保存变量定义与演示默认值');
+add(['Image'],'素材','图片参数变量','imageVariable','直接填写规则下发的参数名，不使用下拉选择或素材上传','图片来源为变量图片；构建器显示{参数名}，运行时由宿主businessParameters注入图片URL');
 add(['Image'],'素材','默认图片地址','src','变量为空、不安全或加载失败时显示默认图片','变量图片模式；未配置默认图时保留图片占位与原尺寸');
 add(['Image'],'素材','媒体类型','mediaType','同一媒体组件选择图片或PAG动画，保持尺寸和视觉样式','PAG使用官方libpag播放；尚无用户业务PAG验收文件',[['image','图片','使用src'],['pag','PAG 动画','使用pagSrc和静态回退图']]);
 add(['Image'],'PAG','PAG 地址','pagSrc','PAG文件HTTP或上传Data URL','媒体类型为PAG；最大10MB，加载和播放失败转静态回退');

@@ -12,7 +12,7 @@ import { overlayAlignmentStyle } from './propertyModel.js';
 import { canvasSelectionTarget } from './canvasSelection.js';
 import { stateStyleProps, checkedControl, activeComponents, previewCommerceContexts, countdownValues, imageMask, paintColor, cornerRadius, selectionOwner, sequencePages, mainAxisFillStyle, hasBoundedHeight } from './propertyModel.js';
 import {productPriceFields} from '../productPricing.js';
-import { interpolateVariables, variableIssues } from './textVariables.js';
+import { displayVariables as interpolateVariables, variableIssues } from './textVariables.js';
 import { TimelinePreview, TimelineItemPreview } from './TimelinePreview.jsx';
 import { actionLink,customCheckoutLink } from './actionLinks.js';
 import {isGradient,gradientWithOpacity} from './colorModel.js';
@@ -244,7 +244,7 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
     const {src}=media;
     const circle = imageMask(props) === 'circle';
     return <div {...attributes} style={{ ...style, ...(circle ? { borderRadius: '50%' } : {}), ...(circle || props.mask === 'rounded' || props.shape !== 'rectangle' || props.radius > 0 || props.radiusMode === 'individual' ? { overflow: 'hidden' } : {}) }}>
-      {node.type==='Image'&&props.mediaType==='pag'?<React.Suspense fallback={safeMediaSource(props.fallbackSrc)?<img alt={props.altText??'图片'} src={safeMediaSource(props.fallbackSrc)} style={{width:'100%',height:'100%',objectFit:props.objectFit}}/>:null}><PagMedia src={props.pagSrc} fallback={safeMediaSource(props.fallbackSrc)} loop={props.pagLoop!==false} autoPlay={props.pagAutoPlay!==false} objectFit={props.objectFit} alt={props.altText??'PAG动画'}/></React.Suspense>:node.type==='Image'?<ImageMedia key={`${media.src}\n${media.fallback}`} src={media.src} fallback={media.fallback} alt={props.decorative?'':props.altText??node.name??'图片'} style={{width:'100%',height:'100%',objectFit:props.objectFit,display:'block',borderRadius:'inherit'}}/>:src?<video src={src} autoPlay={props.autoPlay ?? false} loop={props.loop ?? false} muted={props.muted ?? true} playsInline controls={props.controls ?? true} style={{ width: '100%', height: '100%', objectFit: props.objectFit, borderRadius: 'inherit', display:'block' }} />:<div className="nc-empty-media" />}
+      {node.type==='Image'&&props.mediaType==='pag'?<React.Suspense fallback={safeMediaSource(props.fallbackSrc)?<img alt={props.altText??'图片'} src={safeMediaSource(props.fallbackSrc)} style={{width:'100%',height:'100%',objectFit:props.objectFit}}/>:null}><PagMedia src={props.pagSrc} fallback={safeMediaSource(props.fallbackSrc)} loop={props.pagLoop!==false} autoPlay={props.pagAutoPlay!==false} objectFit={props.objectFit} alt={props.altText??'PAG动画'}/></React.Suspense>:node.type==='Image'?<ImageMedia key={`${media.src}\n${media.fallback}`} src={media.src} fallback={media.fallback} parameter={media.parameter} alt={props.decorative?'':props.altText??node.name??'图片'} style={{width:'100%',height:'100%',objectFit:props.objectFit,display:'block',borderRadius:'inherit'}}/>:src?<video src={src} autoPlay={props.autoPlay ?? false} loop={props.loop ?? false} muted={props.muted ?? true} playsInline controls={props.controls ?? true} style={{ width: '100%', height: '100%', objectFit: props.objectFit, borderRadius: 'inherit', display:'block' }} />:<div className="nc-empty-media" />}
       {(src || node.type==='Image'&&props.mediaType==='pag'&&(props.pagSrc||props.fallbackSrc)) && props.overlayEnabled !== false && props.overlayColor && props.overlayColor !== 'transparent' && <span aria-hidden="true" style={{ position: 'absolute', inset: 0, background: paintColor(props.overlayColor, props.overlayOpacity), borderRadius: 'inherit', pointerEvents: 'none' }} />}
     </div>;
   }
@@ -349,7 +349,7 @@ export default function ComponentPreview({ document: sourceDocument, businessPar
   const countdownClocks=useRef(new Map());
   let timerStorage;try{timerStorage=typeof window==='undefined'?undefined:window.localStorage;}catch{/* Storage failures use the timer's fallback state. */}
   const timerOptions={scope:countdownScope??document.templateId,storage:timerStorage,persist:persistCountdown,editing};
-  const runtime=productLinkRuntime(document,countdownRuntime(document,{...localRuntime,...businessParameterRuntime(document,businessParameters),$time:{now:clockNow(clock,tick),context:businessTime}},countdownClocks.current,timerOptions));
+  const runtime=productLinkRuntime(document,countdownRuntime(document,{...localRuntime,...businessParameterRuntime(document,businessParameters),$parameterPreview:businessParameters===undefined,$time:{now:clockNow(clock,tick),context:businessTime}},countdownClocks.current,timerOptions));
   const productLinkKey=JSON.stringify(runtime.$productLinks.events);
   const productLinkCallback=useRef(onProductLinkChange);
   productLinkCallback.current=onProductLinkChange;

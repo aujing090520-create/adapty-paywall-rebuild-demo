@@ -4,7 +4,8 @@ import React from 'react';
 import Renderer,{act} from 'react-test-renderer';
 import {createServer} from 'vite';
 import {buildVisitorConnectionTemplate} from '../src/builder/visitorConnectionTemplate.js';
-import {safeImageSource,imageSources,imageVariableOptions} from '../src/builder/imageSources.js';
+import {safeImageSource,imageSources,imageVariableName,imageVariableToken} from '../src/builder/imageSources.js';
+import {displayVariables} from '../src/builder/textVariables.js';
 import {businessParameterRuntime} from '../src/builder/paywallLogic.js';
 import {renameBusinessVariable} from '../src/builder/workbenchModel.js';
 import {component,componentProps,updateComponent,indexDocument,importComponentDocument,validDocument,saveComponentDocument,readComponentDocument} from '../src/builder/componentDocument.js';
@@ -31,7 +32,11 @@ test('generic image source validates addresses and distinguishes omitted paramet
   assert.equal(imageSources(props,doc).src,'/visitor-connection-template/avatar-1.jpg');
   for(const value of ['',null,'javascript:alert(1)'])assert.equal(imageSources(props,doc,null,null,businessParameterRuntime(doc,{visitor_1_avatar:value})).src,'/default.png');
   assert.equal(imageSources({...props,imageSource:'fixed'},doc).src,'/default.png');assert.equal(imageSources(props,doc,null,null,businessParameterRuntime(doc,{visitor_1_avatar:'/new.png'})).src,'/new.png');
-  assert.equal(imageVariableOptions(doc).length,9);assert.match(imageVariableOptions(doc)[0][1],/第1位语伴头像/);
+  for(const key of ['visitor_1_avatar','{visitor_1_avatar}','{{ business.visitor_1_avatar }}'])assert.equal(imageVariableToken(key),'{{ business.visitor_1_avatar }}');
+  assert.equal(imageVariableName('{{ business.visitor_1_avatar }}'),'visitor_1_avatar');assert.equal(imageVariableToken(''),'');
+  assert.equal(imageSources({...props,imageVariable:'rule_avatar'},doc,null,null,businessParameterRuntime(doc,{rule_avatar:'/rule.jpg'})).src,'/rule.jpg');
+  assert.equal(imageSources(props,doc,null,null,{$parameterPreview:true}).parameter,'{visitor_1_avatar}');
+  assert.equal(displayVariables('你好 {{ business.visitor_1_nickname }}，{{ business.unknown }}',doc,null,null,{$parameterPreview:true}),'你好 {visitor_1_nickname}，{unknown}');
 });
 test('variable rename, persistence and cross-screen copying keep dynamic image dependencies',()=>{
   const doc=buildVisitorConnectionTemplate(),before=structuredClone(doc),renamed=renameBusinessVariable(doc,'visitor-connection/variable-1-avatar','partner_photo');
@@ -65,16 +70,31 @@ test('runtime avatar/nickname/copy update together, null does not expose sample 
   }finally{if(renderer)await act(async()=>renderer.unmount());}
 });
 test('image inspector exposes the generic variable binding and keeps fixed/PAG configuration',async()=>{
-  let doc=buildVisitorConnectionTemplate(),renderer;const id='visitor-connection/avatar-1';
+  let doc=buildVisitorConnectionTemplate(),renderer;const id='visitor-connection/avatar-1';indexDocument(doc).nodes.get(id).props.src='/fallback.jpg';
   function Harness(){const [value,setValue]=React.useState(doc);doc=value;const {nodes,parents}=indexDocument(value),selected=nodes.get(id);return React.createElement(Properties,{selected,p:componentProps(selected),patch:props=>setValue(current=>updateComponent(current,id,{props})),document:value,nodes,parents,onStatus(){},demoSkus:[],fieldNames:{},navigation:{},setNavigation(){}});}
   try{
     await act(async()=>{renderer=Renderer.create(React.createElement(Harness));});
-    const source=renderer.root.findAll(n=>n.type==='select'&&n.props['aria-label']==='图片来源')[0],binding=renderer.root.findAll(n=>n.type==='select'&&n.props['aria-label']==='图片地址变量')[0];
-    assert.equal(source.props.value,'variable');assert.equal(binding.props.value,'{{ business.visitor_1_avatar }}');assert.equal(renderer.root.findAll(n=>n.type==='input'&&n.props['aria-label']==='默认图片地址').length,1);
-    await act(async()=>renderer.root.findAll(n=>n.type==='input'&&n.props['aria-label']==='默认图片地址')[0].props.onChange({target:{value:'/fallback.jpg'}}));
+    const source=renderer.root.findAll(n=>n.type==='select'&&n.props['aria-label']==='图片来源')[0],binding=renderer.root.findAll(n=>n.type==='input'&&n.props['aria-label']==='图片参数变量')[0];
+    assert.equal(source.props.value,'variable');assert.equal(binding.props.value,'visitor_1_avatar');assert.equal(renderer.root.findAll(n=>n.type==='input'&&n.props.type==='file').length,0);
+    assert.equal(renderer.root.findAll(n=>n.type==='select'&&n.props['aria-label']==='图片地址变量').length,0);
+    await act(async()=>binding.props.onChange({target:{value:'rule_avatar'}}));assert.equal(indexDocument(doc).nodes.get(id).props.imageVariable,'{{ business.rule_avatar }}');
     await act(async()=>renderer.root.findAll(n=>n.type==='select'&&n.props['aria-label']==='图片来源')[0].props.onChange({target:{value:'fixed'}}));
-    assert.equal(indexDocument(doc).nodes.get(id).props.src,'/fallback.jpg');assert.equal(indexDocument(doc).nodes.get(id).props.imageVariable,'{{ business.visitor_1_avatar }}');
+    assert.equal(renderer.root.findAll(n=>n.type==='input'&&n.props.type==='file').length,1);
+    assert.equal(indexDocument(doc).nodes.get(id).props.src,'/fallback.jpg');assert.equal(indexDocument(doc).nodes.get(id).props.imageVariable,'{{ business.rule_avatar }}');
     await act(async()=>renderer.root.findAll(n=>n.type==='select'&&n.props['aria-label']==='媒体类型')[0].props.onChange({target:{value:'pag'}}));
-    assert.equal(indexDocument(doc).nodes.get(id).props.imageVariable,'{{ business.visitor_1_avatar }}');assert.equal(renderer.root.findAll(n=>n.type==='select'&&n.props['aria-label']==='图片地址变量').length,0);
+    assert.equal(indexDocument(doc).nodes.get(id).props.imageVariable,'{{ business.rule_avatar }}');assert.equal(renderer.root.findAll(n=>n.type==='input'&&n.props['aria-label']==='图片参数变量').length,0);
+  }finally{if(renderer)await act(async()=>renderer.unmount());}
+});
+
+test('builder and flow previews show business parameter names without loading sample avatars',async()=>{
+  const doc=buildVisitorConnectionTemplate(),before=structuredClone(doc);let renderer;
+  try{
+    for(const editing of [true,false]){
+      await act(async()=>{if(renderer)renderer.update(React.createElement(Preview,{document:doc,editing}));else renderer=Renderer.create(React.createElement(Preview,{document:doc,editing}));});
+      const node=id=>renderer.root.findAll(n=>typeof n.type==='string'&&n.props['data-component-id']===`visitor-connection/${id}`)[0];
+      assert.equal(node('nickname-1').children.join(''),'{visitor_1_nickname}');assert.equal(node('description-1').children.join(''),'{visitor_1_description}');
+      assert.equal(node('avatar-1').findAllByType('img').length,0);assert.equal(node('avatar-1').findByProps({'aria-label':'{visitor_1_avatar}'}).children.join(''),'{visitor_1_avatar}');
+    }
+    assert.deepEqual(doc,before);
   }finally{if(renderer)await act(async()=>renderer.unmount());}
 });

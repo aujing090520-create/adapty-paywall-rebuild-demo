@@ -62,3 +62,8 @@ export function interpolateVariables(text, document, packageNode, timer, runtime
   const values=variableValues(document,packageNode,timer,runtime);
   return String(text ?? '').replace(/\{\{\s*([^{}]*?)\s*\}\}/g, (_, key) => values[key.trim()] ?? '');
 }
+
+export function displayVariables(text,document,packageNode,timer,runtime){
+  const value=runtime?.$parameterPreview?String(text??'').replace(/\{\{\s*business\.([^{}]*?)\s*\}\}/g,(_,key)=>`{${key.trim()}}`):text;
+  return interpolateVariables(value,document,packageNode,timer,runtime);
+}

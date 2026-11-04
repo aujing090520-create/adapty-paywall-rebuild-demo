@@ -126,7 +126,7 @@ for(const type of ['Button','PurchaseButton'])test(`${type} owns editable packag
     await h.editText({text:'开始试用',runs:null},'按钮文案内容');
     await h.select('文案切换方式','package');await h.select('配置套餐文案','monthly');
     await h.editText({text:'继续 {{ business.days }}',runs:null},'按钮文案内容');
-    assert.deepEqual(h.node('label').children,['继续 3']);assert.equal(h.node('label').props.style.fontSize,18);
+    assert.deepEqual(h.node('label').children,['继续 {days}']);assert.equal(h.node('label').props.style.fontSize,18);
     assert.equal(h.document().logic.rules.length,0);assert.equal(h.document().root.children[0].children.at(-1).props.buttonText.variants[0].packageId,'monthly');
     await h.click('恢复默认文案');assert.deepEqual(h.node('label').children,['开始试用']);
     await h.editText({text:'继续',runs:null},'按钮文案内容');
@@ -151,7 +151,7 @@ test('free trial uses one purchase button across three carousel pages and keeps 
     await act(async()=>page(1).props.onClick(event()));assert.equal(h.node('trial/confirm'),undefined);assert.ok(h.node('trial/purchase'));
     await act(async()=>h.node('trial/purchase').props.onClick(event()));assert.match(h.status(),/购买预览/);
     await act(async()=>page(2).props.onClick(event()));assert.equal(h.node('trial/confirm'),undefined);assert.ok(h.node('trial/purchase'));
-    assert.deepEqual(h.node('trial/purchase/text').children,['0元领取3天VIP体验']);
+    assert.deepEqual(h.node('trial/purchase/text').children,['0元领取{trial_days}天VIP体验']);
     await act(async()=>h.node('trial/monthly').props.onClick(event()));assert.deepEqual(h.node('trial/purchase/text').children,['继续']);
     assert.match(h.node('trial/legal').children.join(''),/当前缴费期/);
     await act(async()=>h.node('trial/close').props.onClick(event()));assert.ok(h.node('trial/retention'));
@@ -159,7 +159,7 @@ test('free trial uses one purchase button across three carousel pages and keeps 
     await act(async()=>h.node('trial/purchase').props.onClick(event()));assert.match(h.status(),/购买预览/);
     await act(async()=>h.node('trial/close').props.onClick(event()));await act(async()=>h.node('trial/retention/leave').props.onClick(event()));assert.equal(h.status(),'关闭预览');
     await act(async()=>h.node('trial/retention/keep').props.onClick(event()));await act(async()=>page(0).props.onClick(event()));
-    assert.equal(h.node('trial/confirm'),undefined);assert.ok(h.node('trial/purchase'));assert.deepEqual(h.node('trial/purchase/text').children,['0元领取3天VIP体验']);await act(async()=>h.node('trial/purchase').props.onClick(event()));assert.match(h.status(),/购买预览/);
+    assert.equal(h.node('trial/confirm'),undefined);assert.ok(h.node('trial/purchase'));assert.deepEqual(h.node('trial/purchase/text').children,['0元领取{trial_days}天VIP体验']);await act(async()=>h.node('trial/purchase').props.onClick(event()));assert.match(h.status(),/购买预览/);
     assert.deepEqual(h.document(),source);
   }finally{await h.close();}
 });
