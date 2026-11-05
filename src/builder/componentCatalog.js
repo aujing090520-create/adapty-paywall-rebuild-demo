@@ -12,6 +12,7 @@ import {consolidateTrialPurchase} from './purchaseSelection.js';
 import {upgradeIntroCountdown} from './introPriceTemplate.js';
 import {upgradeStandaloneArt} from './standaloneTemplates.js';
 import {componentPages,tabControlTarget} from './componentPages.js';
+import {upgradeTemplateBilling} from './templateBilling.js';
 
 // Public picker entries are building blocks or transparent Stack compositions.
 // Structural children are offered only by their owning container.
@@ -185,5 +186,5 @@ export function upgradeCanonicalComponents(document) {
     return children.some((child,index)=>child!==node.children[index])?{...node,children}:node;
   };
   const root=visit(document.root);
-  return upgradePagePresentation(upgradeProductParameters(consolidateCountdownText(upgradeTimerTextVariables(normalizeHtLabelSlots(buildBlueVipColumn(repairBlueProductPlacement(changed?{...document,root}:document))))), row => billingMonths(row) === 0 ? 'lifetime' : 'subscription'));
+  return upgradeTemplateBilling(upgradePagePresentation(upgradeProductParameters(consolidateCountdownText(upgradeTimerTextVariables(normalizeHtLabelSlots(buildBlueVipColumn(repairBlueProductPlacement(changed?{...document,root}:document))))), row => billingMonths(row) === 0 ? 'lifetime' : 'subscription')));
 }

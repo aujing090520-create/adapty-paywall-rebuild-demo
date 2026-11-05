@@ -26,5 +26,5 @@ export function localizedDocument(document, context = {}) {
     for(const {item} of ranked){const field=item.field??(node.type==='Image'?'src':'backgroundImage');if(fields.includes(field)){props[field]=item.src;if(field==='backgroundImage')props.fillType='image';if(field==='backgroundVideo')props.fillType='video';}}
     return {...node,props,children:node.children.map(visit)};
   };
-  return {...document,previewContentLocale:locale,root:visit(document.root)};
+  return {...document,previewContentLocale:locale,previewContentPlatform:platform,root:visit(document.root)};
 }

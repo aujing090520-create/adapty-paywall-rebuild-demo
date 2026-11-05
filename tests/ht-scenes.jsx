@@ -7,7 +7,8 @@ import { templates, createBuilderNodes } from '../src/templates/templateDefiniti
 import '../src/styles.css';
 import '../src/builder/componentEditor.css';
 
-const id = new URLSearchParams(location.search).get('template') ?? 'ht-membership-plans';
+const query = new URLSearchParams(location.search);
+const id = query.get('template') ?? 'ht-membership-plans';
 const template = templates.find((entry) => entry.id === id);
 const document = upgradeCanonicalComponents(importComponentDocument(createBuilderNodes(id), template));
-createRoot(window.document.getElementById('root')).render(<main style={{ width: 390, margin: 16 }}><ComponentPreview document={document} editing={false} onSelect={() => {}} onStatus={() => {}} /></main>);
+createRoot(window.document.getElementById('root')).render(<main style={{ width: 390, margin: 16 }}><ComponentPreview document={document} editing={false} navigation={{contentPlatform:query.get('platform')??'ios'}} onSelect={() => {}} onStatus={() => {}} /></main>);

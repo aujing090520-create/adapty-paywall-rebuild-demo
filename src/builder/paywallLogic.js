@@ -21,6 +21,8 @@ export function logicMatches(rule, document, runtime, selectedPackage) {
     if(['tab','page','variable','timeSource','countdown'].includes(condition.type)&&!condition.source)return false;
     let actual;
     if(condition.type==='sku') { if(!row?.skuId)return false; actual=row.skuId; }
+    else if(condition.type==='billingType')actual=selectedPackage?.props.productType;
+    else if(condition.type==='platform')actual=document.previewContentPlatform??runtime.contentPlatform??'ios';
     else if(condition.type==='package')actual=selectedPackage?.id;
     else if(condition.type==='page') {
       const owner=findComponent(document.root,condition.source),pages=componentPages(owner);
