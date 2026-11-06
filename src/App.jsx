@@ -22,6 +22,9 @@ import { DEFAULT_VERTICAL_PAYWALL, DEFAULT_ROW_PAYWALL, readConfiguredPaywall } 
 import { savedOfferings, createExitOffer, workspaceExitOfferIds, exitOfferId, bindExitOffer } from './builder/exitOffers.js';
 import { workflowContext } from './builder/workflow.js';
 import { indexDocument, importComponentDocument } from './builder/componentDocument.js';
+import { upgradeCanonicalComponents } from './builder/componentCatalog.js';
+import { upgradeButtonModals } from './builder/buttonModals.js';
+import { upgradeNavigationRows } from './builder/navigationRows.js';
 import { clearCustomBundles } from "./builder/customStorage.js";
 import { localizeInterface } from './interfaceLocalization.js';
 import { productTranslation } from "./productPlacement.js";
@@ -464,8 +467,11 @@ export default function App() {
     setAppliedTemplate(index < 0 ? null : index);
     setTemplateSelected(index < 0 ? null : index);
     setBuilderNodes(index < 0 || templateCatalog[index].savedDocument ? [] : createBuilderNodes(record.templateId));
-    setBuilderDocument(record?.document ?? null);
-    setSavedDocument(record?.document ?? null);
+    // Examples without a local save start from a blank document. Establish the
+    // same baseline the editor renders, including its document migrations.
+    const content = record?.document ?? upgradeNavigationRows(upgradeButtonModals(upgradeCanonicalComponents(importComponentDocument([], { id: 'blank' }))));
+    setBuilderDocument(content);
+    setSavedDocument(content);
     setBuilderRevision((value) => value + 1);
   };
 
@@ -603,9 +609,8 @@ export default function App() {
 
   const discardBuilder = () => {
     const record = builderOrigin === 'existing' ? readConfiguredPaywall(window.localStorage, selected.id) : null;
-    if (record) restoreBuilder(record);
-    else { setGeneralName(null); setExitOfferDrafts({}); setBuilderDocument(null); setBuilderNodes(appliedTemplate === null || templateCatalog[appliedTemplate]?.savedDocument ? [] : createBuilderNodes(templateCatalog[appliedTemplate].id)); setBuilderRevision((value) => value + 1); }
-    notify(record ? '已恢复上次保存的付费墙。' : '已恢复模板默认内容。');
+    restoreBuilder(record);
+    notify(record ? '已恢复上次保存的付费墙。' : '已恢复初始付费墙。');
   };
 
   const resetLocal = async () => {

@@ -51,12 +51,16 @@ test('actual App reapplies pristine templates, saves by paywall, discards edits 
   const click=async name=>{const target=button(name);assert.ok(target,`button ${name}`);await act(async()=>target.props.onClick({stopPropagation(){},preventDefault(){}}));};
   const rootName=()=>app.root.findAll(item=>item.type==='label'&&item.props.className==='ne-field'&&item.children.some(child=>typeof child==='object'&&text(child)==='页面名称'))[0].findByType('input');
   const rename=async value=>act(async()=>rootName().props.onChange({target:{value}}));
-  const applyBlue=async()=>{
+  const editorDocument=()=>app.root.find(item=>typeof item.type==='function'&&item.type.name==='ComponentEditor').props.initialDocument;
+  const saveStatus=()=>text(app.root.findByProps({className:'builder-save-actions'}).findByProps({role:'status'}));
+  const templateTitle=()=>text(app.root.findByProps({className:'template-context observed-tree'}).findByType('strong'));
+  const applyTemplate=async(title='蓝色特权页')=>{
     await click('更换模板');
-    const card=app.root.findAll(item=>item.type==='div'&&item.props.role==='button'&&item.findAllByType('strong').some(title=>text(title)==='蓝色特权页'))[0];assert.ok(card);
+    const card=app.root.findAll(item=>item.type==='div'&&item.props.role==='button'&&item.findAllByType('strong').some(label=>text(label)===title))[0];assert.ok(card);
     await act(async()=>card.props.onClick());await click('Open in Builder');
     if(app.root.findAll(item=>item.props.role==='dialog'&&item.props['aria-label']==='替换当前画布？').length)await click('替换画布');
   };
+  const applyBlue=()=>applyTemplate();
   const open=async id=>{
     const row=app.root.findAll(item=>item.type==='tr'&&item.findAllByType('strong').some(label=>text(label)===id))[0];assert.ok(row);
     await act(async()=>row.props.onClick());await click('Open Builder');
@@ -64,9 +68,28 @@ test('actual App reapplies pristine templates, saves by paywall, discards edits 
   try {
     const old=sample('ht-blue-privilege');old.root.name='旧缓存污染';saveComponentDocument(store,old);
     await act(async()=>{app=TestRenderer.create(React.createElement(App));});
+    await open('test 2');
+    const initialDocument=structuredClone(editorDocument()),initialTitle=templateTitle();
+    await applyBlue();assert.equal(saveStatus(),'未保存');
+    await click('放弃修改');
+    assert.deepEqual(editorDocument(),initialDocument,'discard restores the full initial document, not the replacement template');
+    assert.equal(templateTitle(),initialTitle);assert.equal(saveStatus(),'已保存');
+    assert.equal(readSavedPaywall(store,'test-2'),null,'discard does not create a saved record');
+    await click('Paywalls');assert.equal(app.root.findAllByProps({'aria-label':'有尚未保存的修改'}).length,0);
     await open('test 2');await applyBlue();assert.equal(rootName().props.value,'特权首页');
     await rename('未保存内容');await applyBlue();assert.equal(rootName().props.value,'特权首页');
     await rename('已保存内容');await click('保存');assert.equal(readSavedPaywall(store,'test-2').document.root.children.find(node=>node.type==='Flow').children[0].name,'已保存内容');
+    const savedBlue=structuredClone(readSavedPaywall(store,'test-2').document);
+    await applyTemplate('HelloTalk 会员套餐页');assert.notEqual(editorDocument().templateId,savedBlue.templateId);
+    await click('放弃修改');assert.deepEqual(editorDocument(),savedBlue);assert.equal(templateTitle(),'蓝色特权页');assert.equal(saveStatus(),'已保存');
+    await click('Paywalls');assert.equal(app.root.findAllByProps({'aria-label':'有尚未保存的修改'}).length,0);
+    await open('test 2');
+    await applyTemplate('HelloTalk 会员套餐页');await rename('新保存版本');await click('保存');
+    const savedNew=structuredClone(readSavedPaywall(store,'test-2').document);
+    await applyBlue();await click('放弃修改');assert.deepEqual(editorDocument(),savedNew);assert.equal(templateTitle(),'HelloTalk 会员套餐页');assert.equal(saveStatus(),'已保存');
+    await click('Paywalls');assert.equal(app.root.findAllByProps({'aria-label':'有尚未保存的修改'}).length,0);
+    await open('test 2');assert.deepEqual(editorDocument(),savedNew);
+    await applyBlue();await rename('已保存内容');await click('保存');
     await rename('第二次未保存');await click('放弃修改');assert.equal(rootName().props.value,'已保存内容');
     await rename('离开前未保存');await click('Paywalls');assert.ok(app.root.findByProps({'aria-label':'有尚未保存的修改'}));await click('放弃并继续');await open('test 2');assert.equal(rootName().props.value,'已保存内容');
     await click('Paywalls');await open('test');assert.equal(rootName().props.value,'付费墙页面');
