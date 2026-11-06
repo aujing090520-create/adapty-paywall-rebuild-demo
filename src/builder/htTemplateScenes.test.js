@@ -1,3 +1,4 @@
+import {helloTalkTemplateDefaults} from './fieldModels.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { templates, createBuilderNodes } from '../templates/templateDefinitions.js';
@@ -56,4 +57,24 @@ test('SKU has a native title/subtitle header, 358 by 156 media slot and native b
   assert.equal(nodes.get('hero-image/image').props.height, 156);
   assert.equal(nodes.get('sku/content').props.paddingLeft, 16);
   assert.equal(nodes.get('products/reference-0').props.strike, true);
+});
+
+test('SKU creation and template reapplication reset both plain and rich discount copy to 50%', () => {
+  const expected = 'Get 50% Off\nAnnual & Lifetime VIP';
+  assert.equal(helloTalkTemplateDefaults['sku-sheet'].caption,'Get 50% Off Annual & Lifetime VIP');
+  const created = load('ht-sku-sheet');
+  const caption = indexDocument(created).nodes.get('caption');
+  const assertCopy = (document) => {
+    const node = indexDocument(document).nodes.get('caption');
+    assert.equal(resolveComponentText(node, document), expected);
+    assert.equal(node.props.runs.map(run => `${run.breakBefore ? '\n' : ''}${run.text}`).join(''), expected);
+    assert.equal(node.props.runs[1].color, '#ee3981');
+  };
+  assertCopy(created);
+  caption.props.text = 'Get 30% Off\nAnnual & Lifetime VIP';
+  caption.props.runs[1].text = '30% Off';
+  const reapplied = load('ht-sku-sheet');
+  assertCopy(reapplied);
+  assert.deepEqual(reapplied.products, created.products);
+  assert.deepEqual(indexDocument(reapplied).nodes.get('hero-image/image'), indexDocument(created).nodes.get('hero-image/image'));
 });

@@ -741,7 +741,7 @@ export function createBuilderNodes(templateId = "knowledge") {
       node("sku-card", "Card", "", 0, { label: "SKU 半窗" }),
       hero(1),
       node("headline", "Headline", "Golden Week Special Offer", 1, { variant: "headline", config: { color: "#151515" } }),
-      node("caption", "Text", "Get 30% Off\nAnnual & Lifetime VIP", 1, { variant: "body", config: { color: "#8f8f8f" }, textRuns: [{ text: "Get " }, { text: "30% Off", color: "#ee3981" }, { text: "Annual & Lifetime VIP", breakBefore: true }] }),
+      node("caption", "Text", "Get 50% Off\nAnnual & Lifetime VIP", 1, { variant: "body", config: { color: "#8f8f8f" }, textRuns: [{ text: "Get " }, { text: "50% Off", color: "#ee3981" }, { text: "Annual & Lifetime VIP", breakBefore: true }] }),
       node("timer", "Timer", "00:47:04", 1, { config: { enabled: true, format: "hh:mm:ss", separator: ":", prefix: "倒计时", suffix: "", resetMode: "Reset timer on every paywall view", prefixColor: "#ff842c", digitColor: "#ff842c", digitBackgroundColor: "#000000", digitBackgroundOpacity: 3 } }),
       node("products", "Products", "12个月|¥338|¥488\n终身|¥698|¥1198", 1, { config: { ...documentProductColors, productTemplate: "sku-sheet", packageLayout: "standard", defaultSelected: 0, showOfferBadge: true, hasSaveCopy: false, badgeGradient: ["#ff6a00", "#ff6a00", "#ff6a00"], selectedBorderGradient: ["#ff6a00", "#ffaf02", "#ffcc00"], purchaseBackgroundGradient: ["#ff6a00", "#ffaf02", "#ffcc00"] } }),
       node("purchase", "Button", "领取限时优惠", 1, { config: { action: "Purchase" } }),
