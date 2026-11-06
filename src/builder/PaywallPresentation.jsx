@@ -3,7 +3,7 @@ import { RotateCcw, X } from 'lucide-react';
 import ComponentPreview from './ComponentPreview.jsx';
 import { exitOfferSource, exitOfferTarget } from './exitOffers.js';
 import { pageContext } from './componentTree.js';
-import { fieldPreviewDocument } from '../products/fieldPreview.js';
+import { productPreviewDocument } from '../products/fieldPreview.js';
 
 export default function PaywallPresentation({ offerings = [], currentPaywallId, backdropDocument, backdropNavigation, productFields = true, ...props }) {
   const [offer, setOffer] = useState(null);
@@ -24,8 +24,8 @@ export default function PaywallPresentation({ offerings = [], currentPaywallId, 
   const resume = () => { setResumeNavigation(underlayNavigation); setOffer(null); setRequest(0); };
   const render = (previewProps) => {
     previewProps={...previewProps,countdownScope:offer?.id??currentPaywallId??`draft:${props.document.templateId}`};
-    if(productFields)previewProps={...previewProps,document:fieldPreviewDocument(previewProps.document)};
-    const background = productFields?fieldPreviewDocument(offer ? props.document : backdropDocument):offer ? props.document : backdropDocument;
+    if(productFields)previewProps={...previewProps,document:productPreviewDocument(previewProps.document)};
+    const background = productFields?productPreviewDocument(offer ? props.document : backdropDocument):offer ? props.document : backdropDocument;
     if (!background || !previewProps.document.settings?.presentationSurfaceId) return <ComponentPreview {...previewProps}/>;
     const { flow, pages } = pageContext(background);
     const source = exitOfferSource(background);
@@ -36,6 +36,7 @@ export default function PaywallPresentation({ offerings = [], currentPaywallId, 
   return <div className="ne-presentation">
     <div className="ne-presentation-tools" aria-label="预览会话">
       <span>{closed ? '已关闭' : offer ? offer.name : '页面预览'}</span>
+      {productFields&&productPreviewDocument(offer?.document??props.document)?.productSamplePreview&&<span>示例商品数据 · 非实际报价</span>}
       <button type="button" className="ne-icon" title="重新预览" aria-label="重新预览" onClick={restart}><RotateCcw size={16}/></button>
       {!closed && <button type="button" className="ne-icon" title="关闭付费墙预览" aria-label="关闭付费墙预览" onClick={() => setRequest((value) => value + 1)}><X size={16}/></button>}
     </div>

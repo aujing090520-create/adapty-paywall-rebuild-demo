@@ -1,4 +1,12 @@
 const documents=new WeakMap();
+const productDocuments=new WeakMap();
+// Presentation-only data: retain the saved SKU bindings and variable configuration.
+export function productPreviewDocument(document) {
+  if(!document||document.productSamplePreview)return document;
+  if(document.templateId!=='ht-membership-plans')return fieldPreviewDocument(document);
+  if(!productDocuments.has(document))productDocuments.set(document,{...document,productFieldPreview:false,productSamplePreview:true});
+  return productDocuments.get(document);
+}
 export function fieldPreviewDocument(document) {
   if(!document||document.productFieldPreview)return document;
   if(!documents.has(document))documents.set(document,{...document,productFieldPreview:true});

@@ -3,7 +3,8 @@ import useEmblaCarousel from 'embla-carousel-react';
 import Fade from 'embla-carousel-fade';
 import { Check, LockKeyhole, Star, Bell, Moon, Heart, Users, Clock3, Gift, ChevronRight, Dumbbell, Download, MapPin, Flower2, Activity, Ticket, Ban, Blocks, Archive, Shirt, Armchair, ScanSearch, CircleHelp, LogIn, PersonStanding, X } from 'lucide-react';
 import { componentProps, resolveComponentText, indexDocument } from './componentDocument.js';
-import { parameterFromBinding, productParameterPreview } from '../products/productParameters.js';
+import { parameterFromBinding } from '../products/productParameters.js';
+import { productParameterValue } from '../products/packageFields.js';
 import { isUnconfiguredDetailPage, flowInitialIndex } from './componentTree.js';
 import { stepDestination, owningModal, owningScreen, workflowContext } from './workflow.js';
 import {tabButtonTarget} from './componentPages.js';
@@ -189,7 +190,7 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
   if (props.visibleWhen && Boolean(runtime[props.visibleWhen.id] ?? context.nodeIndex.get(props.visibleWhen.id)?.props.initial) !== props.visibleWhen.value) return null;
   const currentPackage = buttonLabel?.packageNode??(node.type === 'Package' ? node : ['Button','PurchaseButton'].includes(node.type)&&(props.action?.packageId||props.action?.pagePackages) ? purchaseTarget(document,node,packageNode??context.selectedPackage,runtime) : packageNode);
   const productLinks=runtime.$productLinks?.byPackage[(currentPackage??context.selectedPackage)?.id]??[];
-  if (props.productField && !(currentPackage?.props.productType ? productParameterPreview(parameterFromBinding(props.productField,currentPackage),currentPackage,stateSelected) : resolveComponentText({ props: { binding: { key: currentPackage?.props.dataKey, field: props.productField } } }, document, currentPackage, stateSelected))) return null;
+  if (props.productField && !(currentPackage?.props.productType ? productParameterValue(document,currentPackage,parameterFromBinding(props.productField,currentPackage),stateSelected) : resolveComponentText({ props: { binding: { key: currentPackage?.props.dataKey, field: props.productField } } }, document, currentPackage, stateSelected))) return null;
   const variablePackage = currentPackage ?? context.selectedPackage;
   const entries=props.dataSource?businessList(document,props.dataSource,variablePackage):null;
   if(entries&&!entries.length)return null;
@@ -231,9 +232,10 @@ export function NativeComponent({ node, packageNode = null, floating = false, la
     return <button {...attributes} key={page.id} type="button" data-indicator-index={index} title={`第 ${index+1} 页`} aria-label={`第 ${index+1} 页`} aria-current={index===sequence.chosen?'true':undefined} style={{...dotStyle,display:'block',padding:0,margin:0,borderRadius:'50%',cursor:'pointer'}} onClick={(event)=>{event.stopPropagation();if(editing)onSelect(node.id);else setRuntime((current)=>({...current,[sequence.id]:index}));}}/>;
   })}</>;
   if (['Text','ProductParameter'].includes(node.type)) {
-    const issues=variableIssues(resolveComponentText(visualNode,document,currentPackage,stateSelected),document,variablePackage,timer,runtime);
+    const textPackage=node.type==='ProductParameter'?variablePackage:currentPackage;
+    const issues=variableIssues(resolveComponentText(visualNode,document,textPackage,stateSelected),document,variablePackage,timer,runtime);
     if(editing&&issues.length)attributes.title=issues.map(item=>`${item.key}：${item.reason}，预览以空值回退`).join('；');
-    const value = props.timerField && timer ? timer[props.timerField] ?? '' : interpolateVariables(resolveComponentText(visualNode, document, currentPackage, stateSelected), document, variablePackage, timer,runtime);
+    const value = props.timerField && timer ? timer[props.timerField] ?? '' : interpolateVariables(resolveComponentText(visualNode, document, textPackage, stateSelected), document, variablePackage, timer,runtime);
     if ((node.props.binding || node.type==='ProductParameter') && !value) return null;
     const rich = Boolean(node.type==='Text' && props.runs?.length && !props.binding);
     const content=node.type==='ProductParameter'?value:richTextContent({p:props,value,document,packageNode:variablePackage,timer,editing,runtime});

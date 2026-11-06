@@ -6,9 +6,9 @@ import { calibrateTemplateVisuals } from './templateVisuals.js';
 import {buildTemplateNavigationHeaders} from './templateNavigationHeaders.js';
 import { effectiveFillType } from './propertyModel.js';
 import { localSettingsResetting } from '../templateStorage.js';
-import { packageDisplayFields } from '../products/packageFields.js';
+import { packageDisplayFields, productParameterValue } from '../products/packageFields.js';
 import {validWorkbenchConfiguration} from './workbenchModel.js';
-import { PRODUCT_PARAMETERS, productParameterPreview } from '../products/productParameters.js';
+import { PRODUCT_PARAMETERS } from '../products/productParameters.js';
 import {pruneGeneratedEmptyLayouts,normalizeHtLabelSlots} from './layoutContainers.js';
 import {buildFreeTrialTemplate} from './freeTrialTemplate.js';
 import {buildVipTierTemplate} from './vipTierTemplate.js';
@@ -158,7 +158,7 @@ export function moveComponent(document, id, parentId, at = Infinity) {
   return insertComponent(removeComponent(document, id), parentId, node, at);
 }
 export function resolveComponentText(node, document, packageNode, selected = false) {
-  if (node.type === 'ProductParameter') return productParameterPreview(node.props.parameter, packageNode, selected);
+  if (node.type === 'ProductParameter') return productParameterValue(document, packageNode, node.props.parameter, selected);
   const binding = node.props.binding;
   if (!binding) return node.props.runs?.length ? node.props.runs.map((run) => `${run.breakBefore ? '\n' : ''}${run.text ?? ''}`).join('') : node.props.text ?? '';
   return String(packageDisplayFields(document, packageNode, selected, binding.key)[binding.field] ?? '');

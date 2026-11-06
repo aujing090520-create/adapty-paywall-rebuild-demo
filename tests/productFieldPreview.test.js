@@ -3,11 +3,12 @@ import assert from 'node:assert/strict';
 import React from 'react';
 import Renderer,{act} from 'react-test-renderer';
 import {createServer} from 'vite';
-import {fieldPreviewDocument,productFieldPlaceholders} from '../src/products/fieldPreview.js';
+import {fieldPreviewDocument,productPreviewDocument,productFieldPlaceholders} from '../src/products/fieldPreview.js';
 import {packageDisplayFields} from '../src/products/packageFields.js';
 import {interpolateVariables,variableIssues} from '../src/builder/textVariables.js';
-import {component as c,indexDocument,componentProps,resolveComponentText,captureNativeComponent} from '../src/builder/componentDocument.js';
-import {createCatalogComponent} from '../src/builder/componentCatalog.js';
+import {component as c,indexDocument,componentProps,resolveComponentText,captureNativeComponent,importComponentDocument} from '../src/builder/componentDocument.js';
+import {createCatalogComponent,upgradeCanonicalComponents} from '../src/builder/componentCatalog.js';
+import {templates,createBuilderNodes} from '../src/templates/templateDefinitions.js';
 import {patchComponentProperties} from '../src/builder/componentOperations.js';
 let server,Properties,Presentation;
 before(async()=>{globalThis.ResizeObserver=class{observe(){}disconnect(){}};server=await createServer({configFile:false,logLevel:'silent',server:{middlewareMode:true,hmr:false,watch:null}});Properties=(await server.ssrLoadModule('/src/builder/RevenueCatProperties.jsx')).default;Presentation=(await server.ssrLoadModule('/src/builder/PaywallPresentation.jsx')).default;});
@@ -55,4 +56,78 @@ test('interactive presentation can select and mock purchase a package with no SK
   await act(async()=>{renderer=Renderer.create(React.createElement(Presentation,{document:source,editing:false,onSelect(){},onStatus:value=>{status=value;}}));});
   const host=id=>renderer.root.findAll(node=>typeof node.type==='string'&&node.props['data-component-id']===id)[0];
   try{assert.equal(host('plan/name').children[0],'{SKU时长}');assert.equal(host('plan/reference').props.style.textDecoration,'line-through');await act(async()=>host('buy').props.onClick({stopPropagation(){}}));assert.equal(status,'请先勾选同意协议');await act(async()=>host('agreement').findByType('input').props.onChange({target:{checked:true}}));await act(async()=>host('buy').props.onClick({stopPropagation(){}}));assert.equal(status,'购买预览：未发起真实交易');}finally{await act(async()=>renderer.unmount());}
+});
+
+const memberDocument=()=>{
+  const template=templates.find(item=>item.id==='ht-membership-plans');
+  return upgradeCanonicalComponents(importComponentDocument(createBuilderNodes(template.id),template));
+};
+const memberCases=[['products/package-0','1个月','¥78'],['products/package-1','12个月','¥488'],['products/package-2','终身','¥998']];
+
+test('membership sample data reuses saved per-package SKUs without changing configuration or library variables',()=>{
+  const source=memberDocument(),before=structuredClone(source),preview=productPreviewDocument(source),{nodes}=indexDocument(source);
+  assert.equal(productPreviewDocument(source),preview);assert.equal(productPreviewDocument(preview),preview);
+  assert.equal(preview.products,source.products);assert.equal(preview.root,source.root);
+  for(const [id,duration,price] of memberCases){
+    const plan=nodes.get(id);
+    assert.equal(packageDisplayFields(preview,plan).name,duration);
+    assert.equal(resolveComponentText(nodes.get(`${id}-price`),preview,plan),price);
+    assert.equal(resolveComponentText(nodes.get(`${id}-name`),fieldPreviewDocument(source),plan),'{SKU时长}');
+    assert.equal(interpolateVariables('{{ product.price }} / {{ product.name }}',preview,plan),`${price} / ${duration}`);
+    const captured=captureNativeComponent(preview,plan);
+    assert.equal(indexDocument({root:captured}).nodes.get(`${id}-price`).props.parameter,'totalPrice');
+  }
+  assert.deepEqual(source,before);assert.equal(source.productSamplePreview,undefined);
+  assert.equal(productPreviewDocument(doc(createCatalogComponent('Package','plan'))).productSamplePreview,undefined);
+});
+
+test('membership canvas and interactive flow render identical readable package data and identify it as an example',async()=>{
+  const source=memberDocument(),before=structuredClone(source),snapshots=[];
+  for(const editing of [true,false]){
+    let renderer;
+    await act(async()=>{renderer=Renderer.create(React.createElement(Presentation,{document:source,editing,onSelect(){},onStatus(){}}));});
+    try{
+      const host=id=>renderer.root.findAll(node=>typeof node.type==='string'&&node.props['data-component-id']===id)[0];
+      snapshots.push(memberCases.map(([id,duration,price])=>{
+        assert.equal(host(`${id}-name`).children[0],duration);assert.equal(host(`${id}-price`).children[0],price);
+        return [host(`${id}-name`).children[0],host(`${id}-price`).children[0]];
+      }));
+      assert.equal(host('products/monthly-1').children[0],'¥40.67/月');
+      assert.equal(host('products/package-2-saveCopy').children[0],'永久会员权益');
+      assert.doesNotMatch(JSON.stringify(renderer.toJSON()),/\{SKU时长\}|\{总价\}|\{月价\}/);
+      if(!editing)assert.match(JSON.stringify(renderer.toJSON()),/示例商品数据 · 非实际报价/);
+    }finally{await act(async()=>renderer.unmount());}
+  }
+  assert.deepEqual(snapshots[0],snapshots[1]);assert.deepEqual(source,before);
+});
+
+test('switching membership packages updates selected price variables, parameter fields and billing copy in both directions',async()=>{
+  const source=memberDocument();
+  source.root.children.push(c('selected-quote','Text','当前报价',{text:'{{ product.name }} / {{ product.price }}'}),c('selected-price','ProductParameter','当前总价',{parameter:'totalPrice'}));
+  const before=structuredClone(source);let renderer;
+  await act(async()=>{renderer=Renderer.create(React.createElement(Presentation,{document:source,editing:false,onSelect(){},onStatus(){}}));});
+  try{
+    const host=id=>renderer.root.findAll(node=>typeof node.type==='string'&&node.props['data-component-id']===id)[0];
+    assert.equal(host('selected-quote').children.join(''),'12个月 / ¥488');
+    for(const [id,duration,price] of [...memberCases,memberCases[0]]){
+      await act(async()=>host(id).props.onClick({stopPropagation(){}}));
+      assert.equal(host(id).props['aria-pressed'],true);
+      for(const [other] of memberCases)if(other!==id)assert.equal(host(other).props['aria-pressed'],false);
+      assert.equal(host('selected-quote').children.join(''),`${duration} / ${price}`);
+      assert.equal(host('selected-price').children[0],price);
+      assert.equal(host('member/cancel-note').children.join(''),duration==='终身'?'一次性付费，永久权益':'可随时取消');
+    }
+  }finally{await act(async()=>renderer.unmount());}
+  assert.deepEqual(source,before);
+});
+
+test('membership sample prices follow changed SKU bindings and price modes while retaining parameter identities and styling',()=>{
+  const source=memberDocument(),before=structuredClone(source),{nodes}=indexDocument(source),plan=nodes.get('products/package-1'),price=nodes.get('products/package-1-price');
+  const changed={...source,products:{...source.products,[plan.props.dataKey]:{...source.products[plan.props.dataKey],skuId:'DEMO-MEMBER-MONTH'}}};
+  assert.equal(resolveComponentText(price,productPreviewDocument(changed),plan),'¥78');
+  assert.equal(resolveComponentText(nodes.get('products/package-1-name'),productPreviewDocument(changed),plan),'1个月');
+  const monthly=patchComponentProperties(source,plan.id,{priceMode:'0'}),monthlyNodes=indexDocument(monthly).nodes;
+  assert.equal(resolveComponentText(monthlyNodes.get(price.id),productPreviewDocument(monthly),monthlyNodes.get(plan.id)),'¥40.67/月');
+  assert.equal(monthlyNodes.get(price.id).props.fontSize,price.props.fontSize);
+  assert.deepEqual(source,before);
 });

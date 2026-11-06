@@ -1,5 +1,25 @@
 import { billingMonths, productPriceFields, resolveProductPrice, skuById, skuCopy } from '../productPricing.js';
 import { productFieldPlaceholders } from './fieldPreview.js';
+import { effectiveProductParameter, productParameterPreview } from './productParameters.js';
+
+export function productParameterValue(document, packageNode, parameter, selected = false) {
+  if(!document.productSamplePreview)return productParameterPreview(parameter,packageNode,selected);
+  const key=effectiveProductParameter(parameter,packageNode);
+  if(!key)return '';
+  const fields=packageDisplayFields(document,packageNode,selected,packageNode?.id);
+  const row=document.products[packageNode?.props.dataKey??packageNode?.id]??{};
+  const prices=productPriceFields(row);
+  const values={skuDuration:fields.name,totalPrice:prices.total,monthlyPrice:prices.monthly,
+    totalReferencePrice:prices.referenceTotal,monthlyReferencePrice:prices.referenceMonthly,
+    productLabel:fields.badgeText,productInfo:fields.productInfo,savings:fields.savingCopy,supportingCopy:fields.supportingCopy};
+  if(key==='weeklyPrice') {
+    const period=productPeriod(row),price=priceAmount(prices.total);
+    if(!period||!price)return '';
+    const cents=(price.amount*3n*100n+price.scale*BigInt(period.units)/2n)/(price.scale*BigInt(period.units));
+    return `${price.currency}${(Number(cents)/100).toFixed(2)}/周`;
+  }
+  return String(values[key]??'');
+}
 
 // 1 year = 12 months = 52 weeks, represented exactly without rounded month prices.
 const periodUnits = { year: 156, month: 13, week: 3 };
